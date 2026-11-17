@@ -1,0 +1,199 @@
+﻿[
+    {
+        "file":  "originals/fox-leaning.png",
+        "category":  "fox",
+        "source_url":  "https://cdn.prod.website-files.com/6297d5d89ac9c5b4308579e1/6809380b257790165fc0c9f3_fox-leaning.png",
+        "found_on":  [
+                         "https://www.finnihealth.com/",
+                         "https://www.finnihealth.com/providers"
+                     ],
+        "bytes":  333819,
+        "sha256":  "08a08c09c3a709c6d3c86511aa1b937235bc319ed5ccd1ac8db4f1090c49a82d",
+        "width":  477,
+        "height":  469,
+        "pixel_format":  "Format32bppArgb"
+    },
+    {
+        "file":  "originals/fox-sleeping.png",
+        "category":  "fox",
+        "source_url":  "https://cdn.prod.website-files.com/6297d5d89ac9c5b4308579e1/68098d69ff3244c4c349fbb6_sleepy%20fox.png",
+        "found_on":  [
+                         "https://www.finnihealth.com/",
+                         "https://www.finnihealth.com/careers"
+                     ],
+        "bytes":  498726,
+        "sha256":  "9f1e081ba37a1318fe3a5fa6654dc88a3ddcac8fa8b4da3e7572fc6ba4ca6017",
+        "width":  984,
+        "height":  984,
+        "pixel_format":  "Format32bppArgb"
+    },
+    {
+        "file":  "originals/fox-peeking-down.png",
+        "category":  "fox",
+        "source_url":  "https://cdn.prod.website-files.com/6297d5d89ac9c5b4308579e1/680ab65c5c617978c2883ef2_down-fox.png",
+        "found_on":  [
+                         "https://www.finnihealth.com/"
+                     ],
+        "bytes":  265147,
+        "sha256":  "604ac13ae6cdc75c800026c52247f51aea17bbd4b652230d73fe21594848bc00",
+        "width":  584,
+        "height":  437,
+        "pixel_format":  "Format32bppArgb"
+    },
+    {
+        "file":  "originals/fox-running.avif",
+        "category":  "fox",
+        "source_url":  "https://cdn.prod.website-files.com/6297d5d89ac9c5b4308579e1/6802dab3052d455abbcc3ba5_running-fox.avif",
+        "found_on":  [
+                         "https://www.finnihealth.com/",
+                         "https://www.finnihealth.com/providers"
+                     ],
+        "bytes":  37195,
+        "sha256":  "ea447bdb1f86e1172fc09859fbb8d27fefc1783596cf3ccd6e9bc3cd9144fe87"
+    },
+    {
+        "file":  "originals/fox-background.svg",
+        "category":  "fox-background",
+        "source_url":  "https://cdn.prod.website-files.com/6297d5d89ac9c5b4308579e1/63d6ecefa9b0d5e43cdb1350_client\u0027s%20fox%20bg.svg",
+        "found_on":  [
+                         "https://cdn.prod.website-files.com/6297d5d89ac9c5b4308579e1/css/finnihealth.webflow.shared.34571842f.css"
+                     ],
+        "bytes":  6420,
+        "sha256":  "04dacc55b0d5ddf761ba536b65cdf7d71447ed621e527e338ccc945ba4d828b1",
+        "viewBox":  "0 0 94 197"
+    },
+    {
+        "file":  "originals/bush.png",
+        "category":  "scenery",
+        "source_url":  "https://cdn.prod.website-files.com/6297d5d89ac9c5b4308579e1/682ec14f8fab87bc96ed906f_bush.png",
+        "found_on":  [
+                         "https://www.finnihealth.com/",
+                         "https://www.finnihealth.com/providers",
+                         "https://www.finnihealth.com/careers"
+                     ],
+        "bytes":  864160,
+        "sha256":  "06d543099ec9edc03dce84d742eeebdc1e63dd3200777827aa251565f4ece42e",
+        "width":  991,
+        "height":  861,
+        "pixel_format":  "Format32bppArgb"
+    },
+    {
+        "file":  "originals/flowers-orange.png",
+        "category":  "scenery",
+        "source_url":  "https://cdn.prod.website-files.com/6297d5d89ac9c5b4308579e1/682ec0c36abf33e8aaaa757a_flowers%202.png",
+        "found_on":  [
+                         "https://www.finnihealth.com/",
+                         "https://www.finnihealth.com/providers"
+                     ],
+        "bytes":  1782426,
+        "sha256":  "943d04b558915fb8f2b1df2e4566d5535040617d28b08ce45711948977d7936c",
+        "width":  1024,
+        "height":  1024,
+        "pixel_format":  "Format32bppArgb"
+    },
+    {
+        "file":  "originals/flowers.png",
+        "category":  "scenery",
+        "source_url":  "https://cdn.prod.website-files.com/6297d5d89ac9c5b4308579e1/682ebf76d1d3530703491430_flowers.png",
+        "found_on":  [
+                         "https://www.finnihealth.com/",
+                         "https://www.finnihealth.com/providers"
+                     ],
+        "bytes":  1828059,
+        "sha256":  "e51699fea252d79c8e3be2608822f5887b96ce1452372bc59b2bb8092b1ed0c9",
+        "width":  1024,
+        "height":  1024,
+        "pixel_format":  "Format32bppArgb"
+    },
+    {
+        "file":  "originals/butterfly.png",
+        "category":  "scenery",
+        "source_url":  "https://cdn.prod.website-files.com/6297d5d89ac9c5b4308579e1/682ebf2039b04351c9bd9493_butterfly.png",
+        "found_on":  [
+                         "https://www.finnihealth.com/",
+                         "https://www.finnihealth.com/providers"
+                     ],
+        "bytes":  1620011,
+        "sha256":  "37a9f09f134a314693e6b6ede784686056ec08913d8578c93ef108dbb4eddbd2",
+        "width":  1024,
+        "height":  1024,
+        "pixel_format":  "Format32bppArgb"
+    },
+    {
+        "file":  "originals/green-hill.svg",
+        "category":  "scenery",
+        "source_url":  "https://cdn.prod.website-files.com/6297d5d89ac9c5b4308579e1/67feca1194a5a9ebfce037ff_greeen%20hill.svg",
+        "found_on":  [
+                         "https://www.finnihealth.com/",
+                         "https://www.finnihealth.com/providers"
+                     ],
+        "bytes":  255,
+        "sha256":  "e90293db3d12840096b58972e2fe0176f4bcd9817102a7c8c3022566ef5c1e6a",
+        "viewBox":  "0 0 1440 124"
+    },
+    {
+        "file":  "originals/section-divider.svg",
+        "category":  "scenery",
+        "source_url":  "https://cdn.prod.website-files.com/6297d5d89ac9c5b4308579e1/67f835617bb7eab65391c394_Section%20Divider.svg",
+        "found_on":  [
+                         "https://www.finnihealth.com/",
+                         "https://www.finnihealth.com/providers"
+                     ],
+        "bytes":  256,
+        "sha256":  "10ac8ad56d70f7207f18456aae8c809e63d3cf5b8b6ba889d9745a00f8caf9aa",
+        "viewBox":  "0 0 1440 124"
+    },
+    {
+        "file":  "originals/finni-logo.svg",
+        "category":  "branding",
+        "source_url":  "https://cdn.prod.website-files.com/6297d5d89ac9c5b4308579e1/6297d5d89ac9c550828579f0_Logo.svg",
+        "found_on":  [
+                         "https://www.finnihealth.com/"
+                     ],
+        "bytes":  3954,
+        "sha256":  "956667f3cc604ee8b2e66961ea26bccfb866e3522448c48b964775dae3f986ec",
+        "viewBox":  "0 0 86 32"
+    },
+    {
+        "file":  "originals/finni-logo-light.svg",
+        "category":  "branding",
+        "source_url":  "https://cdn.prod.website-files.com/6297d5d89ac9c5b4308579e1/67f83762cef3d21bb93d1d3a_Logo.svg",
+        "found_on":  [
+                         "https://www.finnihealth.com/"
+                     ],
+        "bytes":  5446,
+        "sha256":  "565c257782d314a4a5269b26bdaefd5525f1ea9f8d8d0f2406273c5030eb099f",
+        "viewBox":  "0 0 622 226"
+    },
+    {
+        "file":  "originals/resource-contours.svg",
+        "category":  "scenery",
+        "source_url":  "https://cdn.prod.website-files.com/6297d5d89ac9c5b4308579e1/6a85400fa3b37e34f5713951_finni-resource-hero-contours.svg",
+        "found_on":  [
+                         "https://www.finnihealth.com/resources"
+                     ],
+        "bytes":  501,
+        "sha256":  "bfb89c68281f15dfd0f8f19db1af7c8d98e33bc1d7d0e61028bcce4b72e7f6de",
+        "viewBox":  "0 0 1600 900"
+    },
+    {
+        "file":  "originals/home-hero.avif",
+        "category":  "reference",
+        "source_url":  "https://cdn.prod.website-files.com/6297d5d89ac9c5b4308579e1/67f8318932e7a3cae413519b_Hero%20Image.avif",
+        "found_on":  [
+                         "https://www.finnihealth.com/"
+                     ],
+        "bytes":  101869,
+        "sha256":  "411306b9e7da6feccd8fcfa466cfd2ddcc325daa60a633500950658e87622de7"
+    },
+    {
+        "file":  "originals/providers-hero.avif",
+        "category":  "reference",
+        "source_url":  "https://cdn.prod.website-files.com/6297d5d89ac9c5b4308579e1/68387a62e080ade2ab353adf_Provider%20Herop.avif",
+        "found_on":  [
+                         "https://www.finnihealth.com/providers"
+                     ],
+        "bytes":  65357,
+        "sha256":  "8f098585a71649475de01b6c2724db42de2d741961726227d77f6b96fdaedf9d"
+    }
+]

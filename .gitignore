@@ -1,0 +1,43 @@
+.tools/
+.work/
+source-tables/
+__pycache__/
+*.blend1
+
+# Local recordings, captures and review pages are not project assets.
+*.mp4
+*.webm
+*.mov
+*.avi
+*.wav
+*.log
+*.pyc
+
+# Accepted art, its composition inputs, and model source/export only.
+# Update this allowlist when accepting a new revision.
+/output/*
+!/output/playfield-party-v6/
+!/output/playfield-party-v9/
+!/output/vpx-v1/
+/output/playfield-party-v6/*
+!/output/playfield-party-v6/finni-playfield-base.svg
+!/output/playfield-party-v6/mission-party-environment.png
+!/output/playfield-party-v6/back-panel.png
+!/output/playfield-party-v6/inlane-layout-overrides.json
+!/output/playfield-party-v6/original-plastic-alpha-map.json
+!/output/playfield-party-v6/mission-art-map.json
+!/output/playfield-party-v6/vpx-light-overrides/
+/output/playfield-party-v9/*review*.html
+/output/playfield-party-v9/*-detail.png
+/output/playfield-party-v9/*validation.json
+/output/vpx-v1/*
+!/output/vpx-v1/finni-table-layout-source.blend
+!/output/vpx-v1/finni-fox-atlas.png
+!/output/vpx-v1/finni-party-hardware.glb
+
+# Superseded font trials and downloaded reference-page caches stay local.
+/assets/fonts/anton/
+/assets/fonts/lilita-one/
+/assets/finni/website-assets.*
+/references/deadpool/*.webp
+/references/deadpool/*.html
