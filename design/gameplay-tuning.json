@@ -1,0 +1,10 @@
+{
+  "scoop": {
+    "object": "HellHouse",
+    "angle": 164,
+    "speed": 12,
+    "inclination": 0,
+    "reason": "Flat eject toward the right flipper. The original inclination 1 is interpreted as radians, causing a high launch and an unreliable center feed.",
+    "verification": "Actual VPX WebAssembly physics: original crossed y=1774 at x=433; tuned eject registered four consecutive RightFlipper_Collide events at x=512 to 523, y=1779 to 1786. Flippers were at rest."
+  }
+}

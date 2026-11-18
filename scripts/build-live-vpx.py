@@ -1,5 +1,5 @@
-"""Assemble current visual assets into a playable copy, retaining source rules/physics."""
-import bpy,json,shutil,copy,math,sys
+"""Assemble visuals, audio, multiball stories and the approved scoop feed; retain source rules."""
+import bpy,json,shutil,copy,math,sys,runpy
 from pathlib import Path
 from mathutils import Vector
 ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT/'.tools/pydeps'))
@@ -69,10 +69,10 @@ for name in ('LilHead','LilLeftArm','LilRightArm','Primitive077'):
     parts[name]=export_obj(name,[bpy.data.objects[name]],fox=True)
     path.write_text(json.dumps({'Primitive':p},indent=2))
 
-for name,prefix in [('FinniCake','Party cake'),('FinniBalloons','Party balloon'),('FinniWireRamp','Party wire ramp'),('FinniSlingCovers','Party sling cover')]:
+for name,prefix in [('FinniCake','Party cake'),('FinniBalloons','Party balloon'),('FinniStreamerRamp','Party streamer ramp'),('FinniSlingCovers','Party sling cover')]:
     objects=[o for o in bpy.data.objects if o.type=='MESH' and o.name.startswith(prefix) and not o.hide_render]
     p=copy.deepcopy(template);p.update(name=name,position={'x':0.,'y':0.,'z':0.},size={'x':100.,'y':100.,'z':100.},
-        rot_and_tra=[0.]*9,image='finni-party-palette',material='Metal' if name=='FinniWireRamp' else 'Toys',
+        rot_and_tra=[0.]*9,image='finni-party-palette',material='Toys',
         is_visible=True,is_collidable=False,is_toy=True,static_rendering=True,use_3d_mesh=True,mesh_file_name=name+'.obj')
     parts[name]=export_obj(name,objects)
     filename=f'Primitive.{name}.json';(WORK/'gameitems'/filename).write_text(json.dumps({'Primitive':p},indent=2))
@@ -113,11 +113,27 @@ for patch in (ART/'vpx-light-overrides').glob('*.json'):
     target=WORK/'gameitems'/('Light.'+patch.stem+'.json')
     if target.exists():shutil.copyfile(patch,target)
 (WORK/'gameitems.json').write_text(json.dumps(items,indent=2));(WORK/'images.json').write_text(json.dumps(images,indent=2))
+runpy.run_path(str(ROOT/'scripts/build-party-supply-icons.py'))['install'](WORK)
 gamedata=json.loads((WORK/'gamedata.json').read_text())
 gamedata['bg_view_mode_desktop']='legacy';gamedata['bg_rotation_desktop']=0.
 (WORK/'gamedata.json').write_text(json.dumps(gamedata,indent=2))
+# Retain existing sound IDs; new story cues are added at the approved phases.
+party_audio=runpy.run_path(str(ROOT/'scripts/build-party-audio.py'))
+audio_dir=ROOT/'output/party-audio'
+party_audio['build'](audio_dir)
+audio_count=party_audio['install'](WORK,audio_dir)
+voice=runpy.run_path(str(ROOT/'scripts/build-finni-callouts.py'))
+voice_dir=ROOT/'output/finni-voice'
+voice['build'](voice_dir)
+voice_count=voice['install'](WORK,voice_dir)
+music=runpy.run_path(str(ROOT/'scripts/apply-music-trial.py'))
+music_count=music['install'](WORK)
+tuning=runpy.run_path(str(ROOT/'scripts/apply-gameplay-tuning.py'))
+tuning['install'](WORK)
+# VPX can prefer a neighboring VBS over the embedded script. Keep it in sync.
+shutil.copyfile(WORK/'script.vbs',OUT/'Finni-Big-Day.vbs')
 # Source rules, lock collision geometry and the real bobble routine must survive.
-assert (WORK/'script.vbs').read_bytes()==(SOURCE/'script.vbs').read_bytes()
+assert (WORK/'script.vbs').read_bytes()==tuning['tuned_script']((SOURCE/'script.vbs').read_bytes())
 for name in ('Ramp012','Ramp013'):
     filename='Ramp.'+name+'.json'
     a=json.loads((SOURCE/'gameitems'/filename).read_text())['Ramp'];b=json.loads((WORK/'gameitems'/filename).read_text())['Ramp']
@@ -126,5 +142,5 @@ for filename in ('Wall.Leftslingshot.json', 'Wall.Rightslingshot.json'):
     assert json.loads((SOURCE/'gameitems'/filename).read_text()) == json.loads((WORK/'gameitems'/filename).read_text()), filename
 for path in (SOURCE/'gameitems').glob('Rubber.*Sling*.json'):
     assert json.loads(path.read_text()) == json.loads((WORK/'gameitems'/path.name).read_text()), path.name
-(OUT/'build-report.json').write_text(json.dumps({'meshes':parts,'source_script_unchanged':True,'lock_collisions_unchanged':True,'slingshot_collisions_and_animation_unchanged':True,'sling_covers':'plain rounded triangles over original mounting posts','fox_animation':'original Target012_Hit / LilDPShake / lilShakeTimer'},indent=2))
+(OUT/'build-report.json').write_text(json.dumps({'meshes':parts,'party_audio_replacements':audio_count,'finni_voice_slots':voice_count,'funkorama_music_slots':music_count,'source_script_changes':['approved HellHouse scoop kick: 164, 12, 0','Cake Time / Friendship display and voice cues'],'all_other_script_bytes_unchanged':True,'lock_collisions_unchanged':True,'slingshot_collisions_and_animation_unchanged':True,'sling_covers':'plain rounded triangles over original mounting posts','fox_animation':'original Target012_Hit / LilDPShake / lilShakeTimer'},indent=2))
 print('LIVE_ASSETS_READY',json.dumps(parts),flush=True)

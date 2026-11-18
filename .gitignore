@@ -1,5 +1,8 @@
 .tools/
 .work/
+.env
+.env.*
+!.env.example
 source-tables/
 __pycache__/
 *.blend1

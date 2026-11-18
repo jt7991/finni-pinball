@@ -39,6 +39,8 @@ mission_words = {
 }
 mission_lines = {}
 for label in original.iter(f'{{{NS}}}text'):
+    if label.text == 'Finni Fox Multiball':
+        label.text = 'Cake Time Multiball'
     label.set('font-family', 'Chewy')
     label.set('font-weight', 'normal')
     label.set('fill', '#ffffff')

@@ -22,8 +22,19 @@ exported = {node.get('name') for node in gltf['nodes']}
 assert set(report['new_objects']).issubset(exported)
 assert {'LilHead', 'LilLeftArm', 'LilRightArm', 'Primitive077'}.issubset(exported)
 assert not any('trough' in name for name in report['new_objects'])
-assert len([name for name in report['new_objects'] if 'running wire' in name]) == 2
-assert len([name for name in report['new_objects'] if 'upper guard wire' in name]) == 2
+streamer = report['streamer_ramp']
+chute = bpy.data.objects['Party streamer ramp | peach chute and tall right wall']
+assert streamer['top'] == 'open'
+assert streamer['right_wall_height_m'] > streamer['inner_lip_height_m']
+profile = streamer['profile_m']
+assert len(chute.data.vertices) == len(streamer['centerline'])*len(profile)
+assert len(chute.data.polygons) == (len(streamer['centerline'])-1)*(len(profile)-1)
+for i, center in enumerate(streamer['centerline']):
+    row = chute.data.vertices[i*len(profile):(i+1)*len(profile)]
+    assert row[-1].co.x > center[0], 'Tall wall must stay on cabinet-right'
+    assert abs(row[-1].co.z-center[2]-.025) < 1e-7
+    assert abs(row[1].co.z-center[2]+.0004) < 1e-7
+assert streamer['curl_outside_channel']
 assert len([name for name in report['new_objects'] if name.startswith('Party sling cover') and name.endswith('panel')]) == 2
 for name in report['sling_covers']['source_visuals_hidden']:
     assert bpy.data.objects[name].hide_render, name
@@ -36,7 +47,7 @@ assert playfield_images
 for image in playfield_images:
     assert Path(bpy.path.abspath(image.filepath)).resolve() == art.resolve(), image.filepath
     assert image.packed_file and hashlib.sha256(image.packed_file.data).digest() == hashlib.sha256(art.read_bytes()).digest()
-assert report['wire_ramp_source_paths'] == ['Ramp013', 'Ramp012']
+assert streamer['source_paths'] == ['Ramp013', 'Ramp012']
 assert report['cake_scope'] == 'small round cake on original toy platform'
 assert not bpy.data.objects['wallxxx007Top'].hide_render
 assert bpy.data.objects['Party cake | vanilla sponge'].dimensions.x < .065
@@ -57,12 +68,12 @@ for path in (root/'.work/deadpool-extracted/gameitems').glob('Kicker.*.json'):
     if kicker['name'].lower() == 'lock':break
 assert kicker['surface'] == 'Ramp012' and kicker['is_enabled']
 lock_xy = (kicker['center']['x']*.00053975, -kicker['center']['y']*.00053975)
-assert min(math.dist(p[:2], lock_xy) for p in report['wire_ramp_centerline']) < .006
+assert min(math.dist(p[:2], lock_xy) for p in streamer['centerline']) < .006
 result = {'hidden_source_objects': len(report['hidden_source_objects']),
           'visible_replacement_meshes': len(report['new_objects']),
           'portable_export_contains_all_replacements': True,
           'geometry_finite': True, 'vpx_gameplay_tested': False,
-          'current_texture_packed': True, 'wire_ramp_matches_source_lock_route': True,
+          'current_texture_packed': True, 'streamer_ramp_matches_source_lock_route': True,
           'plain_triangular_sling_covers': True,
           'small_cake_and_original_platform_restored': True,
           'fox_matches_latest_saved_sculpture_without_deformation': True}

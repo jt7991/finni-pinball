@@ -1,0 +1,12 @@
+.git
+.tools
+.work
+output
+source-tables
+references
+design
+leaderboard
+**/__pycache__
+**/pb_data
+**/.env
+*.zip

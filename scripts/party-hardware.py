@@ -68,8 +68,8 @@ def build_party_hardware(out, mat, forward, right):
     peach = mat('Party | peach balloon', 'F6A45D', rough=.23)
     lilac = mat('Party | lilac balloon', 'A28AE8', rough=.23)
     mint = mat('Party | mint balloon', '8DCDB9', rough=.23)
-    steel = mat('Party | smooth ramp', 'C4CBD5', metal=.65, rough=.28)
-    trim = mat('Party | ramp rail', '8272F5', rough=.3)
+    streamer_peach = mat('Party | streamer peach', 'F5B18E', rough=.36)
+    streamer_lilac = mat('Party | streamer lilac', 'AC93ED', rough=.36)
 
     # Simple rounded triangular covers over the existing three mounting posts.
     # The source sling walls, moving rubbers, switches and posts stay in place.
@@ -167,18 +167,55 @@ def build_party_hardware(out, mat, forward, right):
     for i in range(len(centers)):
         tangent = centers[min(len(centers)-1, i+1)]-centers[max(0, i-1)]
         sides.append(Vector((tangent.y, -tangent.x, 0)).normalized())
-    for sign, label in ((-1, 'left'), (1, 'right')):
-        tube(f'Party wire ramp | {label} running wire',
-             [c+s*(sign*.008) for c, s in zip(centers, sides)], .0016, steel)
-        tube(f'Party wire ramp | {label} upper guard wire',
-             [c+s*(sign*.018)+Vector((0, 0, .012)) for c, s in zip(centers, sides)], .0016, steel)
-    for i in range(0, len(centers), 6):
-        c, s = centers[i], sides[i]
-        # Welded U-shaped ties support the running wires and open side guards.
-        cross_section = [(-.018,.012),(-.018,.003),(-.015,-.002),
-                         (.015,-.002),(.018,.003),(.018,.012)]
-        tube(f'Party wire ramp | welded tie {i:02}',
-             [c+s*x+Vector((0, 0, z)) for x, z in cross_section], .0012, steel)
+    # Ribbon-shaped open chute: source collision floor is z=0 here. Keep the
+    # visible floor just below it, with the tall wall on cabinet-right (+X).
+    half_width = ramps['Ramp013']['width_bottom']*scale/2
+    profile = [(-half_width, .005), (-half_width, -.0004),
+               (half_width, -.0004), (half_width+.001, .004),
+               (half_width+.001, .025)]
+
+    def ribbon_mesh(name, rows, materials, band_materials):
+        width = len(rows[0])
+        mesh = bpy.data.meshes.new(name+' mesh')
+        mesh.from_pydata([tuple(p) for row in rows for p in row], [],
+                         [(i*width+j, (i+1)*width+j, (i+1)*width+j+1, i*width+j+1)
+                          for i in range(len(rows)-1) for j in range(width-1)])
+        mesh.update()
+        obj = bpy.data.objects.new(name, mesh)
+        bpy.context.scene.collection.objects.link(obj)
+        finish(obj, name, materials[0])
+        for material in materials[1:]:mesh.materials.append(material)
+        for face in mesh.polygons:face.material_index = band_materials[face.index % (width-1)]
+        shell = obj.modifiers.new('Molded ribbon thickness', 'SOLIDIFY')
+        shell.thickness = .0008
+        shell.offset = -1
+        bevel = obj.modifiers.new('Rounded ribbon edges', 'BEVEL')
+        bevel.width = .00035
+        bevel.segments = 3
+        return obj
+
+    ribbon_mesh('Party streamer ramp | peach chute and tall right wall',
+                [[c+s*x+Vector((0, 0, z)) for x,z in profile] for c,s in zip(centers,sides)],
+                [streamer_peach, streamer_lilac], [0, 0, 1, 1])
+    for index, label in ((0, 'low inner lip'), (-1, 'tall right wall')):
+        x,z = profile[index]
+        tube(f'Party streamer ramp | cream {label} edge',
+             [c+s*x+Vector((0, 0, z)) for c,s in zip(centers,sides)], .00065, cream)
+
+    # Decorative curl beyond the outside wall, never across the ball channel.
+    curl_origin = centers[-1]+sides[-1]*(half_width+.001)+Vector((0,0,.025))
+    tangent = (centers[-1]-centers[-2]).normalized()
+    curl_rows = []
+    for i in range(97):
+        angle = math.tau*1.15*i/96
+        radius = .013*(1-.60*i/96)
+        p = curl_origin+tangent*(radius*math.sin(angle))+Vector((0,0,.013-radius*math.cos(angle)))
+        curl_rows.append([p, p+sides[-1]*.006])
+    ribbon_mesh('Party streamer ramp | curled outer ribbon tail', curl_rows,
+                [streamer_lilac], [0])
+    for j in (0, 1):
+        tube(f'Party streamer ramp | curl cream edge {j}',
+             [row[j] for row in curl_rows], .0005, cream)
 
     # Preserve the latest saved fox sculpture exactly; only raise it onto the cake.
     toy_names = {'LilHead', 'LilLeftArm', 'LilRightArm', 'Primitive077'}
@@ -225,8 +262,11 @@ def build_party_hardware(out, mat, forward, right):
         'fox_source': 'finni-table-layout-source.blend; latest short-muzzle / flat-nose revision',
         'fox_world_translation': [0, 0, .0215],
         'fox_reshaped': False,
-        'wire_ramp_source_paths': ['Ramp013', 'Ramp012'],
-        'wire_ramp_centerline': [list(p) for p in centers],
+        'streamer_ramp': {'source_paths': ['Ramp013', 'Ramp012'],
+                          'centerline': [list(p) for p in centers],
+                          'profile_m': profile, 'top': 'open',
+                          'right_wall_height_m': .025, 'inner_lip_height_m': .005,
+                          'curl_outside_channel': True},
         'scope': 'visual asset replacements; VPX collisions unchanged',
         'lock': {'shot': 'right ramp', 'implementation': 'source VPX virtual lock',
                  'kicker': 'lock', 'collision_surface': 'Ramp012',

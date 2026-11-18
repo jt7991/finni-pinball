@@ -1,0 +1,30 @@
+services:
+  game:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "${GAME_PORT:-8080}:80"
+    volumes:
+      - type: bind
+        source: ${ASSET_PATH:-./.work/browser-assets}
+        target: /usr/share/nginx/html/runtime
+        read_only: true
+        bind:
+          create_host_path: false
+    depends_on:
+      pocketbase:
+        condition: service_healthy
+
+  pocketbase:
+    build:
+      context: .
+      dockerfile: pocketbase/Dockerfile
+    restart: unless-stopped
+    volumes:
+      - pocketbase_data:/pb/pb_data
+    # Only game is exposed. The dashboard is available through game at /_/.
+
+volumes:
+  pocketbase_data:

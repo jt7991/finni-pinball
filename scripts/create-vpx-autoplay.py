@@ -1,5 +1,6 @@
 """Optional VPX sidecar: drive real launch/flipper inputs; never prescribe ball paths."""
 from pathlib import Path
+import shutil
 ROOT=Path(__file__).resolve().parents[1];out=ROOT/'output/live-vpx'
 source=(ROOT/'.work/finni-live-extracted/script.vbs').read_text()
 # Only opt in with -c1 autoplay. The VPX's embedded source script is untouched.
@@ -50,5 +51,6 @@ Sub FinniDemoTick
     vpmtimer.addtimer 40, "FinniDemoTick '"
 End Sub
 '''.replace('STATUS_PATH',str(out/'gameplay-status.txt'))
-(out/'Finni-Big-Day.vbs').write_text(source+helper)
+shutil.copyfile(out/'Finni-Big-Day.vpx',out/'Finni-Autoplay.vpx')
+(out/'Finni-Autoplay.vbs').write_text(source+helper)
 print('AUTOPLAY_SIDECAR_READY')

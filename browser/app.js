@@ -1,0 +1,154 @@
+import {createLeaderboard} from './leaderboard.js';
+import {createViews,createDmd} from './views.js';
+const actions = [
+  ['left','Left flipper','ShiftLeft'],['right','Right flipper','ShiftRight'],
+  ['launch','Launch','Enter'],['start','Start','Digit1'],
+  ['nudgeLeft','Nudge left','KeyZ'],['nudgeCenter','Nudge forward','Space'],['nudgeRight','Nudge right','Slash'],
+];
+const $ = id => document.getElementById(id);
+const defaults = Object.fromEntries(actions.map(([id,,key])=>[id,key]));
+let settings = {keys:{...defaults},latch:false,showTouch:true};
+try {
+  const saved=JSON.parse(localStorage.getItem('finni-controls-v1'));
+  if(saved && actions.every(([id])=>typeof saved.keys?.[id]==='string') && new Set(Object.values(saved.keys)).size===actions.length) settings={...settings,...saved};
+} catch {}
+let listening=null, connected=false, engine=null;
+const held=new Map(), physical=new Set();
+const message=text=>$('message').textContent=text;
+function save(){try{localStorage.setItem('finni-controls-v1',JSON.stringify(settings));}catch{message('Browser storage is unavailable. Settings apply for this session.');}}
+function label(code){return code.replace(/^Key|^Digit/,'').replace('ShiftLeft','Left Shift').replace('ShiftRight','Right Shift').replace('Arrow','');}
+function render(){
+  $('bindings').replaceChildren();
+  for(const [id,name] of actions){
+    const row=document.createElement('div');row.className='binding';
+    const text=document.createElement('span');text.textContent=name;
+    const button=document.createElement('button');button.textContent=listening===id?'Press a key…':label(settings.keys[id]);
+    button.classList.toggle('listening',listening===id);button.setAttribute('aria-label',`Change ${name}: ${label(settings.keys[id])}`);
+    button.onclick=()=>{release();listening=id;message('Press a key to bind. Escape cancels.');render();};
+    row.append(text,button);$('bindings').append(row);
+  }
+  $('latch').checked=settings.latch;$('showTouch').checked=settings.showTouch;$('touch').hidden=!settings.showTouch;
+  $('flip-zones').hidden=!settings.showTouch;
+  $('nudge-zone').hidden=!settings.showTouch;
+  $('control-hint').textContent=`${label(settings.keys.start)} start · Hold ${label(settings.keys.launch)}, then release to launch`;
+}
+function release(){held.clear();physical.clear();paint();send();}
+function setAction(id,down,source){
+  if(!connected)return;
+  const sources=held.get(id)||new Set();
+  if(settings.latch && ['left','right'].includes(id)){
+    if(!down)return;
+    if(sources.size)sources.clear();else sources.add('toggle');
+  }else{if(down)sources.add(source);else sources.delete(source);}
+  if(sources.size)held.set(id,sources);else held.delete(id);
+  paint();send();
+}
+function paint(){document.querySelectorAll('[data-action]').forEach(b=>{const pressed=held.has(b.dataset.action);b.classList.toggle('pressed',pressed);b.setAttribute('aria-pressed',String(pressed));b.disabled=!connected;});}
+for(const [id,name] of actions){
+  const button=document.createElement('button');button.textContent=name;button.dataset.action=id;button.disabled=true;
+  button.addEventListener('pointerdown',e=>{e.preventDefault();button.setPointerCapture(e.pointerId);setAction(id,true,`pointer:${e.pointerId}`);});
+  for(const type of ['pointerup','pointercancel','lostpointercapture'])button.addEventListener(type,e=>setAction(id,false,`pointer:${e.pointerId}`));
+  button.addEventListener('keydown',e=>{if(['Enter','Space'].includes(e.code)){e.preventDefault();if(!e.repeat)setAction(id,true,'button');}});
+  button.addEventListener('keyup',e=>{if(['Enter','Space'].includes(e.code)){e.preventDefault();setAction(id,false,'button');}});
+  (id.startsWith('nudge')?$('nudges'):$('touch')).append(button);
+}
+const phoneLayout=matchMedia('(max-width:650px)');
+function placeFlippers(){
+  release();
+  const buttons=['left','right'].map(id=>document.querySelector(`[data-action=${id}]`));
+  const nudge=document.querySelector('[data-action=nudgeCenter]');
+  if(phoneLayout.matches)buttons.forEach(button=>$('flip-zones').append(button));
+  else buttons.reverse().forEach(button=>$('touch').prepend(button));
+  if(phoneLayout.matches)$('nudge-zone').append(nudge);
+  else $('nudges').insertBefore(nudge,document.querySelector('[data-action=nudgeRight]'));
+  $('flip-zones').hidden=!settings.showTouch;
+  $('nudge-zone').hidden=!settings.showTouch;
+}
+phoneLayout.addEventListener('change',placeFlippers);
+window.addEventListener('keydown',e=>{
+  if(listening){e.preventDefault();e.stopPropagation();if(e.repeat)return;
+    if(e.code==='Escape'){listening=null;message('Binding cancelled.');render();return;}
+    if(e.metaKey||e.ctrlKey||e.altKey||['MetaLeft','MetaRight','Tab','ControlLeft','ControlRight','AltLeft','AltRight'].includes(e.code)){message('Choose a key without Ctrl, Alt, Command, or Tab.');return;}
+    const conflict=actions.find(([id])=>id!==listening&&settings.keys[id]===e.code);
+    if(conflict){message(`Already used by ${conflict[1]}. Choose another key.`);return;}
+    settings.keys[listening]=e.code;listening=null;save();message('Control saved.');render();return;
+  }
+  if(e.target.closest?.('button,input,select,summary')||document.querySelector('.panel:popover-open')||$('initials-dialog').open||e.ctrlKey||e.metaKey||e.altKey)return;
+  const action=actions.find(([id])=>settings.keys[id]===e.code);if(!action)return;
+  e.preventDefault();if(physical.has(e.code))return;physical.add(e.code);setAction(action[0],true,`key:${e.code}`);
+});
+window.addEventListener('keyup',e=>{if(!physical.delete(e.code))return;const action=actions.find(([id])=>settings.keys[id]===e.code);if(action){e.preventDefault();setAction(action[0],false,`key:${e.code}`);}});
+window.addEventListener('blur',release);document.addEventListener('visibilitychange',()=>{if(document.hidden)release();});
+window.addEventListener('pagehide',release);
+$('latch').onchange=e=>{release();settings.latch=e.target.checked;save();};
+$('showTouch').onchange=e=>{release();settings.showTouch=e.target.checked;save();render();$('flip-zones').hidden=!settings.showTouch;$('nudge-zone').hidden=!settings.showTouch;};
+$('reset').onclick=()=>{release();listening=null;settings={keys:{...defaults},latch:false,showTouch:true};save();render();message('Default controls restored.');};
+$('release').onclick=release;
+$('fullscreen').onclick=()=>{const request=document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();request.catch(()=>message('Full screen is unavailable in this browser.'));};
+const nativeKeys=['LeftFlipperKey','RightFlipperKey','PlungerKey','StartGameKey','LeftTiltKey','CenterTiltKey','RightTiltKey'];
+const applied=new Set();
+function evaluate(script){return engine?.ccall('vpinball_wasm_eval_script','number',['string'],[script]);}
+function send(){
+  if(!connected)return;
+  for(let i=0;i<actions.length;i++){
+    const id=actions[i][0], down=held.has(id);
+    if(down!==applied.has(id)){
+      evaluate(`Table1_Key${down?'Down':'Up'} ${nativeKeys[i]}`);
+      if(down)applied.add(id);else applied.delete(id);
+    }
+  }
+}
+// Our remapping owns keyboard input. Prevent SDL's default bindings from also firing.
+for(const type of ['keydown','keyup'])window.addEventListener(type,e=>e.stopImmediatePropagation());
+const logs=[];
+const leaderboard=createLeaderboard(evaluate,release);
+const views=createViews(evaluate,()=>connected);
+const dmd=createDmd();
+$('touch-help').onclick=()=>{
+  const showing=document.body.classList.toggle('show-touch-guide');
+  $('touch-help').setAttribute('aria-pressed',String(showing));$('touch-guide').hidden=!showing;
+};
+$('dismiss-touch-guide').onclick=()=>{document.body.classList.remove('show-touch-guide');$('touch-guide').hidden=true;$('touch-help').setAttribute('aria-pressed','false');};
+function log(line){
+  const display=String(line).match(/FINNI_DMD\|([^']*)/);
+  if(display){dmd.draw(display[1]);return;}
+  const match=String(line).match(/FINNI_STATE\|([^']*)/);
+  if(match){
+    const s=match[1].split('|');
+    document.body.classList.toggle('game-in-play',s[3]==='True');
+    document.body.classList.toggle('ball-in-plunger',s[11]==='True');
+    $('score').textContent=Number(s[0]||0).toLocaleString();$('ball').textContent=s[1]==='0'?'—':s[1];
+    leaderboard.state({playing:s[3]==='True',entering:s[4]==='True',player:Number(s[5]),players:Number(s[6]),scores:s.slice(7,11).map(Number)});
+    return;
+  }
+  logs.push(String(line).replace(/\u001b\[[0-9;]*[a-zA-Z]/g,''));if(logs.length>120)logs.shift();$('log').textContent=logs.join('\n');
+}
+function fail(error){log(error);connected=false;paint();$('waiting').hidden=false;$('loading').textContent=String(error);$('status').textContent='Unable to start the browser engine';$('play').disabled=false;$('play').textContent='Reload and retry';$('play').onclick=()=>location.reload();}
+async function boot(){
+  try{
+    if(!document.createElement('canvas').getContext('webgl2'))throw Error('WebGL 2 is required. Enable graphics acceleration or try a current desktop browser.');
+    const [factory, response]=await Promise.all([import('/engine/vpinball.js'),fetch('/table.vpx')]);
+    if(!response.ok)throw Error('The Finni VPX table is missing. Build it first (see README).');
+    const table=await response.arrayBuffer();$('progress').value=55;$('loading').textContent='Preparing the VPX engine…';
+    engine=await factory.default({canvas:$('canvas'),locateFile:path=>`/engine/${path}`,print:log,printErr:log,onAbort:reason=>fail(`Engine stopped: ${reason}`),setStatus:text=>{if(text)$('loading').textContent=text;}});
+    engine.FS.mkdirTree('/tables');engine.FS.writeFile('/tables/finni.vpx',new Uint8Array(table));
+    $('progress').value=100;$('progress').hidden=true;$('loading').textContent='Ready when you are.';$('play').disabled=false;$('play').textContent='Start game';$('status').textContent='Ready to play';
+    $('play').onclick=()=>{
+      $('play').disabled=true;$('loading').textContent='Starting the table…';
+      try{
+        const result=engine.ccall('vpinball_wasm_start','number',['string'],['/tables/finni.vpx']);
+        if(result!==1)throw Error(`VPX could not start this table (code ${result}). See the engine log.`);
+        evaluate('Dim FinniDmdDigit, FinniDmdState : bFreePlay=True : For Each FinniDmdDigit In Digits : FinniDmdDigit.Visible=False : Next : digitgrid.Visible=False : DMDFlush : ShowTableInfo');
+        connected=true;document.body.classList.add('playing');$('waiting').hidden=true;$('progress').hidden=true;$('status').textContent='Enjoy the party.';document.title='Finni’s Big Day';paint();$('canvas').focus();
+        views.apply();
+        evaluate('Table1_KeyDown StartGameKey:Table1_KeyUp StartGameKey');
+      }catch(error){fail(error);}
+    };
+    // Exposes real table scripting for compatibility diagnostics and smoke checks.
+    window.finni={evaluate,engine};
+  }catch(error){fail(error);}
+}
+render();paint();placeFlippers();boot();
+setInterval(()=>{if(connected&&!document.hidden)evaluate('Debug.Print "FINNI_STATE|" & Score(CurrentPlayer) & "|" & Balls & "|" & Credits & "|" & bGameInPlay & "|" & hsbModeActive & "|" & CurrentPlayer & "|" & PlayersPlayingGame & "|" & Score(1) & "|" & Score(2) & "|" & Score(3) & "|" & Score(4) & "|" & bBallInPlungerLane');},250);
+setInterval(()=>{if(connected&&!document.hidden)evaluate('FinniDmdState="":For Each FinniDmdDigit In Digits:FinniDmdState=FinniDmdState & FinniDmdDigit.ImageA & "|":Next:Debug.Print "FINNI_DMD|" & FinniDmdState');},50);
+

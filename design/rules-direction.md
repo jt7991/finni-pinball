@@ -15,9 +15,9 @@
 
 Artwork requirement: each mission lamp overlays a related object within one cohesive party-preparation scene. Use the lowered shared table/shelf; decorations light the bunting supplies, invitations light an envelope, baking lights the cake, shopping lights the shopping bag, table-setting lights the plate, setup lights the checklist, and Party Time lights the music station. Revision 9 cuts the opaque print away at all 52 inserts and uses a separate lens layer with bubbly white Chewy lettering outlined in black. Revision-6 lamp centers are registered in `mission-window-layout-v6.json`; assignments and source light shapes remain intact. See `decisions.md` for the current artwork and hardware decisions.
 
-Hardware requirement: replace the sword appearance with an open metal wire ramp while retaining the right-ramp ball-lock shot and original collision route. JP's VPX implements a virtual lock through `lock` on `Ramp012`, `Lock_Hit`, `ExitLock` and per-player `BallsInLock`. Preserve qualification, three-lock multiball, hold/kickout timing and release behavior. Balloon bumpers replace the ninja-star caps; Finni sits on a cake.
+Hardware requirement: replace the sword appearance with the party-streamer ramp trial: peach chute, tall enclosed lilac right side, low inner lip, open top and a curled outer tail. Retain the right-ramp ball-lock shot and original collision route. JP's VPX implements a virtual lock through `lock` on `Ramp012`, `Lock_Hit`, `ExitLock` and per-player `BallsInLock`. Preserve qualification, three-lock multiball, hold/kickout timing and release behavior. Balloon bumpers replace the ninja-star caps; Finni sits on a cake.
 
-The main mode names are implemented as printed playfield labels. The story treatments below remain proposals; the underlying source gameplay script is unchanged.
+The main mode names are implemented as printed playfield labels. The story treatments below remain proposals; source gameplay is retained apart from the approved right-flipper scoop feed in `gameplay-tuning.json`.
 
 | JP mode | Proposed Finni mode | Existing gameplay used |
 | --- | --- | --- |
@@ -28,7 +28,8 @@ The main mode names are implemented as printed playfield labels. The story treat
 | Megalodon | Set the Table | The flashing priority shot represents the next place setting among other lit shots. |
 | Sauron | Last-Minute Setup | Adds two balls; lit left ramp and cross shot represent finishing several party jobs as guests are about to arrive. |
 | Mr. Sinister | Party Time | Timed multiball with a changing flashing shot; welcome guests and keep the party going. This is the hosting finale. |
-| Lil Deadpool multiball | Finni Fox Multiball | Existing drop bank and toy target; first qualification requires two toy-target hits. |
+| Ninja lock multiball | Friendship Multiball | Gather three friends through the existing virtual locks on the right ramp. New lock/start display and speech cues frame their arrival as helping prepare the party. Retain six jackpot shots and the right-ramp super jackpot. |
+| Lil Deadpool multiball | Cake Time Multiball | Decorate the cake before the party: five toy jackpots add frosting, five wider-shot jackpots collect candles and decorations, then the spinner hurry-up adds the final flourish. The existing repeat cycle returns to frosting. Keep the drop bank, toy hits, jackpots, timers and scoring. |
 | Disco Loops | Disco Loops | Preserve existing qualification and loop scoring. |
 | Disco Multiball | Disco Multiball | Preserve existing qualification and multiball scoring. |
 
@@ -38,16 +39,23 @@ The main-mode names above are working labels for the revised party-planning stor
 
 ## Revised voice samples
 
-These are draft examples for discussion, not approved recordings or final text.
+The approved November 18 multiball stories are implemented as presentation changes: Friendship on the right ramp and Cake Time at the middle toy. Cake Time is decorating before the party, not serving slices or starting the celebration. Its playfield label, DMD title/jackpots and phase-specific voice/display instructions now use this story. Timers never claim the cake was completed; the spinner timer returns to another frosting round.
+
+The center ricochet target feeding toward the Friendship ramp is the **Doorbell**. Its "Ding-dong!" hit callout represents friends arriving early to help; the three actual locks still count friends ready. The shot's original points and physical behavior are retained.
+
+The approved party-supply replacements are installed: Kitchen Timer (Dazzler: extra time), Party Lights (Colossus: double battle points), The Checklist (Wolverine: double battle progress/damage), and Party Favors (Domino: extra points on supported events). Each has its own spoken announcement, DMD name/effect and small supply icon. Existing qualification counters, effects and resets remain source behavior; friends belong to Friendship Multiball.
+
+The table below records the earlier line direction. The current implemented transcript, including mode names, shot instructions, rare random quotes and deliberately silent slots, is `finni-callouts.json`. The user selected a warm female voice; the current trial uses Jenny Neural at -5% rate.
 
 | Event | Sample |
 | --- | --- |
-| Mode selection | "Pick one." |
+| Mode selection | "What's next on the list?" |
 | Correct shot | "That's the one." |
 | One qualifying hit remains | "One more." |
-| Lock qualifies | "Lock is lit." |
-| Ball lock | "One locked." / "Two locked." |
-| Multiball starts | "Multiball!" |
+| Lock qualifies | "Shoot the right ramp to gather your friends." |
+| Ball lock | "One friend is ready." / "Two friends are ready." |
+| Friendship starts | "Friendship multiball. Everyone's here to help." |
+| Cake Time starts | "Cake Time multiball. Shoot Finni to add the frosting." |
 | Jackpot | "Jackpot!" |
 | Disco qualifies | "Disco's ready." |
 | Disco starts | "Let's dance." |
@@ -59,4 +67,4 @@ Use progress-specific cues only when the actual rule state supports them. Priori
 
 ## Source
 
-Verified against `.work/deadpool-extracted/script.vbs` and `info.json` from the local JP's Deadpool v7.0.0 table. Printed labels and visual replacements are implemented by the build scripts; the regular gameplay script remains unchanged.
+Verified against `.work/deadpool-extracted/script.vbs` and `info.json` from the local JP's Deadpool v7.0.0 table. Approved script changes are the scoop's eject speed/inclination and presentation-only multiball display/audio cues. `validate-multiball-story.py` checks that all non-presentation script remains identical apart from the scoop feed.

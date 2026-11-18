@@ -1,0 +1,12 @@
+{
+  "title": "Funkorama",
+  "artist": "Kevin MacLeod",
+  "source_url": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Funkorama.mp3",
+  "source_page": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100474",
+  "license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "sha256": "6be229815d85a0b99382b944d31098b882702c04ac7ad899e44ab7f8ba89b5ad",
+  "source_file": "output/free-music-candidates/Funkorama.mp3",
+  "ids": ["mu_hellhouse1", "mu_hellhouse2", "mu_hellhouse3", "mu_hellhouse4", "mu_hellhouse5", "mu_gameover", "mu_sexymf", "mu_xforcesm", "mu_boom-dp-rap"],
+  "changes": "Re-encoded to stereo 32 kHz OGG and loudness normalized. Regular play and all title-screen selections use Funkorama, replacing the original title tracks including Deadpool rap. The fifth title choice is redirected from the shared multiball track to mu_hellhouse5. Original disco, mode and in-game multiball music retained."
+}

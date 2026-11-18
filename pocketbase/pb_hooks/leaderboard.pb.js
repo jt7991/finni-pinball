@@ -1,0 +1,50 @@
+// Public reads, anonymous one-use runs, admin-only record mutation.
+// Client-side physics scores are not authoritative. Flags are moderation aids.
+routerAdd('POST','/api/finni/runs',(e)=>{
+  const now=Date.now();
+  const ip=$security.sha256(e.realIP());
+  const recent=$app.findRecordsByFilter('game_sessions','ip_hash = {:ip} && started > {:since}','',20,0,{ip:ip,since:now-3600000});
+  if(recent.length>=20)throw new TooManyRequestsError('Too many games started. Try again later.');
+  const token=$security.randomString(48);
+  const record=new Record($app.findCollectionByNameOrId('game_sessions'));
+  record.set('token_hash',$security.sha256(token));record.set('started',now);record.set('ip_hash',ip);record.set('version','finni-party-v9-wasm034');
+  $app.save(record);
+  return e.json(201,{id:record.id,token:token});
+});
+
+routerAdd('POST','/api/finni/scores',(e)=>{
+  const data=e.requestInfo().body;
+  if(!data||typeof data.run!=='string'||typeof data.token!=='string'||!Array.isArray(data.scores)||data.scores.length<1||data.scores.length>4)throw new BadRequestError('Invalid game result.');
+  const players={};
+  for(const entry of data.scores){
+    if(!entry||!Number.isInteger(entry.score)||entry.score<1||entry.score>999999999999||!Number.isInteger(entry.player)||entry.player<1||entry.player>4||players[entry.player]||typeof entry.initials!=='string'||!(/^[A-Z0-9]{1,3}$/).test(entry.initials))throw new BadRequestError('Invalid score or initials.');
+    players[entry.player]=true;
+  }
+  let reviewed=false,replayed=false;
+  $app.runInTransaction((tx)=>{
+    let run;
+    try{run=tx.findRecordById('game_sessions',data.run);}catch{throw new BadRequestError('Game session not found. Start a new game.');}
+    if(run.getString('token_hash')!==$security.sha256(data.token))throw new ForbiddenError('Invalid game token.');
+    if(run.getBool('used')){
+      const saved=tx.findRecordsByFilter('scores','run = {:run}','player',4,0,{run:run.id});
+      if(saved.length!==data.scores.length||!saved.every(r=>data.scores.some(s=>s.player===r.getInt('player')&&s.score===r.getFloat('score')&&s.initials===r.getString('initials'))))throw new BadRequestError('This game was already submitted.');
+      reviewed=saved.some(r=>r.getBool('flagged'));replayed=true;return;
+    }
+    const duration=(Date.now()-run.getFloat('started'))/1000;
+    if(duration>86400||duration<0)throw new BadRequestError('Game session expired.');
+    for(const entry of data.scores){
+      const flagged=duration<10||entry.score>5000000+duration*2000000;
+      reviewed=reviewed||flagged;
+      const record=new Record(tx.findCollectionByNameOrId('scores'));
+      record.set('initials',entry.initials);record.set('score',entry.score);record.set('player',entry.player);record.set('run',run.id);record.set('duration',duration);record.set('version',run.getString('version'));record.set('flagged',flagged);record.set('review_note',flagged?'Unusually short game or high scoring rate. Review before publishing.':'');record.set('submitted',new Date().toISOString());
+      tx.save(record);
+    }
+    run.set('used',true);tx.save(run);
+  });
+  return e.json(replayed?200:201,{saved:true,review:reviewed});
+},$apis.bodyLimit(4096));
+
+routerAdd('GET','/api/finni/leaderboard',(e)=>{
+  const records=$app.findRecordsByFilter('scores','hidden = false && flagged = false','-score,submitted,id',25);
+  return e.json(200,{items:records.map((r)=>({initials:r.getString('initials'),score:r.getFloat('score'),submitted:r.getString('submitted')}))});
+});
