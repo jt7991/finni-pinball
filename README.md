@@ -54,6 +54,18 @@ Omit `--skip-renders` to generate Blender stills. The composition script checks 
 
 ## Shared leaderboard and Docker
 
+### Team voice studio
+
+Open `/voice` on the game website (also linked in Controls). Teammates can record up to 30 seconds or upload audio, choose an existing game callout or enter a custom line, preview sound settings, download a game-format WAV, and submit both the original and processed take to a shared library.
+
+**Finni Party** defaults to a +2-semitone pitch lift, a 100 Hz rumble filter, gentle compression, and matched speech level. **Natural** preserves pitch; **Toy Friend** adds a +5-semitone character voice. All presets target −18 dB active-speech RMS with a −1 dB peak ceiling and at most 12 dB makeup gain. This is a starting sound to audition with real team voices, not LUFS mastering or room-noise removal. Pitch changes preserve duration using overlapping grains; stronger shifts can sound synthetic. Export is 32 kHz stereo 16-bit PCM WAV, matching the existing callout builder.
+
+The new PocketBase migration creates `voice_team` and `voice_takes`. In the admin dashboard (`/_/`), create one `voice_team` account per teammate with their name, email, and password. There is no public signup. Team members sign in on `/voice`; recordings remain in the browser until submitted. Shared records and audio files require membership. Sign-in lasts for the open page only. Both submitted audio versions and settings persist in the existing PocketBase Docker volume. Use HTTPS for microphone access on a team website; localhost also works. HTTP over a Tailscale IP supports uploads but browsers generally block the microphone.
+
+Reviewers use the PocketBase dashboard to set a take’s `status` to `approved` or `needs-retake` and add a `review_note`. Teammates can see these decisions in the library. Approval does not replace audio in the live table: download the selected WAV and include it in a later game build. The studio never edits table rules or installs unreviewed takes.
+
+After changing game callout scripts, run `scripts/export-voice-lines.py` using the project’s Blender Python to refresh the studio list. `scripts/test-voice-audio.mjs` checks pitch, duration, headroom and WAV format; `scripts/test-voice-backend.py` exercises real migrations, authenticated submissions, private downloads and review permissions against a temporary PocketBase database.
+
 PocketBase stores anonymous runs and initials-only scores, with an admin dashboard for moderation. See [pocketbase/README.md](pocketbase/README.md) for Docker Compose, Coolify configuration, packaging the table/DMD assets, persistent volumes, and submission-check limitations. Public score submissions are not replay-verified. No Coolify deployment is performed by the setup.
 
 ## Sources and scope

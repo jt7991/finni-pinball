@@ -5,6 +5,7 @@ import hashlib
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 import io
 import os
+import re
 import urllib.error
 from pathlib import Path
 import tarfile
@@ -36,16 +37,20 @@ def prepare():
 class Handler(SimpleHTTPRequestHandler):
     def proxy_api(self):
         routes = {'/api/leaderboard': '/api/finni/leaderboard', '/api/runs': '/api/finni/runs', '/api/scores': '/api/finni/scores'}
-        if self.path not in routes:
+        voice_api = re.fullmatch(r'/api/(?:collections/(?:voice_team/auth-with-password|voice_takes/records)|files/token|files/[a-zA-Z0-9_]+/[a-zA-Z0-9_]+/[a-zA-Z0-9_.-]+)(?:\?[^\r\n]*)?', self.path)
+        if self.path not in routes and not voice_api:
             self.send_error(404)
             return
         try:
             size = int(self.headers.get('Content-Length', 0))
-            if size < 0 or size > 4096:
+            if size < 0 or size > (8500000 if voice_api else 4096):
                 self.send_error(413)
                 return
             body = self.rfile.read(size) if self.command == 'POST' else None
-            request = urllib.request.Request(os.environ.get('POCKETBASE_URL', 'http://127.0.0.1:8090').rstrip('/') + routes[self.path], data=body, method=self.command, headers={'Content-Type':'application/json', 'X-Real-IP': self.client_address[0]})
+            headers = {'Content-Type': self.headers.get('Content-Type', 'application/json'), 'X-Real-IP': self.client_address[0]}
+            if self.headers.get('Authorization'):
+                headers['Authorization'] = self.headers['Authorization']
+            request = urllib.request.Request(os.environ.get('POCKETBASE_URL', 'http://127.0.0.1:8090').rstrip('/') + routes.get(self.path, self.path), data=body, method=self.command, headers=headers)
             try:
                 response = urllib.request.urlopen(request, timeout=10)
             except urllib.error.HTTPError as error:
@@ -53,7 +58,9 @@ class Handler(SimpleHTTPRequestHandler):
             with response:
                 payload = response.read()
                 self.send_response(response.code)
-                self.send_header('Content-Type', 'application/json')
+                self.send_header('Content-Type', response.headers.get('Content-Type', 'application/json'))
+                if response.headers.get('Content-Disposition'):
+                    self.send_header('Content-Disposition', response.headers['Content-Disposition'])
                 self.send_header('Content-Length', str(len(payload)))
                 self.end_headers()
                 self.wfile.write(payload)
@@ -80,6 +87,9 @@ class Handler(SimpleHTTPRequestHandler):
                   '/dmd-atlas.json': ROOT / '.work/browser-assets/dmd-atlas.json',
                   '/table.vpx': ROOT / 'output/live-vpx/Finni-Big-Day.vpx',
                   '/chewy.ttf': ROOT / 'assets/fonts/chewy/Chewy-Regular.ttf'}
+        for name in ('voice.html', 'voice.css', 'voice.js', 'voice-audio.js', 'voice-lines.json'):
+            routes['/' + name] = ROOT / 'browser' / name
+        routes['/voice'] = ROOT / 'browser/voice.html'
         for name in ('vpinball.js', 'vpinball.wasm', 'vpinball.data'):
             routes['/engine/' + name] = ENGINE / name
         return str(routes.get(path, ROOT / '.work/nonexistent-browser-route'))
