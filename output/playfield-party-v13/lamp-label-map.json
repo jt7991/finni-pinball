@@ -1,0 +1,108 @@
+{
+  "task_status_lamps": {
+    "li008": "Wrap the Presents",
+    "li010": "Send the Invitations",
+    "li011": "Blow Up the Balloons",
+    "li007": "Put Up the Decorations",
+    "li009": "Bake the Cookies",
+    "li012": "Hang the Pi\u00c3\u00b1ata",
+    "li013": "Party Time"
+  },
+  "shared_shot_arrows": [
+    "li054",
+    "li057",
+    "li055",
+    "li071",
+    "li058",
+    "li059"
+  ],
+  "fixed_lamp_labels": {
+    "li037": [
+      "MYSTERY"
+    ],
+    "li038": [
+      "EXTRA",
+      "BALL"
+    ],
+    "li039": [
+      "SPECIAL"
+    ],
+    "li040": [
+      "PARTY",
+      "LIGHTS"
+    ],
+    "li041": [
+      "SUPPLIES",
+      "JACKPOT"
+    ],
+    "li047": [
+      "SUPPLY RUN",
+      "MULTIBALL"
+    ],
+    "li048": [
+      "FRIENDSHIP",
+      "LOCK"
+    ],
+    "li053": [
+      "DISCO"
+    ],
+    "LightShootAgain": [
+      "SHOOT",
+      "AGAIN"
+    ],
+    "li045": [
+      "SUPPLY"
+    ],
+    "li028": [
+      "SUPPLY"
+    ],
+    "li042": [
+      "SUPPLY"
+    ],
+    "li046": [
+      "SUPPLY"
+    ],
+    "li032": [
+      "SUPPLY"
+    ],
+    "li033": [
+      "SUPPLY"
+    ],
+    "li025": [
+      "RIBBON"
+    ],
+    "li029": [
+      "RIBBON"
+    ],
+    "li026": [
+      "RIBBON"
+    ],
+    "li030": [
+      "RIBBON"
+    ],
+    "li027": [
+      "RIBBON"
+    ],
+    "li031": [
+      "RIBBON"
+    ],
+    "li036": [
+      "1"
+    ],
+    "li035": [
+      "2"
+    ],
+    "li034": [
+      "3"
+    ]
+  },
+  "rule": "Task names belong only on Battle status lamps. Six shared arrows change purpose with the active rules.",
+  "evidence": "Current extracted script.vbs: UpdateLights, UpdateArrows_Timer, HellHouse_Hit, CheckDisco, Lock_Hit, TurnOnTeamUpLights",
+  "party_supply_markers": {
+    "li073": "Kitchen Timer: +20 seconds",
+    "li040": "Party Lights: 2X task points",
+    "li074": "The Checklist: 2X progress",
+    "li072": "Party Favors: bonus points"
+  },
+  "party_supply_source": "design/rules-direction.md:46; design/decisions.md:54"
+}

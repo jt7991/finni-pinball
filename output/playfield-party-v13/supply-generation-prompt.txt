@@ -1,0 +1,6 @@
+Create a transparent 2x2 square sprite atlas of FOUR party preparation bonus items in the exact rich hand-drawn comic illustration style of reference: thick dark ink, lively rounded contours, saturated red/yellow/cyan/purple, highlights, dimensional shaded detail, not simplified geometric icons. No labels or words, no technical grid or border. True transparent alpha. Each object within its own equal square cell with generous margins.
+Top-left: cheerful red mechanical kitchen timer, cream clock dial and pointer, small gold winding knob. Represents extra time.
+Top-right: coil of colorful party string lights (red cyan yellow purple bulbs), unplugged plug visible, being prepared to hang. Arrange bulbs around a large clear navy/cream center so a lamp can sit in the middle.
+Bottom-left: cream paper checklist on brown clipboard, checkboxes, a red pencil laid alongside, ready for planning tasks.
+Bottom-right: small striped party-favor bag with bright ribbon, tissue paper and little wrapped favors sticking out; warm purple and yellow bag front.
+These are items being collected to HELP PREPARE a party. No people/friends/foxes, no party underway, no text, no fake inserts, no glow or ambient shadows. Clear attractive silhouettes and high-quality detailed illustration matching the provided object atlas.

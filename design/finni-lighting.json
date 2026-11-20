@@ -1,0 +1,28 @@
+{
+  "description": "Finni comic party-preparation LEDs. Original color IDs remain compatible with rules; greens and whites match spoken shot instructions.",
+  "colors": {
+    "peach": [255, 45, 104],
+    "orange": [255, 145, 30],
+    "honey": [255, 195, 36],
+    "butter": [255, 230, 0],
+    "leaf": [20, 145, 75],
+    "sage": [45, 230, 110],
+    "lilac": [0, 112, 255],
+    "violet": [71, 55, 225],
+    "lavender": [194, 65, 255],
+    "cream": [239, 247, 255],
+    "mint": [30, 215, 235],
+    "ivory": [255, 250, 240]
+  },
+  "source_ids": {
+    "red": "peach", "orange": "orange", "amber": "honey", "yellow": "butter",
+    "darkgreen": "leaf", "green": "sage", "blue": "lilac", "darkblue": "violet",
+    "purple": "lavender", "white": "cream", "teal": "mint", "ledwhite": "ivory"
+  },
+  "show_cycle": ["peach", "honey", "sage", "mint", "lilac", "violet"],
+  "static_colors": {
+    "#ff0000": "peach", "#400000": "peach", "#ff8000": "orange",
+    "#ffc58f": "cream", "#fffce0": "ivory", "#ffa95b": "honey",
+    "#ffff00": "butter", "#006bd7": "violet", "#93c9ff": "lilac"
+  }
+}

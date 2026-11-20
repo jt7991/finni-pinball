@@ -29,16 +29,32 @@ def gameplay(data, story=False):
     # DMD payloads and the renamed scoreboard image are presentation only.
     data = re.sub(rb'\bDMD [^\r\n]*', b'DMD', data)
     data = data.replace(b'"d_lildpmb"', b'"bkborder"')
+    for key in ('juggernaut', 'mystique', 'sabretooth', 'trex', 'megalodon', 'sauron', 'mrsinister'):
+        data = data.replace(('"d_'+key+'"').encode(), b'"bkborder"')
     data = data.replace(b'case 5:PlaySong "mu_multiball"', b'case 5:PlaySong "mu_hellhouse5"')
     return data
 
 scoop_only = source.replace(b'HellHouse.kick 164, 30, 1', b'HellHouse.kick 164, 12, 0', 1)
-assert gameplay(script, True) == gameplay(scoop_only), 'Non-presentation script changed'
+scoop_only = runpy.run_path(str(ROOT/'scripts/apply-party-selection.py'))['selection_script'](scoop_only)
+without_lighting = runpy.run_path(str(ROOT/'scripts/apply-finni-lighting.py'))['restore_lighting'](script, source)
+without_lighting = runpy.run_path(str(ROOT/'scripts/finni-dmd-native-motion.py'))['restore_motion'](without_lighting)
+without_lighting = runpy.run_path(str(ROOT/'scripts/apply-lock-ramp-tuning.py'))['restore_script'](without_lighting)
+assert gameplay(without_lighting, True) == gameplay(scoop_only), 'Script changed beyond approved presentation, scoop and task selection'
+drain = script[script.index(b'Sub Drain_Hit()'):script.index(b'Sub swPlungerRest_Hit')]
+assert script.count(b'"vo_ballsaved"') == 1
+assert drain.index(b'If(bBallSaverActive = True) Then') < drain.index(b'"vo_ballsaved"') < drain.index(b'        Else')
+assert b'1000, True, "vo_ballsaved"' in drain
 assert b'"LILDP JACKPOT"' not in script and b'"d_lildpmb"' not in script
-assert b'CL(0, "CAKE TIME")' in script and b'CL(0, "FRIENDSHIP")' in script
-for title in [b'KITCHEN TIMER',b'PARTY LIGHTS',b'CHECKLIST',b'PARTY FAVORS']:
-    assert b'CL(0, "'+title+b'")' in script
+assert b'"d_finni_cake"' in script and b'"d_finni_friendship"' in script
+for name in ['timer','lights','checklist','favors']:
+    assert ('"d_finni_'+name+'"').encode() in script
 assert b'"  TEAM-UP"' not in script
+tasks = json.loads((ROOT/'design/party-tasks.json').read_text(encoding='utf-8'))['modes']
+for mode in tasks:
+    theme=json.loads((ROOT/'design/finni-dmd-theme.json').read_text())
+    sprite=next(t['sprite'] for t in theme['tasks'] if t['key']==mode['key'])
+    assert ('DMD "", RL(1, tmp), "'+sprite+'_select"').encode() in script
+    assert ('"d_'+mode['key']+'"').encode('ascii') not in script
 for name in ['d_daz','d_col','d_wol','d_dom']:
     original=next((ROOT/'.work/deadpool-extracted/images').glob(name+'.*'))
     assert images[name].read_bytes()!=original.read_bytes()
@@ -56,7 +72,7 @@ for old in [source.replace(b'LilDPSpinner.Enabled = 1', b'LilDPSpinner.Enabled =
     except ValueError:pass
     else:raise AssertionError('Unknown source presentation revision accepted')
 report = {'cake_phases': ['frosting at Finni', 'toppings at lit shots', 'spinner flourish', 'repeat frosting'],
-          'friendship_three_lock_route_retained': True, 'all_non_presentation_script_preserved': True,
+          'friendship_three_lock_route_retained': True, 'script_preserved_except_approved_scoop_and_task_selection': True,
           'voice_cues_present': True, 'assembled_script_and_playfield_verified': True,
           'runtime_playtest': False}
 (ROOT/'output/live-vpx/multiball-story-validation.json').write_text(json.dumps(report, indent=2))

@@ -1,0 +1,27 @@
+// Exercise the shipped compositor with the real atlas index, without a GPU.
+import {readFile} from 'node:fs/promises';
+import assert from 'node:assert/strict';
+const atlas=JSON.parse(await readFile('.work/browser-assets/dmd-atlas.json','utf8'));
+const draws=[];
+const context={clearRect(){draws.length=0;},fillRect(){},drawImage(...args){draws.push(args);}};
+const canvas={getContext(){return context;}};
+globalThis.document={getElementById(){return canvas;}};
+const preference={matches:false,addEventListener(_,fn){this.change=fn;}};
+globalThis.matchMedia=()=>preference;
+globalThis.fetch=async()=>({ok:true,json:async()=>atlas});
+globalThis.Image=class{set src(_){queueMicrotask(()=>this.onload());}};
+const source=await readFile('browser/views.js','utf8');
+const {createDmd}=await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`);
+const dmd=createDmd();await dmd.loaded;
+const names=Array(40).fill('d_empty');names.push('d_jackpot_anim03');
+dmd.draw(names.join('|'));
+assert.deepEqual(draws[0].slice(1,5),atlas.d_jackpot_anim03);
+preference.matches=true;preference.change();
+assert.deepEqual(draws[0].slice(1,5),atlas.d_jackpot);
+names[40]='d_jackpot_anim09';dmd.draw(names.join('|'));
+assert.deepEqual(draws[0].slice(1,5),atlas.d_jackpot);
+preference.matches=false;preference.change();
+assert.deepEqual(draws[0].slice(1,5),atlas.d_jackpot_anim09);
+assert.equal(draws.length,41);
+assert.equal(context.imageSmoothingEnabled,false);
+console.log('Browser DMD: native frames, live reduced-motion changes, all glyphs and crisp scaling pass.');

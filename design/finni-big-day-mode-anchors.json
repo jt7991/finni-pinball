@@ -1,14 +1,14 @@
-﻿{
+{
     "theme":  "Finni\u0027s Big Day",
     "width":  952,
     "height":  2115,
     "texture_width":  2048,
     "texture_height":  4550,
-    "labels_status":  "working proposals from design/rules-direction.md",
+    "labels_status":  "Approved November 18, 2026; canonical mapping: design/party-tasks.json",
     "modes":  [
                   {
                       "source_mode":  "Juggernaut",
-                      "working_label":  "Put Up the Decorations",
+                      "working_label":  "Wrap the Presents",
                       "insert":  "li008",
                       "x":  281.7277,
                       "y":  1445.0144,
@@ -346,7 +346,7 @@
                   },
                   {
                       "source_mode":  "Sabretooth",
-                      "working_label":  "Bake the Cake",
+                      "working_label":  "Blow Up the Balloons",
                       "insert":  "li011",
                       "x":  582.95557,
                       "y":  1444.3331,
@@ -515,7 +515,7 @@
                   },
                   {
                       "source_mode":  "T-Rex",
-                      "working_label":  "Party Shopping",
+                      "working_label":  "Put Up the Decorations",
                       "insert":  "li007",
                       "x":  356.06686,
                       "y":  1548.5393,
@@ -684,7 +684,7 @@
                   },
                   {
                       "source_mode":  "Megalodon",
-                      "working_label":  "Set the Table",
+                      "working_label":  "Bake the Cookies",
                       "insert":  "li009",
                       "x":  508.44827,
                       "y":  1549.4294,
@@ -853,7 +853,7 @@
                   },
                   {
                       "source_mode":  "Sauron",
-                      "working_label":  "Last-Minute Setup",
+                      "working_label":  "Hang the Pi\u00f1ata",
                       "insert":  "li012",
                       "x":  629.6081,
                       "y":  1345.5597,

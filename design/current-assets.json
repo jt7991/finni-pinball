@@ -1,4 +1,11 @@
 {
-  "playfield_directory": "output/playfield-party-v9",
-  "description": "Party scene with clear insert cutouts and playful white bubbly lettering with black outlines"
+  "playfield_directory": "output/playfield-party-v13",
+  "description": "Approved comic party preparations, registered task illustrations, pink cake and vibrant balloons",
+  "appearance": "comic-party-prep",
+  "table_lighting": {"light_ambient":"#303644","global_emission_scale":0.7,"light0_emission":"#fff4e8"},
+  "center_fill": [
+    {"name":"FinniCenterFillLeft","x":310,"y":1080,"radius":390,"intensity":3.2,"height":85},
+    {"name":"FinniCenterFillRight","x":650,"y":1100,"radius":390,"intensity":3.2,"height":85},
+    {"name":"FinniTaskFill","x":470,"y":1470,"radius":360,"intensity":2.8,"height":85}
+  ]
 }

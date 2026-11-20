@@ -1,0 +1,9650 @@
+{
+  "d_title": {
+    "file": "sprites/d_title.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_gameover": {
+    "file": "sprites/d_gameover.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_jppresents": {
+    "file": "sprites/d_jppresents.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_presents": {
+    "file": "sprites/d_finni_presents.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_presents_select": {
+    "file": "sprites/d_finni_presents_select.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_juggernaut": {
+    "file": "sprites/d_juggernaut.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_presents_done": {
+    "file": "sprites/d_finni_presents_done.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_invitations": {
+    "file": "sprites/d_finni_invitations.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_invitations_select": {
+    "file": "sprites/d_finni_invitations_select.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_mystique": {
+    "file": "sprites/d_mystique.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_invitations_done": {
+    "file": "sprites/d_finni_invitations_done.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_balloons": {
+    "file": "sprites/d_finni_balloons.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_balloons_select": {
+    "file": "sprites/d_finni_balloons_select.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_sabretooth": {
+    "file": "sprites/d_sabretooth.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_balloons_done": {
+    "file": "sprites/d_finni_balloons_done.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_decorations": {
+    "file": "sprites/d_finni_decorations.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_decorations_select": {
+    "file": "sprites/d_finni_decorations_select.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_trex": {
+    "file": "sprites/d_trex.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_decorations_done": {
+    "file": "sprites/d_finni_decorations_done.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_baking": {
+    "file": "sprites/d_finni_baking.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_baking_select": {
+    "file": "sprites/d_finni_baking_select.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_megalodon": {
+    "file": "sprites/d_megalodon.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_baking_done": {
+    "file": "sprites/d_finni_baking_done.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_pinata": {
+    "file": "sprites/d_finni_pinata.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_pinata_select": {
+    "file": "sprites/d_finni_pinata_select.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_sauron": {
+    "file": "sprites/d_sauron.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_pinata_done": {
+    "file": "sprites/d_finni_pinata_done.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_party": {
+    "file": "sprites/d_finni_party.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_party_select": {
+    "file": "sprites/d_finni_party_select.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_mrsinister": {
+    "file": "sprites/d_mrsinister.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_party_done": {
+    "file": "sprites/d_finni_party_done.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_cake": {
+    "file": "sprites/d_finni_cake.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_toppings": {
+    "file": "sprites/d_finni_toppings.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_flourish": {
+    "file": "sprites/d_finni_flourish.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_frosting": {
+    "file": "sprites/d_finni_frosting.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friendship": {
+    "file": "sprites/d_finni_friendship.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_supplyrun": {
+    "file": "sprites/d_finni_supplyrun.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_streamers": {
+    "file": "sprites/d_finni_streamers.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_spinner": {
+    "file": "sprites/d_finni_spinner.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_confetti": {
+    "file": "sprites/d_finni_confetti.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_snack": {
+    "file": "sprites/d_finni_snack.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_choose": {
+    "file": "sprites/d_finni_choose.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_mystery": {
+    "file": "sprites/d_finni_mystery.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_disco": {
+    "file": "sprites/d_finni_disco.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_discomb": {
+    "file": "sprites/d_finni_discomb.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_timer": {
+    "file": "sprites/d_finni_timer.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_lights": {
+    "file": "sprites/d_finni_lights.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_checklist": {
+    "file": "sprites/d_finni_checklist.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_favors": {
+    "file": "sprites/d_finni_favors.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_ballsaved": {
+    "file": "sprites/d_ballsaved.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_bam": {
+    "file": "sprites/d_bam.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_boom": {
+    "file": "sprites/d_boom.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_colossus": {
+    "file": "sprites/d_colossus.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_dazzler": {
+    "file": "sprites/d_dazzler.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_domino": {
+    "file": "sprites/d_domino.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_extraball": {
+    "file": "sprites/d_extraball.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_jackpot": {
+    "file": "sprites/d_jackpot.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lildpmb": {
+    "file": "sprites/d_lildpmb.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lock1": {
+    "file": "sprites/d_lock1.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lock2": {
+    "file": "sprites/d_lock2.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lock3": {
+    "file": "sprites/d_lock3.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lockislit": {
+    "file": "sprites/d_lockislit.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_loopjackpot": {
+    "file": "sprites/d_loopjackpot.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_mechsuit": {
+    "file": "sprites/d_mechsuit.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_multiball": {
+    "file": "sprites/d_multiball.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_mystery": {
+    "file": "sprites/d_mystery.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_skillshot": {
+    "file": "sprites/d_skillshot.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_superjackpot": {
+    "file": "sprites/d_superjackpot.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_superskillshot": {
+    "file": "sprites/d_superskillshot.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_tilt": {
+    "file": "sprites/d_tilt.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_wolverine": {
+    "file": "sprites/d_wolverine.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friend1": {
+    "file": "sprites/d_finni_friend1.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friend2": {
+    "file": "sprites/d_finni_friend2.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friend3": {
+    "file": "sprites/d_finni_friend3.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friendship_start": {
+    "file": "sprites/d_finni_friendship_start.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player1": {
+    "file": "sprites/d_player1.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player2": {
+    "file": "sprites/d_player2.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player3": {
+    "file": "sprites/d_player3.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player4": {
+    "file": "sprites/d_player4.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo": {
+    "file": "sprites/d_combo.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo2": {
+    "file": "sprites/d_combo2.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo3": {
+    "file": "sprites/d_combo3.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo4": {
+    "file": "sprites/d_combo4.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo5": {
+    "file": "sprites/d_combo5.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_chimi2": {
+    "file": "sprites/d_chimi2.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_star2": {
+    "file": "sprites/d_star2.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_ninjamb": {
+    "file": "sprites/d_ninjamb.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond1": {
+    "file": "sprites/d_diamond1.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond2": {
+    "file": "sprites/d_diamond2.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond3": {
+    "file": "sprites/d_diamond3.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond4": {
+    "file": "sprites/d_diamond4.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond5": {
+    "file": "sprites/d_diamond5.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond6": {
+    "file": "sprites/d_diamond6.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_award": {
+    "file": "sprites/d_finni_award.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_bonus": {
+    "file": "sprites/d_finni_bonus.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_ready": {
+    "file": "sprites/d_finni_ready.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_combo": {
+    "file": "sprites/d_finni_combo.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "bkempty": {
+    "file": "sprites/bkempty.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "bkborder": {
+    "file": "sprites/bkborder.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_grid": {
+    "file": "sprites/d_grid.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_a": {
+    "file": "sprites/d_a.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_b": {
+    "file": "sprites/d_b.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_c": {
+    "file": "sprites/d_c.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_d": {
+    "file": "sprites/d_d.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_e": {
+    "file": "sprites/d_e.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_f": {
+    "file": "sprites/d_f.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_g": {
+    "file": "sprites/d_g.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_h": {
+    "file": "sprites/d_h.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_i": {
+    "file": "sprites/d_i.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_j": {
+    "file": "sprites/d_j.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_k": {
+    "file": "sprites/d_k.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_l": {
+    "file": "sprites/d_l.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_m": {
+    "file": "sprites/d_m.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_n": {
+    "file": "sprites/d_n.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_o": {
+    "file": "sprites/d_o.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_p": {
+    "file": "sprites/d_p.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_q": {
+    "file": "sprites/d_q.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_r": {
+    "file": "sprites/d_r.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_s": {
+    "file": "sprites/d_s.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_t": {
+    "file": "sprites/d_t.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_u": {
+    "file": "sprites/d_u.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_v": {
+    "file": "sprites/d_v.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_w": {
+    "file": "sprites/d_w.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_x": {
+    "file": "sprites/d_x.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_y": {
+    "file": "sprites/d_y.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_z": {
+    "file": "sprites/d_z.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_0": {
+    "file": "sprites/d_0.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_1": {
+    "file": "sprites/d_1.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_2": {
+    "file": "sprites/d_2.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_3": {
+    "file": "sprites/d_3.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_4": {
+    "file": "sprites/d_4.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_5": {
+    "file": "sprites/d_5.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_6": {
+    "file": "sprites/d_6.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_7": {
+    "file": "sprites/d_7.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_8": {
+    "file": "sprites/d_8.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_9": {
+    "file": "sprites/d_9.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_empty": {
+    "file": "sprites/d_empty.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_dot": {
+    "file": "sprites/d_dot.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_comma": {
+    "file": "sprites/d_comma.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_plus": {
+    "file": "sprites/d_plus.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_minus": {
+    "file": "sprites/d_minus.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_under": {
+    "file": "sprites/d_under.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_less": {
+    "file": "sprites/d_less.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_more": {
+    "file": "sprites/d_more.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_equal": {
+    "file": "sprites/d_equal.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_up": {
+    "file": "sprites/d_up.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_0a": {
+    "file": "sprites/d_0a.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_1a": {
+    "file": "sprites/d_1a.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_2a": {
+    "file": "sprites/d_2a.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_3a": {
+    "file": "sprites/d_3a.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_4a": {
+    "file": "sprites/d_4a.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_5a": {
+    "file": "sprites/d_5a.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_6a": {
+    "file": "sprites/d_6a.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_7a": {
+    "file": "sprites/d_7a.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_8a": {
+    "file": "sprites/d_8a.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_9a": {
+    "file": "sprites/d_9a.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_daz": {
+    "file": "sprites/d_daz.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_col": {
+    "file": "sprites/d_col.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_wol": {
+    "file": "sprites/d_wol.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_dom": {
+    "file": "sprites/d_dom.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_star": {
+    "file": "sprites/d_star.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_chimi": {
+    "file": "sprites/d_chimi.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_gun": {
+    "file": "sprites/d_gun.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_power0": {
+    "file": "sprites/d_power0.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_power1": {
+    "file": "sprites/d_power1.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_power2": {
+    "file": "sprites/d_power2.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_power3": {
+    "file": "sprites/d_power3.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_power4": {
+    "file": "sprites/d_power4.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_lifelon": {
+    "file": "sprites/d_lifelon.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_lifeloff": {
+    "file": "sprites/d_lifeloff.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_lifemon": {
+    "file": "sprites/d_lifemon.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_lifemoff": {
+    "file": "sprites/d_lifemoff.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_liferon": {
+    "file": "sprites/d_liferon.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_liferoff": {
+    "file": "sprites/d_liferoff.png",
+    "layout": "glyph",
+    "size": [
+      12,
+      22
+    ]
+  },
+  "d_title_anim00": {
+    "file": "sprites/d_title_anim00.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_title_anim01": {
+    "file": "sprites/d_title_anim01.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_title_anim02": {
+    "file": "sprites/d_title_anim02.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_title_anim03": {
+    "file": "sprites/d_title_anim03.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_title_anim04": {
+    "file": "sprites/d_title_anim04.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_title_anim05": {
+    "file": "sprites/d_title_anim05.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_title_anim06": {
+    "file": "sprites/d_title_anim06.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_title_anim07": {
+    "file": "sprites/d_title_anim07.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_title_anim08": {
+    "file": "sprites/d_title_anim08.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_title_anim09": {
+    "file": "sprites/d_title_anim09.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_title_anim10": {
+    "file": "sprites/d_title_anim10.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_title_anim11": {
+    "file": "sprites/d_title_anim11.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_presents_anim00": {
+    "file": "sprites/d_finni_presents_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_presents_anim01": {
+    "file": "sprites/d_finni_presents_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_presents_anim02": {
+    "file": "sprites/d_finni_presents_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_presents_anim03": {
+    "file": "sprites/d_finni_presents_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_presents_anim04": {
+    "file": "sprites/d_finni_presents_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_presents_anim05": {
+    "file": "sprites/d_finni_presents_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_presents_anim06": {
+    "file": "sprites/d_finni_presents_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_presents_anim07": {
+    "file": "sprites/d_finni_presents_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_presents_anim08": {
+    "file": "sprites/d_finni_presents_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_presents_anim09": {
+    "file": "sprites/d_finni_presents_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_presents_anim10": {
+    "file": "sprites/d_finni_presents_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_presents_anim11": {
+    "file": "sprites/d_finni_presents_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_presents_select_anim00": {
+    "file": "sprites/d_finni_presents_select_anim00.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_presents_select_anim01": {
+    "file": "sprites/d_finni_presents_select_anim01.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_presents_select_anim02": {
+    "file": "sprites/d_finni_presents_select_anim02.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_presents_select_anim03": {
+    "file": "sprites/d_finni_presents_select_anim03.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_presents_select_anim04": {
+    "file": "sprites/d_finni_presents_select_anim04.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_presents_select_anim05": {
+    "file": "sprites/d_finni_presents_select_anim05.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_presents_select_anim06": {
+    "file": "sprites/d_finni_presents_select_anim06.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_presents_select_anim07": {
+    "file": "sprites/d_finni_presents_select_anim07.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_presents_select_anim08": {
+    "file": "sprites/d_finni_presents_select_anim08.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_presents_select_anim09": {
+    "file": "sprites/d_finni_presents_select_anim09.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_presents_select_anim10": {
+    "file": "sprites/d_finni_presents_select_anim10.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_presents_select_anim11": {
+    "file": "sprites/d_finni_presents_select_anim11.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_presents_done_anim00": {
+    "file": "sprites/d_finni_presents_done_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_presents_done_anim01": {
+    "file": "sprites/d_finni_presents_done_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_presents_done_anim02": {
+    "file": "sprites/d_finni_presents_done_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_presents_done_anim03": {
+    "file": "sprites/d_finni_presents_done_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_presents_done_anim04": {
+    "file": "sprites/d_finni_presents_done_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_presents_done_anim05": {
+    "file": "sprites/d_finni_presents_done_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_presents_done_anim06": {
+    "file": "sprites/d_finni_presents_done_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_presents_done_anim07": {
+    "file": "sprites/d_finni_presents_done_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_presents_done_anim08": {
+    "file": "sprites/d_finni_presents_done_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_presents_done_anim09": {
+    "file": "sprites/d_finni_presents_done_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_presents_done_anim10": {
+    "file": "sprites/d_finni_presents_done_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_presents_done_anim11": {
+    "file": "sprites/d_finni_presents_done_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_invitations_anim00": {
+    "file": "sprites/d_finni_invitations_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_invitations_anim01": {
+    "file": "sprites/d_finni_invitations_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_invitations_anim02": {
+    "file": "sprites/d_finni_invitations_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_invitations_anim03": {
+    "file": "sprites/d_finni_invitations_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_invitations_anim04": {
+    "file": "sprites/d_finni_invitations_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_invitations_anim05": {
+    "file": "sprites/d_finni_invitations_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_invitations_anim06": {
+    "file": "sprites/d_finni_invitations_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_invitations_anim07": {
+    "file": "sprites/d_finni_invitations_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_invitations_anim08": {
+    "file": "sprites/d_finni_invitations_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_invitations_anim09": {
+    "file": "sprites/d_finni_invitations_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_invitations_anim10": {
+    "file": "sprites/d_finni_invitations_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_invitations_anim11": {
+    "file": "sprites/d_finni_invitations_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_invitations_select_anim00": {
+    "file": "sprites/d_finni_invitations_select_anim00.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_invitations_select_anim01": {
+    "file": "sprites/d_finni_invitations_select_anim01.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_invitations_select_anim02": {
+    "file": "sprites/d_finni_invitations_select_anim02.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_invitations_select_anim03": {
+    "file": "sprites/d_finni_invitations_select_anim03.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_invitations_select_anim04": {
+    "file": "sprites/d_finni_invitations_select_anim04.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_invitations_select_anim05": {
+    "file": "sprites/d_finni_invitations_select_anim05.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_invitations_select_anim06": {
+    "file": "sprites/d_finni_invitations_select_anim06.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_invitations_select_anim07": {
+    "file": "sprites/d_finni_invitations_select_anim07.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_invitations_select_anim08": {
+    "file": "sprites/d_finni_invitations_select_anim08.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_invitations_select_anim09": {
+    "file": "sprites/d_finni_invitations_select_anim09.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_invitations_select_anim10": {
+    "file": "sprites/d_finni_invitations_select_anim10.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_invitations_select_anim11": {
+    "file": "sprites/d_finni_invitations_select_anim11.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_invitations_done_anim00": {
+    "file": "sprites/d_finni_invitations_done_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_invitations_done_anim01": {
+    "file": "sprites/d_finni_invitations_done_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_invitations_done_anim02": {
+    "file": "sprites/d_finni_invitations_done_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_invitations_done_anim03": {
+    "file": "sprites/d_finni_invitations_done_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_invitations_done_anim04": {
+    "file": "sprites/d_finni_invitations_done_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_invitations_done_anim05": {
+    "file": "sprites/d_finni_invitations_done_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_invitations_done_anim06": {
+    "file": "sprites/d_finni_invitations_done_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_invitations_done_anim07": {
+    "file": "sprites/d_finni_invitations_done_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_invitations_done_anim08": {
+    "file": "sprites/d_finni_invitations_done_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_invitations_done_anim09": {
+    "file": "sprites/d_finni_invitations_done_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_invitations_done_anim10": {
+    "file": "sprites/d_finni_invitations_done_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_invitations_done_anim11": {
+    "file": "sprites/d_finni_invitations_done_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_balloons_anim00": {
+    "file": "sprites/d_finni_balloons_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_balloons_anim01": {
+    "file": "sprites/d_finni_balloons_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_balloons_anim02": {
+    "file": "sprites/d_finni_balloons_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_balloons_anim03": {
+    "file": "sprites/d_finni_balloons_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_balloons_anim04": {
+    "file": "sprites/d_finni_balloons_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_balloons_anim05": {
+    "file": "sprites/d_finni_balloons_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_balloons_anim06": {
+    "file": "sprites/d_finni_balloons_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_balloons_anim07": {
+    "file": "sprites/d_finni_balloons_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_balloons_anim08": {
+    "file": "sprites/d_finni_balloons_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_balloons_anim09": {
+    "file": "sprites/d_finni_balloons_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_balloons_anim10": {
+    "file": "sprites/d_finni_balloons_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_balloons_anim11": {
+    "file": "sprites/d_finni_balloons_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_balloons_select_anim00": {
+    "file": "sprites/d_finni_balloons_select_anim00.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_balloons_select_anim01": {
+    "file": "sprites/d_finni_balloons_select_anim01.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_balloons_select_anim02": {
+    "file": "sprites/d_finni_balloons_select_anim02.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_balloons_select_anim03": {
+    "file": "sprites/d_finni_balloons_select_anim03.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_balloons_select_anim04": {
+    "file": "sprites/d_finni_balloons_select_anim04.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_balloons_select_anim05": {
+    "file": "sprites/d_finni_balloons_select_anim05.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_balloons_select_anim06": {
+    "file": "sprites/d_finni_balloons_select_anim06.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_balloons_select_anim07": {
+    "file": "sprites/d_finni_balloons_select_anim07.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_balloons_select_anim08": {
+    "file": "sprites/d_finni_balloons_select_anim08.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_balloons_select_anim09": {
+    "file": "sprites/d_finni_balloons_select_anim09.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_balloons_select_anim10": {
+    "file": "sprites/d_finni_balloons_select_anim10.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_balloons_select_anim11": {
+    "file": "sprites/d_finni_balloons_select_anim11.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_balloons_done_anim00": {
+    "file": "sprites/d_finni_balloons_done_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_balloons_done_anim01": {
+    "file": "sprites/d_finni_balloons_done_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_balloons_done_anim02": {
+    "file": "sprites/d_finni_balloons_done_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_balloons_done_anim03": {
+    "file": "sprites/d_finni_balloons_done_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_balloons_done_anim04": {
+    "file": "sprites/d_finni_balloons_done_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_balloons_done_anim05": {
+    "file": "sprites/d_finni_balloons_done_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_balloons_done_anim06": {
+    "file": "sprites/d_finni_balloons_done_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_balloons_done_anim07": {
+    "file": "sprites/d_finni_balloons_done_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_balloons_done_anim08": {
+    "file": "sprites/d_finni_balloons_done_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_balloons_done_anim09": {
+    "file": "sprites/d_finni_balloons_done_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_balloons_done_anim10": {
+    "file": "sprites/d_finni_balloons_done_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_balloons_done_anim11": {
+    "file": "sprites/d_finni_balloons_done_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_decorations_anim00": {
+    "file": "sprites/d_finni_decorations_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_decorations_anim01": {
+    "file": "sprites/d_finni_decorations_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_decorations_anim02": {
+    "file": "sprites/d_finni_decorations_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_decorations_anim03": {
+    "file": "sprites/d_finni_decorations_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_decorations_anim04": {
+    "file": "sprites/d_finni_decorations_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_decorations_anim05": {
+    "file": "sprites/d_finni_decorations_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_decorations_anim06": {
+    "file": "sprites/d_finni_decorations_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_decorations_anim07": {
+    "file": "sprites/d_finni_decorations_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_decorations_anim08": {
+    "file": "sprites/d_finni_decorations_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_decorations_anim09": {
+    "file": "sprites/d_finni_decorations_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_decorations_anim10": {
+    "file": "sprites/d_finni_decorations_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_decorations_anim11": {
+    "file": "sprites/d_finni_decorations_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_decorations_select_anim00": {
+    "file": "sprites/d_finni_decorations_select_anim00.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_decorations_select_anim01": {
+    "file": "sprites/d_finni_decorations_select_anim01.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_decorations_select_anim02": {
+    "file": "sprites/d_finni_decorations_select_anim02.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_decorations_select_anim03": {
+    "file": "sprites/d_finni_decorations_select_anim03.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_decorations_select_anim04": {
+    "file": "sprites/d_finni_decorations_select_anim04.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_decorations_select_anim05": {
+    "file": "sprites/d_finni_decorations_select_anim05.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_decorations_select_anim06": {
+    "file": "sprites/d_finni_decorations_select_anim06.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_decorations_select_anim07": {
+    "file": "sprites/d_finni_decorations_select_anim07.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_decorations_select_anim08": {
+    "file": "sprites/d_finni_decorations_select_anim08.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_decorations_select_anim09": {
+    "file": "sprites/d_finni_decorations_select_anim09.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_decorations_select_anim10": {
+    "file": "sprites/d_finni_decorations_select_anim10.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_decorations_select_anim11": {
+    "file": "sprites/d_finni_decorations_select_anim11.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_decorations_done_anim00": {
+    "file": "sprites/d_finni_decorations_done_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_decorations_done_anim01": {
+    "file": "sprites/d_finni_decorations_done_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_decorations_done_anim02": {
+    "file": "sprites/d_finni_decorations_done_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_decorations_done_anim03": {
+    "file": "sprites/d_finni_decorations_done_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_decorations_done_anim04": {
+    "file": "sprites/d_finni_decorations_done_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_decorations_done_anim05": {
+    "file": "sprites/d_finni_decorations_done_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_decorations_done_anim06": {
+    "file": "sprites/d_finni_decorations_done_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_decorations_done_anim07": {
+    "file": "sprites/d_finni_decorations_done_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_decorations_done_anim08": {
+    "file": "sprites/d_finni_decorations_done_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_decorations_done_anim09": {
+    "file": "sprites/d_finni_decorations_done_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_decorations_done_anim10": {
+    "file": "sprites/d_finni_decorations_done_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_decorations_done_anim11": {
+    "file": "sprites/d_finni_decorations_done_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_baking_anim00": {
+    "file": "sprites/d_finni_baking_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_baking_anim01": {
+    "file": "sprites/d_finni_baking_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_baking_anim02": {
+    "file": "sprites/d_finni_baking_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_baking_anim03": {
+    "file": "sprites/d_finni_baking_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_baking_anim04": {
+    "file": "sprites/d_finni_baking_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_baking_anim05": {
+    "file": "sprites/d_finni_baking_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_baking_anim06": {
+    "file": "sprites/d_finni_baking_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_baking_anim07": {
+    "file": "sprites/d_finni_baking_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_baking_anim08": {
+    "file": "sprites/d_finni_baking_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_baking_anim09": {
+    "file": "sprites/d_finni_baking_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_baking_anim10": {
+    "file": "sprites/d_finni_baking_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_baking_anim11": {
+    "file": "sprites/d_finni_baking_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_baking_select_anim00": {
+    "file": "sprites/d_finni_baking_select_anim00.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_baking_select_anim01": {
+    "file": "sprites/d_finni_baking_select_anim01.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_baking_select_anim02": {
+    "file": "sprites/d_finni_baking_select_anim02.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_baking_select_anim03": {
+    "file": "sprites/d_finni_baking_select_anim03.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_baking_select_anim04": {
+    "file": "sprites/d_finni_baking_select_anim04.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_baking_select_anim05": {
+    "file": "sprites/d_finni_baking_select_anim05.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_baking_select_anim06": {
+    "file": "sprites/d_finni_baking_select_anim06.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_baking_select_anim07": {
+    "file": "sprites/d_finni_baking_select_anim07.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_baking_select_anim08": {
+    "file": "sprites/d_finni_baking_select_anim08.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_baking_select_anim09": {
+    "file": "sprites/d_finni_baking_select_anim09.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_baking_select_anim10": {
+    "file": "sprites/d_finni_baking_select_anim10.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_baking_select_anim11": {
+    "file": "sprites/d_finni_baking_select_anim11.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_baking_done_anim00": {
+    "file": "sprites/d_finni_baking_done_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_baking_done_anim01": {
+    "file": "sprites/d_finni_baking_done_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_baking_done_anim02": {
+    "file": "sprites/d_finni_baking_done_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_baking_done_anim03": {
+    "file": "sprites/d_finni_baking_done_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_baking_done_anim04": {
+    "file": "sprites/d_finni_baking_done_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_baking_done_anim05": {
+    "file": "sprites/d_finni_baking_done_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_baking_done_anim06": {
+    "file": "sprites/d_finni_baking_done_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_baking_done_anim07": {
+    "file": "sprites/d_finni_baking_done_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_baking_done_anim08": {
+    "file": "sprites/d_finni_baking_done_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_baking_done_anim09": {
+    "file": "sprites/d_finni_baking_done_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_baking_done_anim10": {
+    "file": "sprites/d_finni_baking_done_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_baking_done_anim11": {
+    "file": "sprites/d_finni_baking_done_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_pinata_anim00": {
+    "file": "sprites/d_finni_pinata_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_pinata_anim01": {
+    "file": "sprites/d_finni_pinata_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_pinata_anim02": {
+    "file": "sprites/d_finni_pinata_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_pinata_anim03": {
+    "file": "sprites/d_finni_pinata_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_pinata_anim04": {
+    "file": "sprites/d_finni_pinata_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_pinata_anim05": {
+    "file": "sprites/d_finni_pinata_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_pinata_anim06": {
+    "file": "sprites/d_finni_pinata_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_pinata_anim07": {
+    "file": "sprites/d_finni_pinata_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_pinata_anim08": {
+    "file": "sprites/d_finni_pinata_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_pinata_anim09": {
+    "file": "sprites/d_finni_pinata_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_pinata_anim10": {
+    "file": "sprites/d_finni_pinata_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_pinata_anim11": {
+    "file": "sprites/d_finni_pinata_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_pinata_select_anim00": {
+    "file": "sprites/d_finni_pinata_select_anim00.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_pinata_select_anim01": {
+    "file": "sprites/d_finni_pinata_select_anim01.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_pinata_select_anim02": {
+    "file": "sprites/d_finni_pinata_select_anim02.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_pinata_select_anim03": {
+    "file": "sprites/d_finni_pinata_select_anim03.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_pinata_select_anim04": {
+    "file": "sprites/d_finni_pinata_select_anim04.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_pinata_select_anim05": {
+    "file": "sprites/d_finni_pinata_select_anim05.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_pinata_select_anim06": {
+    "file": "sprites/d_finni_pinata_select_anim06.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_pinata_select_anim07": {
+    "file": "sprites/d_finni_pinata_select_anim07.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_pinata_select_anim08": {
+    "file": "sprites/d_finni_pinata_select_anim08.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_pinata_select_anim09": {
+    "file": "sprites/d_finni_pinata_select_anim09.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_pinata_select_anim10": {
+    "file": "sprites/d_finni_pinata_select_anim10.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_pinata_select_anim11": {
+    "file": "sprites/d_finni_pinata_select_anim11.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_pinata_done_anim00": {
+    "file": "sprites/d_finni_pinata_done_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_pinata_done_anim01": {
+    "file": "sprites/d_finni_pinata_done_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_pinata_done_anim02": {
+    "file": "sprites/d_finni_pinata_done_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_pinata_done_anim03": {
+    "file": "sprites/d_finni_pinata_done_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_pinata_done_anim04": {
+    "file": "sprites/d_finni_pinata_done_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_pinata_done_anim05": {
+    "file": "sprites/d_finni_pinata_done_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_pinata_done_anim06": {
+    "file": "sprites/d_finni_pinata_done_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_pinata_done_anim07": {
+    "file": "sprites/d_finni_pinata_done_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_pinata_done_anim08": {
+    "file": "sprites/d_finni_pinata_done_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_pinata_done_anim09": {
+    "file": "sprites/d_finni_pinata_done_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_pinata_done_anim10": {
+    "file": "sprites/d_finni_pinata_done_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_pinata_done_anim11": {
+    "file": "sprites/d_finni_pinata_done_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_party_anim00": {
+    "file": "sprites/d_finni_party_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_party_anim01": {
+    "file": "sprites/d_finni_party_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_party_anim02": {
+    "file": "sprites/d_finni_party_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_party_anim03": {
+    "file": "sprites/d_finni_party_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_party_anim04": {
+    "file": "sprites/d_finni_party_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_party_anim05": {
+    "file": "sprites/d_finni_party_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_party_anim06": {
+    "file": "sprites/d_finni_party_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_party_anim07": {
+    "file": "sprites/d_finni_party_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_party_anim08": {
+    "file": "sprites/d_finni_party_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_party_anim09": {
+    "file": "sprites/d_finni_party_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_party_anim10": {
+    "file": "sprites/d_finni_party_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_party_anim11": {
+    "file": "sprites/d_finni_party_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_party_select_anim00": {
+    "file": "sprites/d_finni_party_select_anim00.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_party_select_anim01": {
+    "file": "sprites/d_finni_party_select_anim01.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_party_select_anim02": {
+    "file": "sprites/d_finni_party_select_anim02.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_party_select_anim03": {
+    "file": "sprites/d_finni_party_select_anim03.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_party_select_anim04": {
+    "file": "sprites/d_finni_party_select_anim04.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_party_select_anim05": {
+    "file": "sprites/d_finni_party_select_anim05.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_party_select_anim06": {
+    "file": "sprites/d_finni_party_select_anim06.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_party_select_anim07": {
+    "file": "sprites/d_finni_party_select_anim07.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_party_select_anim08": {
+    "file": "sprites/d_finni_party_select_anim08.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_party_select_anim09": {
+    "file": "sprites/d_finni_party_select_anim09.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_party_select_anim10": {
+    "file": "sprites/d_finni_party_select_anim10.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_party_select_anim11": {
+    "file": "sprites/d_finni_party_select_anim11.png",
+    "layout": "side",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_party_done_anim00": {
+    "file": "sprites/d_finni_party_done_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_party_done_anim01": {
+    "file": "sprites/d_finni_party_done_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_party_done_anim02": {
+    "file": "sprites/d_finni_party_done_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_party_done_anim03": {
+    "file": "sprites/d_finni_party_done_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_party_done_anim04": {
+    "file": "sprites/d_finni_party_done_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_party_done_anim05": {
+    "file": "sprites/d_finni_party_done_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_party_done_anim06": {
+    "file": "sprites/d_finni_party_done_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_party_done_anim07": {
+    "file": "sprites/d_finni_party_done_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_party_done_anim08": {
+    "file": "sprites/d_finni_party_done_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_party_done_anim09": {
+    "file": "sprites/d_finni_party_done_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_party_done_anim10": {
+    "file": "sprites/d_finni_party_done_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_party_done_anim11": {
+    "file": "sprites/d_finni_party_done_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_cake_anim00": {
+    "file": "sprites/d_finni_cake_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_cake_anim01": {
+    "file": "sprites/d_finni_cake_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_cake_anim02": {
+    "file": "sprites/d_finni_cake_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_cake_anim03": {
+    "file": "sprites/d_finni_cake_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_cake_anim04": {
+    "file": "sprites/d_finni_cake_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_cake_anim05": {
+    "file": "sprites/d_finni_cake_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_cake_anim06": {
+    "file": "sprites/d_finni_cake_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_cake_anim07": {
+    "file": "sprites/d_finni_cake_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_cake_anim08": {
+    "file": "sprites/d_finni_cake_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_cake_anim09": {
+    "file": "sprites/d_finni_cake_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_cake_anim10": {
+    "file": "sprites/d_finni_cake_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_cake_anim11": {
+    "file": "sprites/d_finni_cake_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_toppings_anim00": {
+    "file": "sprites/d_finni_toppings_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_toppings_anim01": {
+    "file": "sprites/d_finni_toppings_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_toppings_anim02": {
+    "file": "sprites/d_finni_toppings_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_toppings_anim03": {
+    "file": "sprites/d_finni_toppings_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_toppings_anim04": {
+    "file": "sprites/d_finni_toppings_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_toppings_anim05": {
+    "file": "sprites/d_finni_toppings_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_toppings_anim06": {
+    "file": "sprites/d_finni_toppings_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_toppings_anim07": {
+    "file": "sprites/d_finni_toppings_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_toppings_anim08": {
+    "file": "sprites/d_finni_toppings_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_toppings_anim09": {
+    "file": "sprites/d_finni_toppings_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_toppings_anim10": {
+    "file": "sprites/d_finni_toppings_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_toppings_anim11": {
+    "file": "sprites/d_finni_toppings_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_flourish_anim00": {
+    "file": "sprites/d_finni_flourish_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_flourish_anim01": {
+    "file": "sprites/d_finni_flourish_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_flourish_anim02": {
+    "file": "sprites/d_finni_flourish_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_flourish_anim03": {
+    "file": "sprites/d_finni_flourish_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_flourish_anim04": {
+    "file": "sprites/d_finni_flourish_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_flourish_anim05": {
+    "file": "sprites/d_finni_flourish_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_flourish_anim06": {
+    "file": "sprites/d_finni_flourish_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_flourish_anim07": {
+    "file": "sprites/d_finni_flourish_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_flourish_anim08": {
+    "file": "sprites/d_finni_flourish_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_flourish_anim09": {
+    "file": "sprites/d_finni_flourish_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_flourish_anim10": {
+    "file": "sprites/d_finni_flourish_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_flourish_anim11": {
+    "file": "sprites/d_finni_flourish_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_frosting_anim00": {
+    "file": "sprites/d_finni_frosting_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_frosting_anim01": {
+    "file": "sprites/d_finni_frosting_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_frosting_anim02": {
+    "file": "sprites/d_finni_frosting_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_frosting_anim03": {
+    "file": "sprites/d_finni_frosting_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_frosting_anim04": {
+    "file": "sprites/d_finni_frosting_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_frosting_anim05": {
+    "file": "sprites/d_finni_frosting_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_frosting_anim06": {
+    "file": "sprites/d_finni_frosting_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_frosting_anim07": {
+    "file": "sprites/d_finni_frosting_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_frosting_anim08": {
+    "file": "sprites/d_finni_frosting_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_frosting_anim09": {
+    "file": "sprites/d_finni_frosting_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_frosting_anim10": {
+    "file": "sprites/d_finni_frosting_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_frosting_anim11": {
+    "file": "sprites/d_finni_frosting_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friendship_anim00": {
+    "file": "sprites/d_finni_friendship_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friendship_anim01": {
+    "file": "sprites/d_finni_friendship_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friendship_anim02": {
+    "file": "sprites/d_finni_friendship_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friendship_anim03": {
+    "file": "sprites/d_finni_friendship_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friendship_anim04": {
+    "file": "sprites/d_finni_friendship_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friendship_anim05": {
+    "file": "sprites/d_finni_friendship_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friendship_anim06": {
+    "file": "sprites/d_finni_friendship_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friendship_anim07": {
+    "file": "sprites/d_finni_friendship_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friendship_anim08": {
+    "file": "sprites/d_finni_friendship_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friendship_anim09": {
+    "file": "sprites/d_finni_friendship_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friendship_anim10": {
+    "file": "sprites/d_finni_friendship_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friendship_anim11": {
+    "file": "sprites/d_finni_friendship_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_supplyrun_anim00": {
+    "file": "sprites/d_finni_supplyrun_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_supplyrun_anim01": {
+    "file": "sprites/d_finni_supplyrun_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_supplyrun_anim02": {
+    "file": "sprites/d_finni_supplyrun_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_supplyrun_anim03": {
+    "file": "sprites/d_finni_supplyrun_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_supplyrun_anim04": {
+    "file": "sprites/d_finni_supplyrun_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_supplyrun_anim05": {
+    "file": "sprites/d_finni_supplyrun_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_supplyrun_anim06": {
+    "file": "sprites/d_finni_supplyrun_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_supplyrun_anim07": {
+    "file": "sprites/d_finni_supplyrun_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_supplyrun_anim08": {
+    "file": "sprites/d_finni_supplyrun_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_supplyrun_anim09": {
+    "file": "sprites/d_finni_supplyrun_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_supplyrun_anim10": {
+    "file": "sprites/d_finni_supplyrun_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_supplyrun_anim11": {
+    "file": "sprites/d_finni_supplyrun_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_streamers_anim00": {
+    "file": "sprites/d_finni_streamers_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_streamers_anim01": {
+    "file": "sprites/d_finni_streamers_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_streamers_anim02": {
+    "file": "sprites/d_finni_streamers_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_streamers_anim03": {
+    "file": "sprites/d_finni_streamers_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_streamers_anim04": {
+    "file": "sprites/d_finni_streamers_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_streamers_anim05": {
+    "file": "sprites/d_finni_streamers_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_streamers_anim06": {
+    "file": "sprites/d_finni_streamers_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_streamers_anim07": {
+    "file": "sprites/d_finni_streamers_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_streamers_anim08": {
+    "file": "sprites/d_finni_streamers_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_streamers_anim09": {
+    "file": "sprites/d_finni_streamers_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_streamers_anim10": {
+    "file": "sprites/d_finni_streamers_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_streamers_anim11": {
+    "file": "sprites/d_finni_streamers_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_spinner_anim00": {
+    "file": "sprites/d_finni_spinner_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_spinner_anim01": {
+    "file": "sprites/d_finni_spinner_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_spinner_anim02": {
+    "file": "sprites/d_finni_spinner_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_spinner_anim03": {
+    "file": "sprites/d_finni_spinner_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_spinner_anim04": {
+    "file": "sprites/d_finni_spinner_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_spinner_anim05": {
+    "file": "sprites/d_finni_spinner_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_spinner_anim06": {
+    "file": "sprites/d_finni_spinner_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_spinner_anim07": {
+    "file": "sprites/d_finni_spinner_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_spinner_anim08": {
+    "file": "sprites/d_finni_spinner_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_spinner_anim09": {
+    "file": "sprites/d_finni_spinner_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_spinner_anim10": {
+    "file": "sprites/d_finni_spinner_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_spinner_anim11": {
+    "file": "sprites/d_finni_spinner_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_confetti_anim00": {
+    "file": "sprites/d_finni_confetti_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_confetti_anim01": {
+    "file": "sprites/d_finni_confetti_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_confetti_anim02": {
+    "file": "sprites/d_finni_confetti_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_confetti_anim03": {
+    "file": "sprites/d_finni_confetti_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_confetti_anim04": {
+    "file": "sprites/d_finni_confetti_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_confetti_anim05": {
+    "file": "sprites/d_finni_confetti_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_confetti_anim06": {
+    "file": "sprites/d_finni_confetti_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_confetti_anim07": {
+    "file": "sprites/d_finni_confetti_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_confetti_anim08": {
+    "file": "sprites/d_finni_confetti_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_confetti_anim09": {
+    "file": "sprites/d_finni_confetti_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_confetti_anim10": {
+    "file": "sprites/d_finni_confetti_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_confetti_anim11": {
+    "file": "sprites/d_finni_confetti_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_snack_anim00": {
+    "file": "sprites/d_finni_snack_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_snack_anim01": {
+    "file": "sprites/d_finni_snack_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_snack_anim02": {
+    "file": "sprites/d_finni_snack_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_snack_anim03": {
+    "file": "sprites/d_finni_snack_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_snack_anim04": {
+    "file": "sprites/d_finni_snack_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_snack_anim05": {
+    "file": "sprites/d_finni_snack_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_snack_anim06": {
+    "file": "sprites/d_finni_snack_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_snack_anim07": {
+    "file": "sprites/d_finni_snack_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_snack_anim08": {
+    "file": "sprites/d_finni_snack_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_snack_anim09": {
+    "file": "sprites/d_finni_snack_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_snack_anim10": {
+    "file": "sprites/d_finni_snack_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_snack_anim11": {
+    "file": "sprites/d_finni_snack_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_choose_anim00": {
+    "file": "sprites/d_finni_choose_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_choose_anim01": {
+    "file": "sprites/d_finni_choose_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_choose_anim02": {
+    "file": "sprites/d_finni_choose_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_choose_anim03": {
+    "file": "sprites/d_finni_choose_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_choose_anim04": {
+    "file": "sprites/d_finni_choose_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_choose_anim05": {
+    "file": "sprites/d_finni_choose_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_choose_anim06": {
+    "file": "sprites/d_finni_choose_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_choose_anim07": {
+    "file": "sprites/d_finni_choose_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_choose_anim08": {
+    "file": "sprites/d_finni_choose_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_choose_anim09": {
+    "file": "sprites/d_finni_choose_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_choose_anim10": {
+    "file": "sprites/d_finni_choose_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_choose_anim11": {
+    "file": "sprites/d_finni_choose_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_mystery_anim00": {
+    "file": "sprites/d_finni_mystery_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_mystery_anim01": {
+    "file": "sprites/d_finni_mystery_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_mystery_anim02": {
+    "file": "sprites/d_finni_mystery_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_mystery_anim03": {
+    "file": "sprites/d_finni_mystery_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_mystery_anim04": {
+    "file": "sprites/d_finni_mystery_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_mystery_anim05": {
+    "file": "sprites/d_finni_mystery_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_mystery_anim06": {
+    "file": "sprites/d_finni_mystery_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_mystery_anim07": {
+    "file": "sprites/d_finni_mystery_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_mystery_anim08": {
+    "file": "sprites/d_finni_mystery_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_mystery_anim09": {
+    "file": "sprites/d_finni_mystery_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_mystery_anim10": {
+    "file": "sprites/d_finni_mystery_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_mystery_anim11": {
+    "file": "sprites/d_finni_mystery_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_disco_anim00": {
+    "file": "sprites/d_finni_disco_anim00.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_disco_anim01": {
+    "file": "sprites/d_finni_disco_anim01.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_disco_anim02": {
+    "file": "sprites/d_finni_disco_anim02.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_disco_anim03": {
+    "file": "sprites/d_finni_disco_anim03.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_disco_anim04": {
+    "file": "sprites/d_finni_disco_anim04.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_disco_anim05": {
+    "file": "sprites/d_finni_disco_anim05.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_disco_anim06": {
+    "file": "sprites/d_finni_disco_anim06.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_disco_anim07": {
+    "file": "sprites/d_finni_disco_anim07.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_disco_anim08": {
+    "file": "sprites/d_finni_disco_anim08.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_disco_anim09": {
+    "file": "sprites/d_finni_disco_anim09.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_disco_anim10": {
+    "file": "sprites/d_finni_disco_anim10.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_disco_anim11": {
+    "file": "sprites/d_finni_disco_anim11.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_discomb_anim00": {
+    "file": "sprites/d_finni_discomb_anim00.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_discomb_anim01": {
+    "file": "sprites/d_finni_discomb_anim01.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_discomb_anim02": {
+    "file": "sprites/d_finni_discomb_anim02.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_discomb_anim03": {
+    "file": "sprites/d_finni_discomb_anim03.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_discomb_anim04": {
+    "file": "sprites/d_finni_discomb_anim04.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_discomb_anim05": {
+    "file": "sprites/d_finni_discomb_anim05.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_discomb_anim06": {
+    "file": "sprites/d_finni_discomb_anim06.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_discomb_anim07": {
+    "file": "sprites/d_finni_discomb_anim07.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_discomb_anim08": {
+    "file": "sprites/d_finni_discomb_anim08.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_discomb_anim09": {
+    "file": "sprites/d_finni_discomb_anim09.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_discomb_anim10": {
+    "file": "sprites/d_finni_discomb_anim10.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_discomb_anim11": {
+    "file": "sprites/d_finni_discomb_anim11.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_timer_anim00": {
+    "file": "sprites/d_finni_timer_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_timer_anim01": {
+    "file": "sprites/d_finni_timer_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_timer_anim02": {
+    "file": "sprites/d_finni_timer_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_timer_anim03": {
+    "file": "sprites/d_finni_timer_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_timer_anim04": {
+    "file": "sprites/d_finni_timer_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_timer_anim05": {
+    "file": "sprites/d_finni_timer_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_timer_anim06": {
+    "file": "sprites/d_finni_timer_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_timer_anim07": {
+    "file": "sprites/d_finni_timer_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_timer_anim08": {
+    "file": "sprites/d_finni_timer_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_timer_anim09": {
+    "file": "sprites/d_finni_timer_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_timer_anim10": {
+    "file": "sprites/d_finni_timer_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_timer_anim11": {
+    "file": "sprites/d_finni_timer_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_lights_anim00": {
+    "file": "sprites/d_finni_lights_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_lights_anim01": {
+    "file": "sprites/d_finni_lights_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_lights_anim02": {
+    "file": "sprites/d_finni_lights_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_lights_anim03": {
+    "file": "sprites/d_finni_lights_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_lights_anim04": {
+    "file": "sprites/d_finni_lights_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_lights_anim05": {
+    "file": "sprites/d_finni_lights_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_lights_anim06": {
+    "file": "sprites/d_finni_lights_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_lights_anim07": {
+    "file": "sprites/d_finni_lights_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_lights_anim08": {
+    "file": "sprites/d_finni_lights_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_lights_anim09": {
+    "file": "sprites/d_finni_lights_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_lights_anim10": {
+    "file": "sprites/d_finni_lights_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_lights_anim11": {
+    "file": "sprites/d_finni_lights_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_checklist_anim00": {
+    "file": "sprites/d_finni_checklist_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_checklist_anim01": {
+    "file": "sprites/d_finni_checklist_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_checklist_anim02": {
+    "file": "sprites/d_finni_checklist_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_checklist_anim03": {
+    "file": "sprites/d_finni_checklist_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_checklist_anim04": {
+    "file": "sprites/d_finni_checklist_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_checklist_anim05": {
+    "file": "sprites/d_finni_checklist_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_checklist_anim06": {
+    "file": "sprites/d_finni_checklist_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_checklist_anim07": {
+    "file": "sprites/d_finni_checklist_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_checklist_anim08": {
+    "file": "sprites/d_finni_checklist_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_checklist_anim09": {
+    "file": "sprites/d_finni_checklist_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_checklist_anim10": {
+    "file": "sprites/d_finni_checklist_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_checklist_anim11": {
+    "file": "sprites/d_finni_checklist_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_favors_anim00": {
+    "file": "sprites/d_finni_favors_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_favors_anim01": {
+    "file": "sprites/d_finni_favors_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_favors_anim02": {
+    "file": "sprites/d_finni_favors_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_favors_anim03": {
+    "file": "sprites/d_finni_favors_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_favors_anim04": {
+    "file": "sprites/d_finni_favors_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_favors_anim05": {
+    "file": "sprites/d_finni_favors_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_favors_anim06": {
+    "file": "sprites/d_finni_favors_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_favors_anim07": {
+    "file": "sprites/d_finni_favors_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_favors_anim08": {
+    "file": "sprites/d_finni_favors_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_favors_anim09": {
+    "file": "sprites/d_finni_favors_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_favors_anim10": {
+    "file": "sprites/d_finni_favors_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_favors_anim11": {
+    "file": "sprites/d_finni_favors_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_ballsaved_anim00": {
+    "file": "sprites/d_ballsaved_anim00.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_ballsaved_anim01": {
+    "file": "sprites/d_ballsaved_anim01.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_ballsaved_anim02": {
+    "file": "sprites/d_ballsaved_anim02.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_ballsaved_anim03": {
+    "file": "sprites/d_ballsaved_anim03.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_ballsaved_anim04": {
+    "file": "sprites/d_ballsaved_anim04.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_ballsaved_anim05": {
+    "file": "sprites/d_ballsaved_anim05.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_ballsaved_anim06": {
+    "file": "sprites/d_ballsaved_anim06.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_ballsaved_anim07": {
+    "file": "sprites/d_ballsaved_anim07.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_ballsaved_anim08": {
+    "file": "sprites/d_ballsaved_anim08.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_ballsaved_anim09": {
+    "file": "sprites/d_ballsaved_anim09.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_ballsaved_anim10": {
+    "file": "sprites/d_ballsaved_anim10.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_ballsaved_anim11": {
+    "file": "sprites/d_ballsaved_anim11.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_bam_anim00": {
+    "file": "sprites/d_bam_anim00.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_bam_anim01": {
+    "file": "sprites/d_bam_anim01.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_bam_anim02": {
+    "file": "sprites/d_bam_anim02.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_bam_anim03": {
+    "file": "sprites/d_bam_anim03.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_bam_anim04": {
+    "file": "sprites/d_bam_anim04.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_bam_anim05": {
+    "file": "sprites/d_bam_anim05.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_bam_anim06": {
+    "file": "sprites/d_bam_anim06.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_bam_anim07": {
+    "file": "sprites/d_bam_anim07.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_bam_anim08": {
+    "file": "sprites/d_bam_anim08.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_bam_anim09": {
+    "file": "sprites/d_bam_anim09.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_bam_anim10": {
+    "file": "sprites/d_bam_anim10.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_bam_anim11": {
+    "file": "sprites/d_bam_anim11.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_boom_anim00": {
+    "file": "sprites/d_boom_anim00.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_boom_anim01": {
+    "file": "sprites/d_boom_anim01.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_boom_anim02": {
+    "file": "sprites/d_boom_anim02.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_boom_anim03": {
+    "file": "sprites/d_boom_anim03.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_boom_anim04": {
+    "file": "sprites/d_boom_anim04.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_boom_anim05": {
+    "file": "sprites/d_boom_anim05.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_boom_anim06": {
+    "file": "sprites/d_boom_anim06.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_boom_anim07": {
+    "file": "sprites/d_boom_anim07.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_boom_anim08": {
+    "file": "sprites/d_boom_anim08.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_boom_anim09": {
+    "file": "sprites/d_boom_anim09.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_boom_anim10": {
+    "file": "sprites/d_boom_anim10.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_boom_anim11": {
+    "file": "sprites/d_boom_anim11.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_colossus_anim00": {
+    "file": "sprites/d_colossus_anim00.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_colossus_anim01": {
+    "file": "sprites/d_colossus_anim01.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_colossus_anim02": {
+    "file": "sprites/d_colossus_anim02.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_colossus_anim03": {
+    "file": "sprites/d_colossus_anim03.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_colossus_anim04": {
+    "file": "sprites/d_colossus_anim04.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_colossus_anim05": {
+    "file": "sprites/d_colossus_anim05.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_colossus_anim06": {
+    "file": "sprites/d_colossus_anim06.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_colossus_anim07": {
+    "file": "sprites/d_colossus_anim07.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_colossus_anim08": {
+    "file": "sprites/d_colossus_anim08.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_colossus_anim09": {
+    "file": "sprites/d_colossus_anim09.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_colossus_anim10": {
+    "file": "sprites/d_colossus_anim10.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_colossus_anim11": {
+    "file": "sprites/d_colossus_anim11.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_dazzler_anim00": {
+    "file": "sprites/d_dazzler_anim00.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_dazzler_anim01": {
+    "file": "sprites/d_dazzler_anim01.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_dazzler_anim02": {
+    "file": "sprites/d_dazzler_anim02.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_dazzler_anim03": {
+    "file": "sprites/d_dazzler_anim03.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_dazzler_anim04": {
+    "file": "sprites/d_dazzler_anim04.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_dazzler_anim05": {
+    "file": "sprites/d_dazzler_anim05.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_dazzler_anim06": {
+    "file": "sprites/d_dazzler_anim06.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_dazzler_anim07": {
+    "file": "sprites/d_dazzler_anim07.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_dazzler_anim08": {
+    "file": "sprites/d_dazzler_anim08.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_dazzler_anim09": {
+    "file": "sprites/d_dazzler_anim09.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_dazzler_anim10": {
+    "file": "sprites/d_dazzler_anim10.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_dazzler_anim11": {
+    "file": "sprites/d_dazzler_anim11.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_domino_anim00": {
+    "file": "sprites/d_domino_anim00.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_domino_anim01": {
+    "file": "sprites/d_domino_anim01.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_domino_anim02": {
+    "file": "sprites/d_domino_anim02.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_domino_anim03": {
+    "file": "sprites/d_domino_anim03.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_domino_anim04": {
+    "file": "sprites/d_domino_anim04.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_domino_anim05": {
+    "file": "sprites/d_domino_anim05.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_domino_anim06": {
+    "file": "sprites/d_domino_anim06.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_domino_anim07": {
+    "file": "sprites/d_domino_anim07.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_domino_anim08": {
+    "file": "sprites/d_domino_anim08.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_domino_anim09": {
+    "file": "sprites/d_domino_anim09.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_domino_anim10": {
+    "file": "sprites/d_domino_anim10.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_domino_anim11": {
+    "file": "sprites/d_domino_anim11.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_extraball_anim00": {
+    "file": "sprites/d_extraball_anim00.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_extraball_anim01": {
+    "file": "sprites/d_extraball_anim01.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_extraball_anim02": {
+    "file": "sprites/d_extraball_anim02.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_extraball_anim03": {
+    "file": "sprites/d_extraball_anim03.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_extraball_anim04": {
+    "file": "sprites/d_extraball_anim04.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_extraball_anim05": {
+    "file": "sprites/d_extraball_anim05.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_extraball_anim06": {
+    "file": "sprites/d_extraball_anim06.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_extraball_anim07": {
+    "file": "sprites/d_extraball_anim07.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_extraball_anim08": {
+    "file": "sprites/d_extraball_anim08.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_extraball_anim09": {
+    "file": "sprites/d_extraball_anim09.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_extraball_anim10": {
+    "file": "sprites/d_extraball_anim10.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_extraball_anim11": {
+    "file": "sprites/d_extraball_anim11.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_jackpot_anim00": {
+    "file": "sprites/d_jackpot_anim00.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_jackpot_anim01": {
+    "file": "sprites/d_jackpot_anim01.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_jackpot_anim02": {
+    "file": "sprites/d_jackpot_anim02.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_jackpot_anim03": {
+    "file": "sprites/d_jackpot_anim03.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_jackpot_anim04": {
+    "file": "sprites/d_jackpot_anim04.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_jackpot_anim05": {
+    "file": "sprites/d_jackpot_anim05.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_jackpot_anim06": {
+    "file": "sprites/d_jackpot_anim06.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_jackpot_anim07": {
+    "file": "sprites/d_jackpot_anim07.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_jackpot_anim08": {
+    "file": "sprites/d_jackpot_anim08.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_jackpot_anim09": {
+    "file": "sprites/d_jackpot_anim09.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_jackpot_anim10": {
+    "file": "sprites/d_jackpot_anim10.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_jackpot_anim11": {
+    "file": "sprites/d_jackpot_anim11.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lock1_anim00": {
+    "file": "sprites/d_lock1_anim00.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lock1_anim01": {
+    "file": "sprites/d_lock1_anim01.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lock1_anim02": {
+    "file": "sprites/d_lock1_anim02.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lock1_anim03": {
+    "file": "sprites/d_lock1_anim03.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lock1_anim04": {
+    "file": "sprites/d_lock1_anim04.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lock1_anim05": {
+    "file": "sprites/d_lock1_anim05.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lock1_anim06": {
+    "file": "sprites/d_lock1_anim06.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lock1_anim07": {
+    "file": "sprites/d_lock1_anim07.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lock1_anim08": {
+    "file": "sprites/d_lock1_anim08.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lock1_anim09": {
+    "file": "sprites/d_lock1_anim09.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lock1_anim10": {
+    "file": "sprites/d_lock1_anim10.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lock1_anim11": {
+    "file": "sprites/d_lock1_anim11.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lock2_anim00": {
+    "file": "sprites/d_lock2_anim00.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lock2_anim01": {
+    "file": "sprites/d_lock2_anim01.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lock2_anim02": {
+    "file": "sprites/d_lock2_anim02.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lock2_anim03": {
+    "file": "sprites/d_lock2_anim03.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lock2_anim04": {
+    "file": "sprites/d_lock2_anim04.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lock2_anim05": {
+    "file": "sprites/d_lock2_anim05.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lock2_anim06": {
+    "file": "sprites/d_lock2_anim06.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lock2_anim07": {
+    "file": "sprites/d_lock2_anim07.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lock2_anim08": {
+    "file": "sprites/d_lock2_anim08.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lock2_anim09": {
+    "file": "sprites/d_lock2_anim09.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lock2_anim10": {
+    "file": "sprites/d_lock2_anim10.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lock2_anim11": {
+    "file": "sprites/d_lock2_anim11.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lock3_anim00": {
+    "file": "sprites/d_lock3_anim00.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lock3_anim01": {
+    "file": "sprites/d_lock3_anim01.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lock3_anim02": {
+    "file": "sprites/d_lock3_anim02.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lock3_anim03": {
+    "file": "sprites/d_lock3_anim03.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lock3_anim04": {
+    "file": "sprites/d_lock3_anim04.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lock3_anim05": {
+    "file": "sprites/d_lock3_anim05.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lock3_anim06": {
+    "file": "sprites/d_lock3_anim06.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lock3_anim07": {
+    "file": "sprites/d_lock3_anim07.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lock3_anim08": {
+    "file": "sprites/d_lock3_anim08.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lock3_anim09": {
+    "file": "sprites/d_lock3_anim09.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lock3_anim10": {
+    "file": "sprites/d_lock3_anim10.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lock3_anim11": {
+    "file": "sprites/d_lock3_anim11.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lockislit_anim00": {
+    "file": "sprites/d_lockislit_anim00.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lockislit_anim01": {
+    "file": "sprites/d_lockislit_anim01.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lockislit_anim02": {
+    "file": "sprites/d_lockislit_anim02.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lockislit_anim03": {
+    "file": "sprites/d_lockislit_anim03.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lockislit_anim04": {
+    "file": "sprites/d_lockislit_anim04.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lockislit_anim05": {
+    "file": "sprites/d_lockislit_anim05.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lockislit_anim06": {
+    "file": "sprites/d_lockislit_anim06.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lockislit_anim07": {
+    "file": "sprites/d_lockislit_anim07.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lockislit_anim08": {
+    "file": "sprites/d_lockislit_anim08.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lockislit_anim09": {
+    "file": "sprites/d_lockislit_anim09.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lockislit_anim10": {
+    "file": "sprites/d_lockislit_anim10.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_lockislit_anim11": {
+    "file": "sprites/d_lockislit_anim11.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_loopjackpot_anim00": {
+    "file": "sprites/d_loopjackpot_anim00.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_loopjackpot_anim01": {
+    "file": "sprites/d_loopjackpot_anim01.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_loopjackpot_anim02": {
+    "file": "sprites/d_loopjackpot_anim02.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_loopjackpot_anim03": {
+    "file": "sprites/d_loopjackpot_anim03.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_loopjackpot_anim04": {
+    "file": "sprites/d_loopjackpot_anim04.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_loopjackpot_anim05": {
+    "file": "sprites/d_loopjackpot_anim05.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_loopjackpot_anim06": {
+    "file": "sprites/d_loopjackpot_anim06.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_loopjackpot_anim07": {
+    "file": "sprites/d_loopjackpot_anim07.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_loopjackpot_anim08": {
+    "file": "sprites/d_loopjackpot_anim08.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_loopjackpot_anim09": {
+    "file": "sprites/d_loopjackpot_anim09.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_loopjackpot_anim10": {
+    "file": "sprites/d_loopjackpot_anim10.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_loopjackpot_anim11": {
+    "file": "sprites/d_loopjackpot_anim11.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_mechsuit_anim00": {
+    "file": "sprites/d_mechsuit_anim00.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_mechsuit_anim01": {
+    "file": "sprites/d_mechsuit_anim01.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_mechsuit_anim02": {
+    "file": "sprites/d_mechsuit_anim02.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_mechsuit_anim03": {
+    "file": "sprites/d_mechsuit_anim03.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_mechsuit_anim04": {
+    "file": "sprites/d_mechsuit_anim04.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_mechsuit_anim05": {
+    "file": "sprites/d_mechsuit_anim05.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_mechsuit_anim06": {
+    "file": "sprites/d_mechsuit_anim06.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_mechsuit_anim07": {
+    "file": "sprites/d_mechsuit_anim07.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_mechsuit_anim08": {
+    "file": "sprites/d_mechsuit_anim08.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_mechsuit_anim09": {
+    "file": "sprites/d_mechsuit_anim09.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_mechsuit_anim10": {
+    "file": "sprites/d_mechsuit_anim10.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_mechsuit_anim11": {
+    "file": "sprites/d_mechsuit_anim11.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_multiball_anim00": {
+    "file": "sprites/d_multiball_anim00.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_multiball_anim01": {
+    "file": "sprites/d_multiball_anim01.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_multiball_anim02": {
+    "file": "sprites/d_multiball_anim02.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_multiball_anim03": {
+    "file": "sprites/d_multiball_anim03.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_multiball_anim04": {
+    "file": "sprites/d_multiball_anim04.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_multiball_anim05": {
+    "file": "sprites/d_multiball_anim05.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_multiball_anim06": {
+    "file": "sprites/d_multiball_anim06.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_multiball_anim07": {
+    "file": "sprites/d_multiball_anim07.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_multiball_anim08": {
+    "file": "sprites/d_multiball_anim08.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_multiball_anim09": {
+    "file": "sprites/d_multiball_anim09.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_multiball_anim10": {
+    "file": "sprites/d_multiball_anim10.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_multiball_anim11": {
+    "file": "sprites/d_multiball_anim11.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_mystery_anim00": {
+    "file": "sprites/d_mystery_anim00.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_mystery_anim01": {
+    "file": "sprites/d_mystery_anim01.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_mystery_anim02": {
+    "file": "sprites/d_mystery_anim02.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_mystery_anim03": {
+    "file": "sprites/d_mystery_anim03.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_mystery_anim04": {
+    "file": "sprites/d_mystery_anim04.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_mystery_anim05": {
+    "file": "sprites/d_mystery_anim05.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_mystery_anim06": {
+    "file": "sprites/d_mystery_anim06.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_mystery_anim07": {
+    "file": "sprites/d_mystery_anim07.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_mystery_anim08": {
+    "file": "sprites/d_mystery_anim08.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_mystery_anim09": {
+    "file": "sprites/d_mystery_anim09.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_mystery_anim10": {
+    "file": "sprites/d_mystery_anim10.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_mystery_anim11": {
+    "file": "sprites/d_mystery_anim11.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_skillshot_anim00": {
+    "file": "sprites/d_skillshot_anim00.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_skillshot_anim01": {
+    "file": "sprites/d_skillshot_anim01.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_skillshot_anim02": {
+    "file": "sprites/d_skillshot_anim02.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_skillshot_anim03": {
+    "file": "sprites/d_skillshot_anim03.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_skillshot_anim04": {
+    "file": "sprites/d_skillshot_anim04.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_skillshot_anim05": {
+    "file": "sprites/d_skillshot_anim05.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_skillshot_anim06": {
+    "file": "sprites/d_skillshot_anim06.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_skillshot_anim07": {
+    "file": "sprites/d_skillshot_anim07.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_skillshot_anim08": {
+    "file": "sprites/d_skillshot_anim08.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_skillshot_anim09": {
+    "file": "sprites/d_skillshot_anim09.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_skillshot_anim10": {
+    "file": "sprites/d_skillshot_anim10.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_skillshot_anim11": {
+    "file": "sprites/d_skillshot_anim11.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_superjackpot_anim00": {
+    "file": "sprites/d_superjackpot_anim00.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_superjackpot_anim01": {
+    "file": "sprites/d_superjackpot_anim01.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_superjackpot_anim02": {
+    "file": "sprites/d_superjackpot_anim02.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_superjackpot_anim03": {
+    "file": "sprites/d_superjackpot_anim03.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_superjackpot_anim04": {
+    "file": "sprites/d_superjackpot_anim04.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_superjackpot_anim05": {
+    "file": "sprites/d_superjackpot_anim05.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_superjackpot_anim06": {
+    "file": "sprites/d_superjackpot_anim06.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_superjackpot_anim07": {
+    "file": "sprites/d_superjackpot_anim07.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_superjackpot_anim08": {
+    "file": "sprites/d_superjackpot_anim08.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_superjackpot_anim09": {
+    "file": "sprites/d_superjackpot_anim09.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_superjackpot_anim10": {
+    "file": "sprites/d_superjackpot_anim10.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_superjackpot_anim11": {
+    "file": "sprites/d_superjackpot_anim11.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_superskillshot_anim00": {
+    "file": "sprites/d_superskillshot_anim00.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_superskillshot_anim01": {
+    "file": "sprites/d_superskillshot_anim01.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_superskillshot_anim02": {
+    "file": "sprites/d_superskillshot_anim02.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_superskillshot_anim03": {
+    "file": "sprites/d_superskillshot_anim03.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_superskillshot_anim04": {
+    "file": "sprites/d_superskillshot_anim04.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_superskillshot_anim05": {
+    "file": "sprites/d_superskillshot_anim05.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_superskillshot_anim06": {
+    "file": "sprites/d_superskillshot_anim06.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_superskillshot_anim07": {
+    "file": "sprites/d_superskillshot_anim07.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_superskillshot_anim08": {
+    "file": "sprites/d_superskillshot_anim08.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_superskillshot_anim09": {
+    "file": "sprites/d_superskillshot_anim09.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_superskillshot_anim10": {
+    "file": "sprites/d_superskillshot_anim10.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_superskillshot_anim11": {
+    "file": "sprites/d_superskillshot_anim11.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_wolverine_anim00": {
+    "file": "sprites/d_wolverine_anim00.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_wolverine_anim01": {
+    "file": "sprites/d_wolverine_anim01.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_wolverine_anim02": {
+    "file": "sprites/d_wolverine_anim02.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_wolverine_anim03": {
+    "file": "sprites/d_wolverine_anim03.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_wolverine_anim04": {
+    "file": "sprites/d_wolverine_anim04.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_wolverine_anim05": {
+    "file": "sprites/d_wolverine_anim05.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_wolverine_anim06": {
+    "file": "sprites/d_wolverine_anim06.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_wolverine_anim07": {
+    "file": "sprites/d_wolverine_anim07.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_wolverine_anim08": {
+    "file": "sprites/d_wolverine_anim08.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_wolverine_anim09": {
+    "file": "sprites/d_wolverine_anim09.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_wolverine_anim10": {
+    "file": "sprites/d_wolverine_anim10.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_wolverine_anim11": {
+    "file": "sprites/d_wolverine_anim11.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friend1_anim00": {
+    "file": "sprites/d_finni_friend1_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friend1_anim01": {
+    "file": "sprites/d_finni_friend1_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friend1_anim02": {
+    "file": "sprites/d_finni_friend1_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friend1_anim03": {
+    "file": "sprites/d_finni_friend1_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friend1_anim04": {
+    "file": "sprites/d_finni_friend1_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friend1_anim05": {
+    "file": "sprites/d_finni_friend1_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friend1_anim06": {
+    "file": "sprites/d_finni_friend1_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friend1_anim07": {
+    "file": "sprites/d_finni_friend1_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friend1_anim08": {
+    "file": "sprites/d_finni_friend1_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friend1_anim09": {
+    "file": "sprites/d_finni_friend1_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friend1_anim10": {
+    "file": "sprites/d_finni_friend1_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friend1_anim11": {
+    "file": "sprites/d_finni_friend1_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friend2_anim00": {
+    "file": "sprites/d_finni_friend2_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friend2_anim01": {
+    "file": "sprites/d_finni_friend2_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friend2_anim02": {
+    "file": "sprites/d_finni_friend2_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friend2_anim03": {
+    "file": "sprites/d_finni_friend2_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friend2_anim04": {
+    "file": "sprites/d_finni_friend2_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friend2_anim05": {
+    "file": "sprites/d_finni_friend2_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friend2_anim06": {
+    "file": "sprites/d_finni_friend2_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friend2_anim07": {
+    "file": "sprites/d_finni_friend2_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friend2_anim08": {
+    "file": "sprites/d_finni_friend2_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friend2_anim09": {
+    "file": "sprites/d_finni_friend2_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friend2_anim10": {
+    "file": "sprites/d_finni_friend2_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friend2_anim11": {
+    "file": "sprites/d_finni_friend2_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friend3_anim00": {
+    "file": "sprites/d_finni_friend3_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friend3_anim01": {
+    "file": "sprites/d_finni_friend3_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friend3_anim02": {
+    "file": "sprites/d_finni_friend3_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friend3_anim03": {
+    "file": "sprites/d_finni_friend3_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friend3_anim04": {
+    "file": "sprites/d_finni_friend3_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friend3_anim05": {
+    "file": "sprites/d_finni_friend3_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friend3_anim06": {
+    "file": "sprites/d_finni_friend3_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friend3_anim07": {
+    "file": "sprites/d_finni_friend3_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friend3_anim08": {
+    "file": "sprites/d_finni_friend3_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friend3_anim09": {
+    "file": "sprites/d_finni_friend3_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friend3_anim10": {
+    "file": "sprites/d_finni_friend3_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friend3_anim11": {
+    "file": "sprites/d_finni_friend3_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friendship_start_anim00": {
+    "file": "sprites/d_finni_friendship_start_anim00.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friendship_start_anim01": {
+    "file": "sprites/d_finni_friendship_start_anim01.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friendship_start_anim02": {
+    "file": "sprites/d_finni_friendship_start_anim02.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friendship_start_anim03": {
+    "file": "sprites/d_finni_friendship_start_anim03.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friendship_start_anim04": {
+    "file": "sprites/d_finni_friendship_start_anim04.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friendship_start_anim05": {
+    "file": "sprites/d_finni_friendship_start_anim05.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friendship_start_anim06": {
+    "file": "sprites/d_finni_friendship_start_anim06.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friendship_start_anim07": {
+    "file": "sprites/d_finni_friendship_start_anim07.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friendship_start_anim08": {
+    "file": "sprites/d_finni_friendship_start_anim08.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friendship_start_anim09": {
+    "file": "sprites/d_finni_friendship_start_anim09.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friendship_start_anim10": {
+    "file": "sprites/d_finni_friendship_start_anim10.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_friendship_start_anim11": {
+    "file": "sprites/d_finni_friendship_start_anim11.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player1_anim00": {
+    "file": "sprites/d_player1_anim00.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player1_anim01": {
+    "file": "sprites/d_player1_anim01.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player1_anim02": {
+    "file": "sprites/d_player1_anim02.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player1_anim03": {
+    "file": "sprites/d_player1_anim03.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player1_anim04": {
+    "file": "sprites/d_player1_anim04.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player1_anim05": {
+    "file": "sprites/d_player1_anim05.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player1_anim06": {
+    "file": "sprites/d_player1_anim06.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player1_anim07": {
+    "file": "sprites/d_player1_anim07.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player1_anim08": {
+    "file": "sprites/d_player1_anim08.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player1_anim09": {
+    "file": "sprites/d_player1_anim09.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player1_anim10": {
+    "file": "sprites/d_player1_anim10.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player1_anim11": {
+    "file": "sprites/d_player1_anim11.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player2_anim00": {
+    "file": "sprites/d_player2_anim00.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player2_anim01": {
+    "file": "sprites/d_player2_anim01.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player2_anim02": {
+    "file": "sprites/d_player2_anim02.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player2_anim03": {
+    "file": "sprites/d_player2_anim03.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player2_anim04": {
+    "file": "sprites/d_player2_anim04.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player2_anim05": {
+    "file": "sprites/d_player2_anim05.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player2_anim06": {
+    "file": "sprites/d_player2_anim06.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player2_anim07": {
+    "file": "sprites/d_player2_anim07.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player2_anim08": {
+    "file": "sprites/d_player2_anim08.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player2_anim09": {
+    "file": "sprites/d_player2_anim09.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player2_anim10": {
+    "file": "sprites/d_player2_anim10.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player2_anim11": {
+    "file": "sprites/d_player2_anim11.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player3_anim00": {
+    "file": "sprites/d_player3_anim00.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player3_anim01": {
+    "file": "sprites/d_player3_anim01.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player3_anim02": {
+    "file": "sprites/d_player3_anim02.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player3_anim03": {
+    "file": "sprites/d_player3_anim03.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player3_anim04": {
+    "file": "sprites/d_player3_anim04.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player3_anim05": {
+    "file": "sprites/d_player3_anim05.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player3_anim06": {
+    "file": "sprites/d_player3_anim06.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player3_anim07": {
+    "file": "sprites/d_player3_anim07.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player3_anim08": {
+    "file": "sprites/d_player3_anim08.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player3_anim09": {
+    "file": "sprites/d_player3_anim09.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player3_anim10": {
+    "file": "sprites/d_player3_anim10.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player3_anim11": {
+    "file": "sprites/d_player3_anim11.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player4_anim00": {
+    "file": "sprites/d_player4_anim00.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player4_anim01": {
+    "file": "sprites/d_player4_anim01.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player4_anim02": {
+    "file": "sprites/d_player4_anim02.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player4_anim03": {
+    "file": "sprites/d_player4_anim03.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player4_anim04": {
+    "file": "sprites/d_player4_anim04.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player4_anim05": {
+    "file": "sprites/d_player4_anim05.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player4_anim06": {
+    "file": "sprites/d_player4_anim06.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player4_anim07": {
+    "file": "sprites/d_player4_anim07.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player4_anim08": {
+    "file": "sprites/d_player4_anim08.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player4_anim09": {
+    "file": "sprites/d_player4_anim09.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player4_anim10": {
+    "file": "sprites/d_player4_anim10.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_player4_anim11": {
+    "file": "sprites/d_player4_anim11.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo_anim00": {
+    "file": "sprites/d_combo_anim00.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo_anim01": {
+    "file": "sprites/d_combo_anim01.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo_anim02": {
+    "file": "sprites/d_combo_anim02.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo_anim03": {
+    "file": "sprites/d_combo_anim03.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo_anim04": {
+    "file": "sprites/d_combo_anim04.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo_anim05": {
+    "file": "sprites/d_combo_anim05.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo_anim06": {
+    "file": "sprites/d_combo_anim06.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo_anim07": {
+    "file": "sprites/d_combo_anim07.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo_anim08": {
+    "file": "sprites/d_combo_anim08.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo_anim09": {
+    "file": "sprites/d_combo_anim09.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo_anim10": {
+    "file": "sprites/d_combo_anim10.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo_anim11": {
+    "file": "sprites/d_combo_anim11.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo2_anim00": {
+    "file": "sprites/d_combo2_anim00.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo2_anim01": {
+    "file": "sprites/d_combo2_anim01.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo2_anim02": {
+    "file": "sprites/d_combo2_anim02.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo2_anim03": {
+    "file": "sprites/d_combo2_anim03.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo2_anim04": {
+    "file": "sprites/d_combo2_anim04.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo2_anim05": {
+    "file": "sprites/d_combo2_anim05.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo2_anim06": {
+    "file": "sprites/d_combo2_anim06.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo2_anim07": {
+    "file": "sprites/d_combo2_anim07.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo2_anim08": {
+    "file": "sprites/d_combo2_anim08.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo2_anim09": {
+    "file": "sprites/d_combo2_anim09.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo2_anim10": {
+    "file": "sprites/d_combo2_anim10.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo2_anim11": {
+    "file": "sprites/d_combo2_anim11.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo3_anim00": {
+    "file": "sprites/d_combo3_anim00.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo3_anim01": {
+    "file": "sprites/d_combo3_anim01.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo3_anim02": {
+    "file": "sprites/d_combo3_anim02.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo3_anim03": {
+    "file": "sprites/d_combo3_anim03.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo3_anim04": {
+    "file": "sprites/d_combo3_anim04.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo3_anim05": {
+    "file": "sprites/d_combo3_anim05.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo3_anim06": {
+    "file": "sprites/d_combo3_anim06.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo3_anim07": {
+    "file": "sprites/d_combo3_anim07.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo3_anim08": {
+    "file": "sprites/d_combo3_anim08.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo3_anim09": {
+    "file": "sprites/d_combo3_anim09.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo3_anim10": {
+    "file": "sprites/d_combo3_anim10.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo3_anim11": {
+    "file": "sprites/d_combo3_anim11.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo4_anim00": {
+    "file": "sprites/d_combo4_anim00.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo4_anim01": {
+    "file": "sprites/d_combo4_anim01.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo4_anim02": {
+    "file": "sprites/d_combo4_anim02.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo4_anim03": {
+    "file": "sprites/d_combo4_anim03.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo4_anim04": {
+    "file": "sprites/d_combo4_anim04.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo4_anim05": {
+    "file": "sprites/d_combo4_anim05.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo4_anim06": {
+    "file": "sprites/d_combo4_anim06.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo4_anim07": {
+    "file": "sprites/d_combo4_anim07.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo4_anim08": {
+    "file": "sprites/d_combo4_anim08.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo4_anim09": {
+    "file": "sprites/d_combo4_anim09.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo4_anim10": {
+    "file": "sprites/d_combo4_anim10.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo4_anim11": {
+    "file": "sprites/d_combo4_anim11.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo5_anim00": {
+    "file": "sprites/d_combo5_anim00.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo5_anim01": {
+    "file": "sprites/d_combo5_anim01.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo5_anim02": {
+    "file": "sprites/d_combo5_anim02.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo5_anim03": {
+    "file": "sprites/d_combo5_anim03.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo5_anim04": {
+    "file": "sprites/d_combo5_anim04.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo5_anim05": {
+    "file": "sprites/d_combo5_anim05.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo5_anim06": {
+    "file": "sprites/d_combo5_anim06.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo5_anim07": {
+    "file": "sprites/d_combo5_anim07.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo5_anim08": {
+    "file": "sprites/d_combo5_anim08.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo5_anim09": {
+    "file": "sprites/d_combo5_anim09.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo5_anim10": {
+    "file": "sprites/d_combo5_anim10.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_combo5_anim11": {
+    "file": "sprites/d_combo5_anim11.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_chimi2_anim00": {
+    "file": "sprites/d_chimi2_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_chimi2_anim01": {
+    "file": "sprites/d_chimi2_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_chimi2_anim02": {
+    "file": "sprites/d_chimi2_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_chimi2_anim03": {
+    "file": "sprites/d_chimi2_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_chimi2_anim04": {
+    "file": "sprites/d_chimi2_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_chimi2_anim05": {
+    "file": "sprites/d_chimi2_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_chimi2_anim06": {
+    "file": "sprites/d_chimi2_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_chimi2_anim07": {
+    "file": "sprites/d_chimi2_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_chimi2_anim08": {
+    "file": "sprites/d_chimi2_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_chimi2_anim09": {
+    "file": "sprites/d_chimi2_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_chimi2_anim10": {
+    "file": "sprites/d_chimi2_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_chimi2_anim11": {
+    "file": "sprites/d_chimi2_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_star2_anim00": {
+    "file": "sprites/d_star2_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_star2_anim01": {
+    "file": "sprites/d_star2_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_star2_anim02": {
+    "file": "sprites/d_star2_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_star2_anim03": {
+    "file": "sprites/d_star2_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_star2_anim04": {
+    "file": "sprites/d_star2_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_star2_anim05": {
+    "file": "sprites/d_star2_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_star2_anim06": {
+    "file": "sprites/d_star2_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_star2_anim07": {
+    "file": "sprites/d_star2_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_star2_anim08": {
+    "file": "sprites/d_star2_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_star2_anim09": {
+    "file": "sprites/d_star2_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_star2_anim10": {
+    "file": "sprites/d_star2_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_star2_anim11": {
+    "file": "sprites/d_star2_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_ninjamb_anim00": {
+    "file": "sprites/d_ninjamb_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_ninjamb_anim01": {
+    "file": "sprites/d_ninjamb_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_ninjamb_anim02": {
+    "file": "sprites/d_ninjamb_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_ninjamb_anim03": {
+    "file": "sprites/d_ninjamb_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_ninjamb_anim04": {
+    "file": "sprites/d_ninjamb_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_ninjamb_anim05": {
+    "file": "sprites/d_ninjamb_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_ninjamb_anim06": {
+    "file": "sprites/d_ninjamb_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_ninjamb_anim07": {
+    "file": "sprites/d_ninjamb_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_ninjamb_anim08": {
+    "file": "sprites/d_ninjamb_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_ninjamb_anim09": {
+    "file": "sprites/d_ninjamb_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_ninjamb_anim10": {
+    "file": "sprites/d_ninjamb_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_ninjamb_anim11": {
+    "file": "sprites/d_ninjamb_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond1_anim00": {
+    "file": "sprites/d_diamond1_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond1_anim01": {
+    "file": "sprites/d_diamond1_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond1_anim02": {
+    "file": "sprites/d_diamond1_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond1_anim03": {
+    "file": "sprites/d_diamond1_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond1_anim04": {
+    "file": "sprites/d_diamond1_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond1_anim05": {
+    "file": "sprites/d_diamond1_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond1_anim06": {
+    "file": "sprites/d_diamond1_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond1_anim07": {
+    "file": "sprites/d_diamond1_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond1_anim08": {
+    "file": "sprites/d_diamond1_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond1_anim09": {
+    "file": "sprites/d_diamond1_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond1_anim10": {
+    "file": "sprites/d_diamond1_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond1_anim11": {
+    "file": "sprites/d_diamond1_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond2_anim00": {
+    "file": "sprites/d_diamond2_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond2_anim01": {
+    "file": "sprites/d_diamond2_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond2_anim02": {
+    "file": "sprites/d_diamond2_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond2_anim03": {
+    "file": "sprites/d_diamond2_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond2_anim04": {
+    "file": "sprites/d_diamond2_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond2_anim05": {
+    "file": "sprites/d_diamond2_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond2_anim06": {
+    "file": "sprites/d_diamond2_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond2_anim07": {
+    "file": "sprites/d_diamond2_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond2_anim08": {
+    "file": "sprites/d_diamond2_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond2_anim09": {
+    "file": "sprites/d_diamond2_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond2_anim10": {
+    "file": "sprites/d_diamond2_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond2_anim11": {
+    "file": "sprites/d_diamond2_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond3_anim00": {
+    "file": "sprites/d_diamond3_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond3_anim01": {
+    "file": "sprites/d_diamond3_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond3_anim02": {
+    "file": "sprites/d_diamond3_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond3_anim03": {
+    "file": "sprites/d_diamond3_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond3_anim04": {
+    "file": "sprites/d_diamond3_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond3_anim05": {
+    "file": "sprites/d_diamond3_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond3_anim06": {
+    "file": "sprites/d_diamond3_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond3_anim07": {
+    "file": "sprites/d_diamond3_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond3_anim08": {
+    "file": "sprites/d_diamond3_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond3_anim09": {
+    "file": "sprites/d_diamond3_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond3_anim10": {
+    "file": "sprites/d_diamond3_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond3_anim11": {
+    "file": "sprites/d_diamond3_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond4_anim00": {
+    "file": "sprites/d_diamond4_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond4_anim01": {
+    "file": "sprites/d_diamond4_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond4_anim02": {
+    "file": "sprites/d_diamond4_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond4_anim03": {
+    "file": "sprites/d_diamond4_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond4_anim04": {
+    "file": "sprites/d_diamond4_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond4_anim05": {
+    "file": "sprites/d_diamond4_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond4_anim06": {
+    "file": "sprites/d_diamond4_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond4_anim07": {
+    "file": "sprites/d_diamond4_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond4_anim08": {
+    "file": "sprites/d_diamond4_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond4_anim09": {
+    "file": "sprites/d_diamond4_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond4_anim10": {
+    "file": "sprites/d_diamond4_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond4_anim11": {
+    "file": "sprites/d_diamond4_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond5_anim00": {
+    "file": "sprites/d_diamond5_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond5_anim01": {
+    "file": "sprites/d_diamond5_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond5_anim02": {
+    "file": "sprites/d_diamond5_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond5_anim03": {
+    "file": "sprites/d_diamond5_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond5_anim04": {
+    "file": "sprites/d_diamond5_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond5_anim05": {
+    "file": "sprites/d_diamond5_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond5_anim06": {
+    "file": "sprites/d_diamond5_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond5_anim07": {
+    "file": "sprites/d_diamond5_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond5_anim08": {
+    "file": "sprites/d_diamond5_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond5_anim09": {
+    "file": "sprites/d_diamond5_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond5_anim10": {
+    "file": "sprites/d_diamond5_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond5_anim11": {
+    "file": "sprites/d_diamond5_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond6_anim00": {
+    "file": "sprites/d_diamond6_anim00.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond6_anim01": {
+    "file": "sprites/d_diamond6_anim01.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond6_anim02": {
+    "file": "sprites/d_diamond6_anim02.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond6_anim03": {
+    "file": "sprites/d_diamond6_anim03.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond6_anim04": {
+    "file": "sprites/d_diamond6_anim04.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond6_anim05": {
+    "file": "sprites/d_diamond6_anim05.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond6_anim06": {
+    "file": "sprites/d_diamond6_anim06.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond6_anim07": {
+    "file": "sprites/d_diamond6_anim07.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond6_anim08": {
+    "file": "sprites/d_diamond6_anim08.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond6_anim09": {
+    "file": "sprites/d_diamond6_anim09.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond6_anim10": {
+    "file": "sprites/d_diamond6_anim10.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_diamond6_anim11": {
+    "file": "sprites/d_diamond6_anim11.png",
+    "layout": "header",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_award_anim00": {
+    "file": "sprites/d_finni_award_anim00.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_award_anim01": {
+    "file": "sprites/d_finni_award_anim01.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_award_anim02": {
+    "file": "sprites/d_finni_award_anim02.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_award_anim03": {
+    "file": "sprites/d_finni_award_anim03.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_award_anim04": {
+    "file": "sprites/d_finni_award_anim04.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_award_anim05": {
+    "file": "sprites/d_finni_award_anim05.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_award_anim06": {
+    "file": "sprites/d_finni_award_anim06.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_award_anim07": {
+    "file": "sprites/d_finni_award_anim07.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_award_anim08": {
+    "file": "sprites/d_finni_award_anim08.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_award_anim09": {
+    "file": "sprites/d_finni_award_anim09.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_award_anim10": {
+    "file": "sprites/d_finni_award_anim10.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_award_anim11": {
+    "file": "sprites/d_finni_award_anim11.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_bonus_anim00": {
+    "file": "sprites/d_finni_bonus_anim00.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_bonus_anim01": {
+    "file": "sprites/d_finni_bonus_anim01.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_bonus_anim02": {
+    "file": "sprites/d_finni_bonus_anim02.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_bonus_anim03": {
+    "file": "sprites/d_finni_bonus_anim03.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_bonus_anim04": {
+    "file": "sprites/d_finni_bonus_anim04.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_bonus_anim05": {
+    "file": "sprites/d_finni_bonus_anim05.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_bonus_anim06": {
+    "file": "sprites/d_finni_bonus_anim06.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_bonus_anim07": {
+    "file": "sprites/d_finni_bonus_anim07.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_bonus_anim08": {
+    "file": "sprites/d_finni_bonus_anim08.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_bonus_anim09": {
+    "file": "sprites/d_finni_bonus_anim09.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_bonus_anim10": {
+    "file": "sprites/d_finni_bonus_anim10.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_bonus_anim11": {
+    "file": "sprites/d_finni_bonus_anim11.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_ready_anim00": {
+    "file": "sprites/d_finni_ready_anim00.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_ready_anim01": {
+    "file": "sprites/d_finni_ready_anim01.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_ready_anim02": {
+    "file": "sprites/d_finni_ready_anim02.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_ready_anim03": {
+    "file": "sprites/d_finni_ready_anim03.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_ready_anim04": {
+    "file": "sprites/d_finni_ready_anim04.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_ready_anim05": {
+    "file": "sprites/d_finni_ready_anim05.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_ready_anim06": {
+    "file": "sprites/d_finni_ready_anim06.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_ready_anim07": {
+    "file": "sprites/d_finni_ready_anim07.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_ready_anim08": {
+    "file": "sprites/d_finni_ready_anim08.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_ready_anim09": {
+    "file": "sprites/d_finni_ready_anim09.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_ready_anim10": {
+    "file": "sprites/d_finni_ready_anim10.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_ready_anim11": {
+    "file": "sprites/d_finni_ready_anim11.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_combo_anim00": {
+    "file": "sprites/d_finni_combo_anim00.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_combo_anim01": {
+    "file": "sprites/d_finni_combo_anim01.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_combo_anim02": {
+    "file": "sprites/d_finni_combo_anim02.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_combo_anim03": {
+    "file": "sprites/d_finni_combo_anim03.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_combo_anim04": {
+    "file": "sprites/d_finni_combo_anim04.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_combo_anim05": {
+    "file": "sprites/d_finni_combo_anim05.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_combo_anim06": {
+    "file": "sprites/d_finni_combo_anim06.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_combo_anim07": {
+    "file": "sprites/d_finni_combo_anim07.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_combo_anim08": {
+    "file": "sprites/d_finni_combo_anim08.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_combo_anim09": {
+    "file": "sprites/d_finni_combo_anim09.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_combo_anim10": {
+    "file": "sprites/d_finni_combo_anim10.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_finni_combo_anim11": {
+    "file": "sprites/d_finni_combo_anim11.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  }
+}

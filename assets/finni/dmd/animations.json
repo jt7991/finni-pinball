@@ -1,0 +1,1550 @@
+{
+  "d_title": {
+    "frames": [
+      "d_title_anim00",
+      "d_title_anim01",
+      "d_title_anim02",
+      "d_title_anim03",
+      "d_title_anim04",
+      "d_title_anim05",
+      "d_title_anim06",
+      "d_title_anim07",
+      "d_title_anim08",
+      "d_title_anim09",
+      "d_title_anim10",
+      "d_title_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "sparkles"
+  },
+  "d_finni_presents": {
+    "frames": [
+      "d_finni_presents_anim00",
+      "d_finni_presents_anim01",
+      "d_finni_presents_anim02",
+      "d_finni_presents_anim03",
+      "d_finni_presents_anim04",
+      "d_finni_presents_anim05",
+      "d_finni_presents_anim06",
+      "d_finni_presents_anim07",
+      "d_finni_presents_anim08",
+      "d_finni_presents_anim09",
+      "d_finni_presents_anim10",
+      "d_finni_presents_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "ribbons"
+  },
+  "d_finni_presents_select": {
+    "frames": [
+      "d_finni_presents_select_anim00",
+      "d_finni_presents_select_anim01",
+      "d_finni_presents_select_anim02",
+      "d_finni_presents_select_anim03",
+      "d_finni_presents_select_anim04",
+      "d_finni_presents_select_anim05",
+      "d_finni_presents_select_anim06",
+      "d_finni_presents_select_anim07",
+      "d_finni_presents_select_anim08",
+      "d_finni_presents_select_anim09",
+      "d_finni_presents_select_anim10",
+      "d_finni_presents_select_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "selection"
+  },
+  "d_finni_presents_done": {
+    "frames": [
+      "d_finni_presents_done_anim00",
+      "d_finni_presents_done_anim01",
+      "d_finni_presents_done_anim02",
+      "d_finni_presents_done_anim03",
+      "d_finni_presents_done_anim04",
+      "d_finni_presents_done_anim05",
+      "d_finni_presents_done_anim06",
+      "d_finni_presents_done_anim07",
+      "d_finni_presents_done_anim08",
+      "d_finni_presents_done_anim09",
+      "d_finni_presents_done_anim10",
+      "d_finni_presents_done_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "confetti"
+  },
+  "d_finni_invitations": {
+    "frames": [
+      "d_finni_invitations_anim00",
+      "d_finni_invitations_anim01",
+      "d_finni_invitations_anim02",
+      "d_finni_invitations_anim03",
+      "d_finni_invitations_anim04",
+      "d_finni_invitations_anim05",
+      "d_finni_invitations_anim06",
+      "d_finni_invitations_anim07",
+      "d_finni_invitations_anim08",
+      "d_finni_invitations_anim09",
+      "d_finni_invitations_anim10",
+      "d_finni_invitations_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "envelopes"
+  },
+  "d_finni_invitations_select": {
+    "frames": [
+      "d_finni_invitations_select_anim00",
+      "d_finni_invitations_select_anim01",
+      "d_finni_invitations_select_anim02",
+      "d_finni_invitations_select_anim03",
+      "d_finni_invitations_select_anim04",
+      "d_finni_invitations_select_anim05",
+      "d_finni_invitations_select_anim06",
+      "d_finni_invitations_select_anim07",
+      "d_finni_invitations_select_anim08",
+      "d_finni_invitations_select_anim09",
+      "d_finni_invitations_select_anim10",
+      "d_finni_invitations_select_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "selection"
+  },
+  "d_finni_invitations_done": {
+    "frames": [
+      "d_finni_invitations_done_anim00",
+      "d_finni_invitations_done_anim01",
+      "d_finni_invitations_done_anim02",
+      "d_finni_invitations_done_anim03",
+      "d_finni_invitations_done_anim04",
+      "d_finni_invitations_done_anim05",
+      "d_finni_invitations_done_anim06",
+      "d_finni_invitations_done_anim07",
+      "d_finni_invitations_done_anim08",
+      "d_finni_invitations_done_anim09",
+      "d_finni_invitations_done_anim10",
+      "d_finni_invitations_done_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "confetti"
+  },
+  "d_finni_balloons": {
+    "frames": [
+      "d_finni_balloons_anim00",
+      "d_finni_balloons_anim01",
+      "d_finni_balloons_anim02",
+      "d_finni_balloons_anim03",
+      "d_finni_balloons_anim04",
+      "d_finni_balloons_anim05",
+      "d_finni_balloons_anim06",
+      "d_finni_balloons_anim07",
+      "d_finni_balloons_anim08",
+      "d_finni_balloons_anim09",
+      "d_finni_balloons_anim10",
+      "d_finni_balloons_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "balloons"
+  },
+  "d_finni_balloons_select": {
+    "frames": [
+      "d_finni_balloons_select_anim00",
+      "d_finni_balloons_select_anim01",
+      "d_finni_balloons_select_anim02",
+      "d_finni_balloons_select_anim03",
+      "d_finni_balloons_select_anim04",
+      "d_finni_balloons_select_anim05",
+      "d_finni_balloons_select_anim06",
+      "d_finni_balloons_select_anim07",
+      "d_finni_balloons_select_anim08",
+      "d_finni_balloons_select_anim09",
+      "d_finni_balloons_select_anim10",
+      "d_finni_balloons_select_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "selection"
+  },
+  "d_finni_balloons_done": {
+    "frames": [
+      "d_finni_balloons_done_anim00",
+      "d_finni_balloons_done_anim01",
+      "d_finni_balloons_done_anim02",
+      "d_finni_balloons_done_anim03",
+      "d_finni_balloons_done_anim04",
+      "d_finni_balloons_done_anim05",
+      "d_finni_balloons_done_anim06",
+      "d_finni_balloons_done_anim07",
+      "d_finni_balloons_done_anim08",
+      "d_finni_balloons_done_anim09",
+      "d_finni_balloons_done_anim10",
+      "d_finni_balloons_done_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "confetti"
+  },
+  "d_finni_decorations": {
+    "frames": [
+      "d_finni_decorations_anim00",
+      "d_finni_decorations_anim01",
+      "d_finni_decorations_anim02",
+      "d_finni_decorations_anim03",
+      "d_finni_decorations_anim04",
+      "d_finni_decorations_anim05",
+      "d_finni_decorations_anim06",
+      "d_finni_decorations_anim07",
+      "d_finni_decorations_anim08",
+      "d_finni_decorations_anim09",
+      "d_finni_decorations_anim10",
+      "d_finni_decorations_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "lights"
+  },
+  "d_finni_decorations_select": {
+    "frames": [
+      "d_finni_decorations_select_anim00",
+      "d_finni_decorations_select_anim01",
+      "d_finni_decorations_select_anim02",
+      "d_finni_decorations_select_anim03",
+      "d_finni_decorations_select_anim04",
+      "d_finni_decorations_select_anim05",
+      "d_finni_decorations_select_anim06",
+      "d_finni_decorations_select_anim07",
+      "d_finni_decorations_select_anim08",
+      "d_finni_decorations_select_anim09",
+      "d_finni_decorations_select_anim10",
+      "d_finni_decorations_select_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "selection"
+  },
+  "d_finni_decorations_done": {
+    "frames": [
+      "d_finni_decorations_done_anim00",
+      "d_finni_decorations_done_anim01",
+      "d_finni_decorations_done_anim02",
+      "d_finni_decorations_done_anim03",
+      "d_finni_decorations_done_anim04",
+      "d_finni_decorations_done_anim05",
+      "d_finni_decorations_done_anim06",
+      "d_finni_decorations_done_anim07",
+      "d_finni_decorations_done_anim08",
+      "d_finni_decorations_done_anim09",
+      "d_finni_decorations_done_anim10",
+      "d_finni_decorations_done_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "confetti"
+  },
+  "d_finni_baking": {
+    "frames": [
+      "d_finni_baking_anim00",
+      "d_finni_baking_anim01",
+      "d_finni_baking_anim02",
+      "d_finni_baking_anim03",
+      "d_finni_baking_anim04",
+      "d_finni_baking_anim05",
+      "d_finni_baking_anim06",
+      "d_finni_baking_anim07",
+      "d_finni_baking_anim08",
+      "d_finni_baking_anim09",
+      "d_finni_baking_anim10",
+      "d_finni_baking_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "steam"
+  },
+  "d_finni_baking_select": {
+    "frames": [
+      "d_finni_baking_select_anim00",
+      "d_finni_baking_select_anim01",
+      "d_finni_baking_select_anim02",
+      "d_finni_baking_select_anim03",
+      "d_finni_baking_select_anim04",
+      "d_finni_baking_select_anim05",
+      "d_finni_baking_select_anim06",
+      "d_finni_baking_select_anim07",
+      "d_finni_baking_select_anim08",
+      "d_finni_baking_select_anim09",
+      "d_finni_baking_select_anim10",
+      "d_finni_baking_select_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "selection"
+  },
+  "d_finni_baking_done": {
+    "frames": [
+      "d_finni_baking_done_anim00",
+      "d_finni_baking_done_anim01",
+      "d_finni_baking_done_anim02",
+      "d_finni_baking_done_anim03",
+      "d_finni_baking_done_anim04",
+      "d_finni_baking_done_anim05",
+      "d_finni_baking_done_anim06",
+      "d_finni_baking_done_anim07",
+      "d_finni_baking_done_anim08",
+      "d_finni_baking_done_anim09",
+      "d_finni_baking_done_anim10",
+      "d_finni_baking_done_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "confetti"
+  },
+  "d_finni_pinata": {
+    "frames": [
+      "d_finni_pinata_anim00",
+      "d_finni_pinata_anim01",
+      "d_finni_pinata_anim02",
+      "d_finni_pinata_anim03",
+      "d_finni_pinata_anim04",
+      "d_finni_pinata_anim05",
+      "d_finni_pinata_anim06",
+      "d_finni_pinata_anim07",
+      "d_finni_pinata_anim08",
+      "d_finni_pinata_anim09",
+      "d_finni_pinata_anim10",
+      "d_finni_pinata_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "pinata"
+  },
+  "d_finni_pinata_select": {
+    "frames": [
+      "d_finni_pinata_select_anim00",
+      "d_finni_pinata_select_anim01",
+      "d_finni_pinata_select_anim02",
+      "d_finni_pinata_select_anim03",
+      "d_finni_pinata_select_anim04",
+      "d_finni_pinata_select_anim05",
+      "d_finni_pinata_select_anim06",
+      "d_finni_pinata_select_anim07",
+      "d_finni_pinata_select_anim08",
+      "d_finni_pinata_select_anim09",
+      "d_finni_pinata_select_anim10",
+      "d_finni_pinata_select_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "selection"
+  },
+  "d_finni_pinata_done": {
+    "frames": [
+      "d_finni_pinata_done_anim00",
+      "d_finni_pinata_done_anim01",
+      "d_finni_pinata_done_anim02",
+      "d_finni_pinata_done_anim03",
+      "d_finni_pinata_done_anim04",
+      "d_finni_pinata_done_anim05",
+      "d_finni_pinata_done_anim06",
+      "d_finni_pinata_done_anim07",
+      "d_finni_pinata_done_anim08",
+      "d_finni_pinata_done_anim09",
+      "d_finni_pinata_done_anim10",
+      "d_finni_pinata_done_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "confetti"
+  },
+  "d_finni_party": {
+    "frames": [
+      "d_finni_party_anim00",
+      "d_finni_party_anim01",
+      "d_finni_party_anim02",
+      "d_finni_party_anim03",
+      "d_finni_party_anim04",
+      "d_finni_party_anim05",
+      "d_finni_party_anim06",
+      "d_finni_party_anim07",
+      "d_finni_party_anim08",
+      "d_finni_party_anim09",
+      "d_finni_party_anim10",
+      "d_finni_party_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "lights"
+  },
+  "d_finni_party_select": {
+    "frames": [
+      "d_finni_party_select_anim00",
+      "d_finni_party_select_anim01",
+      "d_finni_party_select_anim02",
+      "d_finni_party_select_anim03",
+      "d_finni_party_select_anim04",
+      "d_finni_party_select_anim05",
+      "d_finni_party_select_anim06",
+      "d_finni_party_select_anim07",
+      "d_finni_party_select_anim08",
+      "d_finni_party_select_anim09",
+      "d_finni_party_select_anim10",
+      "d_finni_party_select_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "selection"
+  },
+  "d_finni_party_done": {
+    "frames": [
+      "d_finni_party_done_anim00",
+      "d_finni_party_done_anim01",
+      "d_finni_party_done_anim02",
+      "d_finni_party_done_anim03",
+      "d_finni_party_done_anim04",
+      "d_finni_party_done_anim05",
+      "d_finni_party_done_anim06",
+      "d_finni_party_done_anim07",
+      "d_finni_party_done_anim08",
+      "d_finni_party_done_anim09",
+      "d_finni_party_done_anim10",
+      "d_finni_party_done_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "confetti"
+  },
+  "d_finni_cake": {
+    "frames": [
+      "d_finni_cake_anim00",
+      "d_finni_cake_anim01",
+      "d_finni_cake_anim02",
+      "d_finni_cake_anim03",
+      "d_finni_cake_anim04",
+      "d_finni_cake_anim05",
+      "d_finni_cake_anim06",
+      "d_finni_cake_anim07",
+      "d_finni_cake_anim08",
+      "d_finni_cake_anim09",
+      "d_finni_cake_anim10",
+      "d_finni_cake_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "candles"
+  },
+  "d_finni_toppings": {
+    "frames": [
+      "d_finni_toppings_anim00",
+      "d_finni_toppings_anim01",
+      "d_finni_toppings_anim02",
+      "d_finni_toppings_anim03",
+      "d_finni_toppings_anim04",
+      "d_finni_toppings_anim05",
+      "d_finni_toppings_anim06",
+      "d_finni_toppings_anim07",
+      "d_finni_toppings_anim08",
+      "d_finni_toppings_anim09",
+      "d_finni_toppings_anim10",
+      "d_finni_toppings_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "candles"
+  },
+  "d_finni_flourish": {
+    "frames": [
+      "d_finni_flourish_anim00",
+      "d_finni_flourish_anim01",
+      "d_finni_flourish_anim02",
+      "d_finni_flourish_anim03",
+      "d_finni_flourish_anim04",
+      "d_finni_flourish_anim05",
+      "d_finni_flourish_anim06",
+      "d_finni_flourish_anim07",
+      "d_finni_flourish_anim08",
+      "d_finni_flourish_anim09",
+      "d_finni_flourish_anim10",
+      "d_finni_flourish_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "candles"
+  },
+  "d_finni_frosting": {
+    "frames": [
+      "d_finni_frosting_anim00",
+      "d_finni_frosting_anim01",
+      "d_finni_frosting_anim02",
+      "d_finni_frosting_anim03",
+      "d_finni_frosting_anim04",
+      "d_finni_frosting_anim05",
+      "d_finni_frosting_anim06",
+      "d_finni_frosting_anim07",
+      "d_finni_frosting_anim08",
+      "d_finni_frosting_anim09",
+      "d_finni_frosting_anim10",
+      "d_finni_frosting_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "candles"
+  },
+  "d_finni_friendship": {
+    "frames": [
+      "d_finni_friendship_anim00",
+      "d_finni_friendship_anim01",
+      "d_finni_friendship_anim02",
+      "d_finni_friendship_anim03",
+      "d_finni_friendship_anim04",
+      "d_finni_friendship_anim05",
+      "d_finni_friendship_anim06",
+      "d_finni_friendship_anim07",
+      "d_finni_friendship_anim08",
+      "d_finni_friendship_anim09",
+      "d_finni_friendship_anim10",
+      "d_finni_friendship_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "friendship"
+  },
+  "d_finni_supplyrun": {
+    "frames": [
+      "d_finni_supplyrun_anim00",
+      "d_finni_supplyrun_anim01",
+      "d_finni_supplyrun_anim02",
+      "d_finni_supplyrun_anim03",
+      "d_finni_supplyrun_anim04",
+      "d_finni_supplyrun_anim05",
+      "d_finni_supplyrun_anim06",
+      "d_finni_supplyrun_anim07",
+      "d_finni_supplyrun_anim08",
+      "d_finni_supplyrun_anim09",
+      "d_finni_supplyrun_anim10",
+      "d_finni_supplyrun_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "parcels"
+  },
+  "d_finni_streamers": {
+    "frames": [
+      "d_finni_streamers_anim00",
+      "d_finni_streamers_anim01",
+      "d_finni_streamers_anim02",
+      "d_finni_streamers_anim03",
+      "d_finni_streamers_anim04",
+      "d_finni_streamers_anim05",
+      "d_finni_streamers_anim06",
+      "d_finni_streamers_anim07",
+      "d_finni_streamers_anim08",
+      "d_finni_streamers_anim09",
+      "d_finni_streamers_anim10",
+      "d_finni_streamers_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "ribbons"
+  },
+  "d_finni_spinner": {
+    "frames": [
+      "d_finni_spinner_anim00",
+      "d_finni_spinner_anim01",
+      "d_finni_spinner_anim02",
+      "d_finni_spinner_anim03",
+      "d_finni_spinner_anim04",
+      "d_finni_spinner_anim05",
+      "d_finni_spinner_anim06",
+      "d_finni_spinner_anim07",
+      "d_finni_spinner_anim08",
+      "d_finni_spinner_anim09",
+      "d_finni_spinner_anim10",
+      "d_finni_spinner_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "record"
+  },
+  "d_finni_confetti": {
+    "frames": [
+      "d_finni_confetti_anim00",
+      "d_finni_confetti_anim01",
+      "d_finni_confetti_anim02",
+      "d_finni_confetti_anim03",
+      "d_finni_confetti_anim04",
+      "d_finni_confetti_anim05",
+      "d_finni_confetti_anim06",
+      "d_finni_confetti_anim07",
+      "d_finni_confetti_anim08",
+      "d_finni_confetti_anim09",
+      "d_finni_confetti_anim10",
+      "d_finni_confetti_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "confetti"
+  },
+  "d_finni_snack": {
+    "frames": [
+      "d_finni_snack_anim00",
+      "d_finni_snack_anim01",
+      "d_finni_snack_anim02",
+      "d_finni_snack_anim03",
+      "d_finni_snack_anim04",
+      "d_finni_snack_anim05",
+      "d_finni_snack_anim06",
+      "d_finni_snack_anim07",
+      "d_finni_snack_anim08",
+      "d_finni_snack_anim09",
+      "d_finni_snack_anim10",
+      "d_finni_snack_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "steam"
+  },
+  "d_finni_choose": {
+    "frames": [
+      "d_finni_choose_anim00",
+      "d_finni_choose_anim01",
+      "d_finni_choose_anim02",
+      "d_finni_choose_anim03",
+      "d_finni_choose_anim04",
+      "d_finni_choose_anim05",
+      "d_finni_choose_anim06",
+      "d_finni_choose_anim07",
+      "d_finni_choose_anim08",
+      "d_finni_choose_anim09",
+      "d_finni_choose_anim10",
+      "d_finni_choose_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "selection"
+  },
+  "d_finni_mystery": {
+    "frames": [
+      "d_finni_mystery_anim00",
+      "d_finni_mystery_anim01",
+      "d_finni_mystery_anim02",
+      "d_finni_mystery_anim03",
+      "d_finni_mystery_anim04",
+      "d_finni_mystery_anim05",
+      "d_finni_mystery_anim06",
+      "d_finni_mystery_anim07",
+      "d_finni_mystery_anim08",
+      "d_finni_mystery_anim09",
+      "d_finni_mystery_anim10",
+      "d_finni_mystery_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "mystery"
+  },
+  "d_finni_disco": {
+    "frames": [
+      "d_finni_disco_anim00",
+      "d_finni_disco_anim01",
+      "d_finni_disco_anim02",
+      "d_finni_disco_anim03",
+      "d_finni_disco_anim04",
+      "d_finni_disco_anim05",
+      "d_finni_disco_anim06",
+      "d_finni_disco_anim07",
+      "d_finni_disco_anim08",
+      "d_finni_disco_anim09",
+      "d_finni_disco_anim10",
+      "d_finni_disco_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "lights"
+  },
+  "d_finni_discomb": {
+    "frames": [
+      "d_finni_discomb_anim00",
+      "d_finni_discomb_anim01",
+      "d_finni_discomb_anim02",
+      "d_finni_discomb_anim03",
+      "d_finni_discomb_anim04",
+      "d_finni_discomb_anim05",
+      "d_finni_discomb_anim06",
+      "d_finni_discomb_anim07",
+      "d_finni_discomb_anim08",
+      "d_finni_discomb_anim09",
+      "d_finni_discomb_anim10",
+      "d_finni_discomb_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "confetti"
+  },
+  "d_finni_timer": {
+    "frames": [
+      "d_finni_timer_anim00",
+      "d_finni_timer_anim01",
+      "d_finni_timer_anim02",
+      "d_finni_timer_anim03",
+      "d_finni_timer_anim04",
+      "d_finni_timer_anim05",
+      "d_finni_timer_anim06",
+      "d_finni_timer_anim07",
+      "d_finni_timer_anim08",
+      "d_finni_timer_anim09",
+      "d_finni_timer_anim10",
+      "d_finni_timer_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "timer"
+  },
+  "d_finni_lights": {
+    "frames": [
+      "d_finni_lights_anim00",
+      "d_finni_lights_anim01",
+      "d_finni_lights_anim02",
+      "d_finni_lights_anim03",
+      "d_finni_lights_anim04",
+      "d_finni_lights_anim05",
+      "d_finni_lights_anim06",
+      "d_finni_lights_anim07",
+      "d_finni_lights_anim08",
+      "d_finni_lights_anim09",
+      "d_finni_lights_anim10",
+      "d_finni_lights_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "sparkles"
+  },
+  "d_finni_checklist": {
+    "frames": [
+      "d_finni_checklist_anim00",
+      "d_finni_checklist_anim01",
+      "d_finni_checklist_anim02",
+      "d_finni_checklist_anim03",
+      "d_finni_checklist_anim04",
+      "d_finni_checklist_anim05",
+      "d_finni_checklist_anim06",
+      "d_finni_checklist_anim07",
+      "d_finni_checklist_anim08",
+      "d_finni_checklist_anim09",
+      "d_finni_checklist_anim10",
+      "d_finni_checklist_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "page_turn"
+  },
+  "d_finni_favors": {
+    "frames": [
+      "d_finni_favors_anim00",
+      "d_finni_favors_anim01",
+      "d_finni_favors_anim02",
+      "d_finni_favors_anim03",
+      "d_finni_favors_anim04",
+      "d_finni_favors_anim05",
+      "d_finni_favors_anim06",
+      "d_finni_favors_anim07",
+      "d_finni_favors_anim08",
+      "d_finni_favors_anim09",
+      "d_finni_favors_anim10",
+      "d_finni_favors_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "sparkles"
+  },
+  "d_ballsaved": {
+    "frames": [
+      "d_ballsaved_anim00",
+      "d_ballsaved_anim01",
+      "d_ballsaved_anim02",
+      "d_ballsaved_anim03",
+      "d_ballsaved_anim04",
+      "d_ballsaved_anim05",
+      "d_ballsaved_anim06",
+      "d_ballsaved_anim07",
+      "d_ballsaved_anim08",
+      "d_ballsaved_anim09",
+      "d_ballsaved_anim10",
+      "d_ballsaved_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "ball_return"
+  },
+  "d_bam": {
+    "frames": [
+      "d_bam_anim00",
+      "d_bam_anim01",
+      "d_bam_anim02",
+      "d_bam_anim03",
+      "d_bam_anim04",
+      "d_bam_anim05",
+      "d_bam_anim06",
+      "d_bam_anim07",
+      "d_bam_anim08",
+      "d_bam_anim09",
+      "d_bam_anim10",
+      "d_bam_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "confetti"
+  },
+  "d_boom": {
+    "frames": [
+      "d_boom_anim00",
+      "d_boom_anim01",
+      "d_boom_anim02",
+      "d_boom_anim03",
+      "d_boom_anim04",
+      "d_boom_anim05",
+      "d_boom_anim06",
+      "d_boom_anim07",
+      "d_boom_anim08",
+      "d_boom_anim09",
+      "d_boom_anim10",
+      "d_boom_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "mystery"
+  },
+  "d_colossus": {
+    "frames": [
+      "d_colossus_anim00",
+      "d_colossus_anim01",
+      "d_colossus_anim02",
+      "d_colossus_anim03",
+      "d_colossus_anim04",
+      "d_colossus_anim05",
+      "d_colossus_anim06",
+      "d_colossus_anim07",
+      "d_colossus_anim08",
+      "d_colossus_anim09",
+      "d_colossus_anim10",
+      "d_colossus_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "sparkles"
+  },
+  "d_dazzler": {
+    "frames": [
+      "d_dazzler_anim00",
+      "d_dazzler_anim01",
+      "d_dazzler_anim02",
+      "d_dazzler_anim03",
+      "d_dazzler_anim04",
+      "d_dazzler_anim05",
+      "d_dazzler_anim06",
+      "d_dazzler_anim07",
+      "d_dazzler_anim08",
+      "d_dazzler_anim09",
+      "d_dazzler_anim10",
+      "d_dazzler_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "timer"
+  },
+  "d_domino": {
+    "frames": [
+      "d_domino_anim00",
+      "d_domino_anim01",
+      "d_domino_anim02",
+      "d_domino_anim03",
+      "d_domino_anim04",
+      "d_domino_anim05",
+      "d_domino_anim06",
+      "d_domino_anim07",
+      "d_domino_anim08",
+      "d_domino_anim09",
+      "d_domino_anim10",
+      "d_domino_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "ribbons"
+  },
+  "d_extraball": {
+    "frames": [
+      "d_extraball_anim00",
+      "d_extraball_anim01",
+      "d_extraball_anim02",
+      "d_extraball_anim03",
+      "d_extraball_anim04",
+      "d_extraball_anim05",
+      "d_extraball_anim06",
+      "d_extraball_anim07",
+      "d_extraball_anim08",
+      "d_extraball_anim09",
+      "d_extraball_anim10",
+      "d_extraball_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "ball_return"
+  },
+  "d_jackpot": {
+    "frames": [
+      "d_jackpot_anim00",
+      "d_jackpot_anim01",
+      "d_jackpot_anim02",
+      "d_jackpot_anim03",
+      "d_jackpot_anim04",
+      "d_jackpot_anim05",
+      "d_jackpot_anim06",
+      "d_jackpot_anim07",
+      "d_jackpot_anim08",
+      "d_jackpot_anim09",
+      "d_jackpot_anim10",
+      "d_jackpot_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "confetti"
+  },
+  "d_lock1": {
+    "frames": [
+      "d_lock1_anim00",
+      "d_lock1_anim01",
+      "d_lock1_anim02",
+      "d_lock1_anim03",
+      "d_lock1_anim04",
+      "d_lock1_anim05",
+      "d_lock1_anim06",
+      "d_lock1_anim07",
+      "d_lock1_anim08",
+      "d_lock1_anim09",
+      "d_lock1_anim10",
+      "d_lock1_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "friendship"
+  },
+  "d_lock2": {
+    "frames": [
+      "d_lock2_anim00",
+      "d_lock2_anim01",
+      "d_lock2_anim02",
+      "d_lock2_anim03",
+      "d_lock2_anim04",
+      "d_lock2_anim05",
+      "d_lock2_anim06",
+      "d_lock2_anim07",
+      "d_lock2_anim08",
+      "d_lock2_anim09",
+      "d_lock2_anim10",
+      "d_lock2_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "friendship"
+  },
+  "d_lock3": {
+    "frames": [
+      "d_lock3_anim00",
+      "d_lock3_anim01",
+      "d_lock3_anim02",
+      "d_lock3_anim03",
+      "d_lock3_anim04",
+      "d_lock3_anim05",
+      "d_lock3_anim06",
+      "d_lock3_anim07",
+      "d_lock3_anim08",
+      "d_lock3_anim09",
+      "d_lock3_anim10",
+      "d_lock3_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "friendship"
+  },
+  "d_lockislit": {
+    "frames": [
+      "d_lockislit_anim00",
+      "d_lockislit_anim01",
+      "d_lockislit_anim02",
+      "d_lockislit_anim03",
+      "d_lockislit_anim04",
+      "d_lockislit_anim05",
+      "d_lockislit_anim06",
+      "d_lockislit_anim07",
+      "d_lockislit_anim08",
+      "d_lockislit_anim09",
+      "d_lockislit_anim10",
+      "d_lockislit_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "friendship"
+  },
+  "d_loopjackpot": {
+    "frames": [
+      "d_loopjackpot_anim00",
+      "d_loopjackpot_anim01",
+      "d_loopjackpot_anim02",
+      "d_loopjackpot_anim03",
+      "d_loopjackpot_anim04",
+      "d_loopjackpot_anim05",
+      "d_loopjackpot_anim06",
+      "d_loopjackpot_anim07",
+      "d_loopjackpot_anim08",
+      "d_loopjackpot_anim09",
+      "d_loopjackpot_anim10",
+      "d_loopjackpot_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "confetti"
+  },
+  "d_mechsuit": {
+    "frames": [
+      "d_mechsuit_anim00",
+      "d_mechsuit_anim01",
+      "d_mechsuit_anim02",
+      "d_mechsuit_anim03",
+      "d_mechsuit_anim04",
+      "d_mechsuit_anim05",
+      "d_mechsuit_anim06",
+      "d_mechsuit_anim07",
+      "d_mechsuit_anim08",
+      "d_mechsuit_anim09",
+      "d_mechsuit_anim10",
+      "d_mechsuit_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "parcels"
+  },
+  "d_multiball": {
+    "frames": [
+      "d_multiball_anim00",
+      "d_multiball_anim01",
+      "d_multiball_anim02",
+      "d_multiball_anim03",
+      "d_multiball_anim04",
+      "d_multiball_anim05",
+      "d_multiball_anim06",
+      "d_multiball_anim07",
+      "d_multiball_anim08",
+      "d_multiball_anim09",
+      "d_multiball_anim10",
+      "d_multiball_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "confetti"
+  },
+  "d_mystery": {
+    "frames": [
+      "d_mystery_anim00",
+      "d_mystery_anim01",
+      "d_mystery_anim02",
+      "d_mystery_anim03",
+      "d_mystery_anim04",
+      "d_mystery_anim05",
+      "d_mystery_anim06",
+      "d_mystery_anim07",
+      "d_mystery_anim08",
+      "d_mystery_anim09",
+      "d_mystery_anim10",
+      "d_mystery_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "mystery"
+  },
+  "d_skillshot": {
+    "frames": [
+      "d_skillshot_anim00",
+      "d_skillshot_anim01",
+      "d_skillshot_anim02",
+      "d_skillshot_anim03",
+      "d_skillshot_anim04",
+      "d_skillshot_anim05",
+      "d_skillshot_anim06",
+      "d_skillshot_anim07",
+      "d_skillshot_anim08",
+      "d_skillshot_anim09",
+      "d_skillshot_anim10",
+      "d_skillshot_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "confetti"
+  },
+  "d_superjackpot": {
+    "frames": [
+      "d_superjackpot_anim00",
+      "d_superjackpot_anim01",
+      "d_superjackpot_anim02",
+      "d_superjackpot_anim03",
+      "d_superjackpot_anim04",
+      "d_superjackpot_anim05",
+      "d_superjackpot_anim06",
+      "d_superjackpot_anim07",
+      "d_superjackpot_anim08",
+      "d_superjackpot_anim09",
+      "d_superjackpot_anim10",
+      "d_superjackpot_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "confetti"
+  },
+  "d_superskillshot": {
+    "frames": [
+      "d_superskillshot_anim00",
+      "d_superskillshot_anim01",
+      "d_superskillshot_anim02",
+      "d_superskillshot_anim03",
+      "d_superskillshot_anim04",
+      "d_superskillshot_anim05",
+      "d_superskillshot_anim06",
+      "d_superskillshot_anim07",
+      "d_superskillshot_anim08",
+      "d_superskillshot_anim09",
+      "d_superskillshot_anim10",
+      "d_superskillshot_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "confetti"
+  },
+  "d_wolverine": {
+    "frames": [
+      "d_wolverine_anim00",
+      "d_wolverine_anim01",
+      "d_wolverine_anim02",
+      "d_wolverine_anim03",
+      "d_wolverine_anim04",
+      "d_wolverine_anim05",
+      "d_wolverine_anim06",
+      "d_wolverine_anim07",
+      "d_wolverine_anim08",
+      "d_wolverine_anim09",
+      "d_wolverine_anim10",
+      "d_wolverine_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "page_turn"
+  },
+  "d_finni_friend1": {
+    "frames": [
+      "d_finni_friend1_anim00",
+      "d_finni_friend1_anim01",
+      "d_finni_friend1_anim02",
+      "d_finni_friend1_anim03",
+      "d_finni_friend1_anim04",
+      "d_finni_friend1_anim05",
+      "d_finni_friend1_anim06",
+      "d_finni_friend1_anim07",
+      "d_finni_friend1_anim08",
+      "d_finni_friend1_anim09",
+      "d_finni_friend1_anim10",
+      "d_finni_friend1_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "friend_arrival_1"
+  },
+  "d_finni_friend2": {
+    "frames": [
+      "d_finni_friend2_anim00",
+      "d_finni_friend2_anim01",
+      "d_finni_friend2_anim02",
+      "d_finni_friend2_anim03",
+      "d_finni_friend2_anim04",
+      "d_finni_friend2_anim05",
+      "d_finni_friend2_anim06",
+      "d_finni_friend2_anim07",
+      "d_finni_friend2_anim08",
+      "d_finni_friend2_anim09",
+      "d_finni_friend2_anim10",
+      "d_finni_friend2_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "friend_arrival_2"
+  },
+  "d_finni_friend3": {
+    "frames": [
+      "d_finni_friend3_anim00",
+      "d_finni_friend3_anim01",
+      "d_finni_friend3_anim02",
+      "d_finni_friend3_anim03",
+      "d_finni_friend3_anim04",
+      "d_finni_friend3_anim05",
+      "d_finni_friend3_anim06",
+      "d_finni_friend3_anim07",
+      "d_finni_friend3_anim08",
+      "d_finni_friend3_anim09",
+      "d_finni_friend3_anim10",
+      "d_finni_friend3_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "friend_arrival_3"
+  },
+  "d_finni_friendship_start": {
+    "frames": [
+      "d_finni_friendship_start_anim00",
+      "d_finni_friendship_start_anim01",
+      "d_finni_friendship_start_anim02",
+      "d_finni_friendship_start_anim03",
+      "d_finni_friendship_start_anim04",
+      "d_finni_friendship_start_anim05",
+      "d_finni_friendship_start_anim06",
+      "d_finni_friendship_start_anim07",
+      "d_finni_friendship_start_anim08",
+      "d_finni_friendship_start_anim09",
+      "d_finni_friendship_start_anim10",
+      "d_finni_friendship_start_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "friendship_start"
+  },
+  "d_player1": {
+    "frames": [
+      "d_player1_anim00",
+      "d_player1_anim01",
+      "d_player1_anim02",
+      "d_player1_anim03",
+      "d_player1_anim04",
+      "d_player1_anim05",
+      "d_player1_anim06",
+      "d_player1_anim07",
+      "d_player1_anim08",
+      "d_player1_anim09",
+      "d_player1_anim10",
+      "d_player1_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "sparkles"
+  },
+  "d_player2": {
+    "frames": [
+      "d_player2_anim00",
+      "d_player2_anim01",
+      "d_player2_anim02",
+      "d_player2_anim03",
+      "d_player2_anim04",
+      "d_player2_anim05",
+      "d_player2_anim06",
+      "d_player2_anim07",
+      "d_player2_anim08",
+      "d_player2_anim09",
+      "d_player2_anim10",
+      "d_player2_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "sparkles"
+  },
+  "d_player3": {
+    "frames": [
+      "d_player3_anim00",
+      "d_player3_anim01",
+      "d_player3_anim02",
+      "d_player3_anim03",
+      "d_player3_anim04",
+      "d_player3_anim05",
+      "d_player3_anim06",
+      "d_player3_anim07",
+      "d_player3_anim08",
+      "d_player3_anim09",
+      "d_player3_anim10",
+      "d_player3_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "sparkles"
+  },
+  "d_player4": {
+    "frames": [
+      "d_player4_anim00",
+      "d_player4_anim01",
+      "d_player4_anim02",
+      "d_player4_anim03",
+      "d_player4_anim04",
+      "d_player4_anim05",
+      "d_player4_anim06",
+      "d_player4_anim07",
+      "d_player4_anim08",
+      "d_player4_anim09",
+      "d_player4_anim10",
+      "d_player4_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "sparkles"
+  },
+  "d_combo": {
+    "frames": [
+      "d_combo_anim00",
+      "d_combo_anim01",
+      "d_combo_anim02",
+      "d_combo_anim03",
+      "d_combo_anim04",
+      "d_combo_anim05",
+      "d_combo_anim06",
+      "d_combo_anim07",
+      "d_combo_anim08",
+      "d_combo_anim09",
+      "d_combo_anim10",
+      "d_combo_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "record"
+  },
+  "d_combo2": {
+    "frames": [
+      "d_combo2_anim00",
+      "d_combo2_anim01",
+      "d_combo2_anim02",
+      "d_combo2_anim03",
+      "d_combo2_anim04",
+      "d_combo2_anim05",
+      "d_combo2_anim06",
+      "d_combo2_anim07",
+      "d_combo2_anim08",
+      "d_combo2_anim09",
+      "d_combo2_anim10",
+      "d_combo2_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "record"
+  },
+  "d_combo3": {
+    "frames": [
+      "d_combo3_anim00",
+      "d_combo3_anim01",
+      "d_combo3_anim02",
+      "d_combo3_anim03",
+      "d_combo3_anim04",
+      "d_combo3_anim05",
+      "d_combo3_anim06",
+      "d_combo3_anim07",
+      "d_combo3_anim08",
+      "d_combo3_anim09",
+      "d_combo3_anim10",
+      "d_combo3_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "record"
+  },
+  "d_combo4": {
+    "frames": [
+      "d_combo4_anim00",
+      "d_combo4_anim01",
+      "d_combo4_anim02",
+      "d_combo4_anim03",
+      "d_combo4_anim04",
+      "d_combo4_anim05",
+      "d_combo4_anim06",
+      "d_combo4_anim07",
+      "d_combo4_anim08",
+      "d_combo4_anim09",
+      "d_combo4_anim10",
+      "d_combo4_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "record"
+  },
+  "d_combo5": {
+    "frames": [
+      "d_combo5_anim00",
+      "d_combo5_anim01",
+      "d_combo5_anim02",
+      "d_combo5_anim03",
+      "d_combo5_anim04",
+      "d_combo5_anim05",
+      "d_combo5_anim06",
+      "d_combo5_anim07",
+      "d_combo5_anim08",
+      "d_combo5_anim09",
+      "d_combo5_anim10",
+      "d_combo5_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "record"
+  },
+  "d_chimi2": {
+    "frames": [
+      "d_chimi2_anim00",
+      "d_chimi2_anim01",
+      "d_chimi2_anim02",
+      "d_chimi2_anim03",
+      "d_chimi2_anim04",
+      "d_chimi2_anim05",
+      "d_chimi2_anim06",
+      "d_chimi2_anim07",
+      "d_chimi2_anim08",
+      "d_chimi2_anim09",
+      "d_chimi2_anim10",
+      "d_chimi2_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "steam"
+  },
+  "d_star2": {
+    "frames": [
+      "d_star2_anim00",
+      "d_star2_anim01",
+      "d_star2_anim02",
+      "d_star2_anim03",
+      "d_star2_anim04",
+      "d_star2_anim05",
+      "d_star2_anim06",
+      "d_star2_anim07",
+      "d_star2_anim08",
+      "d_star2_anim09",
+      "d_star2_anim10",
+      "d_star2_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "lights"
+  },
+  "d_ninjamb": {
+    "frames": [
+      "d_ninjamb_anim00",
+      "d_ninjamb_anim01",
+      "d_ninjamb_anim02",
+      "d_ninjamb_anim03",
+      "d_ninjamb_anim04",
+      "d_ninjamb_anim05",
+      "d_ninjamb_anim06",
+      "d_ninjamb_anim07",
+      "d_ninjamb_anim08",
+      "d_ninjamb_anim09",
+      "d_ninjamb_anim10",
+      "d_ninjamb_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "lights"
+  },
+  "d_diamond1": {
+    "frames": [
+      "d_diamond1_anim00",
+      "d_diamond1_anim01",
+      "d_diamond1_anim02",
+      "d_diamond1_anim03",
+      "d_diamond1_anim04",
+      "d_diamond1_anim05",
+      "d_diamond1_anim06",
+      "d_diamond1_anim07",
+      "d_diamond1_anim08",
+      "d_diamond1_anim09",
+      "d_diamond1_anim10",
+      "d_diamond1_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "ribbons"
+  },
+  "d_diamond2": {
+    "frames": [
+      "d_diamond2_anim00",
+      "d_diamond2_anim01",
+      "d_diamond2_anim02",
+      "d_diamond2_anim03",
+      "d_diamond2_anim04",
+      "d_diamond2_anim05",
+      "d_diamond2_anim06",
+      "d_diamond2_anim07",
+      "d_diamond2_anim08",
+      "d_diamond2_anim09",
+      "d_diamond2_anim10",
+      "d_diamond2_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "ribbons"
+  },
+  "d_diamond3": {
+    "frames": [
+      "d_diamond3_anim00",
+      "d_diamond3_anim01",
+      "d_diamond3_anim02",
+      "d_diamond3_anim03",
+      "d_diamond3_anim04",
+      "d_diamond3_anim05",
+      "d_diamond3_anim06",
+      "d_diamond3_anim07",
+      "d_diamond3_anim08",
+      "d_diamond3_anim09",
+      "d_diamond3_anim10",
+      "d_diamond3_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "ribbons"
+  },
+  "d_diamond4": {
+    "frames": [
+      "d_diamond4_anim00",
+      "d_diamond4_anim01",
+      "d_diamond4_anim02",
+      "d_diamond4_anim03",
+      "d_diamond4_anim04",
+      "d_diamond4_anim05",
+      "d_diamond4_anim06",
+      "d_diamond4_anim07",
+      "d_diamond4_anim08",
+      "d_diamond4_anim09",
+      "d_diamond4_anim10",
+      "d_diamond4_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "ribbons"
+  },
+  "d_diamond5": {
+    "frames": [
+      "d_diamond5_anim00",
+      "d_diamond5_anim01",
+      "d_diamond5_anim02",
+      "d_diamond5_anim03",
+      "d_diamond5_anim04",
+      "d_diamond5_anim05",
+      "d_diamond5_anim06",
+      "d_diamond5_anim07",
+      "d_diamond5_anim08",
+      "d_diamond5_anim09",
+      "d_diamond5_anim10",
+      "d_diamond5_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "ribbons"
+  },
+  "d_diamond6": {
+    "frames": [
+      "d_diamond6_anim00",
+      "d_diamond6_anim01",
+      "d_diamond6_anim02",
+      "d_diamond6_anim03",
+      "d_diamond6_anim04",
+      "d_diamond6_anim05",
+      "d_diamond6_anim06",
+      "d_diamond6_anim07",
+      "d_diamond6_anim08",
+      "d_diamond6_anim09",
+      "d_diamond6_anim10",
+      "d_diamond6_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "ribbons"
+  },
+  "d_finni_award": {
+    "frames": [
+      "d_finni_award_anim00",
+      "d_finni_award_anim01",
+      "d_finni_award_anim02",
+      "d_finni_award_anim03",
+      "d_finni_award_anim04",
+      "d_finni_award_anim05",
+      "d_finni_award_anim06",
+      "d_finni_award_anim07",
+      "d_finni_award_anim08",
+      "d_finni_award_anim09",
+      "d_finni_award_anim10",
+      "d_finni_award_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "edge_award"
+  },
+  "d_finni_bonus": {
+    "frames": [
+      "d_finni_bonus_anim00",
+      "d_finni_bonus_anim01",
+      "d_finni_bonus_anim02",
+      "d_finni_bonus_anim03",
+      "d_finni_bonus_anim04",
+      "d_finni_bonus_anim05",
+      "d_finni_bonus_anim06",
+      "d_finni_bonus_anim07",
+      "d_finni_bonus_anim08",
+      "d_finni_bonus_anim09",
+      "d_finni_bonus_anim10",
+      "d_finni_bonus_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "edge_bonus"
+  },
+  "d_finni_ready": {
+    "frames": [
+      "d_finni_ready_anim00",
+      "d_finni_ready_anim01",
+      "d_finni_ready_anim02",
+      "d_finni_ready_anim03",
+      "d_finni_ready_anim04",
+      "d_finni_ready_anim05",
+      "d_finni_ready_anim06",
+      "d_finni_ready_anim07",
+      "d_finni_ready_anim08",
+      "d_finni_ready_anim09",
+      "d_finni_ready_anim10",
+      "d_finni_ready_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "edge_ready"
+  },
+  "d_finni_combo": {
+    "frames": [
+      "d_finni_combo_anim00",
+      "d_finni_combo_anim01",
+      "d_finni_combo_anim02",
+      "d_finni_combo_anim03",
+      "d_finni_combo_anim04",
+      "d_finni_combo_anim05",
+      "d_finni_combo_anim06",
+      "d_finni_combo_anim07",
+      "d_finni_combo_anim08",
+      "d_finni_combo_anim09",
+      "d_finni_combo_anim10",
+      "d_finni_combo_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "edge_combo"
+  }
+}

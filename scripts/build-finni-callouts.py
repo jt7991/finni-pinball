@@ -16,12 +16,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / ".work/deadpool-extracted"
 ADDED_STORY_IDS = {'vo_friendshipmb', 'vo_caketimetoppings', 'vo_caketimefinish', 'vo_caketimefrosting'}
+ADDED_EVENT_IDS = {'vo_ballsaved'}
 FF = ROOT / ".tools/pydeps/imageio_ffmpeg/binaries/ffmpeg-win-x86_64-v9.0.2.exe"
 sys.path.insert(0, str(ROOT / ".tools/voice-pydeps"))
 
 
 def lines():
-    config = json.loads((ROOT / "design/finni-callouts.json").read_text())
+    config = json.loads((ROOT / "design/finni-callouts.json").read_text(encoding="utf-8"))
     result = dict(config["callouts"])
     for n in range(2, 7):
         result[f"vo_{n}xcombo"] = f"{n} times combo!"
@@ -29,15 +30,18 @@ def lines():
             result[f"vo_{n}xbonus"] = f"{n} times bonus."
             result[f"vo_{n}xplayfield"] = f"{n} times playfield."
     for prefix, count, bank in (("quote", 42, "random_quotes"), ("vo_lildp", 44, "toy_reactions")):
+        assert set(config[bank]) == {str(n) for n in range(1, count + 1)}, f"Incomplete {bank}"
+        assert all(text.strip() for text in config[bank].values()), f"Silent {bank} slot"
+        assert len(set(config[bank].values())) == count, f"Repeated {bank} line"
         for n in range(1, count + 1):
-            result[f"{prefix}{n}"] = config[bank].get(str(n), "")
+            result[f"{prefix}{n}"] = config[bank][str(n)]
     # These two IDs are referenced by the source script but missing from its sound bank.
     result["vo_enterinitials"] = "Enter your initials."
     result["vo_nocredits"] = result["nocredits"]
     source_names = {s["name"] for s in json.loads((SOURCE / "sounds.json").read_text())
                     if s["name"].startswith(("vo_", "quote")) or s["name"] in ("player", "nocredits")}
     assert source_names <= result.keys(), f"Unmapped source speech: {source_names - result.keys()}"
-    assert result.keys() - source_names == {"vo_enterinitials", "vo_nocredits"} | ADDED_STORY_IDS
+    assert result.keys() - source_names == {"vo_enterinitials", "vo_nocredits"} | ADDED_STORY_IDS | ADDED_EVENT_IDS
     return config, result
 
 
@@ -111,8 +115,10 @@ def build(destination):
                                     "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
     preview = []
     for name in ("vo_deadpool", "vo_chooseyourbattle", "vo_juggernaut", "vo_mystique", "vo_sabretooth",
+                 "vo_trex", "vo_megalodon", "vo_sauron", "vo_mrsinister",
                  "vo_lockislit", "vo_ball1locked", "vo_friendshipmb", "vo_lildp_multiball2",
-                 "vo_caketimetoppings", "vo_caketimefinish", "vo_jackpot", "quote1", "vo_discoloops"):
+                 "vo_caketimetoppings", "vo_caketimefinish", "vo_jackpot", "vo_ballsaved",
+                 "quote1", "quote2", "quote3", "vo_lildp1", "vo_lildp2", "vo_lildp3", "vo_discoloops"):
         preview.extend((pcm(destination / (name + ".wav")), bytes(32000)))
     write_pcm(destination / "finni-callouts-sampler.wav", b"".join(preview))
     (destination / "voice-report.json").write_text(json.dumps(report, indent=2) + "\n")

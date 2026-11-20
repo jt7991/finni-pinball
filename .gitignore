@@ -44,3 +44,30 @@ __pycache__/
 /assets/finni/website-assets.*
 /references/deadpool/*.webp
 /references/deadpool/*.html
+
+# Approved chore redesign and its generated illustration.
+!/output/playfield-party-v10/
+/output/playfield-party-v10/*validation.json
+/output/playfield-party-v10/registration-overlay.png
+/output/playfield-party-v10/*review*.html
+/output/playfield-party-v10/*-detail.png
+
+# Accepted flat cozy-village playfield with exposed pinata and wire ramp.
+!/output/playfield-party-v11/
+/output/playfield-party-v11/*validation.json
+/output/playfield-party-v11/registration-overlay.png
+/output/playfield-party-v11/*preview.png
+/output/playfield-party-v11/on-table.png
+
+# Cookie-task playfield, preserving the accepted v11 scene.
+!/output/playfield-party-v12/
+/output/playfield-party-v12/*validation.json
+/output/playfield-party-v12/registration-overlay.png
+/output/playfield-party-v12/*preview.png
+/output/playfield-party-v12/on-table.png
+/output/playfield-party-v12/*-detail.png
+
+# Approved comic party-preparation direction and reproducible registered art.
+!/output/playfield-party-v13/
+/output/playfield-party-v13/*validation.json
+/output/playfield-party-v13/registration-overlay.png

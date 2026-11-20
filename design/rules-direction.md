@@ -3,7 +3,7 @@
 ## Confirmed direction
 
 - Use **Finni's Big Day**: the fox is planning his first neighborhood party. Every main mode must be an actual party-preparation task or the party itself.
-- His to-do list provides the story: invitations, decorations, food, supplies, table settings, final setup, then hosting. Tasks can be chosen in the existing mode-selection order; do not require a new linear campaign.
+- His to-do list provides the story: presents, invitations, balloons, decorations, baking, hanging the piñata, then hosting. Tasks can be chosen in the existing mode-selection order; do not require a new linear campaign.
 - Skill building supports those tasks through planning, sequencing, attention, and adapting when things get busy. Present the activity and its purpose in the story; these are thematic interpretations of existing gameplay, not new skill assessments.
 - Replace the earlier garden-growing, butterfly-chasing, and trail adventures. Flowers and butterflies can remain scenery and character details.
 - Feature the fox, flowers, butterflies, trails, and garden scenery from Finni's website.
@@ -13,21 +13,21 @@
 
 ## Working mode mapping
 
-Artwork requirement: each mission lamp overlays a related object within one cohesive party-preparation scene. Use the lowered shared table/shelf; decorations light the bunting supplies, invitations light an envelope, baking lights the cake, shopping lights the shopping bag, table-setting lights the plate, setup lights the checklist, and Party Time lights the music station. Revision 9 cuts the opaque print away at all 52 inserts and uses a separate lens layer with bubbly white Chewy lettering outlined in black. Revision-6 lamp centers are registered in `mission-window-layout-v6.json`; assignments and source light shapes remain intact. See `decisions.md` for the current artwork and hardware decisions.
+Artwork requirement: each mission lamp overlays a related object within one cohesive party-preparation scene. Use the lowered shared table/shelf; presents light a wrapped gift, invitations light an envelope, balloons light a balloon, decorations light rolled bunting, baking lights the cookie tray, piñata lights its torso, and Party Time lights the music station. Revision 10 cuts the opaque print away at all 52 inserts and uses a separate lens layer with bubbly white Chewy lettering outlined in black. Revision-6 lamp centers are registered in `mission-window-layout-v6.json`; assignments and source light shapes remain intact. See `decisions.md` for the current artwork and hardware decisions.
 
-Hardware requirement: replace the sword appearance with the party-streamer ramp trial: peach chute, tall enclosed lilac right side, low inner lip, open top and a curled outer tail. Retain the right-ramp ball-lock shot and original collision route. JP's VPX implements a virtual lock through `lock` on `Ramp012`, `Lock_Hit`, `ExitLock` and per-player `BallsInLock`. Preserve qualification, three-lock multiball, hold/kickout timing and release behavior. Balloon bumpers replace the ninja-star caps; Finni sits on a cake.
+Hardware requirement: replace the sword appearance with an open stainless four-wire ramp and sparse underslung supports, leaving the printed piñata visible. The former peach/lilac streamer chute and curl are superseded. Retain the right-ramp ball-lock shot and original collision route. JP's VPX implements a virtual lock through `lock` on `Ramp012`, `Lock_Hit`, `ExitLock` and per-player `BallsInLock`. Preserve qualification, three-lock multiball, hold/kickout timing and release behavior. Balloon bumpers replace the ninja-star caps; Finni sits on a cake.
 
-The main mode names are implemented as printed playfield labels. The story treatments below remain proposals; source gameplay is retained apart from the approved right-flipper scoop feed in `gameplay-tuning.json`.
+The main mode names are implemented in playfield labels, DMD selection/instructions/completions, active-score backgrounds and speech. The chore mapping below is approved; source gameplay is retained apart from the approved right-flipper scoop feed in `gameplay-tuning.json`.
 
 | JP mode | Proposed Finni mode | Existing gameplay used |
 | --- | --- | --- |
-| Juggernaut | Put Up the Decorations | Target-bank phase hangs decorations; the following lit shots finish the lights around the party space. |
-| Mystique | Send the Invitations | Center loop initially, with ramps joining/changing as progress advances; the shots represent invitation deliveries. |
-| Sabretooth | Bake the Cake | Outer loops and pop bumpers represent ingredients circulating through the mixer. Preserve their existing contributions to mode progress. |
-| T-Rex | Party Shopping | Changing pairs of lit shots represent supplies on the shopping list. |
-| Megalodon | Set the Table | The flashing priority shot represents the next place setting among other lit shots. |
-| Sauron | Last-Minute Setup | Adds two balls; lit left ramp and cross shot represent finishing several party jobs as guests are about to arrive. |
-| Mr. Sinister | Party Time | Timed multiball with a changing flashing shot; welcome guests and keep the party going. This is the hosting finale. |
+| Juggernaut | Wrap the Presents | Target-bank phase wraps the gifts; subsequent lit shots finish the ribbons. |
+| Mystique | Send the Invitations | Center loop, with ramps joining as progress advances, represents invitation deliveries. |
+| Sabretooth | Blow Up the Balloons | Outer loops and pop bumpers inflate the balloons; preserve both contributions. |
+| T-Rex | Put Up the Decorations | Changing pairs of lit shots hang bunting and streamers around the garden. |
+| Megalodon | Bake the Cookies | The flashing priority shot among blue shots advances baking the cookies. Cake Time Multiball handles frosting and decorating separately. |
+| Sauron | Hang the Piñata | Adds two balls as friends help hoist the piñata; retain the left-ramp and cross-shot objectives. |
+| Mr. Sinister | Party Time | Timed multiball with a changing flashing shot; welcome guests and host the party. |
 | Ninja lock multiball | Friendship Multiball | Gather three friends through the existing virtual locks on the right ramp. New lock/start display and speech cues frame their arrival as helping prepare the party. Retain six jackpot shots and the right-ramp super jackpot. |
 | Lil Deadpool multiball | Cake Time Multiball | Decorate the cake before the party: five toy jackpots add frosting, five wider-shot jackpots collect candles and decorations, then the spinner hurry-up adds the final flourish. The existing repeat cycle returns to frosting. Keep the drop bank, toy hits, jackpots, timers and scoring. |
 | Disco Loops | Disco Loops | Preserve existing qualification and loop scoring. |
@@ -35,7 +35,7 @@ The main mode names are implemented as printed playfield labels. The story treat
 
 JP v7 starts with three selectable battles. At three wins it expands selection to six; at six wins it makes the seventh available. Preserve that progression when presenting the adventures. A battle is ready at each new ball; completing the DEAD bank also qualifies one.
 
-The main-mode names above are working labels for the revised party-planning story. Remaining features and collectibles need a naming pass that supports party preparation; the earlier Little Wins and flower mappings are not settled.
+The main-mode names above are approved; design/party-tasks.json is the canonical mapping. The complete DMD pass uses Confetti, Snacks, Supplies and Ribbons for collectibles; Supply Run Multiball, Streamer Rush, Spinner Rush and Confetti Burst for secondary features. The canonical mapping is design/finni-dmd-theme.json. Earlier Little Wins and flower mappings are superseded.
 
 ## Revised voice samples
 
@@ -45,7 +45,7 @@ The center ricochet target feeding toward the Friendship ramp is the **Doorbell*
 
 The approved party-supply replacements are installed: Kitchen Timer (Dazzler: extra time), Party Lights (Colossus: double battle points), The Checklist (Wolverine: double battle progress/damage), and Party Favors (Domino: extra points on supported events). Each has its own spoken announcement, DMD name/effect and small supply icon. Existing qualification counters, effects and resets remain source behavior; friends belong to Friendship Multiball.
 
-The table below records the earlier line direction. The current implemented transcript, including mode names, shot instructions, rare random quotes and deliberately silent slots, is `finni-callouts.json`. The user selected a warm female voice; the current trial uses Jenny Neural at -5% rate.
+The table below records the earlier line direction. The current implemented transcript, including mode names, shot instructions, full random-remark and toy-reaction banks, and the ball-save announcement, is `finni-callouts.json`. The user selected a warm female voice; the current trial uses Jenny Neural at -5% rate.
 
 | Event | Sample |
 | --- | --- |

@@ -12,7 +12,7 @@ The current fox geometry is retained: upright small body, oversized head, clean 
 
 One coherent neighborhood-party illustration should organize the composition. The fox is the main character, actively preparing the party. Make the open central area the main fox focal point, with smaller task scenes flowing through the surrounding artwork. Avoid a collection of pasted mascot heads, circular logo badges or disconnected clip-art panels.
 
-Show concrete party tasks: hanging bunting and string lights, delivering envelopes, mixing cake ingredients, bringing supplies, setting out plates, finishing setup and welcoming neighbors. Use the website's fox, warm colors and garden illustrations as identity references.
+Show concrete party tasks: wrapping presents, sending invitations, inflating balloons, hanging decorations, baking the cookies, hanging the piñata and hosting the party. Use the website's fox, warm colors and garden illustrations as identity references.
 
 The physical disco ball and left-side disco loop support a smaller DJ/check-the-music scene. Keep disco visually explicit. The final party brings the neighborhood together; it should feel like the result of the preparation, rather than an unrelated dance-game theme.
 
@@ -20,19 +20,19 @@ Retain the original hardware, shot geometry, inserts, scoring and progression. T
 
 ## Exact mode anchors
 
-The mapping below is verified against `UpdateBattleLights` in the source script. Coordinates are in the original 952 × 2115 VPX playfield space, with the origin at the upper-left. The mode names remain the working labels recorded in the updated rules document.
+The mapping below is verified against `UpdateBattleLights` in the source script. Coordinates are in the original 952 × 2115 VPX playfield space, with the origin at the upper-left. The mode names are approved. Coordinates below are the original source centers; use mission-window-layout-v6.json for the actual registered build centers.
 
 | Source mode | Working party task | Insert | X | Y | Visual cue |
 | --- | --- | --- | ---: | ---: | --- |
-| Juggernaut | Put Up the Decorations | li008 | 281.7 | 1445.0 | Bunting and string lights |
-| Mystique | Send the Invitations | li010 | 432.1 | 1444.8 | Invitation envelope |
-| Sabretooth | Bake the Cake | li011 | 583.0 | 1444.3 | Cake and mixing bowl |
-| T-Rex | Party Shopping | li007 | 356.1 | 1548.5 | Shopping bag of party supplies |
-| Megalodon | Set the Table | li009 | 508.4 | 1549.4 | Plate, napkin and place setting |
-| Sauron | Last-Minute Setup | li012 | 629.6 | 1345.6 | Final setup checklist and ready party space |
-| Mr. Sinister | Party Time | li013 | 571.4 | 1219.1 | Hosting/welcoming guests |
+| Juggernaut | Wrap the Presents | li008 | 281.7 | 1445.0 | partly wrapped present face |
+| Mystique | Send the Invitations | li010 | 432.1 | 1444.8 | invitation envelope |
+| Sabretooth | Blow Up the Balloons | li011 | 583.0 | 1444.3 | large balloon belly and hand pump |
+| T-Rex | Put Up the Decorations | li007 | 356.1 | 1548.5 | rolled bunting and streamers |
+| Megalodon | Bake the Cookies | li009 | 508.4 | 1549.4 | chocolate-chip cookies on a silver baking tray |
+| Sauron | Hang the Piñata | li012 | 629.6 | 1345.6 | hanging donkey piñata torso |
+| Mr. Sinister | Party Time | li013 | 571.4 | 1219.1 | music station front panel |
 
-The existing upper-right toy/drop-bank area remains Finni Fox Multiball. Preserve Disco Loops and Disco Multiball's existing qualification and loop scoring.
+The existing upper-right toy/drop-bank area remains Cake Time Multiball. Preserve Disco Loops and Disco Multiball's existing qualification and loop scoring.
 
 ## Reference inputs and their roles
 
@@ -61,4 +61,4 @@ After generation: inspect mascot consistency, party-task coverage, disco identit
 
 ## Current execution status
 
-The prompt and layout references are prepared. No new playfield has been generated: this session currently exposes no image-generation tool. The user previously chose to wait for built-in generation rather than use the separately billed API/CLI fallback.
+Revision 10 uses built-in imagegen, with a second registration correction for the cake and piñata. The generated background is composed with the original 52 insert outlines, the retained registered light overrides, and new chore labels. See design/party-playfield-v10-generation.md for provenance and scripts/validate-playfield-registration.py for geometry, alpha and text containment checks.

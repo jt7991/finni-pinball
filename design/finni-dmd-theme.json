@@ -1,0 +1,23 @@
+{
+  "theme": "Finni's Big Day",
+  "features": {
+    "Ninja Stars": "Confetti",
+    "Chimichangas": "Snacks",
+    "Weapons": "Supplies",
+    "Diamonds": "Ribbons",
+    "Mech Suit Multiball": "Supply Run Multiball",
+    "Katanarama Time": "Streamer Rush",
+    "Berserker Rage": "Spinner Rush",
+    "Ninja Apocalypse": "Confetti Burst",
+    "Regenerate": "Extra Ball"
+  },
+  "tasks": [
+    {"key":"juggernaut","sprite":"d_finni_presents","art":"presents","title":["WRAP THE","PRESENTS"]},
+    {"key":"mystique","sprite":"d_finni_invitations","art":"invitations","title":["SEND THE","INVITATIONS"]},
+    {"key":"sabretooth","sprite":"d_finni_balloons","art":"balloons","title":["BLOW UP THE","BALLOONS"]},
+    {"key":"trex","sprite":"d_finni_decorations","art":"decorations","title":["PUT UP","DECORATIONS"]},
+    {"key":"megalodon","sprite":"d_finni_baking","art":"cookies","title":["BAKE THE","COOKIES"]},
+    {"key":"sauron","sprite":"d_finni_pinata","art":"pinata","title":["HANG THE","PINATA"]},
+    {"key":"mrsinister","sprite":"d_finni_party","art":"party","title":["PARTY","TIME"]}
+  ]
+}

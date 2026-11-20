@@ -3,16 +3,26 @@ import {createViews,createDmd} from './views.js';
 const actions = [
   ['left','Left flipper','ShiftLeft'],['right','Right flipper','ShiftRight'],
   ['launch','Launch','Enter'],['start','Start','Digit1'],
-  ['nudgeLeft','Nudge left','KeyZ'],['nudgeCenter','Nudge forward','Space'],['nudgeRight','Nudge right','Slash'],
+  ['nudgeLeft','Nudge left','KeyZ'],['nudgeCenter','Nudge forward','KeyX'],['nudgeRight','Nudge right','Slash'],
+  ['action','Action','Space'],
 ];
 const $ = id => document.getElementById(id);
 const defaults = Object.fromEntries(actions.map(([id,,key])=>[id,key]));
 let settings = {keys:{...defaults},latch:false,showTouch:true};
 try {
   const saved=JSON.parse(localStorage.getItem('finni-controls-v1'));
+  if(saved && !saved.keys?.action && saved.keys){
+    // Upgrade existing controls without discarding custom bindings.
+    const used=new Set(Object.values(saved.keys));
+    if(saved.keys.nudgeCenter==='Space'){
+      saved.keys.nudgeCenter=['KeyX','KeyC','KeyV','KeyN','KeyB','KeyM','KeyG','KeyH'].find(key=>!used.has(key));
+      used.delete('Space');used.add(saved.keys.nudgeCenter);
+    }
+    saved.keys.action=['Space','KeyX','KeyC','KeyV','KeyB','KeyN','KeyM','KeyG'].find(key=>!used.has(key));
+  }
   if(saved && actions.every(([id])=>typeof saved.keys?.[id]==='string') && new Set(Object.values(saved.keys)).size===actions.length) settings={...settings,...saved};
 } catch {}
-let listening=null, connected=false, engine=null;
+let listening=null, connected=false, engine=null, hasPlayed=false, replayVisible=false;
 const held=new Map(), physical=new Set();
 const message=text=>$('message').textContent=text;
 function save(){try{localStorage.setItem('finni-controls-v1',JSON.stringify(settings));}catch{message('Browser storage is unavailable. Settings apply for this session.');}}
@@ -30,7 +40,7 @@ function render(){
   $('latch').checked=settings.latch;$('showTouch').checked=settings.showTouch;$('touch').hidden=!settings.showTouch;
   $('flip-zones').hidden=!settings.showTouch;
   $('nudge-zone').hidden=!settings.showTouch;
-  $('control-hint').textContent=`${label(settings.keys.start)} start · Hold ${label(settings.keys.launch)}, then release to launch`;
+  $('control-hint').textContent=`${label(settings.keys.start)} start · ${label(settings.keys.action)} action · Hold ${label(settings.keys.launch)}, then release to launch`;
 }
 function release(){held.clear();physical.clear();paint();send();}
 function setAction(id,down,source){
@@ -85,7 +95,27 @@ $('showTouch').onchange=e=>{release();settings.showTouch=e.target.checked;save()
 $('reset').onclick=()=>{release();listening=null;settings={keys:{...defaults},latch:false,showTouch:true};save();render();message('Default controls restored.');};
 $('release').onclick=release;
 $('fullscreen').onclick=()=>{const request=document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();request.catch(()=>message('Full screen is unavailable in this browser.'));};
-const nativeKeys=['LeftFlipperKey','RightFlipperKey','PlungerKey','StartGameKey','LeftTiltKey','CenterTiltKey','RightTiltKey'];
+let toolbarTimer;
+function showToolbar(){
+  document.body.classList.add('toolbar-visible');
+  clearTimeout(toolbarTimer);
+  toolbarTimer=setTimeout(()=>document.body.classList.remove('toolbar-visible'),1600);
+}
+document.addEventListener('fullscreenchange',()=>{
+  const fullscreen=!!document.fullscreenElement;
+  document.body.classList.toggle('fullscreen-play',fullscreen);
+  $('fullscreen').setAttribute('aria-label',fullscreen?'Exit full screen':'Enter full screen');
+  $('fullscreen').title=fullscreen?'Exit full screen':'Full screen';
+  if(connected)$('canvas').focus({preventScroll:true});
+  showToolbar();
+});
+window.addEventListener('pointermove',e=>{
+  const atTop=document.body.classList.contains('portrait-rotated')?e.clientX>innerWidth-24:e.clientY<24;
+  if(document.fullscreenElement&&atTop)showToolbar();
+});
+document.querySelector('.toolbar').addEventListener('pointerenter',showToolbar);
+document.querySelector('.toolbar').addEventListener('focusin',showToolbar);
+const nativeKeys=['LeftFlipperKey','RightFlipperKey','PlungerKey','StartGameKey','LeftTiltKey','CenterTiltKey','RightTiltKey','LockBarKey'];
 const applied=new Set();
 function evaluate(script){return engine?.ccall('vpinball_wasm_eval_script','number',['string'],[script]);}
 function send(){
@@ -93,7 +123,7 @@ function send(){
   for(let i=0;i<actions.length;i++){
     const id=actions[i][0], down=held.has(id);
     if(down!==applied.has(id)){
-      evaluate(`Table1_Key${down?'Down':'Up'} ${nativeKeys[i]}`);
+      evaluate(`${id==='start'&&down?'bFreePlay=True:':''}Table1_Key${down?'Down':'Up'} ${nativeKeys[i]}`);
       if(down)applied.add(id);else applied.delete(id);
     }
   }
@@ -102,8 +132,27 @@ function send(){
 for(const type of ['keydown','keyup'])window.addEventListener(type,e=>e.stopImmediatePropagation());
 const logs=[];
 const leaderboard=createLeaderboard(evaluate,release);
-const views=createViews(evaluate,()=>connected);
+const views=createViews(evaluate,()=>connected,release);
 const dmd=createDmd();
+// Dialogs and popovers restore focus to toolbar buttons. Return it to the
+// playfield so the next Start key reaches the game rather than a focused tool.
+function focusGame(){if(connected&&!$('initials-dialog').open&&!document.querySelector('.panel:popover-open'))$('canvas').focus({preventScroll:true});}
+function replay(){
+  release();
+  evaluate('bFreePlay=True:Table1_KeyDown StartGameKey:Table1_KeyUp StartGameKey');
+  $('waiting').hidden=true;replayVisible=false;focusGame();
+}
+function updateReplay(playing,entering){
+  if(playing){hasPlayed=true;if(replayVisible){$('waiting').hidden=true;replayVisible=false;}return;}
+  if(!connected||!hasPlayed||entering||replayVisible)return;
+  release();replayVisible=true;
+  document.querySelector('#waiting h2').textContent='Ready for another round?';
+  document.querySelector('#waiting .start-content > p').textContent='There’s still a party to get ready for.';
+  $('play').disabled=false;$('play').textContent='Play again';$('play').onclick=replay;
+  $('loading').textContent='Your next game is ready.';$('waiting').hidden=false;
+}
+$('initials-dialog').addEventListener('close',focusGame);
+for(const panel of document.querySelectorAll('.panel'))panel.addEventListener('toggle',e=>{if(e.newState==='closed')focusGame();});
 $('touch-help').onclick=()=>{
   const showing=document.body.classList.toggle('show-touch-guide');
   $('touch-help').setAttribute('aria-pressed',String(showing));$('touch-guide').hidden=!showing;
@@ -119,6 +168,7 @@ function log(line){
     document.body.classList.toggle('ball-in-plunger',s[11]==='True');
     $('score').textContent=Number(s[0]||0).toLocaleString();$('ball').textContent=s[1]==='0'?'—':s[1];
     leaderboard.state({playing:s[3]==='True',entering:s[4]==='True',player:Number(s[5]),players:Number(s[6]),scores:s.slice(7,11).map(Number)});
+    updateReplay(s[3]==='True',s[4]==='True');
     return;
   }
   logs.push(String(line).replace(/\u001b\[[0-9;]*[a-zA-Z]/g,''));if(logs.length>120)logs.shift();$('log').textContent=logs.join('\n');

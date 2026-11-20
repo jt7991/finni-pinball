@@ -1,0 +1,11 @@
+{
+  "modes": [
+    {"id": 1, "source": "Juggernaut", "key": "juggernaut", "insert": "li008", "label": "Wrap the Presents", "words": ["WRAP THE", "PRESENTS"], "dmd": "WRAP THE PRESENTS", "instruction": ["WRAP THE PRESENTS", "TARGETS / LIT SHOTS"], "complete": ["PRESENTS", "WRAPPED"], "subject": "partly wrapped present face"},
+    {"id": 2, "source": "Mystique", "key": "mystique", "insert": "li010", "label": "Send the Invitations", "words": ["SEND", "INVITATIONS"], "dmd": "SEND INVITATIONS", "instruction": ["SEND INVITATIONS", "SHOOT WHITE SHOTS"], "complete": ["INVITATIONS", "SENT"], "subject": "invitation envelope"},
+    {"id": 3, "source": "Sabretooth", "key": "sabretooth", "insert": "li011", "label": "Blow Up the Balloons", "words": ["BLOW UP", "BALLOONS"], "dmd": "BLOW UP BALLOONS", "instruction": ["BLOW UP BALLOONS", "LOOPS AND BUMPERS"], "complete": ["BALLOONS", "READY"], "subject": "large balloon belly and hand pump"},
+    {"id": 4, "source": "T-Rex", "key": "trex", "insert": "li007", "label": "Put Up the Decorations", "words": ["PUT UP", "DECORATIONS"], "dmd": "PUT UP DECORATIONS", "instruction": ["PUT UP DECORATIONS", "SHOOT GREEN SHOTS"], "complete": ["DECORATIONS", "UP"], "subject": "rolled bunting and streamers"},
+    {"id": 5, "source": "Megalodon", "key": "megalodon", "insert": "li009", "label": "Bake the Cookies", "words": ["BAKE THE", "COOKIES"], "dmd": "BAKE THE COOKIES", "instruction": ["BAKE THE COOKIES", "SHOOT FLASHING SHOT"], "complete": ["COOKIES", "BAKED"], "subject": "chocolate-chip cookies on a silver baking tray"},
+    {"id": 6, "source": "Sauron", "key": "sauron", "insert": "li012", "label": "Hang the Piñata", "words": ["HANG THE", "PIÑATA"], "dmd": "HANG THE PINATA", "instruction": ["HANG THE PINATA", "SHOOT GREEN SHOTS"], "complete": ["PINATA", "HANGING"], "subject": "hanging donkey piñata torso"},
+    {"id": 7, "source": "Mr. Sinister", "key": "mrsinister", "insert": "li013", "label": "Party Time", "words": ["PARTY", "TIME"], "dmd": "PARTY TIME", "instruction": ["PARTY TIME", "SHOOT FLASHING SHOTS"], "complete": ["WHAT A", "PARTY"], "subject": "music station front panel"}
+  ]
+}

@@ -5,17 +5,23 @@ Light objects. The production print export has real alpha holes; the independent
 lens layer supplies the neutral plastic visible through those holes.
 """
 from pathlib import Path
-import base64, copy, json, shutil, sys, xml.etree.ElementTree as ET
+import argparse, base64, copy, io, json, shutil, sys, xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / '.tools/pydeps'))
 import resvg_py
-from PIL import Image, ImageFont
+from PIL import Image, ImageChops, ImageFilter, ImageFont
 
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--illustration', type=Path, required=True)
+parser.add_argument('--output', type=Path, default=ROOT/'output/playfield-party-v10')
+args = parser.parse_args()
 SRC = ROOT / 'output/playfield-party-v6'
-OUT = ROOT / 'output/playfield-party-v9'
+OUT = args.output.resolve()
 OUT.mkdir(exist_ok=True)
-for name in ('mission-party-environment.png', 'back-panel.png',
+if args.illustration.resolve() != OUT/'mission-party-environment.png':
+    shutil.copyfile(args.illustration, OUT/'mission-party-environment.png')
+for name in ('back-panel.png',
              'inlane-layout-overrides.json', 'original-plastic-alpha-map.json',
              'mission-art-map.json'):
     shutil.copyfile(SRC / name, OUT / name)
@@ -27,16 +33,19 @@ def el(tag, attrs=None):
     return ET.Element(f'{{{NS}}}{tag}', attrs or {})
 
 original = ET.parse(SRC / 'finni-playfield-base.svg').getroot()
+background = next(original.iter(f'{{{NS}}}image'))
+background.set('href', 'data:image/png;base64,' + base64.b64encode(args.illustration.read_bytes()).decode())
 font_file = ROOT / 'assets/fonts/chewy/Chewy-Regular.ttf'
 font_measure = ImageFont.truetype(str(font_file), 1000)
 mapping = json.loads((OUT / 'mission-art-map.json').read_text())
+modes = json.loads((ROOT/'design/party-tasks.json').read_text(encoding='utf-8'))['modes']
+tasks = {m['insert']:m for m in modes}
+for m in mapping:
+    m['mission'] = tasks[m['insert']]['label']
+    m['subject'] = tasks[m['insert']]['subject']
+(OUT/'mission-art-map.json').write_text(json.dumps(mapping, indent=2, ensure_ascii=False), encoding='utf-8')
 centers = {m['insert']: m['center'] for m in mapping}
-mission_words = {
-    'li008': ('PUT UP', 'DECORATIONS'), 'li010': ('SEND', 'INVITATIONS'),
-    'li011': ('BAKE THE', 'CAKE'), 'li007': ('PARTY', 'SHOPPING'),
-    'li009': ('SET THE', 'TABLE'), 'li012': ('LAST-MINUTE', 'SETUP'),
-    'li013': ('PARTY', 'TIME'),
-}
+mission_words = {m['insert']:m['words'] for m in modes}
 mission_lines = {}
 for label in original.iter(f'{{{NS}}}text'):
     if label.text == 'Finni Fox Multiball':
@@ -56,6 +65,7 @@ for label in original.iter(f'{{{NS}}}text'):
         size = min(15.0 if name == 'li013' else 13.0, 57 / widest)
         label.text = words[line]
         label.set('font-size', str(size))
+        label.set('x', str(centers[name]['x']))
         label.set('stroke-width', str(size * .145))
         label.set('y', str(centers[name]['y'] + (-1.6 if line == 0 else size * .88)))
     else:
@@ -64,6 +74,31 @@ paths = [c for c in original if c.tag == f'{{{NS}}}path']
 assert len(paths) == 52
 mission_paths = [p for p in paths if p.get('data-mission-window')]
 assert len(mission_paths) == 7
+
+# Fit against the actual irregular lamp shape, including the black text outline.
+# A width estimate alone can leave letters outside the sloping insert edges.
+def raster(elements):
+    svg = el('svg', dict(original.attrib))
+    svg.extend(copy.deepcopy(elements))
+    return Image.open(io.BytesIO(resvg_py.svg_to_bytes(
+        svg_string=ET.tostring(svg, encoding='unicode'), font_files=[str(font_file)]))).convert('RGBA')
+
+for path in mission_paths:
+    name = path.get('data-mission-window')
+    labels = [t for t in original.iter(f'{{{NS}}}text') if t.get('data-mission') == name]
+    shape = copy.deepcopy(path)
+    shape.set('fill', 'white'); shape.set('stroke', 'none')
+    safe = raster([shape]).getchannel('A').filter(ImageFilter.MinFilter(3)).point(lambda v: 255 if v == 255 else 0)
+    for attempt in range(24):
+        ink = raster(labels).getchannel('A').point(lambda v: 255 if v > 8 else 0)
+        if ImageChops.subtract(ink, safe).getbbox() is None:
+            break
+        size = float(labels[0].get('font-size')) * .96
+        for i, label in enumerate(labels):
+            label.set('font-size', str(size)); label.set('stroke-width', str(size * .145))
+            label.set('y', str(centers[name]['y'] + (-1.6 if i == 0 else size * .88)))
+    else:
+        raise AssertionError(f'Cannot fit text within {name}')
 
 defs = el('defs')
 font_style = el('style')
@@ -103,7 +138,8 @@ for p in paths:
 for c in original:
     if c in paths:
         continue
-    print_layer.append(copy.deepcopy(c))
+    if not c.get('data-mission'):
+        print_layer.append(copy.deepcopy(c))
     if c.tag != f'{{{NS}}}image':
         label = copy.deepcopy(c)
         lens_layer.append(label)
@@ -157,7 +193,7 @@ The lettering uses Chewy, bundled under the Apache License 2.0 in
 the white fill, and each two-line mission label is fitted to its lens.
 ''', encoding='utf-8')
 (ROOT / 'design/current-assets.json').write_text(json.dumps({
-    'playfield_directory': 'output/playfield-party-v9',
-    'description': 'Party scene with clear insert cutouts and playful white bubbly lettering with black outlines'
+    'playfield_directory': OUT.relative_to(ROOT).as_posix(),
+    'description': 'Approved party chores with object-registered light cutouts and Chewy lens labels'
 }, indent=2))
 print('INSERT_CUTOUTS_READY', json.dumps(report), flush=True)

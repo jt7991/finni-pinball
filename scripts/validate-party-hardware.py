@@ -23,18 +23,15 @@ assert set(report['new_objects']).issubset(exported)
 assert {'LilHead', 'LilLeftArm', 'LilRightArm', 'Primitive077'}.issubset(exported)
 assert not any('trough' in name for name in report['new_objects'])
 streamer = report['streamer_ramp']
-chute = bpy.data.objects['Party streamer ramp | peach chute and tall right wall']
 assert streamer['top'] == 'open'
-assert streamer['right_wall_height_m'] > streamer['inner_lip_height_m']
-profile = streamer['profile_m']
-assert len(chute.data.vertices) == len(streamer['centerline'])*len(profile)
-assert len(chute.data.polygons) == (len(streamer['centerline'])-1)*(len(profile)-1)
-for i, center in enumerate(streamer['centerline']):
-    row = chute.data.vertices[i*len(profile):(i+1)*len(profile)]
-    assert row[-1].co.x > center[0], 'Tall wall must stay on cabinet-right'
-    assert abs(row[-1].co.z-center[2]-.025) < 1e-7
-    assert abs(row[1].co.z-center[2]+.0004) < 1e-7
-assert streamer['curl_outside_channel']
+assert not streamer['solid_floor'] and not streamer['solid_walls']
+assert len(streamer['rail_profile_m']) == 4
+assert len([n for n in report['new_objects'] if n.startswith('Party wire ramp | rail ')]) == 4
+assert not any(n.startswith('Party streamer ramp') for n in report['new_objects'])
+assert len([n for n in report['new_objects'] if 'underslung brace' in n]) == len(streamer['brace_indices'])
+assert all(z <= -.003 for x,z in streamer['brace_profile_m'][1:3])
+assert all(not bpy.data.objects.get(n) or bpy.data.objects[n].hide_render for n in ('Ramp012','Ramp013'))
+assert bpy.data.objects['Party wire ramp | rail 1'].data.materials[0].node_tree.nodes['Principled BSDF'].inputs['Metallic'].default_value == 1
 assert len([name for name in report['new_objects'] if name.startswith('Party sling cover') and name.endswith('panel')]) == 2
 for name in report['sling_covers']['source_visuals_hidden']:
     assert bpy.data.objects[name].hide_render, name

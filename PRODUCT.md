@@ -16,7 +16,7 @@ The leaderboard is shared through PocketBase, on the user?s Coolify instance. Br
 Hosting is the user’s Coolify instance. Supply Docker configuration and local verification; do not set up Coolify. Browser play is free, with credits removed. Both DMD and full table must stay visible in every preset, including a more top-down camera. Mobile layout should take inspiration from existing phone pinball games.
 
 ## Brand Commitments
-Finni’s Big Day is a neighborhood garden party with the existing fox, cake, balloons, mint and peach hardware, and Chewy lettering. The requested redesign concerns the interface around the screen, not the table artwork.
+Finni’s Big Day uses a bright comic party-preparation world with the existing fox, detailed illustrated chores, navy hardware panels, a bright pink cake, saturated pink/blue/yellow balloon bumpers, and Chewy lettering. Keep its added playful energy. The seven task lamps and shared shot arrows must match the actual gameplay. The four bonus supplies are Kitchen Timer, Party Lights, The Checklist and Party Favors.
 
 ## Principles
 Keep play uninterrupted. Keep settings discoverable without occupying permanent playfield space. Use actual game state for scores. No player login or fabricated leaderboard entries.

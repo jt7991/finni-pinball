@@ -16,6 +16,8 @@ audio = ROOT / "output/party-audio"
 report = json.loads((audio / "audio-report.json").read_text())
 voice_dir = ROOT / "output/finni-voice"
 voice = json.loads((voice_dir / "voice-report.json").read_text())
+expected_lines = runpy.run_path(str(ROOT/'scripts/build-finni-callouts.py'))['lines']()[1]
+assert {name: spec['text'] for name, spec in voice['callouts'].items()} == expected_lines, 'Stale speech transcript'
 music = json.loads((audio / "music-trial-report.json").read_text())
 # BASS cannot load OGG files containing a video stream (including MP3 cover art).
 probe = subprocess.run([str(ROOT / '.tools/pydeps/imageio_ffmpeg/binaries/ffmpeg-win-x86_64-v9.0.2.exe'),
@@ -26,7 +28,8 @@ before = json.loads((source / "sounds.json").read_text())
 after = json.loads((table / "sounds.json").read_text())
 assert [s["name"] for s in before] == [s["name"] for s in after[:len(before)]]
 added_story = {'vo_friendshipmb', 'vo_caketimetoppings', 'vo_caketimefinish', 'vo_caketimefrosting'}
-assert {s["name"] for s in after[len(before):]} == {"vo_enterinitials", "vo_nocredits"} | added_story
+assert {s["name"] for s in after[len(before):]} == {"vo_enterinitials", "vo_nocredits", "vo_ballsaved"} | added_story
+assert all(expected_lines.values()), 'Speech parity requires no silent slots'
 tuning=runpy.run_path(str(ROOT/'scripts/apply-gameplay-tuning.py'))
 assert tuning['tuned_script']((source/'script.vbs').read_bytes()) == (table/'script.vbs').read_bytes()
 original_files = {p.stem.lower(): p for p in (source / "sounds").iterdir()}
@@ -74,7 +77,7 @@ result = {"replacements": len(replaced),
           "funkorama_slots": len(music["ids"]),
           "original_music_preserved": sum(s["name"].lower().startswith("mu_") for s in before) - len(music["ids"]),
           "unchanged_sounds": len(after) - len(replaced),
-          "script_identical_except_approved_scoop_and_multiball_presentation": True, "routing_and_levels_identical": True,
+          "script_identical_except_approved_scoop_and_story_presentation": True, "routing_and_levels_identical": True,
           "decoded_audio_matches_generated_files": True,
           "table": str(table)}
 (audio / "validation.json").write_text(json.dumps(result, indent=2) + "\n")

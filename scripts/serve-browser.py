@@ -35,6 +35,7 @@ def prepare():
 
 
 class Handler(SimpleHTTPRequestHandler):
+    table_path = ROOT / 'output/live-vpx/Finni-Big-Day.vpx'
     def proxy_api(self):
         routes = {'/api/leaderboard': '/api/finni/leaderboard', '/api/runs': '/api/finni/runs', '/api/scores': '/api/finni/scores'}
         voice_api = re.fullmatch(r'/api/(?:collections/(?:voice_team/auth-with-password|voice_takes/records)|files/token|files/[a-zA-Z0-9_]+/[a-zA-Z0-9_]+/[a-zA-Z0-9_.-]+)(?:\?[^\r\n]*)?', self.path)
@@ -85,7 +86,7 @@ class Handler(SimpleHTTPRequestHandler):
                   '/app.js': ROOT / 'browser/app.js', '/leaderboard.js': ROOT / 'browser/leaderboard.js', '/views.js': ROOT / 'browser/views.js', '/style.css': ROOT / 'browser/style.css',
                   '/dmd-atlas.png': ROOT / '.work/browser-assets/dmd-atlas.png',
                   '/dmd-atlas.json': ROOT / '.work/browser-assets/dmd-atlas.json',
-                  '/table.vpx': ROOT / 'output/live-vpx/Finni-Big-Day.vpx',
+                  '/table.vpx': self.table_path,
                   '/chewy.ttf': ROOT / 'assets/fonts/chewy/Chewy-Regular.ttf'}
         for name in ('voice.html', 'voice.css', 'voice.js', 'voice-audio.js', 'voice-lines.json'):
             routes['/' + name] = ROOT / 'browser' / name
@@ -108,14 +109,18 @@ class Handler(SimpleHTTPRequestHandler):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--port', type=int, default=8765)
+    parser.add_argument('--host', default='127.0.0.1', help='Address to bind; use this PC\'s Tailscale IP for tailnet testing.')
+    parser.add_argument('--table', type=Path, default=Handler.table_path, help='Optional separate table build for concept testing.')
     args = parser.parse_args()
-    if not (ROOT / 'output/live-vpx/Finni-Big-Day.vpx').is_file():
-        raise SystemExit('Build output/live-vpx/Finni-Big-Day.vpx first. See README.md.')
+    Handler.table_path = args.table.resolve()
+    if not Handler.table_path.is_file():
+        raise SystemExit(f'Table not found: {Handler.table_path}')
     prepare()
     import runpy
     runpy.run_path(str(ROOT/'scripts/package-browser-assets.py'))['package'](ROOT/'.work/browser-assets', copy_table=False)
-    with ThreadingHTTPServer(('127.0.0.1', args.port), Handler) as server:
-        print(f'Finni browser player: http://127.0.0.1:{args.port}', flush=True)
+    with ThreadingHTTPServer((args.host, args.port), Handler) as server:
+        print(f'Finni browser player: http://{args.host}:{args.port}', flush=True)
+        print(f'Serving table: {Handler.table_path}', flush=True)
         print('The actual VPX engine runs in your browser. Ctrl+C stops the file server.', flush=True)
         try:
             server.serve_forever()
