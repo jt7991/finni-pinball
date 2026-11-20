@@ -1,18 +1,20 @@
+# Select this file in a Git-based Coolify Docker Compose application.
+# Assign an HTTPS domain to game on internal port 80; no host ports are needed.
 services:
   game:
     build:
       context: .
       dockerfile: Dockerfile
     restart: unless-stopped
-    ports:
-      - "${GAME_PORT:-8080}:80"
+    expose:
+      - "80"
     volumes:
-      - type: bind
-        source: ${ASSET_PATH:-./.work/browser-assets}
+      - type: volume
+        source: browser_assets
         target: /usr/share/nginx/html/runtime
         read_only: true
-        bind:
-          create_host_path: false
+        volume:
+          nocopy: true
     depends_on:
       pocketbase:
         condition: service_healthy
@@ -23,8 +25,12 @@ services:
       dockerfile: pocketbase/Dockerfile
     restart: unless-stopped
     volumes:
+      # Includes SQLite, settings, backups, and storage/ with both WAV versions.
+      # Keep files and database together; do not mount a second volume over storage/.
       - pocketbase_data:/pb/pb_data
-    # Only game is exposed. The dashboard is available through game at /_/.
+    # Access /_/ and /api/ through game; do not assign a public domain here.
 
 volumes:
+  # Coolify scopes these names to the resource and reuses them on redeploy.
   pocketbase_data:
+  browser_assets:

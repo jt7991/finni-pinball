@@ -68,7 +68,7 @@ Reviewers use the PocketBase dashboard to set a take’s `status` to `approved` 
 
 After changing game callout scripts, run `scripts/export-voice-lines.py` using the project’s Blender Python to refresh the studio list. `scripts/test-voice-audio.mjs` checks pitch, duration, headroom and WAV format; `scripts/test-voice-backend.py` exercises real migrations, authenticated submissions, private downloads and review permissions against a temporary PocketBase database.
 
-PocketBase stores anonymous runs and initials-only scores, with an admin dashboard for moderation. See [pocketbase/README.md](pocketbase/README.md) for Docker Compose, Coolify configuration, packaging the table/DMD assets, persistent volumes, and submission-check limitations. Public score submissions are not replay-verified. No Coolify deployment is performed by the setup.
+PocketBase stores anonymous runs and initials-only scores, with an admin dashboard for moderation. For Coolify, select [compose.yaml](compose.yaml): persistent volumes keep PocketBase (including original and processed voice WAVs) and the packaged table/DMD assets across redeploys. See [deployment instructions](pocketbase/README.md#coolify-deployment) for first-time asset upload, account setup, and backups. Public score submissions are not replay-verified.
 
 ## Sources and scope
 
