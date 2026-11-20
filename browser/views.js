@@ -2,14 +2,14 @@ export function createViews(evaluate, ready, release=()=>{}){
   const select=document.getElementById('camera-view');
   const picker=select.closest('label');
   const desktopAnchor=document.createComment('camera picker');picker.before(desktopAnchor);
-  const phone=matchMedia('(max-width:650px)');
+  const phone=matchMedia('(max-width:650px), (pointer:coarse) and (max-width:1024px)');
   function placePicker(){
     if(phone.matches){document.getElementById('camera-controls').append(picker);picker.classList.add('in-controls');}
     else{desktopAnchor.after(picker);picker.classList.remove('in-controls');}
   }
   phone.addEventListener('change',placePicker);placePicker();
   const presets={classic:[48,48,5,50,-350,1],balanced:[30,40,0,30,-350,1],topdown:[0,10,0,0,-350,1],playfield:[0,10,0,75,-350,1.08]};
-  select.value=phone.matches?'topdown':'playfield';
+  select.value='balanced';
   const portrait=document.getElementById('portrait');
   const screen=document.querySelector('.screen');
   const canvas=document.getElementById('canvas');
@@ -20,8 +20,9 @@ export function createViews(evaluate, ready, release=()=>{}){
     if(!ready())return;
     const aspect=canvas.width/canvas.height;
     const safeAspect={classic:.85,balanced:.70,topdown:.50,playfield:.54}[select.value]||.85;
-    const height=aspect>screen.clientWidth/screen.clientHeight
-      ?Math.min(screen.clientHeight,screen.clientWidth/safeAspect):screen.clientHeight;
+    // The engine can switch from its initial wide buffer to a portrait buffer.
+    // Never shrink that portrait buffer as if it still contained wide side space.
+    const height=Math.min(screen.clientHeight,screen.clientWidth/Math.min(aspect,safeAspect));
     canvas.style.width=`${height*aspect}px`;
     canvas.style.height=`${height}px`;
   }

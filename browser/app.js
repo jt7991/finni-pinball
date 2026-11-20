@@ -56,13 +56,17 @@ function setAction(id,down,source){
 function paint(){document.querySelectorAll('[data-action]').forEach(b=>{const pressed=held.has(b.dataset.action);b.classList.toggle('pressed',pressed);b.setAttribute('aria-pressed',String(pressed));b.disabled=!connected;});}
 for(const [id,name] of actions){
   const button=document.createElement('button');button.textContent=name;button.dataset.action=id;button.disabled=true;
-  button.addEventListener('pointerdown',e=>{e.preventDefault();button.setPointerCapture(e.pointerId);setAction(id,true,`pointer:${e.pointerId}`);});
+  button.addEventListener('contextmenu',e=>e.preventDefault());
+  button.addEventListener('pointerdown',e=>{
+    if(e.pointerType==='mouse'&&e.button!==0)return;
+    e.preventDefault();button.setPointerCapture(e.pointerId);setAction(id,true,`pointer:${e.pointerId}`);
+  });
   for(const type of ['pointerup','pointercancel','lostpointercapture'])button.addEventListener(type,e=>setAction(id,false,`pointer:${e.pointerId}`));
   button.addEventListener('keydown',e=>{if(['Enter','Space'].includes(e.code)){e.preventDefault();if(!e.repeat)setAction(id,true,'button');}});
   button.addEventListener('keyup',e=>{if(['Enter','Space'].includes(e.code)){e.preventDefault();setAction(id,false,'button');}});
   (id.startsWith('nudge')?$('nudges'):$('touch')).append(button);
 }
-const phoneLayout=matchMedia('(max-width:650px)');
+const phoneLayout=matchMedia('(max-width:650px), (pointer:coarse) and (max-width:1024px)');
 function placeFlippers(){
   release();
   const buttons=['left','right'].map(id=>document.querySelector(`[data-action=${id}]`));
@@ -75,6 +79,7 @@ function placeFlippers(){
   $('nudge-zone').hidden=!settings.showTouch;
 }
 phoneLayout.addEventListener('change',placeFlippers);
+window.addEventListener('resize',release);
 window.addEventListener('keydown',e=>{
   if(listening){e.preventDefault();e.stopPropagation();if(e.repeat)return;
     if(e.code==='Escape'){listening=null;message('Binding cancelled.');render();return;}
@@ -94,21 +99,47 @@ $('latch').onchange=e=>{release();settings.latch=e.target.checked;save();};
 $('showTouch').onchange=e=>{release();settings.showTouch=e.target.checked;save();render();$('flip-zones').hidden=!settings.showTouch;$('nudge-zone').hidden=!settings.showTouch;};
 $('reset').onclick=()=>{release();listening=null;settings={keys:{...defaults},latch:false,showTouch:true};save();render();message('Default controls restored.');};
 $('release').onclick=release;
-$('fullscreen').onclick=()=>{const request=document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();request.catch(()=>message('Full screen is unavailable in this browser.'));};
-let toolbarTimer;
+let toolbarTimer, screenMessageTimer;
+function screenMessage(text){
+  $('screen-message').textContent=text;$('screen-message').hidden=false;
+  clearTimeout(screenMessageTimer);
+  screenMessageTimer=setTimeout(()=>$('screen-message').hidden=true,7000);
+}
 function showToolbar(){
   document.body.classList.add('toolbar-visible');
   clearTimeout(toolbarTimer);
   toolbarTimer=setTimeout(()=>document.body.classList.remove('toolbar-visible'),1600);
 }
-document.addEventListener('fullscreenchange',()=>{
-  const fullscreen=!!document.fullscreenElement;
+function syncFullscreen(){
+  release();
+  const fullscreen=!!(document.fullscreenElement||document.webkitFullscreenElement);
   document.body.classList.toggle('fullscreen-play',fullscreen);
+  $('fullscreen').setAttribute('aria-pressed',String(fullscreen));
   $('fullscreen').setAttribute('aria-label',fullscreen?'Exit full screen':'Enter full screen');
   $('fullscreen').title=fullscreen?'Exit full screen':'Full screen';
   if(connected)$('canvas').focus({preventScroll:true});
   showToolbar();
-});
+}
+$('fullscreen').onclick=async()=>{
+  release();
+  const fullscreen=!!(document.fullscreenElement||document.webkitFullscreenElement);
+  const target=document.documentElement;
+  try{
+    if(fullscreen){
+      const exit=document.exitFullscreen||document.webkitExitFullscreen;
+      if(exit)await exit.call(document);
+    }else{
+      const enter=target.requestFullscreen||target.webkitRequestFullscreen;
+      if(!enter){screenMessage('This browser does not support full screen for games.');return;}
+      await enter.call(target,{navigationUI:'hide'});
+    }
+    syncFullscreen();
+  }catch{
+    screenMessage('Could not enter full screen. Tap the full screen button to try again.');
+  }
+};
+document.addEventListener('fullscreenchange',syncFullscreen);
+document.addEventListener('webkitfullscreenchange',syncFullscreen);
 window.addEventListener('pointermove',e=>{
   const atTop=document.body.classList.contains('portrait-rotated')?e.clientX>innerWidth-24:e.clientY<24;
   if(document.fullscreenElement&&atTop)showToolbar();
@@ -200,5 +231,5 @@ async function boot(){
 }
 render();paint();placeFlippers();boot();
 setInterval(()=>{if(connected&&!document.hidden)evaluate('Debug.Print "FINNI_STATE|" & Score(CurrentPlayer) & "|" & Balls & "|" & Credits & "|" & bGameInPlay & "|" & hsbModeActive & "|" & CurrentPlayer & "|" & PlayersPlayingGame & "|" & Score(1) & "|" & Score(2) & "|" & Score(3) & "|" & Score(4) & "|" & bBallInPlungerLane');},250);
-setInterval(()=>{if(connected&&!document.hidden)evaluate('FinniDmdState="":For Each FinniDmdDigit In Digits:FinniDmdState=FinniDmdState & FinniDmdDigit.ImageA & "|":Next:Debug.Print "FINNI_DMD|" & FinniDmdState');},50);
+setInterval(()=>{if(connected&&!document.hidden)evaluate('FinniDmdState="":For Each FinniDmdDigit In Digits:FinniDmdState=FinniDmdState & FinniDmdDigit.ImageA & "|":Next:Debug.Print "FINNI_DMD|" & FinniDmdState');},phoneLayout.matches?100:50);
 
