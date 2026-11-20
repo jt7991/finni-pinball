@@ -54,3 +54,21 @@ assert.equal(vm.runInContext('settings.keys.action',migrated.context),'Space');
 assert.equal(vm.runInContext('settings.keys.nudgeCenter',migrated.context),'KeyX');
 assert.equal(vm.runInContext('settings.latch',migrated.context),true);
 console.log('PASS: Space action, X nudge, repeat suppression, two starts, focus return, replay without engine reload, initials-entry guard, settings migration');
+for(const [error,expected] of [
+  ['{message:"Unable to allocate memory",code:"ENOMEM"}','Unable to allocate memory (code ENOMEM)'],
+  ['{name:"ErrnoError",errno:44}','ErrnoError (errno 44)'],
+  ['{error:{message:"Shader compilation failed"}}','Shader compilation failed'],
+  ['{cause:{message:"Network request failed"}}','Network request failed'],
+  ['{}','The game stopped without an error message.'],
+]){
+  const failure=setup();
+  vm.runInContext(`enginePhase='Starting table';held.set('left',new Set(['pointer:1']));fail(${error});`,failure.context);
+  assert.equal(failure.element('loading').textContent,`Starting table: ${expected}`);
+  assert.equal(failure.element('play').textContent,'Reload and retry');
+  assert.equal(failure.element('play').disabled,false);
+  assert.equal(vm.runInContext('held.size',failure.context),0);
+}
+const cyclic=setup();
+vm.runInContext('const cyclicError={message:"GPU reset"};cyclicError.cause=cyclicError;fail(cyclicError);',cyclic.context);
+assert.ok(cyclic.element('loading').textContent.includes('GPU reset'));
+console.log('PASS: object-shaped and nested errors, engine error codes, circular diagnostics, retry state and input cleanup');

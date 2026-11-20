@@ -23,7 +23,7 @@ try {
   }
   if(saved && actions.every(([id])=>typeof saved.keys?.[id]==='string') && new Set(Object.values(saved.keys)).size===actions.length) settings={...settings,...saved};
 } catch {}
-let listening=null, connected=false, engine=null, hasPlayed=false, replayVisible=false;
+let listening=null, connected=false, engine=null, hasPlayed=false, replayVisible=false, enginePhase='Loading game';
 const held=new Map(), physical=new Set();
 const message=text=>$('message').textContent=text;
 function save(){try{localStorage.setItem('finni-controls-v1',JSON.stringify(settings));}catch{message('Browser storage is unavailable. Settings apply for this session.');}}
@@ -205,19 +205,48 @@ function log(line){
   }
   logs.push(String(line).replace(/\u001b\[[0-9;]*[a-zA-Z]/g,''));if(logs.length>120)logs.shift();$('log').textContent=logs.join('\n');
 }
-function fail(error){log(error);connected=false;paint();$('waiting').hidden=false;$('loading').textContent=String(error);$('status').textContent='Unable to start the browser engine';$('play').disabled=false;$('play').textContent='Reload and retry';$('play').onclick=()=>location.reload();}
+function describeEngineError(error,depth=0){
+  if(depth>3)return '';
+  if(typeof error==='string')return error==='[object Object]'?'':error;
+  if(typeof error==='number')return `Engine exception ${error}`;
+  if(!error||typeof error!=='object')return '';
+  const message=describeEngineError(error.message,depth+1)||describeEngineError(error.reason,depth+1)||describeEngineError(error.error,depth+1)||describeEngineError(error.cause,depth+1);
+  const code=error.errno!==undefined?`errno ${error.errno}`:error.code!==undefined?`code ${error.code}`:'';
+  const name=typeof error.name==='string'&&error.name!=='Error'?error.name:'';
+  return [message||name,code&&`(${code})`].filter(Boolean).join(' ');
+}
+function fail(error){
+  const detail=describeEngineError(error)||'The game stopped without an error message.';
+  log(`${enginePhase}: ${detail}`);
+  if(error&&typeof error==='object'){
+    const seen=new WeakSet();
+    try{log(JSON.stringify(error,(key,value)=>{
+      if(typeof value==='bigint')return String(value);
+      if(value&&typeof value==='object'){if(seen.has(value))return '[circular]';seen.add(value);}
+      return value;
+    }));}catch{}
+    if(typeof error.stack==='string')log(error.stack);
+  }
+  connected=false;held.clear();physical.clear();applied.clear();paint();
+  $('waiting').hidden=false;$('progress').hidden=true;
+  $('loading').textContent=`${enginePhase}: ${detail}`;$('status').textContent='Game unavailable';
+  $('play').disabled=false;$('play').textContent='Reload and retry';$('play').onclick=()=>location.reload();
+}
+$('canvas').addEventListener('webglcontextlost',e=>{
+  e.preventDefault();fail(new Error('Graphics context lost. Reload to restart the game.'));
+});
 async function boot(){
   try{
     if(!document.createElement('canvas').getContext('webgl2'))throw Error('WebGL 2 is required. Enable graphics acceleration or try a current desktop browser.');
     const [factory, response]=await Promise.all([import('/engine/vpinball.js'),fetch('/table.vpx')]);
     if(!response.ok)throw Error('The Finni VPX table is missing. Build it first (see README).');
-    const table=await response.arrayBuffer();$('progress').value=55;$('loading').textContent='Preparing the VPX engine…';
-    engine=await factory.default({canvas:$('canvas'),locateFile:path=>`/engine/${path}`,print:log,printErr:log,onAbort:reason=>fail(`Engine stopped: ${reason}`),setStatus:text=>{if(text)$('loading').textContent=text;}});
+    const table=await response.arrayBuffer();enginePhase='Preparing engine';$('progress').value=55;$('loading').textContent='Preparing the VPX engine…';
+    engine=await factory.default({canvas:$('canvas'),locateFile:path=>`/engine/${path}`,print:log,printErr:log,onAbort:fail,setStatus:text=>{if(text)$('loading').textContent=text;}});
     prepareRenderer(engine);
     engine.FS.mkdirTree('/tables');engine.FS.writeFile('/tables/finni.vpx',new Uint8Array(table));
     $('progress').value=100;$('progress').hidden=true;$('loading').textContent='Ready when you are.';$('play').disabled=false;$('play').textContent='Start game';$('status').textContent='Ready to play';
     $('play').onclick=()=>{
-      $('play').disabled=true;$('loading').textContent='Starting the table…';
+      enginePhase='Starting table';$('play').disabled=true;$('loading').textContent='Starting the table…';
       try{
         const result=engine.ccall('vpinball_wasm_start','number',['string'],['/tables/finni.vpx']);
         if(result!==1)throw Error(`VPX could not start this table (code ${result}). See the engine log.`);
@@ -225,6 +254,7 @@ async function boot(){
         connected=true;document.body.classList.add('playing');$('waiting').hidden=true;$('progress').hidden=true;$('status').textContent='Enjoy the party.';document.title='Finni’s Big Day';paint();$('canvas').focus();
         views.apply();
         evaluate('Table1_KeyDown StartGameKey:Table1_KeyUp StartGameKey');
+        enginePhase='Playing';
       }catch(error){fail(error);}
     };
     // Exposes real table scripting for compatibility diagnostics and smoke checks.
