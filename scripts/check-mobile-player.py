@@ -2,6 +2,7 @@
 
 Exercises browser multi-touch and fullscreen, not VPX physics or device GPU speed.
 """
+import argparse
 import importlib.util
 from pathlib import Path
 import socket
@@ -51,10 +52,13 @@ preview.onload=()=>{
         return super().translate_path(path)
 
 
-output = ROOT/'.work/mobile-review'
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--renderer', action='store_true', help='Test the real VPX engine and shader programs instead of the UI fixture.')
+args = parser.parse_args()
+output = ROOT/('.work/renderer-review' if args.renderer else '.work/mobile-review')
 output.mkdir(exist_ok=True)
 edge = Path('C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe')
-with ThreadingHTTPServer(('127.0.0.1', 0), Handler) as server:
+with ThreadingHTTPServer(('127.0.0.1', 0), module.Handler if args.renderer else Handler) as server:
     threading.Thread(target=server.serve_forever, daemon=True).start()
     try:
         with socket.socket() as sock:
@@ -62,7 +66,7 @@ with ThreadingHTTPServer(('127.0.0.1', 0), Handler) as server:
             debug_port = sock.getsockname()[1]
         with tempfile.TemporaryDirectory(prefix='mobile-player-', dir=ROOT/'.work') as profile:
             process = subprocess.Popen([
-                str(edge), '--headless=new', '--disable-gpu', '--no-first-run',
+                str(edge), '--headless=new', '--enable-unsafe-swiftshader' if args.renderer else '--disable-gpu', '--no-first-run',
                 f'--user-data-dir={profile}', f'--remote-debugging-port={debug_port}', 'about:blank',
             ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             try:
@@ -74,9 +78,9 @@ with ThreadingHTTPServer(('127.0.0.1', 0), Handler) as server:
                         time.sleep(.1)
                 subprocess.run([
                     str(ROOT/'.tools/node-v22.16.0-win-x64/node.exe'),
-                    str(ROOT/'scripts/test-mobile-player.mjs'),
+                    str(ROOT/'scripts'/('test-renderer-browser.mjs' if args.renderer else 'test-mobile-player.mjs')),
                     f'http://127.0.0.1:{debug_port}', f'http://127.0.0.1:{server.server_port}', str(output),
-                ], check=True, timeout=90)
+                ], check=True, timeout=120 if args.renderer else 90)
             finally:
                 process.terminate()
                 process.wait(timeout=10)

@@ -1,5 +1,6 @@
 import {createLeaderboard} from './leaderboard.js';
 import {createViews,createDmd} from './views.js';
+import {prepareRenderer} from './renderer.js';
 const actions = [
   ['left','Left flipper','ShiftLeft'],['right','Right flipper','ShiftRight'],
   ['launch','Launch','Enter'],['start','Start','Digit1'],
@@ -212,6 +213,7 @@ async function boot(){
     if(!response.ok)throw Error('The Finni VPX table is missing. Build it first (see README).');
     const table=await response.arrayBuffer();$('progress').value=55;$('loading').textContent='Preparing the VPX engine…';
     engine=await factory.default({canvas:$('canvas'),locateFile:path=>`/engine/${path}`,print:log,printErr:log,onAbort:reason=>fail(`Engine stopped: ${reason}`),setStatus:text=>{if(text)$('loading').textContent=text;}});
+    prepareRenderer(engine);
     engine.FS.mkdirTree('/tables');engine.FS.writeFile('/tables/finni.vpx',new Uint8Array(table));
     $('progress').value=100;$('progress').hidden=true;$('loading').textContent='Ready when you are.';$('play').disabled=false;$('play').textContent='Start game';$('status').textContent='Ready to play';
     $('play').onclick=()=>{
