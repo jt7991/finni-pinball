@@ -8,13 +8,6 @@ services:
     restart: unless-stopped
     expose:
       - "80"
-    volumes:
-      - type: volume
-        source: browser_assets
-        target: /usr/share/nginx/html/runtime
-        read_only: true
-        volume:
-          nocopy: true
     depends_on:
       pocketbase:
         condition: service_healthy
@@ -33,4 +26,3 @@ services:
 volumes:
   # Coolify scopes these names to the resource and reuses them on redeploy.
   pocketbase_data:
-  browser_assets:

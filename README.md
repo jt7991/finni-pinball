@@ -40,7 +40,7 @@ Engine source and licensing: [vpinball-wasm](https://dev.pivoine.art/valknar/vpi
 
 Run commands from this repository's root. The existing local tools are Blender 4.5.16 LTS (including its Python and numpy), vpxtool 0.40.1, and the Python packages in `.tools/pydeps/` (including Pillow and resvg_py). These tools are not committed.
 
-Obtain the original table described in [references/deadpool/VPX-SOURCE.md](references/deadpool/VPX-SOURCE.md) and extract it to `.work/deadpool-extracted/`. The original table, extracted runtime assets, generated VPX files and runtime installation remain local.
+Obtain the original table described in [references/deadpool/VPX-SOURCE.md](references/deadpool/VPX-SOURCE.md) and extract it to `.work/deadpool-extracted/`. The original source table, extracted assets and runtime installation remain local. The packaged playable table and DMD atlas are committed in `runtime/` for deployment.
 
 ```powershell
 & .tools/vpxtool/vpxtool.exe extract --output-dir .work/deadpool-extracted 'path/to/original-table.vpx'
@@ -68,7 +68,7 @@ Reviewers use the PocketBase dashboard to set a take’s `status` to `approved` 
 
 After changing game callout scripts, run `scripts/export-voice-lines.py` using the project’s Blender Python to refresh the studio list. `scripts/test-voice-audio.mjs` checks pitch, duration, headroom and WAV format; `scripts/test-voice-backend.py` exercises real migrations, authenticated submissions, private downloads and review permissions against a temporary PocketBase database.
 
-PocketBase stores anonymous runs and initials-only scores, with an admin dashboard for moderation. For Coolify, select [compose.yaml](compose.yaml): persistent volumes keep PocketBase (including original and processed voice WAVs) and the packaged table/DMD assets across redeploys. See [deployment instructions](pocketbase/README.md#coolify-deployment) for first-time asset upload, account setup, and backups. Public score submissions are not replay-verified.
+PocketBase stores anonymous runs and initials-only scores, with an admin dashboard for moderation. For Coolify, select [compose.yaml](compose.yaml): the image includes the table/DMD assets from `runtime/`, and a persistent volume keeps PocketBase, including original and processed voice WAVs, across redeploys. Enable Git LFS in Coolify before deploying. See [deployment instructions](pocketbase/README.md#coolify-deployment) for account setup and backups. Public score submissions are not replay-verified.
 
 ## Sources and scope
 

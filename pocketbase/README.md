@@ -1,55 +1,51 @@
-﻿# PocketBase and Coolify
+# PocketBase and Coolify
 
-The player runs in the browser. PocketBase stores shared scores and provides the owner dashboard. Players enter initials; they never create accounts. The web container proxies PocketBase on the same origin.
+The player runs in the browser. PocketBase stores shared scores and voice recordings and provides the owner dashboard. The web container proxies PocketBase on the same origin.
 
 ## Docker Compose
 
-The standard `compose.yaml` builds the game web server and PocketBase, with persistent volumes for the database, uploaded WAV files, and packaged game assets. Only the web service exposes internal port **80**; the deployment proxy publishes it on your domain.
+`compose.yaml` builds the game web server and PocketBase. The game image includes the versioned table and DMD atlas from `runtime/`. The PocketBase volume persists the database and uploaded WAV files independently of the image.
 
-Build the regular Finni VPX table as described in the root README, then run `.tools/blender/blender-4.5.16-windows-x64/4.5/python/bin/python.exe scripts/package-browser-assets.py` to create `.work/browser-assets/` with the table and DMD atlas. It uses the existing extraction, or extracts the built table with the local vpxtool. Pillow is required (available in `.tools/pydeps`). Upload that bundle as described below.
+For local Docker use:
 
-For local Docker use, run `docker compose build`, then `docker compose run --rm --publish 8080:80 game` to start the web service with its PocketBase dependency and a localhost-accessible port. Populate the asset volume using the copy procedure below, selecting the running game container. Open `http://localhost:8080` for the game and `http://localhost:8080/_/` for the dashboard.
+```sh
+git lfs install
+git lfs pull
+docker compose build
+docker compose run --rm --publish 8080:80 game
+```
+
+Open `http://localhost:8080` for the game and `http://localhost:8080/_/` for the dashboard. No asset upload is needed.
 
 ## Coolify deployment
 
-1. Add `jt7991/finni-pinball` as a **Git-based Docker Compose application**, using branch `master`, base directory `/`, and Compose file `/compose.yaml`. This builds both images from the repository; pasting the YAML into an empty service does not supply the Docker build context.
-2. Assign an HTTPS domain to **game**, targeting internal container port **80**. Leave **pocketbase** without a domain. The Compose file publishes no host ports; Coolify's proxy handles HTTPS.
-3. Deploy. Under Persistent Storage, confirm `pocketbase_data` mounted at `/pb/pb_data` and `browser_assets` mounted at `/usr/share/nginx/html/runtime`. Coolify prefixes the actual volume names with the resource identifier. No environment variables are required.
-4. Package the current game locally with `scripts/package-browser-assets.py`, as above, and upload the contents of `.work/browser-assets/` to `/opt/fin-ball/browser-assets/` on the Coolify server using SCP/SFTP. Keep all three files together: `Finni-Big-Day.vpx`, `dmd-atlas.png`, and `dmd-atlas.json`. These generated, original-derived assets are intentionally not committed or built in Docker.
-5. Copy that bundle into the persistent asset volume using the server commands below. The web service can start before this upload, but playing the game requires these files. `/health` checks the web server, not whether the game assets have been uploaded.
-6. Open the game domain. Use the PocketBase container log's one-use installer link on that same domain to create your admin account at `/_/#/pbinstall/...`. Open `/voice` for the recording studio; in `/_/`, create a `voice_team` account for each teammate. HTTPS enables browser microphone access.
+1. Add `jt7991/finni-pinball` as a **Git-based Docker Compose application**, using branch `master`, base directory `/`, and Compose file `/compose.yaml`.
+2. Enable **Git LFS** in the application's Advanced settings before deploying. The table exceeds GitHub's regular file size limit and is tracked with LFS. The Docker build fails with a clear message if it receives a pointer instead of the table.
+3. Assign an HTTPS domain to **game**, targeting internal container port **80**. Leave **pocketbase** without a domain. No environment variables or host port mappings are required.
+4. Deploy. Under Persistent Storage, confirm `pocketbase_data` mounted at `/pb/pb_data`. Coolify prefixes its actual name with the resource identifier. The game assets are already in the image; do not mount a volume over `/usr/share/nginx/html/runtime`.
+5. Use the PocketBase container log's one-use installer link on the game domain to create your admin account at `/_/#/pbinstall/...`. Open `/_/` for the dashboard and `/voice` for the recording studio. Create a `voice_team` account for each teammate in the dashboard. HTTPS enables browser microphone access.
 
-Run these commands in a shell **on the Coolify server** after uploading the bundle. Replace the container name with the current **game** container name shown in Coolify. The helper mounts the asset volume writable; the game itself keeps a read-only mount.
+If updating an earlier deployment, remove the old `browser_assets` mount from the game service so it cannot hide the bundled assets. Preserve the existing PocketBase volume and resource. A new Coolify resource creates a new empty database unless you restore its backup.
 
-```sh
-GAME_CONTAINER='replace-with-game-container-name'
-ASSET_VOLUME=$(docker inspect --format '{{range .Mounts}}{{if eq .Destination "/usr/share/nginx/html/runtime"}}{{.Name}}{{end}}{{end}}' "$GAME_CONTAINER")
-test -n "$ASSET_VOLUME" || { echo 'Game asset volume not found'; exit 1; }
-docker run --rm \
-  --mount "type=volume,src=$ASSET_VOLUME,dst=/assets" \
-  --mount type=bind,src=/opt/fin-ball/browser-assets,dst=/incoming,readonly \
-  alpine:3.22 sh -ec '
-    for file in Finni-Big-Day.vpx dmd-atlas.png dmd-atlas.json; do
-      test -s "/incoming/$file"
-    done
-    cp /incoming/Finni-Big-Day.vpx /incoming/dmd-atlas.png /incoming/dmd-atlas.json /assets/
-    chmod 644 /assets/Finni-Big-Day.vpx /assets/dmd-atlas.png /assets/dmd-atlas.json
-  '
+## Updating the bundled game
+
+After rebuilding the table locally, regenerate all three deployment files together:
+
+```powershell
+& .tools/blender/blender-4.5.16-windows-x64/4.5/python/bin/python.exe scripts/package-browser-assets.py
 ```
 
-For later game updates, replace all three files during a maintenance window and repeat the copy. Redeploying application code reuses both volumes without an upload. Keep the same Coolify resource and volume names; a new resource creates new empty volumes. If migrating an existing deployment, back up and restore its PocketBase data into the new resource before accepting recordings.
+The default output is `runtime/`: `Finni-Big-Day.vpx`, `dmd-atlas.png`, and `dmd-atlas.json`. Commit these files together and push with Git LFS installed. Docker copies them into the image on the next deployment. The packaging script requires the local table extraction (or vpxtool) and Pillow; Coolify only needs the committed bundle. Original source tables, tools, and intermediate build files remain local.
 
-### Persistent database and WAV files
+## Persistent database and WAV files
 
-The `pocketbase_data` volume contains the **entire** `/pb/pb_data` directory: database, settings, local backups, and `storage/`. The voice studio stores both uploaded `original` WAVs and `processed` WAVs as protected `voice_takes` file fields under that storage directory. They survive container replacement and redeployment with the database; a separate WAV volume is unnecessary. This describes the default local file storage; configuring PocketBase S3 storage moves uploads to that bucket instead.
+The `pocketbase_data` volume contains the entire `/pb/pb_data` directory: database, settings, local backups, and `storage/`. Both `original` and `processed` WAVs are protected `voice_takes` file fields stored there. No separate WAV volume is required. Configuring PocketBase S3 storage moves uploads to that bucket instead.
 
-Back up PocketBase through Settings → Backups with uploaded files included, and copy the backups off-host. Also retain an off-host copy of the three-file game bundle. Before relying on the deployment, submit a test recording, redeploy the same resource, and confirm its record and both playable WAVs remain. Never use `docker compose down -v` on data you intend to keep.
+Set up PocketBase Settings ? Backups with uploaded files included, and copy backups off-host. Submit a test recording, redeploy the same resource, and confirm its record and both WAVs remain. Keep the same resource and volume name; `docker compose down -v` deletes persistent data.
 
-See Coolify's [Git-based Compose configuration](https://coolify.io/docs/applications/builds/docker-compose) and [persistent storage documentation](https://coolify.io/docs/applications/configuration/persistent-storage).
+The Docker build downloads the pinned WASM engine with SHA-512 verification and PocketBase **0.42.3** with SHA-256 verification for amd64 or arm64. Migrations apply automatically on startup. Docker is not installed in the development environment, so container builds must be checked on a Docker host.
 
-The Docker build downloads the pinned WASM engine, checking its SHA-512 checksum, and PocketBase **0.42.3**, checking SHA-256 for amd64 or arm64. The database and uploaded files live in the named `pocketbase_data` volume. Use PocketBase Settings → Backups and copy backups off-host. Preserve that volume across redeploys; `docker compose down -v` destroys it. Migrations apply automatically on startup.
-
-No Coolify resource, DNS, or public deployment is created by these files. Docker is not installed in the development environment, so container builds must be checked on a Docker host.
+See Coolify's [Compose configuration](https://coolify.io/docs/applications/builds/docker-compose) and [Git LFS settings](https://coolify.io/docs/applications/configuration/advanced).
 
 ## Dashboard
 

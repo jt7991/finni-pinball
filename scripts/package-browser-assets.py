@@ -55,5 +55,5 @@ def package(output, copy_table=True):
 
 if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--output',type=Path,default=ROOT/'.work/browser-assets')
+    parser.add_argument('--output',type=Path,default=ROOT/'runtime')
     args=parser.parse_args();print(package(args.output))
