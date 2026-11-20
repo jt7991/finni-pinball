@@ -15,7 +15,7 @@ export function createLeaderboard(evaluate, release) {
     try{
       const {items}=await api('leaderboard');$('leaderboard-rows').replaceChildren();
       items.forEach((entry,index)=>{const row=document.createElement('tr');for(const value of [index+1,entry.initials,Number(entry.score).toLocaleString()]){const cell=document.createElement('td');cell.textContent=value;row.append(cell);}$('leaderboard-rows').append(row);});
-      $('leaderboard-table').hidden=!items.length;$('leaderboard-status').textContent=items.length?'':'The party’s just getting started. Set the first score.';
+      $('leaderboard-table').hidden=!items.length;$('leaderboard-status').textContent=items.length?'':'No scores yet. Play a game to submit a score.';
     }catch(error){$('leaderboard-table').hidden=true;$('leaderboard-status').textContent=error.message;}
   }
   $('refresh-scores').onclick=refresh;

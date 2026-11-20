@@ -42,11 +42,13 @@ try{
   await wait('!!window.finni && !document.getElementById("play").disabled',1200);
   const prepared=await evaluate(`finni.engine.FS.readFile('/shaders-10.8.1/Helpers.fxh',{encoding:'utf8'})`);
   for(const sampler of ['sampler2D','samplerCube','sampler2DArray'])assert.ok(prepared.includes(`precision highp ${sampler};`));
+  await capture('ready');
   // Reapplying the compatibility patch is safe; unknown shader layouts fail clearly.
   assert.equal(await evaluate(`(async()=>{const {prepareRenderer}=await import('/renderer.js');prepareRenderer(finni.engine);return finni.engine.FS.readFile('/shaders-10.8.1/Helpers.fxh',{encoding:'utf8'});})()`),prepared);
   const button=await evaluate(`(()=>{const r=document.getElementById('play').getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2}})()`);
   for(const type of ['mousePressed','mouseReleased'])await call('Input.dispatchMouseEvent',{type,...button,button:'left',clickCount:1});
   await wait('document.body.classList.contains("playing")');await delay(500);
+  assert.equal(await evaluate(`finni.engine.FS.analyzePath('/tables/finni.vpx').exists`),false,'Packed table upload released after startup');
   const shaders=await evaluate('shaderTest');
   assert.deepEqual(shaders.errors,[],'Real shader compile/link errors');
   assert.ok(shaders.programs>20,'Real VPX shader programs linked');
@@ -71,5 +73,15 @@ try{
   await call('Emulation.setDeviceMetricsOverride',{width:844,height:390,deviceScaleFactor:2,mobile:true});await delay(500);
   await capture('landscape-motion');
   assert.deepEqual(await evaluate('shaderTest.errors'),[],'Camera changes keep shader programs valid');
-  console.log(`PASS: actual VPX engine; ${shaders.programs} shader programs; high-precision depth/HDR samplers; both flippers and caps animate/release; disco ball rotates; portrait, landscape and camera changes. Desktop Chromium GPU, not physical Android certification.`);
+  // Simulate the final drain's ball-count bookkeeping, then end through the
+  // native subroutine. This checks replay, not a full three-ball physics run.
+  await evaluate(`window.replayEngine=finni.engine;finni.evaluate('BallsOnPlayfield=0:EndOfGame')`);
+  await wait('!document.getElementById("waiting").hidden && document.getElementById("play").textContent==="Play again"');
+  await capture('replay');
+  const replayButton=await evaluate(`(()=>{const r=document.getElementById('play').getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2}})()`);
+  for(const type of ['mousePressed','mouseReleased'])await call('Input.dispatchMouseEvent',{type,...replayButton,button:'left',clickCount:1});
+  await wait('document.body.classList.contains("game-in-play") && document.getElementById("waiting").hidden');
+  assert.equal(await evaluate('replayEngine===finni.engine'),true,'Replay reuses the loaded native player');
+  assert.equal(await evaluate(`finni.engine.FS.analyzePath('/tables/finni.vpx').exists`),false,'Replay does not need the packed table upload');
+  console.log(`PASS: actual VPX engine; ${shaders.programs} shader programs; high-precision depth/HDR samplers; both flippers and caps animate/release; disco ball rotates; portrait, landscape and camera changes; native game-over/replay after upload cleanup. Desktop Chromium GPU, not physical Android certification.`);
 }finally{socket.close();}

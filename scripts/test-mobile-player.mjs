@@ -22,6 +22,7 @@ const wait=async expression=>{
 };
 const touch=points=>call('Input.dispatchTouchEvent',{type:points.length?'touchStart':'touchEnd',touchPoints:points});
 const point=(x,y,id)=>({x,y,id,radiusX:3,radiusY:3,force:1});
+const capture=async name=>writeFile(`${output}/${name}.png`,Buffer.from((await call('Page.captureScreenshot',{format:'png'})).data,'base64'));
 await call('Page.enable');
 await call('Emulation.setFocusEmulationEnabled',{enabled:true});
 try{
@@ -35,7 +36,15 @@ try{
     assert.equal(await evaluate('document.getElementById("camera-view").value'),'balanced',`${name} default camera`);
     assert.equal(await evaluate('document.documentElement.scrollWidth<=innerWidth'),true,`${name} horizontal overflow`);
     assert.equal(await evaluate('document.documentElement.scrollHeight<=innerHeight'),true,`${name} vertical overflow`);
-    if(!mobile)continue;
+    const help=await evaluate(`(()=>{const r=document.getElementById('touch-help').getBoundingClientRect();return{x:r.x,y:r.y,w:r.width,h:r.height}})()`);
+    assert.ok(help.w>=44&&help.h>=44&&help.x>=0&&help.x+help.w<=width,`${name} small help button reachable`);
+    await evaluate('document.getElementById("touch-help").click()');
+    await wait('!document.getElementById("touch-guide").hidden');
+    if(!mobile)assert.equal(await evaluate('getComputedStyle(document.querySelector(".keyboard-help-text")).display'),'block','Desktop help has keyboard instructions');
+    await capture(`${name}-help`);
+    await evaluate('document.getElementById("dismiss-touch-guide").click()');
+    assert.equal(await evaluate('document.getElementById("touch-guide").hidden'),true,`${name} help dismisses`);
+    if(!mobile){await capture(name);continue;}
     const geometry=await evaluate(`(()=>{
       const box=selector=>{const r=document.querySelector(selector).getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height};};
       return {stage:box('.stage'),full:box('#fullscreen'),left:box('[data-action=left]'),right:box('[data-action=right]'),dmd:box('#dmd')};

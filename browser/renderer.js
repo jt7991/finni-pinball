@@ -11,6 +11,26 @@ const samplerPrecision=`${marker}
         precision highp samplerCube;
         precision highp sampler2DArray;`;
 
+// Install before native main() reads its settings, not after the table starts.
+// Retina phone screens otherwise get desktop-sized render targets and passes.
+export function configureRenderer(engine,{mobile=false,quality='auto'}={}){
+  const performance=quality==='performance'||quality==='auto'&&mobile;
+  if(!performance)return;
+  const directory='/libsdl/VPinballX/10.8';
+  engine.FS.mkdirTree(directory);
+  engine.FS.writeFile(`${directory}/VPinballX.ini`,[
+    '[Player]',
+    'AAFactor=0.5',
+    'MaxTexDimension=2048',
+    'DisableAO=1',
+    'DynamicAO=0',
+    'PFReflection=0',
+    'SSRefl=0',
+    'ForceBloomOff=1',
+    '',
+  ].join('\n'));
+}
+
 export function prepareRenderer(engine){
   // Patch the loaded engine's virtual filesystem, before vpinball_wasm_start
   // creates any shader programs. Keep downloaded engine files byte-for-byte.
