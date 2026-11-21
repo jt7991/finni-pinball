@@ -65,3 +65,25 @@ test('animated DMD assignments resolve to installed sprites',()=>{
   }
   assert.deepEqual([...missing],[]);
 });
+test('object arguments remain callable after Option Explicit, including ramp assists',()=>{
+  const r=setup(),ball=new Proxy({x:270,y:313.75,z:40,velx:-15,vely:-15,velz:0},{
+    get:(target,key)=>target[String(key).toLowerCase()],
+    set:(target,key,value)=>{target[String(key).toLowerCase()]=value;return true;},
+  });
+  r.run('FinniLockRampAssist',ball);
+  assert.ok(Math.hypot(ball.velx,ball.vely)>=23.9);
+  r.run('OnBallBallCollision',ball,{...ball,x:280},3);
+});
+test('lowercase native sound calls work throughout initials entry and commit',()=>{
+  const r=setup();r.execute('HighScoreEntryInit');
+  r.key('right',true);
+  for(let i=0;i<3;i++)r.key('launch',true);
+  assert.equal(r.value('hsbModeActive'),false);
+});
+test('live-catch elasticity lasts ten milliseconds rather than ten physics frames',()=>{
+  const r=setup();
+  r.execute('LeftFlipper.StartAngle=120:LeftFlipper.EndAngle=68:LeftFlipper.CurrentAngle=68:LeftFlipperOn=1:LLiveCatchTimer=0');
+  r.tick(.004);assert.equal(r.objects.get('leftflipper').elasticity,0);
+  r.tick(.008);assert.equal(r.objects.get('leftflipper').elasticity,.6);
+  assert.equal(r.value('LLiveCatchTimer'),10);
+});

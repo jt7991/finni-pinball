@@ -6,10 +6,14 @@ The extracted VPX is needed to rebuild geometry, never to play the experiment.
 import json
 import shutil
 import sys
+import argparse
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / '.tools/pydeps'))
+parser=argparse.ArgumentParser(description=__doc__)
+parser.add_argument('--source-root',type=Path,default=ROOT,help='Read local extracted sources/tools here; outputs always stay in this worktree.')
+SOURCE_ROOT=parser.parse_args().source_root.resolve()
+sys.path.insert(0, str(SOURCE_ROOT / '.tools/pydeps'))
 from PIL import Image
 
 OUT = ROOT / 'three/public'
@@ -32,7 +36,7 @@ image.thumbnail((1024, 2048), Image.Resampling.LANCZOS)
 image.save(OUT / 'playfield.webp', quality=88, method=6)
 shutil.copyfile(ROOT / 'assets/fonts/chewy/Chewy-Regular.ttf', OUT / 'chewy.ttf')
 
-source = ROOT / '.work/finni-live-extracted/gameitems'
+source = SOURCE_ROOT / '.work/finni-live-extracted/gameitems'
 items = []
 for path in sorted(source.glob('*.json')):
     data = json.loads(path.read_text())
@@ -48,7 +52,10 @@ for item in items:
     if 'drag_points' in item:
         item['drag_points'] = [{k: round(p[k], 4) if type(p[k]) is float else p[k]
                                 for k in ('x', 'y', 'smooth', 'is_slingshot', *(['z'] if item['kind']=='Ramp' else []))} for p in item['drag_points']]
-data = {'width': 952, 'height': 2115, 'scale': 0.01, 'items': items}
+gamedata=json.loads((source.parent/'gamedata.json').read_text())
+data = {'width': 952, 'height': 2115, 'scale': 0.01,
+        'physics':{'gravity':gamedata['gravity'],'slope':gamedata['angle_tilt_min'],
+                   'friction':gamedata['friction'],'elasticity':gamedata['elasticity']},'items': items}
 (OUT / 'layout.json').write_text(json.dumps(data, separators=(',', ':')))
 specs=[]
 for path in sorted(source.glob('*.json')):

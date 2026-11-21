@@ -1,5 +1,5 @@
 import RAPIER from '@dimforge/rapier3d-compat';
-import {Pinball,STEP,RADIUS,point} from './physics.js';
+import {Pinball,STEP,RADIUS,point,BALL_GROUP,STATIC_GROUP} from './physics.js';
 import {createRules} from './rules.js';
 
 export async function createFullGame(layout,specs,source,emit,media) {
@@ -77,6 +77,7 @@ class FullGame extends Pinball {
         .setTranslation(p.x,p.y,z+.25).setRotation({x:Math.SQRT1_2,y:0,z:0,w:Math.SQRT1_2}).setSensor(true));
     }
     if(collider){
+      collider.setCollisionGroups(STATIC_GROUP);collider.setRestitutionCombineRule(RAPIER.CoefficientCombineRule.Min);
       this.colliderLabels.set(collider.handle,name);
       collider.setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS);
       this.tags.set(collider.handle,{kind:'mechanism',name,spec});this.mechanisms.set(key,collider);
@@ -95,8 +96,8 @@ class FullGame extends Pinball {
     const p=key==='ballrelease'?{x:9,y:2.65,z:RADIUS+.01}:{...point(spec?.center??{x:293.68,y:473.63}),z:this.surface(spec??{})+RADIUS};
     const body=this.world.createRigidBody(RAPIER.RigidBodyDesc.dynamic().setTranslation(p.x,p.y,p.z)
       .setCcdEnabled(true).setLinearDamping(.025).setAngularDamping(.12).setCanSleep(false));
-    const collider=this.world.createCollider(RAPIER.ColliderDesc.ball(RADIUS).setMass(1).setRestitution(.28).setFriction(.045)
-      .setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS),body);
+    const collider=this.world.createCollider(RAPIER.ColliderDesc.ball(RADIUS).setMass(1).setRestitution(.9).setFriction(.045)
+      .setCollisionGroups(BALL_GROUP).setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS),body);
     const rec={body,collider,held:key==='ballrelease'?'lane':key,previous:{...p},cooldowns:new Map(),laneTime:this.time};
     rec.proxy=new Proxy({radius:25,mass:1,id:body.handle},{
       get:(target,key)=>{
@@ -144,7 +145,7 @@ class FullGame extends Pinball {
   launch(){
     const rec=this.records.find(r=>r.held==='lane');if(!rec||this.state!=='playing')return;
     rec.held=null;rec.body.setBodyType(RAPIER.RigidBodyType.Dynamic,true);
-    rec.body.setLinvel({x:0,y:24+Math.min(1,this.charge/1.2)*13,z:0},true);
+    rec.body.setLinvel({x:0,y:24+Math.min(1,this.charge/1.2)*21,z:0},true);
     this.captures.delete('ballrelease');this.inLane=false;this.charge=0;this.rules.hit('swPlungerRest','UnHit',rec.proxy);
   }
 
@@ -165,11 +166,8 @@ class FullGame extends Pinball {
   step(){
     this.time+=STEP;
     for(const rec of this.records)rec.previous={...rec.body.translation()};
+    this.driveFlippers();
     for(const f of this.flippers){
-      const target=this.held[f.side]&&!this.tilted&&this.state==='playing'?f.raised:f.rest;
-      const amount=(target===f.raised?22:12)*STEP;
-      f.angle+=Math.sign(target-f.angle)*Math.min(Math.abs(target-f.angle),amount);
-      f.body.setNextKinematicRotation({x:0,y:0,z:Math.sin(f.angle/2),w:Math.cos(f.angle/2)});
       const state=this.rules.objects.get(f.side==='left'?'leftflipper':'rightflipper');
       state.startangle=90-f.rest*180/Math.PI;state.endangle=90-f.raised*180/Math.PI;
       state.currentangle=Math.abs(f.angle-f.raised)<.0001?state.endangle:Math.abs(f.angle-f.rest)<.0001?state.startangle:90-f.angle*180/Math.PI;
@@ -177,6 +175,7 @@ class FullGame extends Pinball {
     }
     if(this.held.launch&&this.inLane)this.charge=Math.min(1.2,this.charge+STEP);
     this.world.step(this.events);
+    this.readFlippers();
     this.events.drainCollisionEvents((a,b,started)=>{
       const rec=this.byCollider.get(a)??this.byCollider.get(b);if(!rec||rec.held)return;
       const other=this.byCollider.get(a)===rec?this.byCollider.get(b):this.byCollider.get(a);

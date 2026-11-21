@@ -16,7 +16,7 @@ OUT.mkdir(parents=True,exist_ok=True)
 with socket.socket() as sock:
     sock.bind(('127.0.0.1',0))
     port=sock.getsockname()[1]
-with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work') as profile:
+with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_cleanup_errors=True) as profile:
     process=subprocess.Popen([
         'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
         '--headless=new','--enable-unsafe-swiftshader','--no-first-run',
@@ -27,7 +27,8 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work') as prof
             try:
                 urllib.request.urlopen(f'http://127.0.0.1:{port}/json/list');break
             except OSError:time.sleep(.1)
-        subprocess.run(['node',str(ROOT/'scripts/test-three-browser.mjs'),f'http://127.0.0.1:{port}',
+        runner='probe-vpx-physics.mjs' if '--native-reference' in sys.argv else 'test-three-browser.mjs'
+        subprocess.run(['node',str(ROOT/'scripts'/runner),f'http://127.0.0.1:{port}',
                         sys.argv[1] if len(sys.argv)>1 else 'http://127.0.0.1:5173/three/',str(OUT),*sys.argv[2:]],check=True,timeout=150)
     finally:
         process.terminate();process.wait(timeout=10)

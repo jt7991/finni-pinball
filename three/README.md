@@ -27,14 +27,16 @@ For source development, `npm.cmd run dev` runs Vite at http://127.0.0.1:5173/thr
 
 ## Implementation
 
-- `full-game.js` binds authored switches, drop targets, spinners, gates, kickers, ball release, ball saving and multiball to physical balls. `physics.js` owns fixed 240 Hz stepping, flipper contact geometry and the ramp collision surfaces.
-- `rules.js` supplies table objects, timers, delayed calls, storage, audio and lamp sequences to `@devscholar/vbs-engine-js`. Host integration is disabled. The rules asset retains the full scoring and progression script, including all seven tasks, Cake Time, Friendship, Disco and the other original modes, skill shots, bonuses, supplies, special abilities, extra balls, multiplayer and initials entry.
+- `full-game.js` binds authored switches, drop targets, spinners, gates, kickers, ball release, ball saving and multiball to physical balls. `physics.js` owns fixed 240 Hz stepping, finite-torque dynamic flippers and invisible ramp collision surfaces. Flippers use the source pivot-to-tip lengths, radii, inertia, strength and return strength, with reduced torque near the raised stop. The source rules still control EOS torque and live-catch elasticity.
+- `rules.js` supplies table objects, timers, delayed calls, storage, audio and lamp sequences to `@devscholar/vbs-engine-js`. Timers catch up at their authored intervals, including the 1 ms flipper timer and its 10 ms live-catch window. Host integration is disabled. The rules asset retains the full scoring and progression script, including all seven tasks, Cake Time, Friendship, Disco and the other original modes, skill shots, bonuses, supplies, special abilities, extra balls, multiplayer and initials entry.
 - `scene.js` uses the saved table/hardware geometry, independently animated targets and Finni parts, registered insert polygons, a full-color DMD and a capped mobile render buffer. The static meshes are grouped by material and Draco compressed; the decoder is bundled locally.
 - `media.js` streams music and loads individual callouts/effects on demand. Decoded sound buffers have a 16 MiB retention budget. No audio archive is downloaded at startup.
 
 The native bootstrap, three invisible toy-animation balls, rolling-sound initializer and dynamically generated flasher routines are replaced by JavaScript host behavior. Two display-width expressions are corrected to use numeric character counts; `rolling` is explicitly declared, and the native light collection assignment is adapted to a VB array. These changes are reproducible in `scripts/prepare-three-assets.py`; they do not simplify the scoring or mission rules.
 
-Physics is a new implementation, with a directional shooter-lane feed and gate handling. It is not certified to reproduce VPX’s contact response, friction, ramp travel times or flipper tricks exactly. Headless desktop checks do not establish physical Android/iPhone frame rate. Physical device testing and shot-by-shot feel comparisons remain necessary before treating this branch as a replacement release.
+Physics is a new implementation, using the table's gravity and inclination, the authored curved shooter-lane boundary and directional gate handling. Wall collision meshes have closed tops and exact footprints to preserve the narrow rollover openings. Ramp collision strips include drag-point height offsets and source wall heights, with joined side faces to avoid segment seams. An invisible diagonal under the right return plastic closes an inaccessible pocket narrower than a ball. The accepted wire-ramp model is unchanged.
+
+This is not certified to reproduce VPX’s contact response, friction, ramp travel times or flipper tricks exactly. Headless desktop checks do not establish physical Android/iPhone frame rate. Physical device testing and shot-by-shot feel comparisons remain necessary before treating this branch as a replacement release.
 
 ## Rebuilding assets
 
@@ -48,13 +50,20 @@ The optimized assets under `three/public/` are included so a clean checkout can 
 
 Audio encoding also requires ffmpeg on PATH. Preserve the original author attribution, permissions and asset/music/font credits recorded in the root README and `references/deadpool/VPX-SOURCE.md`. The upstream libraries retain their respective licenses: Three.js (MIT), Rapier (Apache-2.0), vbs-engine-js (MIT) and Vite (MIT).
 
+In an isolated worktree, `prepare-three-assets.py --source-root PATH` reads extracted sources and Python dependencies from another checkout while writing all generated assets into this worktree. Normal builds need only the committed assets.
+
 ## Verification
 
 ```powershell
 npm.cmd test
 npm.cmd run build
+node scripts/probe-three-physics.mjs --flippers
+node scripts/probe-three-physics.mjs --full --cases=24 --seconds=120
+node scripts/probe-three-physics.mjs --full --multiball --cases=6 --seconds=120
 # With the Vite server running:
 & .tools/blender/blender-4.5.16-windows-x64/4.5/python/bin/python.exe scripts/check-three.py
 ```
 
-The rule checks exercise all seven mission completions and scoop jackpots, four players, skill shots, every authored shot/target handler, and Friendship qualification. The physics checks cover powered flippers, lane feed, elevated ramp support, capture/eject, cancellation, tilt, ball progression and real multiball creation. The browser runner uses real WebGL and the real rules in headless Edge, checking portrait, small-phone, landscape and desktop layouts, simultaneous touches, cancellation, launch, camera changes and the absence of VPX network requests. Captures remain local under `.work/three-review/`.
+The rule checks exercise all seven mission completions and scoop jackpots, four players, skill shots, every authored shot/target handler, Friendship qualification, ramp-assist object arguments and initials entry. Physics regressions cover the previous jam locations, ramp ends and wall heights, flipper timing and symmetry, short taps, 32 heel/tip shot combinations, cradle release, lane feed, capture/eject, cancellation, tilt, ball progression and real multiball creation. The randomized probe monitors every unheld ball for stalls and invalid velocities, resolves scoop choices, enters initials and restarts completed games; reports remain under `.work/three-physics/`.
+
+The browser runner uses real WebGL and the real rules in headless Edge, checking portrait, small-phone, landscape and desktop layouts, simultaneous touches, cancellation, launch, camera changes and the absence of VPX network requests. Pass a production URL and `--production` to check the compressed build without the development debug hook. Captures remain local under `.work/three-review/`.

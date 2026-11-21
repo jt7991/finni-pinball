@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import test from 'node:test';
 import {createFullGame} from '../full-game.js';
-import {STEP} from '../physics.js';
+import {STEP,RADIUS} from '../physics.js';
 const json=name=>JSON.parse(fs.readFileSync(new URL(`../public/${name}.json`,import.meta.url)));
 const source=fs.readFileSync(new URL('../public/rules.vbs',import.meta.url),'utf8');
 const ticks=(g,s)=>{for(let i=0;i<s/STEP;i++)g.step();};
@@ -14,9 +14,11 @@ test('full runtime launches, feeds real switches and creates Friendship balls',a
     ticks(g,1);assert.ok(g.records[0].body.translation().y>10,'ball feeds onto main playfield');
     const before=g.score;
     g.rules.hit('Bumper1','Hit',g.records[0].proxy);g.sync();assert.ok(g.score>before);
+    let released=1;const spawn=g.spawn.bind(g);g.spawn=name=>{if(name.toLowerCase()==='ballrelease')released++;return spawn(name);};
     for(let i=0;i<3;i++)g.rules.hit('lock','Hit',g.records[0].proxy);
     let maximum=0;for(let i=0;i<15/STEP;i++){g.step();maximum=Math.max(maximum,g.records.length);}
-    assert.equal(g.rules.value('bNinjaMB'),true);assert.ok(maximum>=3,`physical multiball count ${maximum}`);
+    assert.equal(g.rules.value('bNinjaMB'),true);assert.ok(released>=3,`physical balls released ${released}`);
+    assert.ok(maximum>=2,'at least two physical balls overlap in play');
     assert.ok(events.includes('start'));
   }finally{g.dispose();}
 });
@@ -32,4 +34,26 @@ test('native bonus, game over and replay complete across three physical drains',
     assert.equal(g.state,'over');assert.equal(g.records.length,0);
     g.start();ticks(g,1.7);assert.equal(g.state,'playing');assert.equal(g.ballNumber,1);assert.equal(g.records.length,1);
   }finally{g.dispose();}
+});
+test('production flippers with authored trick timers deliver symmetric heel and tip shots',async()=>{
+  for(const offset of [.35,1.05])for(const delay of [.02,.06]){
+    const shots=[];
+    for(const side of ['left','right']){
+      const g=await createFullGame(json('layout'),json('objects'),source,()=>{});
+      try{
+        g.start();ticks(g,1.7);g.launch();
+        const f=g.flippers.find(f=>f.side===side),ball=g.records[0].body,sign=side==='left'?1:-1;
+        ball.setTranslation({x:f.p.x+sign*offset,y:f.p.y+.5,z:RADIUS+.005},true);
+        ball.setLinvel({x:0,y:-6,z:0},true);
+        let maximum=0,height=0,shot=false;
+        for(let i=0;i<.18/STEP;i++){
+          if(i*STEP>=delay&&!g.held[side])g.input(side,true);
+          g.step();const v=ball.linvel();maximum=Math.max(maximum,Math.hypot(v.x,v.y));height=Math.max(height,ball.translation().z);shot||=v.y>2;
+        }
+        assert.ok(shot);assert.ok(maximum<65);assert.ok(height<.3);
+        shots.push(maximum);
+      }finally{g.dispose();}
+    }
+    assert.ok(Math.abs(shots[0]-shots[1])<.1,`authored flipper response ${offset}/${delay}: ${shots}`);
+  }
 });

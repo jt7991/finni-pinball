@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import test from 'node:test';
-import {createGame,STEP,RADIUS} from '../physics.js';
+import {createGame,STEP,RADIUS,rampSurface} from '../physics.js';
 
 const layout=JSON.parse(await readFile(new URL('../public/layout.json',import.meta.url)));
 const ticks=(g,seconds)=>{for(let i=0;i<seconds/STEP;i++)g.step();};
@@ -72,4 +72,86 @@ test('ramp geometry supports an elevated ball and quick nudges tilt',async()=>{
     assert.equal(g.tilted,true);g.input('left',true);ticks(g,.1);
     assert.ok(g.flippers.every(f=>Math.abs(f.angle-f.rest)<.01));
   }finally{g.dispose();}
+});
+
+test('previous rollover, wire-end and return-post jams let balls leave',async()=>{
+  for(const p of [{x:5.08,y:18.79,z:RADIUS},{x:8.105,y:6.77,z:RADIUS},{x:8.431,y:10.799,z:RADIUS}]){
+    const g=await createGame(layout);
+    try{
+      g.start();g.launch();position(g,p,{x:0,y:-5,z:0});ticks(g,2);
+      const q=g.ball.translation();
+      assert.ok(Math.hypot(q.x-p.x,q.y-p.y)>1,`escaped ${JSON.stringify(p)} to ${JSON.stringify(q)}`);
+    }finally{g.dispose();}
+  }
+});
+
+test('wire ends reach the playfield and zero-wall ramps have no invented sidewalls',async()=>{
+  const wire=rampSurface(layout.items.find(i=>i.name==='Ramp7'));
+  assert.ok(Math.abs(wire.edges[0][0].z)<1e-9);assert.ok(Math.abs(wire.edges[0].at(-1).z)<1e-9);
+  const g=await createGame(layout);
+  try{
+    for(const item of layout.items.filter(i=>i.kind==='Ramp'&&i.ramp_type==='flat'&&i.left_wall_height===0&&i.right_wall_height===0)){
+      assert.equal(g.ramps.find(r=>r.name===item.name).vertices.length,rampSurface(item).vertices.length,item.name);
+    }
+  }finally{g.dispose();}
+});
+
+test('unloaded flippers lift symmetrically, ease off EOS and return after short taps',async()=>{
+  const g=await createGame(layout),degrees=180/Math.PI;
+  try{
+    g.start();g.input('left',true);g.input('right',true);
+    let liftedAt=0;
+    for(let i=0;i<.1/STEP;i++){
+      g.step();const [l,r]=g.flippers;
+      assert.ok(Math.abs(Math.abs(l.angle-l.rest)-Math.abs(r.angle-r.rest))<.0001,'matching stroke');
+      if(!liftedAt&&Math.abs(l.angle-l.raised)*degrees<.2)liftedAt=g.time;
+      for(const f of g.flippers)assert.ok(Math.abs(f.angle-f.rest)*degrees<52.2,'no stop overshoot');
+    }
+    assert.ok(liftedAt>=.03&&liftedAt<=.05,`lift ${liftedAt}s; native approximately 32–48 ms`);
+    g.release();ticks(g,.032);
+    assert.ok(Math.abs(g.flippers[0].angle-g.flippers[0].raised)*degrees<5,'soft initial return');
+    ticks(g,.1);assert.ok(g.flippers.every(f=>Math.abs(f.angle-f.rest)*degrees<.2));
+    for(const duration of [.008,.016,.025]){
+      g.input('left',true);g.input('right',true);ticks(g,duration);g.release();ticks(g,.18);
+      assert.ok(g.flippers.every(f=>Math.abs(f.angle-f.rest)*degrees<.2),`tap ${duration}s returns`);
+    }
+  }finally{g.dispose();}
+});
+
+test('early and late heel/tip shots remain symmetric with bounded energy and no vertical kick',async()=>{
+  for(const offset of [.35,.6,.85,1.05])for(const delay of [0,.02,.04,.06]){
+    const shots=[];
+    for(const side of ['left','right']){
+      const g=await createGame(layout);g.start();g.launch();
+      try{
+        const f=g.flippers.find(f=>f.side===side),sign=side==='left'?1:-1;
+        position(g,{x:f.p.x+sign*offset,y:f.p.y+.5,z:RADIUS+.005},{x:0,y:-6,z:0});
+        let maximum=0,height=0,shot=false;
+        for(let i=0;i<.18/STEP;i++){
+          if(i*STEP>=delay)g.input(side,true);g.step();const v=g.ball.linvel();
+          maximum=Math.max(maximum,Math.hypot(v.x,v.y));height=Math.max(height,g.ball.translation().z);shot||=v.y>2;
+        }
+        assert.ok(shot,`${side} ${offset}/${delay} shoots upfield`);
+        assert.ok(maximum<65,`finite shot speed ${maximum}`);assert.ok(height<.3,`vertical kick ${height}`);
+        shots.push(maximum);
+      }finally{g.dispose();}
+    }
+    assert.ok(Math.abs(shots[0]-shots[1])<.05,`mirror shots ${offset}/${delay}: ${shots}`);
+  }
+});
+
+test('a held cradle releases downfield on either flipper',async()=>{
+  for(const side of ['left','right']){
+    const g=await createGame(layout);
+    try{
+      g.start();g.launch();g.input(side,true);ticks(g,.1);
+      const f=g.flippers.find(f=>f.side===side),a=f.angle,x=.35,y=side==='left'?.43:-.43;
+      position(g,{x:f.p.x+x*Math.cos(a)-y*Math.sin(a),y:f.p.y+x*Math.sin(a)+y*Math.cos(a),z:RADIUS+.001});
+      ticks(g,1);const held={...g.ball.translation()};
+      assert.ok(held.y>f.p.y+.4,'ball can be cradled');
+      g.release();ticks(g,.5);const released=g.ball.translation();
+      assert.ok(released.y<held.y-.3,'release lets the ball roll downfield');
+      assert.ok(g.ball.linvel().y<-.5,'ball keeps moving');
+    }finally{g.dispose();}
+  }
 });

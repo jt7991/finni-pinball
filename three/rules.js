@@ -17,13 +17,13 @@ export function createRules(source,specs,host={}) {
       const parameters=args.map((arg,i)=>{
         if(typeof arg==='number')return String(arg);if(typeof arg==='boolean')return arg?'True':'False';
         if(typeof arg==='string')return `"${arg.replaceAll('"','""')}"`;
-        const key=`HostArg${i}`;engine.addObject(key,arg);return key;
+        const key=`HostArg${i}`;engine.addObject(key,arg);if(engine.error)throw Error(JSON.stringify(engine.error));return key;
       });
       if(functions.has(name.toLowerCase()))return value(`${name}(${parameters.join(',')})`);
       return engine.executeStatementThrows(`${name} ${parameters.join(',')}`);
     }catch(error){throw new Error(`Rules ${name}: ${error.message}`,{cause:error});}
   };
-  const qualify=statement=>statement.replace(/(?<![\w.])[A-Za-z_]\w*/g,name=>nativeFunctions.has(name.toLowerCase())?`Native.${name}`:name);
+  const qualify=statement=>statement.replace(/(?<![\w.])[A-Za-z_]\w*/g,name=>nativeFunctions.has(name.toLowerCase())?`Native.${nativeFunctions.get(name.toLowerCase())}`:name);
   const execute=statement=>engine.executeStatementThrows(qualify(statement));
   const value=expression=>{const result=engine.eval(expression);if(engine.error)throw Error(JSON.stringify(engine.error));return result;};
   const schedule=(ms,statement)=>{delays.push({at:time+Number(ms)/1000,statement});};
@@ -104,21 +104,26 @@ export function createRules(source,specs,host={}) {
       flashes.set(light.name,{light,property,finish,end:time+Number(total)/1000,period:Math.max(.01,Number(period)/1000)});
     },
   };
-  const nativeFunctions=new Set(Object.entries(natives).filter(([,v])=>typeof v==='function').map(([name])=>name.toLowerCase()));
+  const nativeFunctions=new Map(Object.entries(natives).filter(([,v])=>typeof v==='function').map(([name])=>[name.toLowerCase(),name]));
   engine.addObject('Native',natives);
   for(const [name,v]of Object.entries(natives))if(typeof v!=='function')engine.addObject(name,v);
   // Visual Pinball sequence constants affect only decorative lamp choreography.
   const sequenceNames=[...new Set((source.match(/\bSeq\w+/g)||[]).map(n=>n.toLowerCase()))];
   for(const [i,name]of sequenceNames.entries())engine.addObject(name,i+1);
   for(const name of new Set(source.match(/\bDOF[A-Za-z]+\b/g)||[]))if(!(name in natives))engine.addObject(name,0);
+  // The source enables Option Explicit. Reserve the object-call slots before it
+  // runs, so a later ramp assist or ball/ball event can bind its arguments.
+  for(let i=0;i<6;i++)engine.addObject(`HostArg${i}`,{});
   engine.addCode(qualify(source));
   function hit(name,kind='Hit',ball){activeBall=ball;engine.addObject('ActiveBall',ball??{});return run(`${name}_${kind}`);}
   function tick(dt){
     time+=dt;
     for(const delay of [...delays])if(delay.at<=time){delays.splice(delays.indexOf(delay),1);execute(delay.statement);}
-    for(const [key,t]of [...timers])if(t.at<=time&&timers.get(key)===t){
+    // A 1 ms live-catch timer must advance four/five times per 240 Hz physics
+    // step. Dropping those ticks stretched its ten-ms window to about forty ms.
+    for(const [key,t]of [...timers])while(t.at<=time+1e-9&&timers.get(key)===t){
       const milliseconds=Number(t.property==='enabled'?t.object.interval:t.object.timerinterval);
-      t.at=time+Math.max(.001,milliseconds/1000);engine.addObject('Me',t.object);run(t.handler);
+      t.at+=Math.max(.001,milliseconds/1000);engine.addObject('Me',t.object);run(t.handler);
     }
     for(const [name,f]of flashes){
       if(time>=f.end){f.light[f.property]=f.finish;flashes.delete(name);}
