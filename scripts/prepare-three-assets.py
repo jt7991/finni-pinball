@@ -157,6 +157,16 @@ script=script.replace('ReDim rolling(tnob)','Dim rolling()\nReDim rolling(tnob)'
 script=script.replace('Len(TempStr)> Space(dCharsPerLine(id) )','Len(TempStr)> dCharsPerLine(id)')
 script=script.replace('Left(TempStr, Space(dCharsPerLine(id) ) )','Left(TempStr, dCharsPerLine(id) )')
 script=script.replace('set RainbowLights = n','RainbowLights = n')
+# Native event scripts bind Me to the firing timer. The JS VB engine reserves
+# Me for class instances, so bind these two authored uses to their own object.
+for timer in ('LilDPTimer','LilDPSpinner'):
+    pattern=r'Sub '+timer+r'_Timer\b.*?End Sub'
+    def bind_timer(match):
+        body,count=re.subn(r'\bMe\.Enabled\b',timer+'.Enabled',match[0],flags=re.I)
+        if count!=1:raise ValueError(f'Unexpected native timer alias in {timer}')
+        return body
+    script,count=re.subn(pattern,bind_timer,script,count=1,flags=re.S|re.I)
+    if count!=1:raise ValueError(f'Missing native timer handler {timer}')
 script=re.sub(r'Sub LilDPInit\b.*?End Sub','Sub LilDPInit\nEnd Sub',script,flags=re.S|re.I)
 # Physical toy bobble is animated by Three.js rather than three invisible VPX balls.
 script=re.sub(r'Sub LilDPShake\(strength\).*?End Sub','Sub LilDPShake(strength)\n HostShake strength\nEnd Sub',script,flags=re.S|re.I)

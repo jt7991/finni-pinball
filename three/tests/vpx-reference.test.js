@@ -40,6 +40,17 @@ test('twenty native gate recordings verify blocking, pass-through, open/close mo
   assert.equal(reports.filter(r=>r.name.endsWith('-open-close')).length,4);
 });
 
+test('native target recordings preserve corner misses, completion scores and the full timed hold/release',()=>{
+  const reports=JSON.parse(execFileSync(process.execPath,['scripts/compare-vpx-targets.mjs','--check','--json'],{cwd:root,encoding:'utf8',maxBuffer:1024*1024}));
+  assert.equal(reports.length,3);
+  assert.equal(reports.find(r=>r.name==='Target010-front-corner').score,0);
+  assert.equal(reports.find(r=>r.name==='Target010-front-face').score,2000);
+  const hold=reports.find(r=>r.name==='Target011-timed-hold');assert.equal(hold.score,3000);
+  assert.ok(hold.samples.some(s=>s.ms>=7900&&s.ms<8000));
+  for(const s of hold.samples.filter(s=>s.ms<8000)){assert.deepEqual(s.dropped,[0,0,0]);assert.ok(s.positionError<.1,'native held-ball position');}
+  assert.deepEqual(hold.samples.at(-1).dropped,[1,1,1]);assert.ok(hold.maxPositionError<2,'native release path');
+});
+
 test('millisecond native trace verifies timer phase and the coupled floor/flipper heel impacts',()=>{
   const report=JSON.parse(execFileSync(process.execPath,['scripts/compare-vpx-heel.mjs','--check','--json'],{cwd:root,encoding:'utf8'}));
   assert.equal(report.samples.length,70);assert.equal(report.firstDivergence,undefined);

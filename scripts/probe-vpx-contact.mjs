@@ -3,13 +3,13 @@
 import {writeFile,readFile} from 'node:fs/promises';
 import assert from 'node:assert/strict';
 const [debug,base,output]=process.argv.slice(2);
-const probeKind=process.argv.includes('--gates')?'gates':process.argv.includes('--spinners')?'spinners':process.argv.includes('--plunger')?'plunger':process.argv.includes('--nudge')?'nudge':'contacts';
+const probeKind=process.argv.includes('--targets')?'targets':process.argv.includes('--gates')?'gates':process.argv.includes('--spinners')?'spinners':process.argv.includes('--plunger')?'plunger':process.argv.includes('--nudge')?'nudge':'contacts';
 const reference=await(await fetch(new URL('/reference-metadata.json',base))).json();
 const recordTimers=!!reference.instrumentation&&!process.argv.includes('--no-timer-trace');
 reference.timerTraceCaptured=recordTimers;
 assert.deepEqual(reference.controlledOverrides,{scatter:0,default_scatter:0},'controlled native table metadata');
 const runtimeOverrides={'LeftFlipper.Scatter':0,'RightFlipper.Scatter':0};
-const columns=['ms','x','y','z','vx','vy','vz','wx','wy','wz','left','right',...(probeKind==='plunger'?['plunger_position']:['spinners','gates'].includes(probeKind)?[probeKind==='gates'?'gate_angle':'spinner_angle','score','left_spinner_count']:[])];
+const columns=['ms','x','y','z','vx','vy','vz','wx','wy','wz','left','right',...(probeKind==='plunger'?['plunger_position']:probeKind==='targets'?['target009_dropped','target010_dropped','target011_dropped','target009_offset','target010_offset','target011_offset','score']:['spinners','gates'].includes(probeKind)?[probeKind==='gates'?'gate_angle':'spinner_angle','score','left_spinner_count']:[])];
 reference.timerSynchronization='RollingTimer disabled/enabled immediately before each initial state, resetting its 10ms phase.';
 const tabs=await(await fetch(`${debug}/json/list`)).json();
 const socket=new WebSocket(tabs.find(t=>t.type==='page').webSocketDebuggerUrl);
@@ -72,6 +72,13 @@ if(probeKind==='gates'){
     cases.push({name:`${gate.name}-${overhead?'overhead':open?'open':direction>0?'forward':'reverse'}`,gate:gate.name,direction,open,x:p.x-n.x*60*direction,y:p.y-n.y*60*direction,z:z+(overhead?100:0),vx:n.x*12*direction,vy:n.y*12*direction,sampleCount:120,parkFromSample:12});
   }
   for(const gate of specs.filter(s=>s.kind==='Gate'))cases.push({name:gate.name+'-open-close',gate:gate.name,open:true,closeDelay:400,x:430,y:1500,z:25,vx:0,vy:0,sampleCount:120,parkFromSample:0});
+}
+if(probeKind==='targets'){
+  cases.length=0;
+  const spec=JSON.parse(await readFile(new URL('../three/public/objects.json',import.meta.url),'utf8')).objects.find(s=>s.name==='Target010'),a=spec.rot_z*Math.PI/180,n={x:-Math.sin(a),y:Math.cos(a)},offset=.181738*spec.size.y;
+  cases.push({name:'Target010-front-corner',target:'Target010',x:590.6739702224731,y:837.7343965530396,z:25.33487311553955,vx:-8.314886093139648,vy:-4.348639488220215,vz:-.29163968563079834,sampleCount:60});
+  cases.push({name:'Target010-front-face',target:'Target010',x:spec.position.x+n.x*(offset+40),y:spec.position.y+n.y*(offset+40),z:25,vx:-n.x*8,vy:-n.y*8,sampleCount:60});
+  cases.push({name:'Target011-timed-hold',target:'Target011',x:612.3,y:803.1,z:25,vx:0,vy:0,sampleCount:540,setupCode:'bLilDPMB=True:bMultiBallMode=True:LilDPHits=4:LilDPHitsNeeded(CurrentPlayer)=1:LilDPJackpot(CurrentPlayer)=500000:LilDPTimer.Enabled=False:LilDPTimer.Interval=100:LilDPTimer.Enabled=True'});
 }
 if(exactDelay!==undefined){
   const driven=cases.filter(s=>!selected||s.name===selected);
@@ -156,7 +163,7 @@ try{
       await script(`Debug.Print "GATE_STATE|" & CLng(${scenario.gate}.Collidable) & ":" & CLng(${scenario.gate}.Open)`);
       assert.deepEqual((await marker('GATE_STATE')).split(':').map(parseFloat),[-1,0]);
     }
-    const command=scenario.gate?`${scenario.gate}.Open=${scenario.open?'True':'False'}`:scenario.plunger?'Plunger.Fire':scenario.nudgeAngle!==undefined?`Nudge ${scenario.nudgeAngle},${scenario.force}`:scenario.side?`Sol${scenario.side==='left'?'L':'R'}Flipper ${scenario.press===false?0:1}`:'';
+    const command=scenario.setupCode??(scenario.gate?`${scenario.gate}.Open=${scenario.open?'True':'False'}`:scenario.plunger?'Plunger.Fire':scenario.nudgeAngle!==undefined?`Nudge ${scenario.nudgeAngle},${scenario.force}`:scenario.side?`Sol${scenario.side==='left'?'L':'R'}Flipper ${scenario.press===false?0:1}`:'');
     const inputMarker=`CONTACT_INPUT_${scenario.name}`;
     const input=`Debug.Print "${inputMarker}|" & GameTime:${command}`;
     let drive=command?(scenario.delay?`vpmtimer.addtimer ${scenario.delay},"${input.replaceAll('"','""')} '"`:input):'';
@@ -180,11 +187,13 @@ try{
     for(let i=0;i<(scenario.sampleCount??12);i++){
       const park=scenario.parkFromSample!==undefined&&i>=scenario.parkFromSample?reset(430,1500,0,0)+':':'';
       const mechanism=scenario.spinner??scenario.gate;
-      const extra=mechanism?` & ":" & CLng(${mechanism}.CurrentAngle*1000000) & ":" & Score(CurrentPlayer) & ":" & LeftSpinnerCount(CurrentPlayer)`:scenario.plunger?' & ":" & Plunger.Position':'';
+      const targetFields=scenario.target?['Target009','Target010','Target011'].map(n=>`CLng(${n}.IsDropped)`).concat(['Target009','Target010','Target011'].map(n=>`CLng(${n}.CurrentAnimOffset*1000000)`),'Score(CurrentPlayer)'):null;
+      const extra=mechanism?` & ":" & CLng(${mechanism}.CurrentAngle*1000000) & ":" & Score(CurrentPlayer) & ":" & LeftSpinnerCount(CurrentPlayer)`:targetFields?' & ":" & '+targetFields.join(' & ":" & '):scenario.plunger?' & ":" & Plunger.Position':'';
       await script(park+'Debug.Print "CONTACT_SAMPLE|" & GameTime & ":" & RefBall.X & ":" & RefBall.Y & ":" & RefBall.Z & ":" & CLng(RefBall.VelX*1000000) & ":" & CLng(RefBall.VelY*1000000) & ":" & CLng(RefBall.VelZ*1000000) & ":" & CLng(RefBall.AngVelX*1000000) & ":" & CLng(RefBall.AngVelY*1000000) & ":" & CLng(RefBall.AngVelZ*1000000) & ":" & LeftFlipper.CurrentAngle & ":" & RightFlipper.CurrentAngle'+extra);
       const raw=await marker('CONTACT_SAMPLE');rawSamples.push(raw);
       const values=raw.split(':').map(parseFloat);assert.equal(values.length,columns.length);assert.ok(values.every(Number.isFinite));for(let k=4;k<10;k++)values[k]/=1000000;values[0]-=origin;samples.push(values);
       if(mechanism)values[12]/=1000000;
+      if(scenario.target)for(let k=15;k<=17;k++)values[k]/=1000000;
       await captureInput();
       await new Promise(r=>setTimeout(r,5));
     }
@@ -202,7 +211,7 @@ try{
     }
     const closing=scenario.closeDelay?{actualCloseDelay:closeAt-origin}:{};if(scenario.closeDelay)assert.ok(Number.isFinite(closing.actualCloseDelay)&&closing.actualCloseDelay>0,'observed native gate-close clock');
     results.push({...scenario,initial,actualDelay,...closing,samples,rawSamples,...(timerTrace?{timerTrace}:{})});console.log(scenario.name,'input at',actualDelay,JSON.stringify(samples.at(-1)));
-    const suffix=['spinners','gates'].includes(probeKind)&&selected?`${probeKind}-${reference.instrumentation?.spinnerTraceColumns?'timing-':''}${reference.animationBallIsolation?'isolated-animation-':''}${selected}`:`${reference.geometryProbe?'geometry':probeKind==='contacts'?'contact':probeKind}-reference`;
+    const suffix=['spinners','gates','targets'].includes(probeKind)&&selected?`${probeKind}-${reference.instrumentation?.spinnerTraceColumns?'timing-':''}${reference.animationBallIsolation?'isolated-animation-':''}${selected}`:`${reference.geometryProbe?'geometry':probeKind==='contacts'?'contact':probeKind}-reference`;
     await writeFile(`${output}/vpx-${suffix}.json`,JSON.stringify({...reference,probeKind,runtimeOverrides,columns,cases:results},null,2));
   }
 }finally{socket.close();}

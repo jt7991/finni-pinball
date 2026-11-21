@@ -49,19 +49,29 @@ try{
   if(await evaluate('!!window.finniThree')){
     await evaluate('document.getElementById("controls-panel").showPopover()');
     await wait('document.getElementById("controls-panel").matches(":popover-open")');
-    const plates=await evaluate(`(()=>{
+    const animation=await evaluate(`(()=>{
       const {game,view}=finniThree,render=view.renderer.render;let scene;
       try{view.renderer.render=function(s,c){scene=s;return render.call(this,s,c);};view.render(1);}finally{view.renderer.render=render;}
-      return [...game.spinners,...game.gates.filter(g=>g.spec.is_visible)].map(spinner=>{
+      const parts=[...game.spinners,...game.gates.filter(g=>g.spec.is_visible)].map(spinner=>{
         const plate=scene.getObjectByName(spinner.spec.name+(spinner.spec.kind==='Gate'?'Wire':'Plate'));if(!plate)return {name:spinner.spec.name,missing:true};
         const saved=spinner.angle,position=plate.position.clone();spinner.angle=0;view.render(1);const start=plate.quaternion.clone();
         spinner.angle=Math.PI/2;view.render(1);const rotation=start.angleTo(plate.quaternion),axleMovement=position.distanceTo(plate.position);
         spinner.angle=saved;view.render(1);return {name:plate.name,rotation,axleMovement};
       });
+      const state=game.rules.objects.get('target010'),motion=game.targetMotions.get('target010'),mesh=scene.getObjectByName('Target010'),collidable=motion.collidable;
+      state.collidable=false;for(let ms=0;ms<100;ms++)game.step();state.isdropped=0;for(let ms=0;ms<100;ms++)game.step();view.render(1);const up=mesh.position.y;
+      state.isdropped=1;for(let ms=0;ms<25;ms++)game.step();view.render(1);const middle={offset:motion.offset,delta:mesh.position.y-up};
+      for(let ms=0;ms<40;ms++)game.step();view.render(1);const end={offset:motion.offset,delta:mesh.position.y-up};state.collidable=collidable;
+      return {parts,target:{middle,end}};
     })()`);
+    const plates=animation.parts;
     assert.equal(plates.length,4);
     for(const plate of plates){assert.equal(plate.missing,undefined);assert.ok(Math.abs(plate.rotation-Math.PI/2)<1e-6);assert.equal(plate.axleMovement,0);}
     await writeFile(`${output}/mechanism-animation.json`,JSON.stringify(plates,null,2));console.log('PASS original spinner plates and gate wires rotate around fixed axles');
+    assert.ok(animation.target.middle.offset<0&&animation.target.middle.offset>-52,'visible target moves progressively');
+    assert.ok(Math.abs(animation.target.middle.delta-animation.target.middle.offset*.00053975)<1e-8);
+    assert.equal(animation.target.end.offset,-52);assert.ok(Math.abs(animation.target.end.delta+52*.00053975)<1e-8,'native 52 VPU target travel');
+    await writeFile(`${output}/target-animation.json`,JSON.stringify(animation.target,null,2));console.log('PASS original drop-target mesh follows native animation travel');
   }
   assert.deepEqual(errors,[]);assert.equal(requests.some(url=>/table\.vpx|vpinball\.(wasm|js)/.test(url)),false);
   await writeFile(`${output}/main-ui-startup.json`,JSON.stringify(measurements,null,2));

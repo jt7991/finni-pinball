@@ -9,6 +9,7 @@ import {dropTargetFront} from './target-contact.js';
 import {CabinetNudge} from './cabinet-nudge.js';
 import {Spinner} from './spinner.js';
 import {Gate} from './gate.js';
+import {TargetMotion} from './target-motion.js';
 
 export async function createFullGame(layout,specs,source,emit,media) {
   await RAPIER.init();
@@ -21,7 +22,7 @@ class FullGame extends Pinball {
     this.cabinetNudge=new CabinetNudge();
     this.placeholder=this.ball;this.ballCollider.setEnabled(false);
     this.records=[];this.byCollider=new Map();this.captures=new Map();this.mechanisms=new Map(this.nativeMeshes.map(m=>[this.colliderLabels.get(m.collider.handle)?.toLowerCase(),m.collider]));
-    this.targetFronts=new Map();this.targetDrops=new Map();
+    this.targetFronts=new Map();this.targetMotions=new Map();this.targetEventBall=null;
     this.specs=specs;this.media=media;this.pendingCreate=null;this.syncCount=0;
     for(const spec of specs.objects)this.addMechanism(spec);
     const storage={
@@ -38,7 +39,7 @@ class FullGame extends Pinball {
       sound:(name,settings)=>media?.play(name,settings),stopSound:name=>media?.stop(name),
       shake:strength=>emit({type:'shake',strength}),
       message:text=>emit({type:'message',text}),mechanism:(name,k,v)=>this.mechanism(name,k,v),
-      mechanismValue:(name,key)=>{const gate=this.gates.find(g=>g.spec.name.toLowerCase()===name.toLowerCase());if(gate)return ({currentangle:gate.currentAngle,collidable:gate.enabled,open:gate.open})[key];},
+      mechanismValue:(name,key)=>{const lower=name.toLowerCase(),target=this.targetMotions.get(lower);if(target)return ({isdropped:target.dropped?1:0,currentanimoffset:target.offset})[key];const gate=this.gates.find(g=>g.spec.name.toLowerCase()===lower);if(gate)return ({currentangle:gate.currentAngle,collidable:gate.enabled,open:gate.open})[key];},
       balls:()=>this.records.map(r=>r.proxy),...storage,
     });
     this.rules.init();
@@ -116,6 +117,10 @@ class FullGame extends Pinball {
         .setTranslation(p.x,p.y,z+.25).setRotation({x:Math.SQRT1_2,y:0,z:0,w:Math.SQRT1_2}).setSensor(true));
     }
     if(collider){
+      if(spec.kind==='HitTarget'&&spec.target_type.startsWith('drop'))this.targetMotions.set(key,new TargetMotion(spec,collider,()=>Math.round(this.time*1000),(event,ball)=>{
+        const previous=this.targetEventBall;this.targetEventBall=ball;
+        try{this.rules?.hit(name,event,ball??this.records[0]?.proxy);}finally{this.targetEventBall=previous;}
+      }));
       collider.setCollisionGroups(STATIC_GROUP);collider.setRestitution(surfaceRestitution(collider.restitution()));collider.setRestitutionCombineRule(RAPIER.CoefficientCombineRule.Multiply);
       this.colliderLabels.set(collider.handle,name);
       collider.setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS);
@@ -125,9 +130,11 @@ class FullGame extends Pinball {
 
   mechanism(name,key,v) {
     const collider=this.mechanisms.get(name.toLowerCase());if(!collider)return;
+    const target=this.targetMotions.get(name.toLowerCase());
+    if(target){if(key==='isdropped')target.setDropped(v,this.targetEventBall??this.records[0]?.proxy);if(key==='collidable')target.setCollidable(v);this.targetFronts.get(name.toLowerCase())?.setEnabled(collider.isEnabled());return;}
     const gate=this.gates.find(g=>g.spec.name.toLowerCase()===name.toLowerCase());
     if(gate){if(key==='open')gate.setOpen(v);if(key==='collidable')gate.setCollidable(v);return;}
-    if(key==='isdropped'){collider.setEnabled(!v);this.targetFronts.get(name.toLowerCase())?.setEnabled(!v);this.targetDrops.delete(name.toLowerCase());}
+    if(key==='isdropped'){collider.setEnabled(!v);this.targetFronts.get(name.toLowerCase())?.setEnabled(!v);}
     if(key==='collidable')collider.setEnabled(!!v);
     // Gates stay sensors: per-ball direction decides whether their flap blocks.
   }
@@ -219,9 +226,7 @@ class FullGame extends Pinball {
   step(){
     this.time+=STEP;
     this.rules.tick(STEP);
-    for(const [name,drop]of this.targetDrops)if(drop.at<=this.time+1e-9){
-      this.targetDrops.delete(name);this.rules.objects.get(name).isdropped=true;this.rules.hit(drop.name,'Dropped',drop.ball);
-    }
+    for(const [name,target]of this.targetMotions){target.update(STEP*1000);this.targetFronts.get(name)?.setEnabled(target.collider.isEnabled());}
     for(const rec of this.records){rec.previous={...rec.body.translation()};rec.previousVelocity={...rec.body.linvel()};}
     this.driveFlippers();
     for(const f of this.flippers){
@@ -269,7 +274,7 @@ class FullGame extends Pinball {
         if(drop){
           const v=rec.previousVelocity,n=tag.normal;
           if(n&&v.x*n.x+v.y*n.y>-(tag.spec.threshold??2))return;
-          if(!this.targetDrops.has(key)&&!this.rules.objects.get(key).isdropped)this.targetDrops.set(key,{name:tag.name,at:this.time+52/(tag.spec.drop_speed??.9)/1000,ball:rec.proxy});
+          if(this.targetMotions.get(key)?.hit(rec.proxy))this.rules.hit(tag.name,'Hit',rec.proxy);
         }else this.rules.hit(tag.name,'Hit',rec.proxy);
       }else if(tag.spec?.kind==='Kicker'){
         rec.held=key;rec.body.setBodyType(RAPIER.RigidBodyType.KinematicPositionBased,true);rec.body.setLinvel({x:0,y:0,z:0},true);

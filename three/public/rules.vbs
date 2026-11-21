@@ -4554,7 +4554,7 @@ Sub LilDPTimer_Timer 'hurry up timer
     If LilDPJackpot(CurrentPlayer) <= 100000 OR bLilDPMB = False Then 'release the locked ball
         PlaySound "vo_lildp_timeup"
         LilDPJackpot(CurrentPlayer) = 100000
-        Me.Enabled = 0
+        LilDPTimer.Enabled = 0
         DropdownTargets
         If bMultiBallMode = False Then 'not in a multibal anymore then reset the droptargets after a short pause to let the ball out
             vpmtimer.addtimer 1500, "ResetDropTargets '"
@@ -4661,7 +4661,7 @@ Sub StopLilDPMB 'end of LilDP multiball
 End Sub
 
 Sub LilDPSpinner_Timer
-    Me.Enabled = 0
+    LilDPSpinner.Enabled = 0
     For x = 1 to 6:LilDPLights(x) = 0:Next
     li054.State = 0
     li057.State = 0

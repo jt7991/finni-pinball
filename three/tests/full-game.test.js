@@ -3,9 +3,29 @@ import fs from 'node:fs';
 import test from 'node:test';
 import {createFullGame} from '../full-game.js';
 import {STEP,RADIUS} from '../physics.js';
+import {applyReferencePhysics,referenceRandom} from '../../scripts/reference-physics.mjs';
 const json=name=>JSON.parse(fs.readFileSync(new URL(`../public/${name}.json`,import.meta.url)));
 const source=fs.readFileSync(new URL('../public/rules.vbs',import.meta.url),'utf8');
 const ticks=(g,s)=>{for(let i=0;i<s/STEP;i++)g.step();};
+
+test('unchanged drop flags preserve a pending hit and scripted drops complete once before delayed raising',async()=>{
+  const fixture=JSON.parse(fs.readFileSync(new URL('fixtures/vpx-targets.json',import.meta.url))),layout=json('layout'),objects=json('objects');applyReferencePhysics(layout,objects,fixture);
+  const g=await createFullGame(layout,objects,source,()=>{});g.random=referenceRandom();
+  try{
+    g.start();ticks(g,2);g.launch();const r=g.records[0],c=fixture.cases.find(c=>c.name==='Target010-front-face');
+    const timer=g.rules.objects.get('rollingtimer');timer.enabled=false;timer.enabled=true;
+    r.body.setTranslation({x:c.x*.01,y:(2115-c.y)*.01,z:c.z*.01},true);r.body.setLinvel({x:c.vx,y:-c.vy,z:0},true);r.body.setAngvel({x:0,y:0,z:0},true);
+    const events=[],hit=g.rules.hit;g.rules.hit=(name,event,ball)=>{if(['Dropped','Raised'].includes(event))events.push(name+'_'+event);return hit(name,event,ball);};
+    const target=g.rules.objects.get('target010'),motion=g.targetMotions.get('target010');
+    ticks(g,.04);assert.ok(motion.moving&&motion.offset<0);assert.equal(target.isdropped,0);
+    target.isdropped=0;ticks(g,.16);
+    assert.equal(g.rules.value('Score(CurrentPlayer)'),2000,'native face recording includes the scripted sibling completion');
+    assert.deepEqual(events,['Target010_Dropped','Target011_Dropped']);
+    target.isdropped=1;g.rules.objects.get('target011').isdropped=1;ticks(g,.1);assert.equal(events.length,2,'unchanged flags do not restart animation or awards');
+    target.isdropped=0;assert.equal(motion.collider.isEnabled(),true);ticks(g,.008);assert.equal(motion.offset,-52,'native raise delay');
+    ticks(g,.1);assert.equal(motion.offset,0);assert.equal(target.isdropped,0);assert.equal(events.at(-1),'Target010_Raised');
+  }finally{g.dispose();}
+});
 test('full runtime launches, feeds real switches and creates Friendship balls',async()=>{
   const events=[],g=await createFullGame(json('layout'),json('objects'),source,e=>events.push(e.type));
   try{

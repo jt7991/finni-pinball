@@ -60,7 +60,7 @@ export function createRules(source,specs,host={}) {
       getballs:()=>host.balls?.()??[],
     };
     const proxy=new Proxy(state,{
-      get(target,key){if(typeof key==='symbol')return target[key];const k=key.toLowerCase();if(spec.kind==='Plunger'&&k==='position')return host.plungerPosition?.()??0;if(spec.kind==='Gate'){const value=host.mechanismValue?.(name,k);if(value!==undefined)return value;}return k in actions?actions[k]:target[k]??0;},
+      get(target,key){if(typeof key==='symbol')return target[key];const k=key.toLowerCase();if(spec.kind==='Plunger'&&k==='position')return host.plungerPosition?.()??0;if(spec.kind==='Gate'||spec.kind==='HitTarget'){const value=host.mechanismValue?.(name,k);if(value!==undefined)return value;}return k in actions?actions[k]:target[k]??0;},
       set(target,key,v){const k=String(key).toLowerCase();target[k]=v;
         if(k==='enabled'&&spec.kind==='Timer'||k==='timerenabled'){
           const enabled=!!v,timerKey=k==='enabled'?lower:`${lower}:timer`;
@@ -149,9 +149,9 @@ export function createRules(source,specs,host={}) {
     // Preserve every authored tick, including the 1ms flipper/live-catch timer.
     for(const [key,t]of [...timers])while(t.at<=time+1e-9&&timers.get(key)===t){
       const milliseconds=Number(t.property==='enabled'?t.object.interval:t.object.timerinterval);
-      // Me only supplies timer properties here. Its methods are already bound
-      // under the object's own name; don't re-register them every millisecond.
-      t.at+=Math.max(.001,milliseconds/1000);engine.addObject('Me',t.object,false);run(t.handler);
+      // Timer aliases are bound to their authored object when assets are
+      // prepared. No host-object registration is needed on the hot 1ms path.
+      t.at+=Math.max(.001,milliseconds/1000);run(t.handler);
     }
     for(const [name,f]of flashes){
       if(time>=f.end){f.light[f.property]=f.finish;flashes.delete(name);}
