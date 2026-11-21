@@ -63,6 +63,14 @@ try{
     assert.equal(await evaluate('document.querySelectorAll(".flip-zones .pressed").length'),0,`${name} release`);
     assert.equal(await evaluate('playerTest.scripts.filter(s=>s.includes("KeyDown")&&s.includes("Flipper")).length'),2);
     assert.equal(await evaluate('playerTest.scripts.filter(s=>s.includes("KeyUp")&&s.includes("Flipper")).length'),2);
+    if(name==='android-portrait'){
+      await evaluate(`playerTest.holdMenus=0;document.querySelector('[data-action=left]').addEventListener('contextmenu',()=>playerTest.holdMenus++)`);
+      await touch([left]);await new Promise(resolve=>setTimeout(resolve,1100));
+      assert.equal(await evaluate('document.querySelector("[data-action=left]").getAttribute("aria-pressed")'),'true','Long hold keeps the flipper engaged');
+      assert.equal(await evaluate('playerTest.holdMenus'),0,'Long hold does not start the browser context gesture');
+      await touch([]);
+      assert.equal(await evaluate('document.querySelectorAll(".flip-zones .pressed").length'),0,'Long hold releases normally');
+    }
     await touch([left]);
     await call('Input.dispatchTouchEvent',{type:'touchCancel',touchPoints:[]});
     assert.equal(await evaluate('document.querySelectorAll(".flip-zones .pressed").length'),0,`${name} cancellation`);

@@ -68,6 +68,9 @@ window.addEventListener('pointerup',event=>finishPointer(event));
 window.addEventListener('pointercancel',event=>finishPointer(event,true));
 for(const [id,name] of actions){
   const button=document.createElement('button');button.textContent=name;button.dataset.action=id;button.disabled=true;
+  // Cancelling contextmenu is too late to stop Android's long-press haptic.
+  // Cancel the native touch gesture; pointer events still drive game input.
+  for(const type of ['touchstart','touchend'])button.addEventListener(type,e=>e.preventDefault(),{passive:false});
   button.addEventListener('contextmenu',e=>e.preventDefault());
   button.addEventListener('pointerdown',e=>{
     if(e.pointerType==='mouse'&&e.button!==0)return;

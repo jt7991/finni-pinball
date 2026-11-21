@@ -24,6 +24,10 @@ Both corrections are installed on the context the engine creates, without creati
 
 Flipper zones now cover the full left/right stage sides, including the previously inactive upper side space. Pointer tracking releases controls if pointer capture fails or a touch ends outside its original button. Cancelled toggle-mode touches release the flipper; ordinary tap-to-toggle still works. Help, settings, focus loss and engine failure clear input. Native input exceptions offer the existing Reload and retry recovery with readable error details.
 
+Game controls cancel native touch-start/end defaults with non-passive listeners. Preventing `contextmenu` alone allowed Chrome's Android long-press haptic to fire before the menu was cancelled. Pointer events continue to handle simultaneous flippers and hold/release launching; ordinary UI buttons retain their normal browser behavior.
+
+Android verification reproduced a Chrome `performHapticFeedback` event on a 1.4-second flipper hold before this change. After a fresh reload, 1.6-second left, right and simultaneous holds generated no new vibrator-service events or context menus. Native flipper angles reached their held positions and all pressed controls cleared on release. The browser input regression also covers a long hold and normal release.
+
 Fullscreen ignores duplicate pending requests, handles asynchronous error events and clears earlier messages on success. The prefixed Safari API receives no standard fullscreen options argument. Unsupported browsers keep an explicit message. These Safari paths have browser-fixture coverage; they have not been tested on physical iPhone hardware. The existing compact help button and player layout remain.
 
 ## Android measurements and limits
