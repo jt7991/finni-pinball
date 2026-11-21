@@ -1,0 +1,1725 @@
+{
+  "engineSha256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+  "upstreamCommit": "195f214dd4849b8ef6113fd377258b78d0dec3bf",
+  "functions": {
+    "update": 3120,
+    "setDropped": 3150,
+    "updateTarget": 3116
+  },
+  "bodySha256": "1a0c4d86e0689f25c3aabbded715e4afee3ff13539e2e4f31435ca3c32993027",
+  "setterSha256": "e0e509106057a509cb11970386312a176de657aaa213ea398fe02c7cd3a20805",
+  "provenance": "Unchanged pinned UpdateAnimation and IsDropped setter bodies, original indices/signatures/global/table/memory declarations. Unselected functions trap. UpdateAnimation is observed at the deliberate UpdateTarget graphics-upload trap (3116), after scalar animation state updates; invisible/idle cases return normally. Event vectors are empty. Controlled collision input sets the native pending-hit flag; script setters execute native3150. Native stand-up RenderSetup starts at0 with down=true. Inputs are independent control sequences, not fitted trajectories. This scope excludes buffer upload and callback dispatch; full native frame captures cover ordinary event paths.",
+  "cases": [
+    {
+      "spec": {
+        "target_type": "hit_target_rectangle",
+        "is_dropped": false,
+        "is_collidable": true,
+        "is_visible": true,
+        "use_hit_event": true,
+        "drop_speed": 0.7118616700172424,
+        "raise_delay": 29
+      },
+      "startMilliseconds": 37513,
+      "actions": [
+        {
+          "type": "hit"
+        },
+        {
+          "type": "drop",
+          "value": true
+        },
+        {
+          "type": "drop",
+          "value": false
+        },
+        {
+          "type": "visible",
+          "value": false
+        },
+        {
+          "type": "frame",
+          "milliseconds": 17,
+          "termination": "return",
+          "expected": {
+            "offset": -52,
+            "dropped": false,
+            "pending": true,
+            "moving": true,
+            "down": false
+          }
+        },
+        {
+          "type": "visible",
+          "value": true
+        },
+        {
+          "type": "frame",
+          "milliseconds": 16,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": -40.61021423339844,
+            "dropped": false,
+            "pending": false,
+            "moving": true,
+            "down": true
+          }
+        }
+      ]
+    },
+    {
+      "spec": {
+        "target_type": "hit_target_rectangle",
+        "is_dropped": false,
+        "is_collidable": true,
+        "is_visible": true,
+        "use_hit_event": true,
+        "drop_speed": 0.31069090962409973,
+        "raise_delay": 15
+      },
+      "startMilliseconds": 13854,
+      "actions": [
+        {
+          "type": "hit"
+        },
+        {
+          "type": "frame",
+          "milliseconds": 17,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": 5.281745433807373,
+            "dropped": false,
+            "pending": false,
+            "moving": true,
+            "down": true
+          }
+        },
+        {
+          "type": "drop",
+          "value": true
+        },
+        {
+          "type": "drop",
+          "value": false
+        },
+        {
+          "type": "frame",
+          "milliseconds": 16,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": 0,
+            "dropped": false,
+            "pending": false,
+            "moving": false,
+            "down": false
+          }
+        }
+      ]
+    },
+    {
+      "spec": {
+        "target_type": "hit_target_rectangle",
+        "is_dropped": false,
+        "is_collidable": true,
+        "is_visible": true,
+        "use_hit_event": true,
+        "drop_speed": 1.1732646226882935,
+        "raise_delay": 4
+      },
+      "startMilliseconds": 64852,
+      "actions": [
+        {
+          "type": "drop",
+          "value": true
+        },
+        {
+          "type": "frame",
+          "milliseconds": 20,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": 13,
+            "dropped": true,
+            "pending": false,
+            "moving": true,
+            "down": false
+          }
+        },
+        {
+          "type": "drop",
+          "value": false
+        },
+        {
+          "type": "frame",
+          "milliseconds": 17,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": 0,
+            "dropped": false,
+            "pending": false,
+            "moving": false,
+            "down": false
+          }
+        },
+        {
+          "type": "frame",
+          "milliseconds": 50,
+          "termination": "return",
+          "expected": {
+            "offset": 0,
+            "dropped": false,
+            "pending": false,
+            "moving": false,
+            "down": false
+          }
+        }
+      ]
+    },
+    {
+      "spec": {
+        "target_type": "hit_target_rectangle",
+        "is_dropped": false,
+        "is_collidable": true,
+        "is_visible": true,
+        "use_hit_event": true,
+        "drop_speed": 0.8456999659538269,
+        "raise_delay": 14
+      },
+      "startMilliseconds": 22441,
+      "actions": [
+        {
+          "type": "visible",
+          "value": false
+        },
+        {
+          "type": "hit"
+        },
+        {
+          "type": "frame",
+          "milliseconds": 17,
+          "termination": "return",
+          "expected": {
+            "offset": 0,
+            "dropped": false,
+            "pending": true,
+            "moving": false,
+            "down": true
+          }
+        },
+        {
+          "type": "visible",
+          "value": true
+        },
+        {
+          "type": "frame",
+          "milliseconds": 17,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": 13,
+            "dropped": false,
+            "pending": false,
+            "moving": true,
+            "down": false
+          }
+        }
+      ]
+    },
+    {
+      "spec": {
+        "target_type": "hit_target_rectangle",
+        "is_dropped": true,
+        "is_collidable": true,
+        "is_visible": true,
+        "use_hit_event": true,
+        "drop_speed": 1.7983248233795166,
+        "raise_delay": 11
+      },
+      "startMilliseconds": 54620,
+      "actions": [
+        {
+          "type": "hit"
+        },
+        {
+          "type": "drop",
+          "value": true
+        },
+        {
+          "type": "drop",
+          "value": false
+        },
+        {
+          "type": "visible",
+          "value": false
+        },
+        {
+          "type": "frame",
+          "milliseconds": 17,
+          "termination": "return",
+          "expected": {
+            "offset": -52,
+            "dropped": false,
+            "pending": false,
+            "moving": true,
+            "down": false
+          }
+        },
+        {
+          "type": "visible",
+          "value": true
+        },
+        {
+          "type": "frame",
+          "milliseconds": 16,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": 0,
+            "dropped": false,
+            "pending": false,
+            "moving": false,
+            "down": false
+          }
+        }
+      ]
+    },
+    {
+      "spec": {
+        "target_type": "hit_target_rectangle",
+        "is_dropped": false,
+        "is_collidable": true,
+        "is_visible": true,
+        "use_hit_event": true,
+        "drop_speed": 1.981839895248413,
+        "raise_delay": 1
+      },
+      "startMilliseconds": 84556,
+      "actions": [
+        {
+          "type": "hit"
+        },
+        {
+          "type": "frame",
+          "milliseconds": 17,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": 13,
+            "dropped": false,
+            "pending": false,
+            "moving": true,
+            "down": false
+          }
+        },
+        {
+          "type": "drop",
+          "value": true
+        },
+        {
+          "type": "drop",
+          "value": false
+        },
+        {
+          "type": "frame",
+          "milliseconds": 16,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": 0,
+            "dropped": false,
+            "pending": false,
+            "moving": false,
+            "down": false
+          }
+        }
+      ]
+    },
+    {
+      "spec": {
+        "target_type": "hit_target_rectangle",
+        "is_dropped": false,
+        "is_collidable": true,
+        "is_visible": true,
+        "use_hit_event": true,
+        "drop_speed": 1.1971642971038818,
+        "raise_delay": 39
+      },
+      "startMilliseconds": 83740,
+      "actions": [
+        {
+          "type": "drop",
+          "value": true
+        },
+        {
+          "type": "frame",
+          "milliseconds": 20,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": 13,
+            "dropped": true,
+            "pending": false,
+            "moving": true,
+            "down": false
+          }
+        },
+        {
+          "type": "drop",
+          "value": false
+        },
+        {
+          "type": "frame",
+          "milliseconds": 17,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": 0,
+            "dropped": false,
+            "pending": false,
+            "moving": false,
+            "down": false
+          }
+        },
+        {
+          "type": "frame",
+          "milliseconds": 50,
+          "termination": "return",
+          "expected": {
+            "offset": 0,
+            "dropped": false,
+            "pending": false,
+            "moving": false,
+            "down": false
+          }
+        }
+      ]
+    },
+    {
+      "spec": {
+        "target_type": "hit_target_rectangle",
+        "is_dropped": false,
+        "is_collidable": true,
+        "is_visible": true,
+        "use_hit_event": true,
+        "drop_speed": 1.492293119430542,
+        "raise_delay": 21
+      },
+      "startMilliseconds": 19989,
+      "actions": [
+        {
+          "type": "visible",
+          "value": false
+        },
+        {
+          "type": "hit"
+        },
+        {
+          "type": "frame",
+          "milliseconds": 17,
+          "termination": "return",
+          "expected": {
+            "offset": 0,
+            "dropped": false,
+            "pending": true,
+            "moving": false,
+            "down": true
+          }
+        },
+        {
+          "type": "visible",
+          "value": true
+        },
+        {
+          "type": "frame",
+          "milliseconds": 17,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": 13,
+            "dropped": false,
+            "pending": false,
+            "moving": true,
+            "down": false
+          }
+        }
+      ]
+    },
+    {
+      "spec": {
+        "target_type": "hit_target_rectangle",
+        "is_dropped": false,
+        "is_collidable": true,
+        "is_visible": true,
+        "use_hit_event": true,
+        "drop_speed": 0.5651507377624512,
+        "raise_delay": 29
+      },
+      "startMilliseconds": 48733,
+      "actions": [
+        {
+          "type": "hit"
+        },
+        {
+          "type": "drop",
+          "value": true
+        },
+        {
+          "type": "drop",
+          "value": false
+        },
+        {
+          "type": "visible",
+          "value": false
+        },
+        {
+          "type": "frame",
+          "milliseconds": 17,
+          "termination": "return",
+          "expected": {
+            "offset": -52,
+            "dropped": false,
+            "pending": true,
+            "moving": true,
+            "down": false
+          }
+        },
+        {
+          "type": "visible",
+          "value": true
+        },
+        {
+          "type": "frame",
+          "milliseconds": 16,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": -42.95758819580078,
+            "dropped": false,
+            "pending": false,
+            "moving": true,
+            "down": true
+          }
+        }
+      ]
+    },
+    {
+      "spec": {
+        "target_type": "hit_target_rectangle",
+        "is_dropped": true,
+        "is_collidable": true,
+        "is_visible": true,
+        "use_hit_event": true,
+        "drop_speed": 1.5588706731796265,
+        "raise_delay": 23
+      },
+      "startMilliseconds": 75071,
+      "actions": [
+        {
+          "type": "hit"
+        },
+        {
+          "type": "frame",
+          "milliseconds": 17,
+          "termination": "return",
+          "expected": {
+            "offset": 0,
+            "dropped": true,
+            "pending": false,
+            "moving": false,
+            "down": true
+          }
+        },
+        {
+          "type": "drop",
+          "value": true
+        },
+        {
+          "type": "drop",
+          "value": false
+        },
+        {
+          "type": "frame",
+          "milliseconds": 16,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": 0,
+            "dropped": false,
+            "pending": false,
+            "moving": false,
+            "down": false
+          }
+        }
+      ]
+    },
+    {
+      "spec": {
+        "target_type": "hit_target_rectangle",
+        "is_dropped": false,
+        "is_collidable": true,
+        "is_visible": true,
+        "use_hit_event": true,
+        "drop_speed": 0.8094437122344971,
+        "raise_delay": 25
+      },
+      "startMilliseconds": 16950,
+      "actions": [
+        {
+          "type": "drop",
+          "value": true
+        },
+        {
+          "type": "frame",
+          "milliseconds": 20,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": 13,
+            "dropped": true,
+            "pending": false,
+            "moving": true,
+            "down": false
+          }
+        },
+        {
+          "type": "drop",
+          "value": false
+        },
+        {
+          "type": "frame",
+          "milliseconds": 17,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": 0,
+            "dropped": false,
+            "pending": false,
+            "moving": false,
+            "down": false
+          }
+        },
+        {
+          "type": "frame",
+          "milliseconds": 50,
+          "termination": "return",
+          "expected": {
+            "offset": 0,
+            "dropped": false,
+            "pending": false,
+            "moving": false,
+            "down": false
+          }
+        }
+      ]
+    },
+    {
+      "spec": {
+        "target_type": "hit_target_rectangle",
+        "is_dropped": false,
+        "is_collidable": true,
+        "is_visible": true,
+        "use_hit_event": true,
+        "drop_speed": 0.3918205201625824,
+        "raise_delay": 20
+      },
+      "startMilliseconds": 91563,
+      "actions": [
+        {
+          "type": "visible",
+          "value": false
+        },
+        {
+          "type": "hit"
+        },
+        {
+          "type": "frame",
+          "milliseconds": 17,
+          "termination": "return",
+          "expected": {
+            "offset": 0,
+            "dropped": false,
+            "pending": true,
+            "moving": false,
+            "down": true
+          }
+        },
+        {
+          "type": "visible",
+          "value": true
+        },
+        {
+          "type": "frame",
+          "milliseconds": 17,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": 6.660948753356934,
+            "dropped": false,
+            "pending": false,
+            "moving": true,
+            "down": true
+          }
+        }
+      ]
+    },
+    {
+      "spec": {
+        "target_type": "hit_target_rectangle",
+        "is_dropped": false,
+        "is_collidable": true,
+        "is_visible": true,
+        "use_hit_event": true,
+        "drop_speed": 1.5483015775680542,
+        "raise_delay": 11
+      },
+      "startMilliseconds": 50611,
+      "actions": [
+        {
+          "type": "hit"
+        },
+        {
+          "type": "drop",
+          "value": true
+        },
+        {
+          "type": "drop",
+          "value": false
+        },
+        {
+          "type": "visible",
+          "value": false
+        },
+        {
+          "type": "frame",
+          "milliseconds": 17,
+          "termination": "return",
+          "expected": {
+            "offset": -52,
+            "dropped": false,
+            "pending": true,
+            "moving": true,
+            "down": false
+          }
+        },
+        {
+          "type": "visible",
+          "value": true
+        },
+        {
+          "type": "frame",
+          "milliseconds": 16,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": -27.227174758911133,
+            "dropped": false,
+            "pending": false,
+            "moving": true,
+            "down": true
+          }
+        }
+      ]
+    },
+    {
+      "spec": {
+        "target_type": "hit_target_rectangle",
+        "is_dropped": false,
+        "is_collidable": true,
+        "is_visible": true,
+        "use_hit_event": true,
+        "drop_speed": 1.5609426498413086,
+        "raise_delay": 2
+      },
+      "startMilliseconds": 99260,
+      "actions": [
+        {
+          "type": "hit"
+        },
+        {
+          "type": "frame",
+          "milliseconds": 17,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": 13,
+            "dropped": false,
+            "pending": false,
+            "moving": true,
+            "down": false
+          }
+        },
+        {
+          "type": "drop",
+          "value": true
+        },
+        {
+          "type": "drop",
+          "value": false
+        },
+        {
+          "type": "frame",
+          "milliseconds": 16,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": 0,
+            "dropped": false,
+            "pending": false,
+            "moving": false,
+            "down": false
+          }
+        }
+      ]
+    },
+    {
+      "spec": {
+        "target_type": "hit_target_rectangle",
+        "is_dropped": true,
+        "is_collidable": true,
+        "is_visible": false,
+        "use_hit_event": true,
+        "drop_speed": 1.3874748945236206,
+        "raise_delay": 12
+      },
+      "startMilliseconds": 52476,
+      "actions": [
+        {
+          "type": "hit"
+        },
+        {
+          "type": "frame",
+          "milliseconds": 4,
+          "termination": "return",
+          "expected": {
+            "offset": 0,
+            "dropped": true,
+            "pending": false,
+            "moving": false,
+            "down": true
+          }
+        },
+        {
+          "type": "hit"
+        },
+        {
+          "type": "frame",
+          "milliseconds": 16,
+          "termination": "return",
+          "expected": {
+            "offset": 0,
+            "dropped": true,
+            "pending": false,
+            "moving": false,
+            "down": true
+          }
+        },
+        {
+          "type": "frame",
+          "milliseconds": 33,
+          "termination": "return",
+          "expected": {
+            "offset": 0,
+            "dropped": true,
+            "pending": false,
+            "moving": false,
+            "down": true
+          }
+        }
+      ]
+    },
+    {
+      "spec": {
+        "target_type": "hit_target_rectangle",
+        "is_dropped": false,
+        "is_collidable": true,
+        "is_visible": true,
+        "use_hit_event": true,
+        "drop_speed": 1.9457752704620361,
+        "raise_delay": 32
+      },
+      "startMilliseconds": 41203,
+      "actions": [
+        {
+          "type": "drop",
+          "value": true
+        },
+        {
+          "type": "frame",
+          "milliseconds": 20,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": 13,
+            "dropped": true,
+            "pending": false,
+            "moving": true,
+            "down": false
+          }
+        },
+        {
+          "type": "drop",
+          "value": false
+        },
+        {
+          "type": "frame",
+          "milliseconds": 17,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": 0,
+            "dropped": false,
+            "pending": false,
+            "moving": false,
+            "down": false
+          }
+        },
+        {
+          "type": "frame",
+          "milliseconds": 50,
+          "termination": "return",
+          "expected": {
+            "offset": 0,
+            "dropped": false,
+            "pending": false,
+            "moving": false,
+            "down": false
+          }
+        }
+      ]
+    },
+    {
+      "spec": {
+        "target_type": "hit_target_rectangle",
+        "is_dropped": false,
+        "is_collidable": true,
+        "is_visible": true,
+        "use_hit_event": true,
+        "drop_speed": 1.6758360862731934,
+        "raise_delay": 20
+      },
+      "startMilliseconds": 58815,
+      "actions": [
+        {
+          "type": "visible",
+          "value": false
+        },
+        {
+          "type": "hit"
+        },
+        {
+          "type": "frame",
+          "milliseconds": 17,
+          "termination": "return",
+          "expected": {
+            "offset": 0,
+            "dropped": false,
+            "pending": true,
+            "moving": false,
+            "down": true
+          }
+        },
+        {
+          "type": "visible",
+          "value": true
+        },
+        {
+          "type": "frame",
+          "milliseconds": 17,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": 13,
+            "dropped": false,
+            "pending": false,
+            "moving": true,
+            "down": false
+          }
+        }
+      ]
+    },
+    {
+      "spec": {
+        "target_type": "hit_target_rectangle",
+        "is_dropped": false,
+        "is_collidable": true,
+        "is_visible": true,
+        "use_hit_event": true,
+        "drop_speed": 1.432778239250183,
+        "raise_delay": 21
+      },
+      "startMilliseconds": 86340,
+      "actions": [
+        {
+          "type": "hit"
+        },
+        {
+          "type": "drop",
+          "value": true
+        },
+        {
+          "type": "drop",
+          "value": false
+        },
+        {
+          "type": "visible",
+          "value": false
+        },
+        {
+          "type": "frame",
+          "milliseconds": 17,
+          "termination": "return",
+          "expected": {
+            "offset": -52,
+            "dropped": false,
+            "pending": true,
+            "moving": true,
+            "down": false
+          }
+        },
+        {
+          "type": "visible",
+          "value": true
+        },
+        {
+          "type": "frame",
+          "milliseconds": 16,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": -29.07554817199707,
+            "dropped": false,
+            "pending": false,
+            "moving": true,
+            "down": true
+          }
+        }
+      ]
+    },
+    {
+      "spec": {
+        "target_type": "hit_target_rectangle",
+        "is_dropped": false,
+        "is_collidable": true,
+        "is_visible": true,
+        "use_hit_event": true,
+        "drop_speed": 0.909552276134491,
+        "raise_delay": 9
+      },
+      "startMilliseconds": 75945,
+      "actions": [
+        {
+          "type": "hit"
+        },
+        {
+          "type": "frame",
+          "milliseconds": 17,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": 13,
+            "dropped": false,
+            "pending": false,
+            "moving": true,
+            "down": false
+          }
+        },
+        {
+          "type": "drop",
+          "value": true
+        },
+        {
+          "type": "drop",
+          "value": false
+        },
+        {
+          "type": "frame",
+          "milliseconds": 16,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": 0,
+            "dropped": false,
+            "pending": false,
+            "moving": false,
+            "down": false
+          }
+        }
+      ]
+    },
+    {
+      "spec": {
+        "target_type": "hit_target_rectangle",
+        "is_dropped": true,
+        "is_collidable": true,
+        "is_visible": true,
+        "use_hit_event": true,
+        "drop_speed": 1.297588586807251,
+        "raise_delay": 11
+      },
+      "startMilliseconds": 11945,
+      "actions": [
+        {
+          "type": "drop",
+          "value": true
+        },
+        {
+          "type": "frame",
+          "milliseconds": 20,
+          "termination": "return",
+          "expected": {
+            "offset": 0,
+            "dropped": true,
+            "pending": false,
+            "moving": false,
+            "down": true
+          }
+        },
+        {
+          "type": "drop",
+          "value": false
+        },
+        {
+          "type": "frame",
+          "milliseconds": 17,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": 0,
+            "dropped": false,
+            "pending": false,
+            "moving": false,
+            "down": false
+          }
+        },
+        {
+          "type": "frame",
+          "milliseconds": 50,
+          "termination": "return",
+          "expected": {
+            "offset": 0,
+            "dropped": false,
+            "pending": false,
+            "moving": false,
+            "down": false
+          }
+        }
+      ]
+    },
+    {
+      "spec": {
+        "target_type": "hit_target_rectangle",
+        "is_dropped": false,
+        "is_collidable": true,
+        "is_visible": true,
+        "use_hit_event": true,
+        "drop_speed": 0.35246363282203674,
+        "raise_delay": 10
+      },
+      "startMilliseconds": 96317,
+      "actions": [
+        {
+          "type": "visible",
+          "value": false
+        },
+        {
+          "type": "hit"
+        },
+        {
+          "type": "frame",
+          "milliseconds": 17,
+          "termination": "return",
+          "expected": {
+            "offset": 0,
+            "dropped": false,
+            "pending": true,
+            "moving": false,
+            "down": true
+          }
+        },
+        {
+          "type": "visible",
+          "value": true
+        },
+        {
+          "type": "frame",
+          "milliseconds": 17,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": 5.991881847381592,
+            "dropped": false,
+            "pending": false,
+            "moving": true,
+            "down": true
+          }
+        }
+      ]
+    },
+    {
+      "spec": {
+        "target_type": "hit_target_rectangle",
+        "is_dropped": false,
+        "is_collidable": true,
+        "is_visible": true,
+        "use_hit_event": true,
+        "drop_speed": 0.7197080254554749,
+        "raise_delay": 38
+      },
+      "startMilliseconds": 5568,
+      "actions": [
+        {
+          "type": "hit"
+        },
+        {
+          "type": "drop",
+          "value": true
+        },
+        {
+          "type": "drop",
+          "value": false
+        },
+        {
+          "type": "visible",
+          "value": false
+        },
+        {
+          "type": "frame",
+          "milliseconds": 17,
+          "termination": "return",
+          "expected": {
+            "offset": -52,
+            "dropped": false,
+            "pending": true,
+            "moving": true,
+            "down": false
+          }
+        },
+        {
+          "type": "visible",
+          "value": true
+        },
+        {
+          "type": "frame",
+          "milliseconds": 16,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": -40.48467254638672,
+            "dropped": false,
+            "pending": false,
+            "moving": true,
+            "down": true
+          }
+        }
+      ]
+    },
+    {
+      "spec": {
+        "target_type": "hit_target_rectangle",
+        "is_dropped": false,
+        "is_collidable": true,
+        "is_visible": true,
+        "use_hit_event": true,
+        "drop_speed": 1.3187185525894165,
+        "raise_delay": 38
+      },
+      "startMilliseconds": 78102,
+      "actions": [
+        {
+          "type": "hit"
+        },
+        {
+          "type": "frame",
+          "milliseconds": 17,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": 13,
+            "dropped": false,
+            "pending": false,
+            "moving": true,
+            "down": false
+          }
+        },
+        {
+          "type": "drop",
+          "value": true
+        },
+        {
+          "type": "drop",
+          "value": false
+        },
+        {
+          "type": "frame",
+          "milliseconds": 16,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": 0,
+            "dropped": false,
+            "pending": false,
+            "moving": false,
+            "down": false
+          }
+        }
+      ]
+    },
+    {
+      "spec": {
+        "target_type": "hit_target_rectangle",
+        "is_dropped": false,
+        "is_collidable": true,
+        "is_visible": true,
+        "use_hit_event": true,
+        "drop_speed": 1.6703652143478394,
+        "raise_delay": 11
+      },
+      "startMilliseconds": 26544,
+      "actions": [
+        {
+          "type": "drop",
+          "value": true
+        },
+        {
+          "type": "frame",
+          "milliseconds": 20,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": 13,
+            "dropped": true,
+            "pending": false,
+            "moving": true,
+            "down": false
+          }
+        },
+        {
+          "type": "drop",
+          "value": false
+        },
+        {
+          "type": "frame",
+          "milliseconds": 17,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": 0,
+            "dropped": false,
+            "pending": false,
+            "moving": false,
+            "down": false
+          }
+        },
+        {
+          "type": "frame",
+          "milliseconds": 50,
+          "termination": "return",
+          "expected": {
+            "offset": 0,
+            "dropped": false,
+            "pending": false,
+            "moving": false,
+            "down": false
+          }
+        }
+      ]
+    },
+    {
+      "spec": {
+        "target_type": "hit_target_rectangle",
+        "is_dropped": true,
+        "is_collidable": true,
+        "is_visible": true,
+        "use_hit_event": true,
+        "drop_speed": 1.1787461042404175,
+        "raise_delay": 8
+      },
+      "startMilliseconds": 37862,
+      "actions": [
+        {
+          "type": "visible",
+          "value": false
+        },
+        {
+          "type": "hit"
+        },
+        {
+          "type": "frame",
+          "milliseconds": 17,
+          "termination": "return",
+          "expected": {
+            "offset": 0,
+            "dropped": true,
+            "pending": false,
+            "moving": false,
+            "down": true
+          }
+        },
+        {
+          "type": "visible",
+          "value": true
+        },
+        {
+          "type": "frame",
+          "milliseconds": 17,
+          "termination": "return",
+          "expected": {
+            "offset": 0,
+            "dropped": true,
+            "pending": false,
+            "moving": false,
+            "down": true
+          }
+        }
+      ]
+    },
+    {
+      "spec": {
+        "target_type": "hit_target_rectangle",
+        "is_dropped": false,
+        "is_collidable": true,
+        "is_visible": true,
+        "use_hit_event": true,
+        "drop_speed": 1.6831356287002563,
+        "raise_delay": 24
+      },
+      "startMilliseconds": 85191,
+      "actions": [
+        {
+          "type": "hit"
+        },
+        {
+          "type": "drop",
+          "value": true
+        },
+        {
+          "type": "drop",
+          "value": false
+        },
+        {
+          "type": "visible",
+          "value": false
+        },
+        {
+          "type": "frame",
+          "milliseconds": 17,
+          "termination": "return",
+          "expected": {
+            "offset": -52,
+            "dropped": false,
+            "pending": true,
+            "moving": true,
+            "down": false
+          }
+        },
+        {
+          "type": "visible",
+          "value": true
+        },
+        {
+          "type": "frame",
+          "milliseconds": 16,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": -25.0698299407959,
+            "dropped": false,
+            "pending": false,
+            "moving": true,
+            "down": true
+          }
+        }
+      ]
+    },
+    {
+      "spec": {
+        "target_type": "hit_target_rectangle",
+        "is_dropped": false,
+        "is_collidable": true,
+        "is_visible": true,
+        "use_hit_event": true,
+        "drop_speed": 0.4915967881679535,
+        "raise_delay": 21
+      },
+      "startMilliseconds": 84732,
+      "actions": [
+        {
+          "type": "hit"
+        },
+        {
+          "type": "frame",
+          "milliseconds": 17,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": 8.357145309448242,
+            "dropped": false,
+            "pending": false,
+            "moving": true,
+            "down": true
+          }
+        },
+        {
+          "type": "drop",
+          "value": true
+        },
+        {
+          "type": "drop",
+          "value": false
+        },
+        {
+          "type": "frame",
+          "milliseconds": 16,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": 0,
+            "dropped": false,
+            "pending": false,
+            "moving": false,
+            "down": false
+          }
+        }
+      ]
+    },
+    {
+      "spec": {
+        "target_type": "hit_target_rectangle",
+        "is_dropped": false,
+        "is_collidable": true,
+        "is_visible": true,
+        "use_hit_event": true,
+        "drop_speed": 1.8590550422668457,
+        "raise_delay": 30
+      },
+      "startMilliseconds": 65495,
+      "actions": [
+        {
+          "type": "drop",
+          "value": true
+        },
+        {
+          "type": "frame",
+          "milliseconds": 20,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": 13,
+            "dropped": true,
+            "pending": false,
+            "moving": true,
+            "down": false
+          }
+        },
+        {
+          "type": "drop",
+          "value": false
+        },
+        {
+          "type": "frame",
+          "milliseconds": 17,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": 0,
+            "dropped": false,
+            "pending": false,
+            "moving": false,
+            "down": false
+          }
+        },
+        {
+          "type": "frame",
+          "milliseconds": 50,
+          "termination": "return",
+          "expected": {
+            "offset": 0,
+            "dropped": false,
+            "pending": false,
+            "moving": false,
+            "down": false
+          }
+        }
+      ]
+    },
+    {
+      "spec": {
+        "target_type": "hit_target_rectangle",
+        "is_dropped": false,
+        "is_collidable": true,
+        "is_visible": true,
+        "use_hit_event": true,
+        "drop_speed": 0.4120532274246216,
+        "raise_delay": 17
+      },
+      "startMilliseconds": 13386,
+      "actions": [
+        {
+          "type": "visible",
+          "value": false
+        },
+        {
+          "type": "hit"
+        },
+        {
+          "type": "frame",
+          "milliseconds": 17,
+          "termination": "return",
+          "expected": {
+            "offset": 0,
+            "dropped": false,
+            "pending": true,
+            "moving": false,
+            "down": true
+          }
+        },
+        {
+          "type": "visible",
+          "value": true
+        },
+        {
+          "type": "frame",
+          "milliseconds": 17,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": 7.004904747009277,
+            "dropped": false,
+            "pending": false,
+            "moving": true,
+            "down": true
+          }
+        }
+      ]
+    },
+    {
+      "spec": {
+        "target_type": "hit_target_rectangle",
+        "is_dropped": false,
+        "is_collidable": true,
+        "is_visible": true,
+        "use_hit_event": true,
+        "drop_speed": 0.7183236479759216,
+        "raise_delay": 32
+      },
+      "startMilliseconds": 86290,
+      "actions": [
+        {
+          "type": "hit"
+        },
+        {
+          "type": "drop",
+          "value": true
+        },
+        {
+          "type": "drop",
+          "value": false
+        },
+        {
+          "type": "visible",
+          "value": false
+        },
+        {
+          "type": "frame",
+          "milliseconds": 17,
+          "termination": "return",
+          "expected": {
+            "offset": -52,
+            "dropped": false,
+            "pending": true,
+            "moving": true,
+            "down": false
+          }
+        },
+        {
+          "type": "visible",
+          "value": true
+        },
+        {
+          "type": "frame",
+          "milliseconds": 16,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": -40.50682067871094,
+            "dropped": false,
+            "pending": false,
+            "moving": true,
+            "down": true
+          }
+        }
+      ]
+    },
+    {
+      "spec": {
+        "target_type": "hit_target_rectangle",
+        "is_dropped": false,
+        "is_collidable": true,
+        "is_visible": true,
+        "use_hit_event": true,
+        "drop_speed": 1.9177082777023315,
+        "raise_delay": 28
+      },
+      "startMilliseconds": 83193,
+      "actions": [
+        {
+          "type": "hit"
+        },
+        {
+          "type": "frame",
+          "milliseconds": 17,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": 13,
+            "dropped": false,
+            "pending": false,
+            "moving": true,
+            "down": false
+          }
+        },
+        {
+          "type": "drop",
+          "value": true
+        },
+        {
+          "type": "drop",
+          "value": false
+        },
+        {
+          "type": "frame",
+          "milliseconds": 16,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": 0,
+            "dropped": false,
+            "pending": false,
+            "moving": false,
+            "down": false
+          }
+        }
+      ]
+    },
+    {
+      "spec": {
+        "target_type": "hit_target_rectangle",
+        "is_dropped": false,
+        "is_collidable": true,
+        "is_visible": true,
+        "use_hit_event": true,
+        "drop_speed": 1.0906609296798706,
+        "raise_delay": 8
+      },
+      "startMilliseconds": 79613,
+      "actions": [
+        {
+          "type": "drop",
+          "value": true
+        },
+        {
+          "type": "frame",
+          "milliseconds": 20,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": 13,
+            "dropped": true,
+            "pending": false,
+            "moving": true,
+            "down": false
+          }
+        },
+        {
+          "type": "drop",
+          "value": false
+        },
+        {
+          "type": "frame",
+          "milliseconds": 17,
+          "termination": "graphics-trap",
+          "expected": {
+            "offset": 0,
+            "dropped": false,
+            "pending": false,
+            "moving": false,
+            "down": false
+          }
+        },
+        {
+          "type": "frame",
+          "milliseconds": 50,
+          "termination": "return",
+          "expected": {
+            "offset": 0,
+            "dropped": false,
+            "pending": false,
+            "moving": false,
+            "down": false
+          }
+        }
+      ]
+    }
+  ]
+}

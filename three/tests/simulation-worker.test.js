@@ -57,6 +57,13 @@ test('real worker preserves every body, native RNG, authored rules, DMD, audio a
     const target=remote.targetMotions.get('target010'),flipper=remote.flippers[0],digit=remote.rules.objects.get('digit001');
     const statement='Target010.Collidable=False:Target010.IsDropped=True';local.rules.execute(statement);await remote.rules.execute(statement);await advance(65);
     assert.equal(remote.targetMotions.get('target010'),target);assert.equal(remote.flippers[0],flipper);assert.equal(remote.rules.objects.get('digit001'),digit);assert.equal(target.offset,-52);
+    const standup=remote.targetMotions.get('target001'),spec=fixture.specs.objects.find(s=>s.name==='Target001'),front=Math.max(...spec.collision_mesh.vertices.map(v=>v[1]))*spec.size.y;
+    assert.equal(remote.targetMotions.size,14);assert.equal(standup.drop,false);assert.equal(standup.rotZ,-90);
+    const position={x:(spec.position.x+front+25.01)*.01,y:(2115-(spec.position.y-spec.size.x*.4))*.01,z:.45},velocity={x:-8,y:0,z:0},record=local.records[0];
+    local.nativeBall(record.body).body.setTranslation(position,true);record.body.setLinvel(velocity,true);record.body.setAngvel({x:0,y:0,z:0},true);
+    await remote.debug({action:'place',ballHandle:remote.records[0].body.handle,position,velocity});await advance(17);
+    assert.equal(remote.targetMotions.get('target001'),standup,'stand-up render reference stays stable');assert.ok(standup.offset>0&&standup.offset<=13,'physical face contact reaches the worker animation');
+    await advance(17);assert.equal(standup.offset,13);await advance(40);assert.equal(standup.offset,0,'native stand-up returns to rest');
     const description=snapshotGame(local,new Set(digits),new Set(['bChooseBattle']));assert.doesNotThrow(()=>structuredClone(description));
   }finally{local.dispose();if(remote)await remote.dispose();else worker.terminate();}
 });

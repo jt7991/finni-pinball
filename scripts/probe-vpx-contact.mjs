@@ -214,6 +214,12 @@ if(probeKind==='gates'){
 if(probeKind==='targets'){
   cases.length=0;
   const spec=JSON.parse(await readFile(new URL('../three/public/objects.json',import.meta.url),'utf8')).objects.find(s=>s.name==='Target010'),a=spec.rot_z*Math.PI/180,n={x:-Math.sin(a),y:Math.cos(a)},offset=.181738*spec.size.y;
+  for(const name of ['Target001','Target005','Target013']){
+    const target=JSON.parse(await readFile(new URL('../three/public/objects.json',import.meta.url),'utf8')).objects.find(s=>s.name===name),angle=target.rot_z*Math.PI/180,normal={x:-Math.sin(angle),y:Math.cos(angle)},front=Math.max(...target.collision_mesh.vertices.map(v=>v[1]))*target.size.y;
+    cases.push({name:name+'-standup-front',target:name,x:target.position.x+normal.x*(front+25.01),y:target.position.y+normal.y*(front+25.01),z:25,vx:-normal.x*8,vy:-normal.y*8,sampleCount:60});
+    const tangent={x:Math.cos(angle),y:Math.sin(angle)};
+    cases.push({name:name+'-standup-face',target:name,x:target.position.x+normal.x*(front+25.01)+tangent.x*target.size.x*.4,y:target.position.y+normal.y*(front+25.01)+tangent.y*target.size.x*.4,z:45,vx:-normal.x*8,vy:-normal.y*8,sampleCount:60});
+  }
   cases.push({name:'Target010-front-corner',target:'Target010',x:590.6739702224731,y:837.7343965530396,z:25.33487311553955,vx:-8.314886093139648,vy:-4.348639488220215,vz:-.29163968563079834,sampleCount:60});
   cases.push({name:'Target010-front-face',target:'Target010',x:spec.position.x+n.x*(offset+40),y:spec.position.y+n.y*(offset+40),z:25,vx:-n.x*8,vy:-n.y*8,sampleCount:60});
   cases.push({name:'Target011-timed-hold',target:'Target011',x:612.3,y:803.1,z:25,vx:0,vy:0,sampleCount:540,setupCode:'bLilDPMB=True:bMultiBallMode=True:LilDPHits=4:LilDPHitsNeeded(CurrentPlayer)=1:LilDPJackpot(CurrentPlayer)=500000:LilDPTimer.Enabled=False:LilDPTimer.Interval=100:LilDPTimer.Enabled=True'});

@@ -20,9 +20,12 @@ parser.add_argument('--instrument-flippers',action='store_true',help='Observe na
 parser.add_argument('--instrument-materials',action='store_true',help='Observe wall/rubber sound collection events and representative primitive/rubber Hit callbacks.')
 parser.add_argument('--instrument-targets',action='store_true',help='Observe target Hit callbacks and native incoming HitThreshold.')
 parser.add_argument('--instrument-animation-frames',action='store_true',help='Observe actual native animation-frame clocks and drop-target offsets with an otherwise unused frame timer.')
+parser.add_argument('--animation-targets',default='Target009,Target010,Target011',help='Three target names observed by the separate animation-frame diagnostic.')
 parser.add_argument('--instrument-script-rng',action='store_true',help='Read the actual script RNG state through Rnd(0) alongside physics-frame markers.')
 parser.add_argument('--all-scatter-zero',action='store_true',help='Also zero every material/object scatter field in a separate reference copy.')
 args=parser.parse_args()
+animation_targets=args.animation_targets.split(',')
+if len(animation_targets)!=3 or len(set(animation_targets))!=3 or any(not re.fullmatch(r'[A-Za-z][A-Za-z0-9_]*',name) for name in animation_targets):parser.error('--animation-targets requires three distinct target names')
 if args.instrument_script_rng:args.instrument_rng=True
 if args.instrument_spinners or args.instrument_ball_trails or args.instrument_rng or args.instrument_bumpers or args.instrument_slingshots or args.instrument_flippers or args.instrument_materials or args.instrument_targets or args.instrument_animation_frames:args.instrument_timers=True
 source=args.source_root.resolve()
@@ -67,7 +70,9 @@ if args.instrument_timers:
         if timer['is_timer_enabled']:raise RuntimeError('Animation observer timer is already enabled')
         timer['is_timer_enabled']=True;timer['timer_interval']=-1
         timer_path.write_text(json.dumps(timer_data,indent=2)+'\n')
-        fields=['GameTime','GameTime-RefAnimationPreviousClock']+[f'CStr(CDbl({name}.CurrentAnimOffset))' for name in ['Target009','Target010','Target011']]+[f'CLng({name}.IsDropped)' for name in ['Target009','Target010','Target011']]+['Score(CurrentPlayer)']
+        for name in animation_targets:
+            if not (extracted/f'gameitems/HitTarget.{name}.json').is_file():raise RuntimeError('Missing animation target '+name)
+        fields=['GameTime','GameTime-RefAnimationPreviousClock']+[f'CStr(CDbl({name}.CurrentAnimOffset))' for name in animation_targets]+[f'CLng({name}.IsDropped)' for name in animation_targets]+['Score(CurrentPlayer)']
         script+='\nDim RefAnimationPreviousClock\nRefAnimationPreviousClock=0\nSub Target010_Timer\n'
         script+='    If RefTraceOn Then Debug.Print "ANIMATION_FRAME|" & '+' & "|" & '.join(fields)+'\n'
         script+='    RefAnimationPreviousClock=GameTime\nEnd Sub\n'
@@ -206,7 +211,7 @@ if args.instrument_timers:
     if args.instrument_flippers:metadata['instrumentation']['flipperTrace']={'callbacks':'FLIP_COLLIDE records clock, side, native speed argument and post-response velocity. FLIP_HIT observes the previously empty base-radius Hit event.'}
     if args.instrument_materials:metadata['instrumentation']['materialTrace']={'callbacks':'MATERIAL records clock, object name, post-response velocity and primitive HitThreshold at the beginning of authored sound collection handlers or previously empty individual handlers. Existing handler bodies retained.'}
     if args.instrument_targets:metadata['instrumentation']['targetTrace']={'callbacks':'TARGET records clock, object name, post-response velocity and HitThreshold before the existing target Hit handler, or in the previously empty Target010_Hit handler.'}
-    if args.instrument_animation_frames:metadata['instrumentation']['animationFrameTrace']={'timer':'Previously disabled Target010 timer, interval -1. Handler only reads clocks/target state and writes diagnostic records after native UpdateAnimation. No authored handler is replaced.','columns':['ms','delta_ms','target009_offset','target010_offset','target011_offset','target009_dropped','target010_dropped','target011_dropped','score']}
+    if args.instrument_animation_frames:metadata['instrumentation']['animationFrameTrace']={'timer':'Previously disabled Target010 timer, interval -1. Handler only reads clocks/target state and writes diagnostic records after native UpdateAnimation. No authored handler is replaced.','targets':animation_targets,'columns':['ms','delta_ms']+[name.lower()+'_offset' for name in animation_targets]+[name.lower()+'_dropped' for name in animation_targets]+['score']}
     if args.instrument_script_rng:metadata['instrumentation']['nativeScriptRngMarkers']='RNG_FRAME additionally reads CLng(Rnd(0)*16777216), the exact 24-bit native script RNG state, without advancing it.'
 (out/'metadata.json').write_text(json.dumps(metadata,indent=2)+'\n')
 print(diff)

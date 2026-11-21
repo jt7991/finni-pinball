@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-// Drop-target state and animation from Visual Pinball parts/hittarget.cpp,
+// Target state and animation from Visual Pinball parts/hittarget.cpp,
 // 195f214dd4849b8ef6113fd377258b78d0dec3bf. See licenses/VPX-Physics-NOTICE.txt.
 const f=Math.fround;
 export class TargetMotion {
   constructor(spec,collider,clock,emit){
     this.spec=spec;this.collider=collider;this.clock=clock;this.emit=emit;
-    this.dropped=!!spec.is_dropped;this.collidable=!!spec.is_collidable;this.fireEvents=!!spec.use_hit_event;this.visible=!!spec.is_visible;this.offset=this.dropped?-52:0;this.moving=false;this.down=!this.dropped;this.hitPending=false;this.waitUntil=0;this.ball=null;
+    this.drop=spec.target_type?.startsWith('drop')??true;
+    this.dropped=!!spec.is_dropped;this.collidable=!!spec.is_collidable;this.fireEvents=!!spec.use_hit_event;this.visible=!!spec.is_visible;this.offset=this.drop&&this.dropped?-52:0;this.moving=false;this.down=!(this.drop&&this.dropped);this.hitPending=false;this.waitUntil=0;this.ball=null;
     this.refresh();
   }
   refresh(){this.collider.setEnabled(this.collidable&&!this.dropped);}
@@ -26,11 +27,19 @@ export class TargetMotion {
     // setters, at the next visible frame. Hidden targets retain the pending hit.
     if(this.hitPending){if(!this.dropped)this.down=true;this.moving=true;this.hitPending=false;}
     if(!this.moving)return;
+    if(!this.drop){
+      const step=this.down?f(this.spec.drop_speed):-f(this.spec.drop_speed);
+      this.offset=f(this.offset+f(step*milliseconds));
+      if(this.down){if(this.offset>=13){this.offset=13;this.down=false;}}
+      else if(this.offset<=0){this.offset=0;this.moving=false;}
+      this.emit('Animate',this.ball);return;
+    }
     let step=f(this.spec.drop_speed);if(this.down)step=-step;else if(this.clock()<this.waitUntil)step=0;
     this.offset=f(this.offset+f(step*milliseconds));
     if(this.down?this.offset<=-52:this.offset>=0){
       const down=this.down;this.offset=down?-52:0;this.dropped=down;this.down=false;this.moving=false;this.refresh();
       if(this.fireEvents)this.emit(down?'Dropped':'Raised',this.ball);
     }
+    this.emit('Animate',this.ball);
   }
 }

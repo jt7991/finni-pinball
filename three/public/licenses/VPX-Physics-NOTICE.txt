@@ -1,5 +1,5 @@
 Native physics behavior in physics.js, full-game.js, rules.js, drag-curve.js, cabinet-nudge.js, ball-spin.js,
-flipper-contact.js, mesh-contact.js, target-contact.js, target-motion.js, plunger.js, spinner.js, gate.js, trigger.js,
+flipper-contact.js, mesh-contact.js, target-contact.js, target-motion.js, target-render.js, plunger.js, spinner.js, gate.js, trigger.js,
 native-ball.js, native-ball-response.js, native-orientation.js, native-angular.js, native-flipper-contact.js,
 native-mesh-contact.js, native-vector.js, native-curve.js, native-ramp.js,
 native-tree.js, native-dynamic-tree.js, native-ball-collision.js, native-random.js, native-hit-event.js,
@@ -43,6 +43,9 @@ native function outputs and read-only per-frame plunger memory recordings.
 full-game.js and simulation-host.js retain frame-driven target animation and
 rule-event ordering from Player::PrepareFrame and HitTarget::UpdateAnimation:
 https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/core/player.cpp
+target-render.js maps HitTarget::UpdateTarget stand-up rotation into the GLB
+axes while preserving the authored object pivot and baked collision geometry:
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/parts/hittarget.cpp
 native-flipper-contact.js includes HitFlipper::Collide event timing and speed
 arguments. full-game.js also preserves Flipper::get_CurrentAngle conversion:
 https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/parts/flipper.cpp

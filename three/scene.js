@@ -3,6 +3,7 @@ import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {DRACOLoader} from 'three/addons/loaders/DRACOLoader.js';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {RADIUS} from './game-constants.js';
+import {applyTargetAnimation,targetAnimationAxis} from './target-render.js';
 
 export async function createView(canvas, game) {
   const renderer=new THREE.WebGLRenderer({canvas,antialias:false,alpha:false,powerPreference:'high-performance'});
@@ -30,7 +31,8 @@ export async function createView(canvas, game) {
     const state=game.rules?.objects.get(obj.name.replace(/_Finni$/,'').replace(/(Plate|Wire)$/,'').toLowerCase());
     if(state){
       const mechanism=game.spinners?.find(s=>obj.name===s.spec.name+'Plate')??game.gates?.find(s=>obj.name===s.spec.name+'Wire'),angle=(mechanism?.spec.rotation??0)*Math.PI/180;
-      moving.push({obj,state,position:obj.position.clone(),rotation:obj.rotation.clone(),quaternion:obj.quaternion.clone(),target:game.targetMotions?.get(obj.name.toLowerCase()),mechanism,axis:mechanism?new THREE.Vector3(Math.cos(angle),0,Math.sin(angle)):null});
+      const target=game.targetMotions?.get(obj.name.toLowerCase());
+      moving.push({obj,state,position:obj.position.clone(),rotation:obj.rotation.clone(),quaternion:obj.quaternion.clone(),target,mechanism,axis:mechanism?new THREE.Vector3(Math.cos(angle),0,Math.sin(angle)):target&&!target.drop?targetAnimationAxis(target.rotZ??target.spec?.rot_z):null});
     }
   });
 
@@ -108,7 +110,9 @@ export async function createView(canvas, game) {
       mesh.quaternion.copy(game.nativeDisplacements?game.nativeBall(rec.body).orientation.rotation():rec.body.rotation());contact.position.set(mesh.position.x,mesh.position.y,.015);contact.material.opacity=Math.max(.15,1-mesh.position.z/4);
     }
     for(const m of moving){
-      m.obj.position.copy(m.position);if(m.target)m.obj.position.y+=m.target.offset*.00053975;else if(m.state.isdropped)m.obj.position.y-=.04;
+      if(m.target)applyTargetAnimation(m.obj,m.target,m,m.axis);
+      else{m.obj.position.copy(m.position);if(m.state.isdropped)m.obj.position.y-=.04;}
+      if(m.target&&m.state.visible!==undefined)m.obj.visible=!!m.state.visible;
       if(m.mechanism)m.obj.quaternion.setFromAxisAngle(m.axis,m.mechanism.angle).multiply(m.quaternion);
       if(/discoball/i.test(m.obj.name))m.obj.rotation.y=m.rotation.y+Number(m.state.rotz)*Math.PI/180;
       if(/LilHead|LilLeftArm|LilRightArm/.test(m.obj.name)){

@@ -97,7 +97,23 @@ try{
       await set('Target010.Collidable=False');await advance(100);await set('Target010.IsDropped=False');await advance(100);view.render(1);const up=mesh.position.y;
       await set('Target010.IsDropped=True');await advance(25);view.render(1);const middle={offset:motion.offset,delta:mesh.position.y-up};
       await advance(40);view.render(1);const end={offset:motion.offset,delta:mesh.position.y-up};await set('Target010.Collidable='+ (collidable?'True':'False'));
-      return {parts,target:{middle,end}};
+      const specs=(await(await fetch(new URL('objects.json',location.href))).json()).objects,standups=[];
+      for(const name of ['Target001','Target005','Target013']){
+        const spec=specs.find(s=>s.name===name),target=game.targetMotions.get(name.toLowerCase()),node=scene.getObjectByName(name),pivot=node.position.clone(),geometry=node.geometry.uuid;
+        await set(name+'.Collidable=False:'+name+'.IsDropped=False');await advance(100);await advance(100);view.render(1);const rest=node.quaternion.clone();
+        await set(name+'.Visible=False:'+name+'.Collidable=True');
+        const a=spec.rot_z*Math.PI/180,n={x:-Math.sin(a),y:Math.cos(a)},t={x:Math.cos(a),y:Math.sin(a)},front=Math.max(...spec.collision_mesh.vertices.map(v=>v[1]))*spec.size.y,record=game.records.find(r=>!r.held);
+        if(!record)throw Error('Stand-up test requires an active playable ball');
+        const place=async(z,tangent)=>game.debug({action:'place',ballHandle:record.body.handle,position:{x:(spec.position.x+n.x*(front+25.01)+t.x*tangent)*.01,y:(2115-(spec.position.y+n.y*(front+25.01)+t.y*tangent))*.01,z:z*.01},velocity:{x:-n.x*8,y:n.y*8,z:0}});
+        const before=game.score;await place(45,spec.size.x*.4);await advance(17);view.render(1);const hidden={visible:node.visible,offset:target.offset,scoreDelta:game.score-before};
+        await set(name+'.Visible=True');await advance(17);view.render(1);const first={offset:target.offset,angle:rest.angleTo(node.quaternion)};
+        await advance(17);view.render(1);const peak={offset:target.offset,angle:rest.angleTo(node.quaternion)};
+        await advance(40);view.render(1);const settled={offset:target.offset,angle:rest.angleTo(node.quaternion)};
+        let point;
+        if(name==='Target001'){const score=game.score;await place(25,0);await advance(17);view.render(1);point={offset:target.offset,angle:rest.angleTo(node.quaternion),scoreDelta:game.score-score};}
+        standups.push({name,drop:target.drop,rotZ:target.rotZ,hidden,first,peak,settled,point,pivotMovement:pivot.distanceTo(node.position),sameGeometry:geometry===node.geometry.uuid});
+      }
+      return {parts,target:{middle,end},standups};
     })()`);
     const plates=animation.parts;
     assert.equal(plates.length,4);
@@ -107,6 +123,14 @@ try{
     assert.ok(Math.abs(animation.target.middle.delta-animation.target.middle.offset*.00053975)<1e-8);
     assert.equal(animation.target.end.offset,-52);assert.ok(Math.abs(animation.target.end.delta+52*.00053975)<1e-8,'native 52 VPU target travel');
     await writeFile(`${output}/target-animation.json`,JSON.stringify(animation.target,null,2));console.log('PASS original drop-target mesh follows native animation travel');
+    for(const target of animation.standups){
+      assert.equal(target.drop,false);assert.equal(target.hidden.visible,false);assert.equal(target.hidden.offset,0);assert.ok(target.hidden.scoreDelta>0,'hidden physical face still scores');
+      assert.equal(target.first.offset,8.5);assert.ok(Math.abs(target.first.angle-8.5*Math.PI/180)<1e-7);
+      assert.equal(target.peak.offset,13);assert.ok(Math.abs(target.peak.angle-13*Math.PI/180)<1e-7);
+      assert.equal(target.settled.offset,0);assert.ok(target.settled.angle<1e-7);assert.equal(target.pivotMovement,0);assert.equal(target.sameGeometry,true);
+      if(target.point){assert.ok(target.point.scoreDelta>0);assert.equal(target.point.offset,0);assert.ok(target.point.angle<1e-7,'vertex hit does not arm a stand-up bounce');}
+    }
+    await writeFile(`${output}/standup-animation.json`,JSON.stringify(animation.standups,null,2));console.log('PASS original stand-up meshes receive physical face hits, hidden queues and fixed-pivot native bounce');
   }
   assert.deepEqual(errors,[]);assert.equal(requests.some(url=>/table\.vpx|vpinball\.(wasm|js)/.test(url)),false);
   await writeFile(`${output}/main-ui-startup.json`,JSON.stringify(measurements,null,2));

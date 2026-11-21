@@ -137,7 +137,7 @@ class FullGame extends Pinball {
       if(this.nativeTreeEnabled){const kicker=new Kicker(spec,z,rec=>this.captures.set(key,rec),(event,rec)=>this.rules?.hit(name,event,rec.proxy));kicker.collider=collider;this.kickers.push(kicker);}
     }
     if(collider){
-      if(spec.kind==='HitTarget'&&spec.target_type.startsWith('drop'))this.targetMotions.set(key,new TargetMotion(spec,collider,()=>Math.round(this.time*1000),(event,ball)=>{
+      if(spec.kind==='HitTarget')this.targetMotions.set(key,new TargetMotion(spec,collider,()=>Math.round(this.time*1000),(event,ball)=>{
         const previous=this.targetEventBall;this.targetEventBall=ball;
         try{this.rules?.hit(name,event,ball??this.records[0]?.proxy);}finally{this.targetEventBall=previous;}
       }));

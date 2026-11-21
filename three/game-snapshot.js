@@ -12,7 +12,7 @@ export function describeGame(game){
   return {
     flippers:game.flippers.map(f=>({p:{...f.p},length:f.length,angle:f.angle})),
     scoop:{...game.scoop},spinners:game.spinners.map(mechanism),gates:game.gates.map(mechanism),
-    targetMotions:[...game.targetMotions].map(([name,m])=>[name,{offset:m.offset,collidable:m.collidable}]),
+    targetMotions:[...game.targetMotions].map(([name,m])=>[name,{offset:m.offset,collidable:m.collidable,drop:m.drop,rotZ:m.spec.rot_z}]),
     specs:{objects:game.specs.objects.filter(s=>s.kind==='Light').map(s=>({name:s.name,kind:s.kind,drag_points:s.drag_points}))},
     objects:[...game.rules.objects].map(([name,object])=>[name,objectState(object)]),
   };
