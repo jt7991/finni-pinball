@@ -4,6 +4,7 @@ import {DRACOLoader} from 'three/addons/loaders/DRACOLoader.js';
 import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {RADIUS} from './game-constants.js';
 import {applyTargetAnimation,targetAnimationAxis} from './target-render.js';
+import {createBulbHalos,createLightFrame} from './bulb-render.js';
 
 export async function createView(canvas, game) {
   const renderer=new THREE.WebGLRenderer({canvas,antialias:false,alpha:false,powerPreference:'high-performance'});
@@ -65,9 +66,10 @@ export async function createView(canvas, game) {
   scene.add(shadow);
   const balls=[ball],shadows=[shadow];
   const lights=[];
+  const bulbHalos=createBulbHalos(game,scene),lightFrame=createLightFrame(renderer);
   if(game.specs){
     const geometries=[];
-    for(const spec of game.specs.objects.filter(s=>s.kind==='Light'&&/^li\d+$/i.test(s.name)&&s.drag_points?.length>=3)){
+    for(const spec of game.specs.objects.filter(s=>s.kind==='Light'&&!s.is_bulb_light&&!s.is_backglass&&s.drag_points?.length>=3)){
       const polygon=spec.drag_points.map(p=>new THREE.Vector2(p.x*.01,(2115-p.y)*.01));
       const triangles=THREE.ShapeUtils.triangulateShape(polygon,[]),positions=[];
       for(const triangle of triangles)for(const i of triangle)positions.push(polygon[i].x,polygon[i].y,.025);
@@ -89,6 +91,7 @@ export async function createView(canvas, game) {
     const width=canvas.clientWidth,height=canvas.clientHeight;if(!width||!height)return;
     renderer.setPixelRatio(Math.min(devicePixelRatio,quality==='detailed'?2:1.25));
     renderer.setSize(width,height,false);
+    lightFrame.resize();
     camera.position.set(4.76,cameraMode==='overhead'?10.575:cameraMode==='classic'?-18:-4,cameraMode==='overhead'?38:35);
     camera.up.set(0,1,0);camera.lookAt(4.76,10.575,0);camera.updateMatrixWorld();
     const corners=[];
@@ -124,14 +127,13 @@ export async function createView(canvas, game) {
     if(lights.geometry){
       const attribute=lights.geometry.attributes.color;
       for(const light of lights){
-        const state=Number(light.state.sequenceactive?light.state.sequencestate:light.state.state),on=state===1||state===2&&Math.floor(game.time*1000/(Number(light.state.blinkinterval)||125))%2===0;
-        const color=Number(light.state.color)||0xffffff;
-        for(let i=light.start;i<light.start+light.count;i++)attribute.setXYZ(i,on?(color&255)/255:0,on?((color>>8)&255)/255:0,on?((color>>16)&255)/255:0);
+        const brightness=light.state.visible?Number(light.state.inplayintensity)/Math.max(Number(light.state.intensity),.0001):0,color=Number(light.state.colorfull)>>>0;
+        for(let i=light.start;i<light.start+light.count;i++)attribute.setXYZ(i,brightness*(color&255)/255,brightness*((color>>8)&255)/255,brightness*((color>>16)&255)/255);
       }
       attribute.needsUpdate=true;
     }
     for(let i=0;i<flippers.length;i++)flippers[i].rotation.z=game.flippers[i].angle;
-    renderer.render(scene,camera);
+    bulbHalos.update();lightFrame.render(scene,camera);
   }
-  return {renderer,render,resize,shake(strength){shakeUntil=game.time+.8;shakeStrength=Number(strength)||1;},setCamera(value){cameraMode=value;resize();},setQuality(value){quality=value;resize();}};
+  return {renderer,scene,bulbHalos,render,resize,shake(strength){shakeUntil=game.time+.8;shakeStrength=Number(strength)||1;},setCamera(value){cameraMode=value;resize();},setQuality(value){quality=value;resize();}};
 }

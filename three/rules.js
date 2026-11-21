@@ -4,7 +4,8 @@
 import {VbsEngine} from '@devscholar/vbs-engine-js';
 import {createImpulsePlunger} from './impulse-plunger.js';
 import {createScriptRandom,registerScriptRandom} from './script-random.js';
-import {LightSequence,SEQ,clampLightState} from './light-sequence.js';
+import {LightSequence,SEQ} from './light-sequence.js';
+import {LightAnimation,nativeColor} from './light-animation.js';
 import {runtimeNativeRandom} from './native-random.js';
 
 export const KEY={left:42,right:54,launch:28,start:2,action:57,nudgeLeft:44,nudgeForward:45,nudgeRight:53};
@@ -15,7 +16,7 @@ const empty=()=>{};
 export function createRules(source,specs,host={}) {
   const engine=new VbsEngine({hostIntegration:false,maxExecutionTime:2000});
   const scriptRandom=createScriptRandom();registerScriptRandom(engine,scriptRandom);
-  const objects=new Map(),timers=new Map(),delays=[],flashes=new Map(),sequences=new Map(),generatedEvents=new Map();
+  const objects=new Map(),timers=new Map(),delays=[],flashes=new Map(),sequences=new Map(),lamps=new Map(),generatedEvents=new Map();
   const sequenceRandom=host.random??runtimeNativeRandom();
   const methods=new Set([...source.matchAll(/^\s*(?:Sub|Function)[ \t]+(\w+)/gmi)].map(m=>m[1].toLowerCase()));
   const functions=new Set([...source.matchAll(/^\s*Function[ \t]+(\w+)/gmi)].map(m=>m[1].toLowerCase()));
@@ -40,12 +41,16 @@ export function createRules(source,specs,host={}) {
 
   function object(spec){
     const name=spec.name,lower=name.toLowerCase();
+    const lamp=spec.kind==='Light'?new LightAnimation(spec,()=>Math.round(time*1000),()=>{
+      if(methods.has(lower+'_animate')||(eventGroups.get(lower)??[]).some(g=>g.collection.fire_events&&methods.has(g.collection.name.toLowerCase()+'_animate')))hit(name,'Animate',activeBall);
+    }):null;
     const state={name,x:spec.center?.x??spec.position?.x??spec.pos_x??0,y:spec.center?.y??spec.position?.y??spec.pos_y??0,z:spec.position?.z??0,radius:spec.radius??0,
-      state:spec.state_u32??spec.state??0,visible:spec.is_visible??true,collidable:spec.is_collidable??true,
+      state:spec.state_u32??spec.state??0,visible:spec.is_visible??spec.visible??true,collidable:spec.is_collidable??true,
       enabled:spec.is_enabled??false,timerenabled:false,timerinterval:spec.timer_interval??100,
       interval:spec.timer_interval??100,blinkinterval:spec.blink_interval??125,intensity:spec.intensity??1,
+      blinkpattern:spec.blink_pattern??'10',intensityscale:1,inplayintensity:0,inplayon:false,fadespeedup:spec.fade_speed_up??1,fadespeeddown:spec.fade_speed_down??1,
       updateinterval:spec.update_interval??25,centerx:spec.pos_x??0,centery:spec.pos_y??0,
-      color:spec.color??0xffffff,colorfull:spec.color2??0xffffff,imagea:'d_empty',userValue:0,
+      color:lamp?nativeColor(spec.color??0xffffff):spec.color??0xffffff,colorfull:lamp?nativeColor(spec.color2??0xffffff):spec.color2??0xffffff,imagea:'d_empty',userValue:0,
       isdropped:spec.is_dropped??false,open:false,rotx:spec.rot_and_tra?.[0]??0,roty:spec.rot_and_tra?.[1]??0,rotz:spec.rot_z??spec.rot_and_tra?.[2]??0,
       currentangle:0,startangle:0,endangle:0,transz:0,height:spec.height??50,sequenceactive:false,sequencestate:['Flasher','Primitive'].includes(spec.kind)?Number(spec.is_visible??true):spec.state??0,
       threshold:spec.threshold??0,force:spec.force??0,scatter:spec.scatter??0,hashitevent:spec.use_hit_event??spec.hit_event??false,hitthreshold:0,disabled:false,slingshotthreshold:spec.slingshot_threshold??0};
@@ -57,6 +62,8 @@ export function createRules(source,specs,host={}) {
       rotatetoend:()=>host.flipper?.(lower.startsWith('left')?'left':'right',true),
       rotatetostart:()=>host.flipper?.(lower.startsWith('left')?'left':'right',false),
       pullback:()=>host.plunger?.(true),fire:()=>host.plunger?.(false),
+      duration:(start,milliseconds,end)=>lamp?.setDuration(start,milliseconds,end),
+      getinplaystate:()=>lamp?.inplay??0,getinplaystatebool:()=>lamp?lamp.level()!==0:false,getinplayintensity:()=>lamp?.intensity??0,
       play:(code,tail=0,repeat=1,pause=0)=>sequences.get(lower)?.play(code,Number(tail),Number(repeat),Number(pause)),
       stopplay:()=>sequences.get(lower)?.stop(),
       stop:empty,initimpulsep:empty,random:empty,initexitsnd:empty,createevents:empty,
@@ -65,9 +72,8 @@ export function createRules(source,specs,host={}) {
       getballs:()=>host.balls?.()??[],
     };
     const proxy=new Proxy(state,{
-      get(target,key){if(typeof key==='symbol')return target[key];const k=key.toLowerCase();if(spec.kind==='Plunger'&&k==='position')return host.plungerPosition?.()??0;if(spec.kind==='Gate'||spec.kind==='HitTarget'||spec.kind==='Bumper'||spec.kind==='Wall'||spec.kind==='Primitive'&&k==='hitthreshold'){const value=host.mechanismValue?.(name,k);if(value!==undefined)return value;}return k in actions?actions[k]:target[k]??0;},
-      set(target,key,v){const k=String(key).toLowerCase();target[k]=v;
-        if(k==='state'&&spec.kind==='Light')target[k]=clampLightState(v);
+      get(target,key){if(typeof key==='symbol')return target[key];const k=key.toLowerCase();if(lamp){const value=lamp.get(k);if(value!==undefined)return value;}if(spec.kind==='Plunger'&&k==='position')return host.plungerPosition?.()??0;if(spec.kind==='Gate'||spec.kind==='HitTarget'||spec.kind==='Bumper'||spec.kind==='Wall'||spec.kind==='Primitive'&&k==='hitthreshold'){const value=host.mechanismValue?.(name,k);if(value!==undefined)return value;}return k in actions?actions[k]:target[k]??0;},
+      set(target,key,v){const k=String(key).toLowerCase();if(lamp?.set(k,v))return true;target[k]=lamp&&['color','colorfull'].includes(k)?nativeColor(v):v;
         if(spec.kind==='LightSequencer'){
           const seq=sequences.get(lower);
           if(k==='updateinterval'){target[k]=Math.max(1,Math.trunc(v));if(seq)seq.updateInterval=target[k];}
@@ -87,6 +93,7 @@ export function createRules(source,specs,host={}) {
       ownKeys(target){return [...new Set([...Reflect.ownKeys(target),...Object.keys(actions)])];},
       getOwnPropertyDescriptor(target,key){return {enumerable:true,configurable:true,writable:true,value:proxy[key]};},
     });
+    if(lamp)lamps.set(lower,lamp);
     objects.set(lower,proxy);engine.addObject(name,proxy);return proxy;
   }
   for(const spec of specs.objects)object(spec);
@@ -185,7 +192,7 @@ export function createRules(source,specs,host={}) {
       else f.light[f.property]=Math.floor(time/f.period)%2;
     }
   }
-  return {engine,objects,run,execute,value,tick,hit,schedule,scriptRandom,sequences,
+  return {engine,objects,run,execute,value,tick,hit,schedule,scriptRandom,sequences,lamps,
     init(){run('Table1_Init');execute('bFreePlay=True:BallsPerGame=3:SongVolume=0.2');},
     key(action,down){run(down?'Table1_KeyDown':'Table1_KeyUp',KEY[action]);},
     get time(){return time;},get timers(){return timers;},get delays(){return delays;},

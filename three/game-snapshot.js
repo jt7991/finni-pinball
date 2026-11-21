@@ -1,6 +1,6 @@
 // The renderer receives data only. Physics bodies and interpreter objects stay
 // in the simulation thread; no functions or proxy objects cross the boundary.
-const fields=['state','visible','imagea','color','rotx','roty','rotz','isdropped','sequenceactive','sequencestate','blinkinterval','intensity'];
+const fields=['state','visible','imagea','color','colorfull','rotx','roty','rotz','isdropped','sequenceactive','sequencestate','blinkinterval','blinkpattern','intensity','intensityscale','inplayintensity','inplayon'];
 const roots=['time','state','score','player','ballNumber','charge','inLane','tilted','gameState','held','physicsStats'];
 function objectState(object){
   const state={};
@@ -13,7 +13,7 @@ export function describeGame(game){
     flippers:game.flippers.map(f=>({p:{...f.p},length:f.length,angle:f.angle})),
     scoop:{...game.scoop},spinners:game.spinners.map(mechanism),gates:game.gates.map(mechanism),
     targetMotions:[...game.targetMotions].map(([name,m])=>[name,{offset:m.offset,collidable:m.collidable,drop:m.drop,rotZ:m.spec.rot_z}]),
-    specs:{objects:game.specs.objects.filter(s=>s.kind==='Light').map(s=>({name:s.name,kind:s.kind,drag_points:s.drag_points}))},
+    specs:{objects:game.specs.objects.filter(s=>s.kind==='Light').map(s=>({...s,surface_height:game.surface(s)}))},
     objects:[...game.rules.objects].map(([name,object])=>[name,objectState(object)]),
   };
 }

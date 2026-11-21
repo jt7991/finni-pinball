@@ -82,9 +82,9 @@ try{
     await evaluate('document.getElementById("controls-panel").showPopover()');
     await wait('document.getElementById("controls-panel").matches(":popover-open")');
     const animation=await evaluate(`(async()=>{
-      const {game,view}=finniThree,render=view.renderer.render;let scene;
+      const {game,view}=finniThree,scene=view.scene;
       if(game.workerSimulation){game.setPaused(true);await game.flush();}
-      try{view.renderer.render=function(s,c){scene=s;return render.call(this,s,c);};view.render(1);}finally{view.renderer.render=render;}
+      view.render(1);
       const parts=[...game.spinners,...game.gates.filter(g=>g.spec.is_visible)].map(spinner=>{
         const plate=scene.getObjectByName(spinner.spec.name+(spinner.spec.kind==='Gate'?'Wire':'Plate'));if(!plate)return {name:spinner.spec.name,missing:true};
         const saved=spinner.angle,position=plate.position.clone();spinner.angle=0;view.render(1);const start=plate.quaternion.clone();
@@ -123,9 +123,17 @@ try{
       await advance(17);await advance(17);await advance(17);view.render(1);
       const sequenceBlink={script:lamp.state,locked:lamp.sequenceactive,display:lamp.sequencestate};
       await set('LightSeqInserts.StopPlay');
-      return {parts,target:{middle,end},standups,sequences:{off:sequenceOff,restored:sequenceRestored,blink:sequenceBlink}};
+      await set('li044.Intensity=90:li044.IntensityScale=1:li044.State=0');await advance(1000);view.render(1);
+      const index=view.bulbHalos.lamps.findIndex(l=>l.spec.name==='li044'),readLamp=()=>({intensity:lamp.inplayintensity,on:lamp.inplayon,textureIntensity:view.bulbHalos.texture.image.data[index*16+3]});
+      const off=readLamp();await set('li044.State=1');await advance(17);view.render(1);const full=readLamp();
+      await set('li044.State=0');await advance(17);view.render(1);const fading=readLamp();
+      await set('li044.BlinkPattern="00101":li044.BlinkInterval=125:li044.State=2');await advance(17);view.render(1);const blinkOff=readLamp();await advance(125);view.render(1);const blinkOn=readLamp();
+      return {parts,target:{middle,end},standups,sequences:{off:sequenceOff,restored:sequenceRestored,blink:sequenceBlink},lamps:{count:view.bulbHalos.lamps.length,off,full,fading,blinkOff,blinkOn}};
     })()`);
     const plates=animation.parts;
+    assert.equal(animation.lamps.count,133);assert.equal(animation.lamps.off.intensity,0);assert.equal(animation.lamps.full.intensity,90);assert.equal(animation.lamps.fading.intensity,Math.fround(90-Math.fround(Math.fround(.9)*17)));assert.equal(animation.lamps.blinkOff.on,false);assert.equal(animation.lamps.blinkOn.on,true);
+    for(const sample of ['off','full','fading','blinkOff','blinkOn'])assert.equal(animation.lamps[sample].textureIntensity,animation.lamps[sample].intensity,'worker lamp output reaches the GPU data texture');
+    await writeFile(`${output}/lamp-render-animation.json`,JSON.stringify(animation.lamps,null,2));console.log('PASS native lamp fades, custom blink patterns and HDR bulb data');
     assert.deepEqual(animation.sequences.off,{script:2,locked:true,display:0});
     assert.deepEqual(animation.sequences.restored,{script:1,locked:false});
     assert.deepEqual(animation.sequences.blink,{script:1,locked:true,display:1});

@@ -70,7 +70,7 @@ test('real worker preserves every body, native RNG, authored rules, DMD, audio a
     for(let frame=0;frame<30;frame++){
       await advance(17);
       const expected=local.rules.objects.get('li044');
-      for(const field of ['state','sequenceactive','sequencestate'])assert.equal(lamp[field],expected[field],`worker lamp ${field}`);
+      for(const field of ['state','sequenceactive','sequencestate','inplayintensity','inplayon','intensityscale','blinkpattern','colorfull'])assert.equal(lamp[field],expected[field],`worker lamp ${field}`);
     }
     assert.equal(remote.rules.objects.get('li044'),lamp,'sequence snapshots retain the subscribed render object');
     const description=snapshotGame(local,new Set(digits),new Set(['bChooseBattle']));assert.doesNotThrow(()=>structuredClone(description));
