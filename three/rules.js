@@ -153,8 +153,11 @@ export function createRules(source,specs,host={}) {
   for(const collection of specs.collections)if(collection.fire_events||collection.stop_single_events)collection.items.forEach((name,index)=>{
     const key=name.toLowerCase();if(!eventGroups.has(key))eventGroups.set(key,[]);eventGroups.get(key).push({collection,index});
   });
-  function hit(name,kind='Hit',ball){
+  function hit(name,kind='Hit',ball,...parameters){
     activeBall=ball;engine.addObject('ActiveBall',ball??{});const groups=eventGroups.get(name.toLowerCase())??[];
+    // Flipper Collide uses FireVoidEventParm; it does not pass through native
+    // collection FireGroupEvent dispatch, and carries the impact speed.
+    if(kind==='Collide')return run(`${name}_${kind}`,...parameters);
     for(const {collection,index}of groups)if(collection.fire_events)run(`${collection.name}_${kind}`,index);
     if(!groups.some(({collection})=>collection.stop_single_events))return run(`${name}_${kind}`);
   }

@@ -277,7 +277,7 @@ class FullGame extends Pinball {
     this.readFlippers();
     for(const f of this.flippers){
       const state=this.rules.objects.get(`${f.side}flipper`);
-      state.currentangle=Math.abs(f.angle-f.raised)<.0001?state.endangle:Math.abs(f.angle-f.rest)<.0001?state.startangle:90-f.angle*180/Math.PI;
+      state.currentangle=f.nativeAngle!==undefined?Math.fround(f.nativeAngle*Math.fround(180/Math.PI)):Math.abs(f.angle-f.raised)<.0001?state.endangle:Math.abs(f.angle-f.rest)<.0001?state.startangle:90-f.angle*180/Math.PI;
     }
     this.events.drainCollisionEvents((a,b,started)=>{
       const rec=this.byCollider.get(a)??this.byCollider.get(b);if(!rec||rec.held)return;
@@ -287,6 +287,7 @@ class FullGame extends Pinball {
       if(tag.kind==='target-body'||tag.kind==='spinner-body'||tag.kind==='gate-body'||tag.kind==='trigger-body'||tag.kind==='kicker-body')return;
       if(this.nativeFlipperContacts&&tag.kind==='bumper')return;
       if(this.nativePositionUnits&&tag.kind==='sling')return;
+      if(this.nativePositionUnits&&tag.kind==='flipper')return;
       if(!started){if(tag.spec?.kind==='Trigger'){if(tag.name.toLowerCase()==='swplungerrest')rec.inLane=false;this.rules.hit(tag.name,'UnHit',rec.proxy);}return;}
       if(tag.spec?.kind==='Trigger'){
         if(tag.name.toLowerCase()==='swplungerrest')rec.inLane=true;

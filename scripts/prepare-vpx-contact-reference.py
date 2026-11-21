@@ -16,9 +16,10 @@ parser.add_argument('--instrument-ball-trails',action='store_true',help='Record 
 parser.add_argument('--instrument-rng',action='store_true',help='Emit physics-frame markers for read-only native random-state capture.')
 parser.add_argument('--instrument-bumpers',action='store_true',help='Observe bumper callback clocks and physics-affecting script random outputs.')
 parser.add_argument('--instrument-slingshots',action='store_true',help='Observe native slingshot callback clocks and post-response velocities.')
+parser.add_argument('--instrument-flippers',action='store_true',help='Observe native flipper Collide arguments and base Hit events.')
 parser.add_argument('--all-scatter-zero',action='store_true',help='Also zero every material/object scatter field in a separate reference copy.')
 args=parser.parse_args()
-if args.instrument_spinners or args.instrument_ball_trails or args.instrument_rng or args.instrument_bumpers or args.instrument_slingshots:args.instrument_timers=True
+if args.instrument_spinners or args.instrument_ball_trails or args.instrument_rng or args.instrument_bumpers or args.instrument_slingshots or args.instrument_flippers:args.instrument_timers=True
 source=args.source_root.resolve()
 tool=source/'.tools/vpxtool/vpxtool.exe'
 table=source/'runtime/Finni-Big-Day.vpx'
@@ -79,6 +80,14 @@ Function RefShakeRnd(n)
     RefShakeRnd=observed
 End Function
 '''
+    if args.instrument_flippers:
+        for index,side in enumerate(['Left','Right'],1):
+            pattern=rf'(Sub {side}Flipper_Collide\(parm\)[^\r\n]*[\r\n]+)'
+            observer=f'    If RefTraceOn Then RefTrace=RefTrace & "FLIP_COLLIDE|" & GameTime & "|{index}|" & CStr(CDbl(parm)) & "|" & CStr(CDbl(ActiveBall.VelX)) & "|" & CStr(CDbl(ActiveBall.VelY)) & "|" & CStr(CDbl(ActiveBall.VelZ)) & ";"\n'
+            script,count=re.subn(pattern,lambda m:m[1]+observer,script,count=1,flags=re.I)
+            if count!=1:raise RuntimeError(f'Missing native flipper Collide handler {side}')
+            if re.search(rf'\bSub {side}Flipper_Hit\b',script,re.I):raise RuntimeError('Unexpected existing base Hit handler')
+            script+=f'\nSub {side}Flipper_Hit\n    If RefTraceOn Then RefTrace=RefTrace & "FLIP_HIT|" & GameTime & "|{index};"\nEnd Sub\n'
     if args.instrument_ball_trails:
         script+='Dim RefTrailOn,RefTrailSlots(9),RefTrailBalls,RefTrailBall,RefTrailIndex,RefTrailRow,RefTrailSlot\nRefTrailOn=False\n'
     for name,marker in [('RollingTimer_Timer','ROLL'),('LeftFlipper_Timer','FLIP')]:
@@ -153,6 +162,7 @@ if args.instrument_timers:
     if args.instrument_rng:metadata['instrumentation']['nativeRngMarkers']='RNG_FRAME emitted before each physics step; the browser probe reads the unmodified engine state synchronously when this debug message is written.'
     if args.instrument_bumpers:metadata['instrumentation']['bumperTrace']={'callbacks':'BUMPER records handler entry clock, index and incoming scripted ball velocity after the native kick.','scriptRandom':'SCRIPT_RND records original Single outputs in LilDPShake through a wrapper that preserves value type and one native RNG advance per call.'}
     if args.instrument_slingshots:metadata['instrumentation']['slingshotTrace']={'callbacks':'SLING records handler entry clock, side and post-response velocity.','scriptRandom':'SCRIPT_RND preserves original LilDPShake inputs and one native RNG call per output.'}
+    if args.instrument_flippers:metadata['instrumentation']['flipperTrace']={'callbacks':'FLIP_COLLIDE records clock, side, native speed argument and post-response velocity. FLIP_HIT observes the previously empty base-radius Hit event.'}
 (out/'metadata.json').write_text(json.dumps(metadata,indent=2)+'\n')
 print(diff)
 print(f'Controlled native reference: {copy}')

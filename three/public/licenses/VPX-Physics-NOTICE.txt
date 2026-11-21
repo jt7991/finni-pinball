@@ -15,6 +15,9 @@ https://github.com/vpinball/vpinball/tree/195f214dd4849b8ef6113fd377258b78d0dec3
 
 native-bumper.js adapts BumperHitCircle::Collide in physics/collideex.cpp.
 native-slingshot.js adapts LineSegSlingshot::Collide in the same file.
+native-flipper-contact.js includes HitFlipper::Collide event timing and speed
+arguments. full-game.js also preserves Flipper::get_CurrentAngle conversion:
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/parts/flipper.cpp
 native-sound.js adapts SoundPlayer::Play pitch variation and frequency math:
 https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/audio/SoundPlayer.cpp
 

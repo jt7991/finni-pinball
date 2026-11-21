@@ -185,3 +185,32 @@ below 4.8e-7. Committed public position samples use a .001-VPU bound because
 native CStr rounds positions around Y=1500 to that precision; callback velocity,
 sampled velocity and angular velocity keep .000001 bounds. Other parity failures
 remain independently enforced.
+
+`vpx-flipper-events-native-state.json` records twenty-four flipper scenarios:
+heel/middle/end face impacts at two speeds on both sides, rounded-tip impacts, base-circle Hit
+events, quiet rebounds, moving strokes and repeat impacts below/above the
+native idle threshold. Build a new diagnostic table with
+`--instrument-flippers --instrument-ball-trails --instrument-rng
+--all-scatter-zero`, then capture with `--flipper-events --all-ball-state
+--ball-trails --rng-state --native-internals --no-state-trace`. The observer
+retains the original Collide handler and adds an observer for the previously
+empty base Hit handler. Run `node scripts/compare-vpx-flipper-events.mjs --check`.
+
+Native `HitFlipper::Collide` computes the speed argument before response and
+fires the callback after applying the impulses. A qualifying impact needs
+normal speed above .25 and more than 250ms since the last resolved collision
+on that flipper. Every resolved impact renews that clock, including quiet
+collisions and hits from another ball. Base-circle hits use Hit; face and tip
+hits use Collide(speed). Collide follows FireVoidEventParm, bypassing collection
+FireGroupEvent suppression. The port now dispatches this in the native solver
+and suppresses the duplicate Rapier flipper sensor event.
+
+The moving-stroke recording also exposed approximate snapping in the angle
+reported to the rules. `Flipper::get_CurrentAngle` multiplies the native radians
+by the Float32 degrees conversion; it does not snap angles near the stop. This
+matters to the authored exact-equality EOS/live-catch timer. The port now uses
+that conversion. Initial solenoid input precedes restoring the first observed
+physics RNG state, because its sound already consumed the native draws at the
+recorded clock. All twenty-four cases retain all 4,812 observed RNG states,
+callback times/arguments and trajectories within .001 VPU / .000001 velocity
+and angular velocity. The position bound reflects native CStr precision.

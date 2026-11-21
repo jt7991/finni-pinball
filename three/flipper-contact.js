@@ -63,8 +63,8 @@ export function flipperHit(body,f,angle,omega,radius,duration){
   }
   return classify(time,at(time));
 }
-export function resolveFlipperContact(body,f,contact,material,radius){
-  if(body.native&&f.nativeMotion)return collideNativeFlipper(body,f,contact,material,radius);
+export function resolveFlipperContact(body,f,contact,material,radius,clock,emit){
+  if(body.native&&f.nativeMotion)return collideNativeFlipper(body,f,contact,material,radius,clock,emit);
   const flipperBody=f.nativeMotion?.body??f.body;
   const n=contact.normal,p=body.translation(),mass=body.mass(),ballI=.4*mass*radius*radius;
   const rB=scale(n,-radius),hit=plus(p,rB),rF=minus(hit,{...f.p,z:p.z}),lever=cross(rF,n).z;

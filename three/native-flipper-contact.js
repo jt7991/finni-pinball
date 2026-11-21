@@ -33,7 +33,7 @@ export function nativeFlipperHit(body,flipper,radius,duration){
     const dvx=f(vx-f(tx*sv)),dvy=f(vy-f(ty*sv)),vn=f(f(dvx*normalX)+f(dvy*normalY)),contact=Math.abs(vn)<=f(.099)&&gap<=f(.05);
     if(tip?vn>=0:!contact&&vn>f(.0001))return null;
     const normal={x:normalX,y:-normalY,z:0};
-    return {time:t*.01,contact,profile:{normal,gap:gap*.01},normal,gap:gap*.01,vn};
+    return {time:t*.01,contact,profile:{normal,gap:gap*.01,hitMomentBit:dist===0},normal,gap:gap*.01,vn};
   };
   const first=flipper.lastHitFace??false;
   let hit=solve(first);if(hit)return hit;
@@ -52,14 +52,14 @@ export function nativeFlipperHit(body,flipper,radius,duration){
   if(!Number.isFinite(time)||time<0||Object.is(time,-0)||time>dt)return null;
   const hitZ=f(z+f(vz*time));if(f(hitZ+f(r*.5))<0||f(hitZ-f(r*.5))>f(flipper.height*100))return null;
   const hx=f(f(x+f(vx*time))-cx),hy=f(f(y+f(vy*time))-cy),inverse=f(1/length(hx,hy)),normal={x:f(hx*inverse),y:-f(hy*inverse),z:0};
-  return {time:time*.01,contact,profile:{normal,gap:gap*.01},normal,gap:gap*.01,vn};
+  return {time:time*.01,contact,profile:{normal,gap:gap*.01,hitMomentBit:true},normal,gap:gap*.01,vn};
 }
 function context(body,flipper,normal,radius){
   const state=body.native,ball=state.snapshot(),n=nativeNormal(normal),rB=mul(n,-f(radius*100)),hit=add(ball.p,rB),center={x:f(flipper.p.x*100),y:f(2115-flipper.p.y*100),z:ball.p.z},rF=sub(hit,center),omega=-flipper.nativeMotion.speed;
   const relative=sub(add(ball.v,cross(div(ball.m,ball.inertia),rB)),{x:f(-omega*rF.y),y:f(omega*rF.x),z:0});
   return {state,ball,n,rB,rF,relative,omega,inertia:flipper.nativeMotion.inertia};
 }
-export function collideNativeFlipper(body,flipper,contact,material,radius){
+export function collideNativeFlipper(body,flipper,contact,material,radius,clock=0,emit){
   const c=context(body,flipper,contact.normal,radius),{state,ball,n,rB,rF,relative,inertia}=c;let vn=dot(n,relative);
   const gap=f(contact.gap*100);if(vn>=-f(.0001)){if(vn>f(.0001)||gap>=0)return false;vn=-f(.05);}
   const correction=Math.min(5,f(-f(.9875)*gap));if(correction>f(.0001))ball.p=add(ball.p,mul(n,correction));
@@ -78,7 +78,11 @@ export function collideNativeFlipper(body,flipper,contact,material,radius){
     const den=f(f(inverse+dot(t,cross(div(b,ball.inertia),rB)))+dot(t,cross(div(a,inertia),rF))),maximum=f(f(material.friction)*impulse),j=clamp(f(-vt/den),-maximum,maximum);
     ball.v=add(ball.v,div(mul(t,j),ball.mass));ball.m=add(ball.m,mul(b,j));flipper.nativeMotion.nativeImpulse(f(-j*a.z));
   }
-  state.commit(ball);return true;
+  state.commit(ball);
+  // Native throttles the whole flipper, rather than each ball/sensor pair.
+  // Every resolved impact renews its idle clock, even below event threshold.
+  if(vn< -f(.25)&&clock-(flipper.lastCollisionMs??0)>250)emit?.(contact.hitMomentBit?'Hit':'Collide',contact.hitMomentBit?undefined:-vn);
+  flipper.lastCollisionMs=clock;return true;
 }
 export function supportNativeFlipper(body,flipper,hit,gravity,friction,radius,duration){
   const {state,ball,n,rB,rF,omega,inertia,...rest}=context(body,flipper,hit.profile.normal,radius),dt=f(duration*100),g=nativeGravity(gravity);let relative=rest.relative;

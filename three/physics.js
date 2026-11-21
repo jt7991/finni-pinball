@@ -562,7 +562,7 @@ export class Pinball {
         if(contact&&contact.gap<=.0005){
           this.ballSpin.impact(body(event.r),contact.gap);
           const state=this.rules?.objects.get(`${f.side}flipper`);
-          resolveFlipperContact(body(event.r),f,contact,{elasticity:state?Number(state.elasticity):f.elasticity,elasticity_falloff:f.falloff??0,friction:f.friction},RADIUS);
+          resolveFlipperContact(body(event.r),f,contact,{elasticity:state?Number(state.elasticity):f.elasticity,elasticity_falloff:f.falloff??0,friction:f.friction},RADIUS,Math.round(this.time*1000),(kind,speed)=>this.rules?.hit(f.side+'Flipper',kind,event.r.proxy,...(kind==='Collide'?[speed]:[])));
         }
       }
       }
