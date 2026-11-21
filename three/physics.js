@@ -23,8 +23,8 @@ import {nativeHitDescriptor,collideNativeHitSurface} from './native-hit-event.js
 import {runtimeNativeRandom} from './native-random.js';
 import {collideNativeTarget} from './native-target-event.js';
 
-export const STEP = 1 / 1000;
-export const RADIUS = 0.25;
+import {STEP,RADIUS} from './game-constants.js';
+export {STEP,RADIUS};
 export const BALL_RESTITUTION=Math.sqrt(.8);
 export const surfaceRestitution=value=>value/BALL_RESTITUTION;
 export const BALL_GROUP=0x00010007,NATIVE_BALL_GROUP=0x00010006,STATIC_GROUP=0x00020001,FLIPPER_GROUP=0x00040001;

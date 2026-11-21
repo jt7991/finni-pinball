@@ -8,9 +8,9 @@ import {gzipSync} from 'node:zlib';
 import {parseArgs} from 'node:util';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-const {values}=parseArgs({options:{host:{type:'string',default:'127.0.0.1'},port:{type:'string',default:'5174'},build:{type:'boolean',default:false}}});
-if(values.build){const {build}=await import('vite');await build({root:path.join(root,'three'),configFile:path.join(root,'vite.config.js')});}
-const directory=path.join(root,'browser/three');
+const {values}=parseArgs({options:{host:{type:'string',default:'127.0.0.1'},port:{type:'string',default:'5174'},directory:{type:'string',default:'browser/three'},build:{type:'boolean',default:false}}});
+const directory=path.resolve(root,values.directory);
+if(values.build){const {build}=await import('vite');await build({root:path.join(root,'three'),configFile:path.join(root,'vite.config.js'),build:{outDir:directory}});}
 await stat(path.join(directory,'index.html'));
 const compressed=new Map();
 const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.vbs':'text/plain','.wasm':'application/wasm','.glb':'model/gltf-binary','.webp':'image/webp','.png':'image/png','.m4a':'audio/mp4','.ttf':'font/ttf'};

@@ -1,12 +1,11 @@
-import {STEP} from './physics.js';
-import {createFullGame} from './full-game.js';
+import {createRuntimeGame} from './game-runtime.js';
 import {createView} from './scene.js';
 import {createAudio,createDisplay} from './media.js';
 import {createLeaderboard} from '../browser/leaderboard.js';
 import {prepareUI} from './ui.js';
 
 const $=prepareUI();
-let game,view,audio,display,leaderboard,paused=false,previous,accumulator=0,last=0,frames=0,sampleStart=0;
+let game,view,audio,display,leaderboard,paused=false,frames=0,sampleStart=0;
 const sources=new Map(),buttons=[...document.querySelectorAll('[data-input]')];
 const defaultKeys={ShiftLeft:'left',ShiftRight:'right',Enter:'launch',Digit1:'start',Space:'action',KeyZ:'nudgeLeft',KeyX:'nudgeForward',Slash:'nudgeRight'},keys={...defaultKeys};
 const read=(key,fallback)=>{try{return localStorage.getItem(`finni-three-${key}`)||fallback;}catch{return fallback;}};
@@ -85,20 +84,21 @@ window.addEventListener('keydown',e=>{
   if(keys[e.code]&&!e.repeat){e.preventDefault();input(keys[e.code],true,`key:${e.code}`);}
 });
 window.addEventListener('keyup',e=>{if(keys[e.code]){e.preventDefault();input(keys[e.code],false,`key:${e.code}`);}});
-window.addEventListener('blur',()=>{release();paused=true;});
-window.addEventListener('focus',()=>{paused=$('controls-panel').open||document.hidden;last=0;});
-document.addEventListener('visibilitychange',()=>{release();paused=document.hidden||$('controls-panel').open;last=0;});
-window.addEventListener('orientationchange',()=>{release();last=0;});
-$('settings').onclick=()=>{release();paused=true;};
-$('controls-panel').addEventListener('close',()=>{paused=document.hidden;last=0;$('table').focus({preventScroll:true});});
-$('controls-panel').addEventListener('toggle',()=>{release();paused=$('controls-panel').open||document.hidden;last=0;});
+function pause(value){paused=value;if(view)game?.setPaused(value);}
+window.addEventListener('blur',()=>{release();pause(true);});
+window.addEventListener('focus',()=>pause($('controls-panel').open||document.hidden));
+document.addEventListener('visibilitychange',()=>{release();pause(document.hidden||$('controls-panel').open);});
+window.addEventListener('orientationchange',release);
+$('settings').onclick=()=>{release();pause(true);};
+$('controls-panel').addEventListener('close',()=>{pause(document.hidden);$('table').focus({preventScroll:true});});
+$('controls-panel').addEventListener('toggle',()=>{release();pause($('controls-panel').open||document.hidden);});
 $('initials-dialog').addEventListener('close',()=>$('table').focus({preventScroll:true}));
 $('play').onclick=()=>{release();audio?.unlock();game?.start();};
 $('camera').value=read('camera','balanced');$('quality').value=read('quality','auto');
 if($('camera').value==='')$('camera').value='balanced';
 const cameraMode=()=>$('camera').value==='topdown'?'overhead':$('camera').value;
 for(const name of ['camera','quality'])$(name).onchange=()=>{save(name,$(name).value);if(name==='camera')view?.setCamera(cameraMode());};
-$('apply-graphics').onclick=()=>{release();save('quality',$('quality').value);location.reload();};
+$('apply-graphics').onclick=async()=>{release();save('quality',$('quality').value);try{await game?.flush();}catch{}location.reload();};
 $('sound').onclick=async()=>{
   try{
     await audio?.unlock();audio?.setMuted(!audio.muted);
@@ -113,19 +113,17 @@ document.addEventListener('fullscreenchange',()=>{release();document.body.classL
 
 function frame(now){
   try{drawFrame(now);}catch(error){
-    console.error(error);try{release();}catch{}paused=true;
+    console.error(error);try{release();pause(true);}catch{}paused=true;
     $('overlay').hidden=false;$('load-status').textContent='The game stopped. Reload to restart.';
     $('play').disabled=false;$('play').textContent='Reload game';$('play').onclick=()=>location.reload();message('Game stopped');
   }
 }
 function drawFrame(now){
-  if(!last)last=now;
-  const elapsed=Math.min(.05,(now-last)/1000);last=now;
-  if(!paused){
-    accumulator+=elapsed;
-    while(accumulator>=STEP){previous={...game.ball.translation()};game.step();accumulator-=STEP;}
-  }else {accumulator=0;previous={...game.ball.translation()};}
-  view.render(accumulator/STEP,previous);display?.draw();
+  if(game.error)throw game.error;
+  game.setPaused(paused);
+  // Render the most recently completed native tick. The worker never skips
+  // physics ticks to satisfy a display frame, or predicts through collisions.
+  view.render(1);display?.draw();
   if(game.gameState)leaderboard?.state(game.gameState);
   $('score').textContent=game.score.toLocaleString();$('ball-number').textContent=game.ballNumber||'—';
   const power=Math.round(game.charge/1.2*100);
@@ -146,19 +144,18 @@ async function boot(){
   try{
     const base=import.meta.env.BASE_URL;
     const load=async(name,json=true)=>{const response=await fetch(`${base}${name}`);if(!response.ok)throw Error(`${name} could not be loaded.`);return json?response.json():response.text();};
-    const [layout,specs,source,manifest]=await Promise.all([load('layout.json'),load('objects.json'),load('rules.vbs',false),load('audio.json')]);
-    audio=createAudio(manifest,base);game=await createFullGame(layout,specs,source,event,audio);
+    const manifest=await load('audio.json');
+    audio=createAudio(manifest,base);game=await createRuntimeGame(base,event,audio);
     leaderboard=createLeaderboard(statement=>game.rules.execute(statement),release);
     display=await createDisplay($('dmd'),game.rules.objects,base);
     $('load-status').textContent='Loading artwork and table model…';
     view=await createView($('table'),game);view.setCamera(cameraMode());view.setQuality($('quality').value==='auto'?(matchMedia('(max-width:650px)').matches?'performance':'detailed'):$('quality').value);
-    previous={...game.ball.translation()};
     const seconds=((performance.now()-startTime)/1000).toFixed(1);
     $('load-status').textContent=`Ready in ${seconds}s. Hold Launch, then release to shoot.`;
     $('play').disabled=false;$('play').textContent='Start game';$('progress').hidden=true;message('Ready to play');
     sampleStart=performance.now();
     if(import.meta.env.DEV)window.finniThree={game,view,release};
-    $('table').addEventListener('webglcontextlost',e=>{e.preventDefault();paused=true;release();$('load-status').textContent='Graphics were interrupted. Reload to restart.';$('overlay').hidden=false;$('play').textContent='Reload game';$('play').onclick=()=>location.reload();});
+    $('table').addEventListener('webglcontextlost',e=>{e.preventDefault();pause(true);release();$('load-status').textContent='Graphics were interrupted. Reload to restart.';$('overlay').hidden=false;$('play').textContent='Reload game';$('play').onclick=()=>location.reload();});
     requestAnimationFrame(frame);
   }catch(error){
     console.error(error);$('load-status').textContent=`Unable to load: ${error.message}`;

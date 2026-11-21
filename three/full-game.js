@@ -17,13 +17,13 @@ import {nativeSurfaceHeight} from './native-ramp.js';
 import {nativePitchFactor} from './native-sound.js';
 import {nativeTargetEvent} from './native-target-event.js';
 
-export async function createFullGame(layout,specs,source,emit,media) {
+export async function createFullGame(layout,specs,source,emit,media,options={}) {
   await RAPIER.init();
-  return new FullGame(layout,specs,source,emit,media);
+  return new FullGame(layout,specs,source,emit,media,options);
 }
 
 class FullGame extends Pinball {
-  constructor(layout,specs,source,emit,media) {
+  constructor(layout,specs,source,emit,media,options) {
     super(layout,emit);
     this.nativeDisplacements=this.nativeBallContacts&&this.nativePlayfieldContacts&&this.nativePositionUnits&&layout.physics?.native_displacements!==false;
     this.cabinetNudge=new CabinetNudge();
@@ -33,7 +33,7 @@ class FullGame extends Pinball {
     this.specs=specs;this.media=media;this.soundNames=new Set(specs.sound_names??[]);this.pendingCreate=null;this.syncCount=0;
     for(const spec of specs.objects)this.nativeParts.set(spec.name.toLowerCase(),{...this.nativeParts.get(spec.name.toLowerCase()),...spec});
     for(const spec of specs.objects)this.addMechanism(spec);
-    const storage={
+    const storage=options.storage??{
       load:key=>{try{return JSON.parse(localStorage.getItem(`finni-three-rule-${key}`)??'""');}catch{return '';}},
       save:(key,v)=>{try{localStorage.setItem(`finni-three-rule-${key}`,JSON.stringify(v));}catch{}},
     };
