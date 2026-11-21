@@ -16,6 +16,9 @@ const recordKickers=process.argv.includes('--kickers');
 const recordTrails=process.argv.includes('--ball-trails');
 const recordRng=process.argv.includes('--rng-state');
 const recordInternals=process.argv.includes('--native-internals');
+const recordContactSlots=process.argv.includes('--contact-slots');
+if(recordContactSlots)assert.ok(recordInternals,'retained contact slots require pinned native memory capture');
+if(recordContactSlots)reference.nativeContactStorageCapture='Read-only retained CollisionEvent vector slots (48-byte ABI). Physics clears vector size after a pass; slots beyond the previous pass may be stale. These diagnostics are not the current active contact list.';
 if(recordInternals)assert.ok(recordRng&&recordAllBalls,'native internals require pinned memory capture and all body states');
 const omitStateTrace=process.argv.includes('--no-state-trace');
 if(omitStateTrace)assert.ok(reference.instrumentation?.optionalStateTrace,'reference supports disabling the expensive per-frame state strings');
@@ -221,7 +224,7 @@ try{
   if(recordRng)await evaluate(`(()=>{
     const memory=window.nativeReferenceMemories.find(m=>m.buffer.byteLength>${reference.nativeRandom.stateAddress+8});if(!memory)throw Error('Native WASM memory was not observed');
     const element=document.getElementById('log'),descriptor=Object.getOwnPropertyDescriptor(Node.prototype,'textContent');window.nativeRandomRecords=[];
-    ${recordInternals?`window.nativeBallObserver=(${nativeBallMemoryObserver.toString()})(memory,[0,0.17098337411880493,-1.626798152923584],${reference.nativePhysicsMaxLoops});window.nativeInternalSnapshots=[];`:''}
+    ${recordInternals?`window.nativeBallObserver=(${nativeBallMemoryObserver.toString()})(memory,[0,0.17098337411880493,-1.626798152923584],${reference.nativePhysicsMaxLoops},${recordContactSlots});window.nativeInternalSnapshots=[];`:''}
     Object.defineProperty(element,'textContent',{get(){return descriptor.get.call(this);},set(value){
       const line=String(value).split('\\n').at(-1),match=line.match(/(RNG_FRAME|CONTACT_INIT)\\|(\\d+)/);
       ${recordInternals?`if(line.includes('BALL_SCAN|')||line.includes('BALL_INIT|')){try{const kind=line.includes('BALL_SCAN|')?'BALL_SCAN':'BALL_INIT',payload=line.slice(line.indexOf(kind+'|')),[,clock,bodyRows]=payload.split('|'),rows=bodyRows.replace(/'$/,'').split(';').filter(Boolean).map(row=>row.split(':').map(Number));if(kind==='BALL_SCAN')window.nativeBallLayout=window.nativeBallObserver.scan(rows);else window.nativeInternalSnapshots.push({ms:Number(clock),...window.nativeBallObserver.read(rows)});}catch(error){window.nativeBallObserverFailure=error.message;}}`:''}
@@ -441,6 +444,6 @@ try{
     }
     results.push({...scenario,initial,actualDelay,...closing,samples,rawSamples,...(initialNativeInternals?{initialNativeInternals}:{}),...(scenario.plunger?{initialPlungerPosition}:{}),...(initialCoilState?{initialCoilState}:{}),...(timerTrace?{timerTrace}:{}),...(recordAllBalls?{initialBallStates,rawInitialBallStates,initialMeasuredBallID}:{}),...(recordTrails?{initialBallTrails,rawInitialBallTrails}:{}),...(recordRng?{initialNativeRandom,nativeRandomFrames}:{})});console.log(scenario.name,'input at',actualDelay,JSON.stringify(samples.at(-1)));
     const suffix=probeKind==='ball-pairs'?`ball-pairs-${selected??'reference'}`:recordKickers?'kickers-reference':rawAnimation&&selected?`raw-${recordTimers?'timing-':''}${selected}`:reference.geometryProbe&&selected?`geometry-${recordTimers?'timing-':''}${selected}`:reference.shooterProbe&&selected?`${recordTimers?'timing-':''}${selected}`:['spinners','gates','targets','triggers','flipper-events','material-events','target-events'].includes(probeKind)&&selected?`${probeKind}-${reference.instrumentation?.spinnerTraceColumns?'timing-':''}${reference.animationBallIsolation?'isolated-animation-':''}${selected}`:`${reference.geometryProbe?'geometry':probeKind==='contacts'?'contact':probeKind}-reference`;
-    await writeFile(`${output}/vpx-${suffix}${recordAllBalls?'-all-balls':''}${recordTrails?'-trails':''}${recordRng?'-rng':''}${recordInternals?'-internals':''}${recordTimers&&traceMilliseconds!==70?`-${traceMilliseconds}ms`:''}${traceFrom?`-from${traceFrom}ms`:''}.json`,JSON.stringify({...reference,probeKind,runtimeOverrides,columns,cases:results},null,2));
+    await writeFile(`${output}/vpx-${suffix}${recordAllBalls?'-all-balls':''}${recordTrails?'-trails':''}${recordRng?'-rng':''}${recordInternals?'-internals':''}${recordContactSlots?'-contact-slots':''}${recordTimers&&traceMilliseconds!==70?`-${traceMilliseconds}ms`:''}${traceFrom?`-from${traceFrom}ms`:''}.json`,JSON.stringify({...reference,probeKind,runtimeOverrides,columns,cases:results},null,2));
   }
 }finally{socket.close();}

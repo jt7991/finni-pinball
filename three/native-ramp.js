@@ -29,6 +29,10 @@ export function nativeSurfaceHeight(item,x,y){
 export function nativeRampSurface(item){
   const center=nativeDragCurve(item.drag_points,false,400),count=center.length,right=[],left=[],vertices=[],indices=[],heights=[];
   let total=0,distance=0;for(let i=1;i<count;i++)total=f(total+xyLength(center[i-1],center[i]));
+  // The pinned engine hoists 1/total outside GetRampVertex's loop. A direct
+  // division rounds differently, even at an endpoint (Ramp064 reaches
+  // 3.999999761581421 VPU), changing its resting-contact normal by one ULP.
+  const inverseTotal=f(1/total);
   for(let i=0;i<count;i++){
     const previous=center[Math.max(0,i-1)],p=center[i],next=center[Math.min(count-1,i+1)];
     const a={x:f(previous.y-p.y),y:f(p.x-previous.x),z:0},b={x:f(p.y-next.y),y:f(next.x-p.x),z:0};let normal;
@@ -41,7 +45,7 @@ export function nativeRampSurface(item){
         const x=f(f(f(B*F)-f(E*C))*inverse),y=f(f(f(C*D)-f(A*F))*inverse);normal={x:f(p.x-x),y:f(p.y-y),z:0};
       }
     }
-    distance=f(distance+xyLength(previous,p));const t=f(distance/total);
+    distance=f(distance+xyLength(previous,p));const t=f(distance*inverseTotal);
     let width=f(f(t*f(f(item.width_top)-f(item.width_bottom)))+f(item.width_bottom));
     if(item.ramp_type==='one_wire')width=f(item.wire_diameter);else if(item.ramp_type!=='flat')width=f(f(item.wire_distance_x)+20);
     const z=f(f(p.z+f(t*f(f(item.height_top)-f(item.height_bottom))))+f(item.height_bottom)),offset=mul(normal,f(width*.5));

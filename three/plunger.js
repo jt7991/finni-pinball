@@ -32,7 +32,10 @@ export class Plunger {
     this.pullForce=0;
     const start=Math.max(this.rest,this.fraction),dx=f(start-this.rest);
     this.pos=f(this.end+f(start*f(this.spec.stroke)));
-    this.fireSpeed=f(f(f(-f(f(this.spec.speed_fire)/100)*f(this.spec.stroke))*f(dx*f(100/13)))/this.mass);
+    // Manual Fire's native build multiplies by rounded reciprocals of 100
+    // and the fixed rod mass, rather than performing two float divisions.
+    this.fireSpeed=f(f(f(f(this.spec.speed_fire)*f(-.01))*f(this.spec.stroke))*f(dx*f(100/13)));
+    this.fireSpeed=f(this.fireSpeed*f(1/this.mass));
     this.fireBounce=f(-Math.min(1,f(dx/.5))*this.rest);this.fireTimer=200;
   }
   cancel(){this.cancelled=true;this.pullForce=0;this.fireTimer=0;this.fireSpeed=0;this.speed=0;}
@@ -115,8 +118,10 @@ export class Plunger {
       let dot=f(f(ball.v.x*n.x)+f(f(ball.v.y-tip)*n.y));
       if(dot>=-f(.0001)){if(dot>f(.0001)||gap>=0)return;dot=-f(.05);}
       const correction=Math.min(5,f(-f(.9875)*gap));if(correction>f(.0001))ball.p=add(ball.p,mul(n,correction));
-      const impulse=f(f(dot*f(-1.45))/f(1+f(1/this.mass)));this.fireBounce=f(this.fireBounce*f(.6));
-      if(tip!==0)this.reverseImpulse=f(f(f(ball.v.y*impulse)*f(ball.mass/this.mass))*f(.22));
+      // HitPlunger's fixed mass lets the native compiler fold both divisions
+      // to rounded reciprocal multiplications. Preserve each float multiply.
+      const inverseMass=f(1/this.mass),impulse=f(f(dot*f(-1.45))*f(1/f(1+inverseMass)));this.fireBounce=f(this.fireBounce*f(.6));
+      if(tip!==0)this.reverseImpulse=f(f(f(ball.v.y*impulse)*f(ball.mass*inverseMass))*f(.22));
       ball.v=mul(add(ball.v,mul(n,impulse)),f(.999));
       const scatter=f(f(this.spec.scatter_velocity)*f(difficulty));
       if(scatter>0&&Math.abs(ball.v.y)>scatter){let noise=random.signed?random.signed():f(random()*2-1);noise=f(noise*f(f(f(1-f(noise*noise))*f(2.59808))*scatter));ball.v.y=f(ball.v.y+noise);}

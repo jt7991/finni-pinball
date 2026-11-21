@@ -28,6 +28,15 @@ ball-spin.js and gate.js retain the reference wasm32 engine's compiled Float32
 operation order for spin damping and gate rebounds, respectively. Complete
 native gate memory recordings verify those scalar operations without changing
 authored damping parameters, collision bounds or input timing.
+native-ramp.js also preserves GetRampVertex's compiled reciprocal multiplication
+for cumulative ramp-height/width interpolation. Read-only native triangle and
+ball-state recordings verify the resulting contact geometry and launch paths.
+plunger.js preserves the compiled HitPlunger::Collide reciprocal factors for
+the fixed rod mass; unchanged native WASM impulse recordings cover varied
+ball masses and the resulting reverse recoil.
+Its manual Fire calculation also retains the compiled reciprocal factors
+from Plunger::Fire and PlungerMoverObject::Fire, verified by unchanged native
+function recordings and complete per-frame ball-state launch captures.
 native-flipper-contact.js includes HitFlipper::Collide event timing and speed
 arguments. full-game.js also preserves Flipper::get_CurrentAngle conversion:
 https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/parts/flipper.cpp

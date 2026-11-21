@@ -1,7 +1,7 @@
 // Read-only observer for the pinned wasm32 VPX binary. Offsets derive from
 // HitObject, CollisionEvent and HitBall in the pinned C++ headers, not from
 // trajectory fitting. Self pointers and all public float state validate them.
-export function nativeBallMemoryObserver(memory,gravity,expectedMaxLoops){
+export function nativeBallMemoryObserver(memory,gravity,expectedMaxLoops,recordContactSlots=false){
   const scratch=new ArrayBuffer(4),number=new Float32Array(scratch),bits=new Uint32Array(scratch),word=value=>{number[0]=value;return bits[0];};
   let layout,bodies,gravityAddress;
   function scan(rows){
@@ -44,7 +44,21 @@ export function nativeBallMemoryObserver(memory,gravity,expectedMaxLoops){
       const row=rows[index],body=bodies[index];
       if(body.id!==row[11]||![0,1,2].every(axis=>view.getUint32(body.address+layout.ballState+axis*4,true)===word(row[axis])))throw Error('Native body identity/position changed during snapshot');
     }
-    return {gravityAddress,gravity:vector(gravityAddress),swapBallCollisions:!!view.getUint8(gravityAddress+16),balls:bodies.map(({id,address})=>{
+    let contactStorage;
+    if(recordContactSlots){
+      // PhysicsEngine clears size after a pass but retains vector capacity.
+      // These are raw retained slots, potentially stale beyond the last pass;
+      // they are diagnostics, never represented as the active contact list.
+      const begin=view.getUint32(gravityAddress+20,true),end=view.getUint32(gravityAddress+24,true),capacity=view.getUint32(gravityAddress+28,true),byAddress=new Map(bodies.map(body=>[body.address,body.id]));
+      if(begin>end||end>capacity||capacity>memory.buffer.byteLength||(capacity-begin)%48)throw Error('Native contact vector ABI changed');
+      const retained=[];
+      for(let address=begin;address<capacity;address+=48){
+        const ball=view.getUint32(address,true),object=view.getUint32(address+4,true);if(!byAddress.has(ball)||object<64||object+144>memory.buffer.byteLength)continue;
+        retained.push({slot:(address-begin)/48,ballID:byAddress.get(ball),object,time:view.getFloat32(address+8,true),gap:view.getFloat32(address+12,true),normal:vector(address+16),normalVelocity:view.getFloat32(address+40,true),isContact:!!view.getUint8(address+46),friction:view.getFloat32(object+52,true),bounds:Array.from({length:6},(_,i)=>view.getFloat32(object+20+i*4,true)),shapeWords:Array.from({length:20},(_,i)=>view.getUint32(object+64+i*4,true))});
+      }
+      contactStorage={size:(end-begin)/48,capacity:(capacity-begin)/48,retained};
+    }
+    return {gravityAddress,gravity:vector(gravityAddress),swapBallCollisions:!!view.getUint8(gravityAddress+16),...(contactStorage?{contactStorage}:{}),balls:bodies.map(({id,address})=>{
       const orientation=Array.from({length:9},(_,index)=>view.getFloat32(address+layout.orientation+index*4,true));
       const [a,b,c,d,e,f,g,h,i]=orientation,determinant=a*(e*i-f*h)-b*(d*i-f*g)+c*(d*h-e*g);
       if(!orientation.every(Number.isFinite)||Math.abs(determinant-1)>.00001)throw Error('Native orientation ABI validation failed');

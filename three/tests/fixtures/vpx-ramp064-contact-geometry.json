@@ -1,0 +1,131 @@
+{
+  "engineSha256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+  "upstreamCommit": "195f214dd4849b8ef6113fd377258b78d0dec3bf",
+  "sourceSha256": "6300d64767894aebcf82f378985cb63e8a540fa373365c7a82c189f78dadfd5a",
+  "controlledSha256": "57058192a08f4e144ec3802425d6efa82576571c5e3d0a34c4a55adcff2205b6",
+  "provenance": "Read-only pinned native memory capture at physics frame 2, exact 583ms plunger case. Contact vector size is cleared; only retained slots whose vertices match Ramp064 are selected here. Raw shape words preserve Float32 vertex/normal bits. No simulated output was used to generate these values.",
+  "interpolationInstructions": {
+    "functionIndex": 3947,
+    "reciprocalBytes": [
+      2342986,
+      2342994
+    ],
+    "multiplyBytes": [
+      2343478,
+      2343481
+    ],
+    "description": "GetRampVertex computes f32(1/totalLength) once and multiplies each cumulative length by it."
+  },
+  "ramp": {
+    "kind": "Ramp",
+    "height_bottom": 0,
+    "height_top": 4,
+    "width_bottom": 260,
+    "width_top": 260,
+    "material": "",
+    "is_timer_enabled": false,
+    "timer_interval": 100,
+    "ramp_type": "flat",
+    "name": "Ramp064",
+    "image": "",
+    "image_alignment": "world",
+    "image_walls": false,
+    "left_wall_height": 0,
+    "right_wall_height": 0,
+    "left_wall_height_visible": 0,
+    "right_wall_height_visible": 0,
+    "hit_event": false,
+    "threshold": 2,
+    "elasticity": 0.3,
+    "friction": 0.3,
+    "scatter": 0,
+    "is_collidable": true,
+    "is_visible": true,
+    "depth_bias": 0,
+    "wire_diameter": 8,
+    "wire_distance_x": 38,
+    "wire_distance_y": 88,
+    "is_reflection_enabled": false,
+    "physics_material": "_Ramps",
+    "overwrite_physics": false,
+    "drag_points": [
+      {
+        "x": 151.26518,
+        "y": 2000.1042,
+        "smooth": true,
+        "is_slingshot": false,
+        "z": 0
+      },
+      {
+        "x": 151.26518,
+        "y": 2086.1458,
+        "smooth": true,
+        "is_slingshot": false,
+        "z": 0
+      }
+    ],
+    "native_source_order": 1,
+    "contact_physics": {
+      "elasticity": 0.3,
+      "elasticity_falloff": 0.15,
+      "friction": 0.15,
+      "scatter": 5
+    }
+  },
+  "triangles": [
+    {
+      "address": 47972912,
+      "bounds": [
+        21.26519775390625,
+        281.2651672363281,
+        2000.104248046875,
+        2086.145751953125,
+        0,
+        3.999999761581421
+      ],
+      "vertices": [
+        281.2651672363281,
+        2086.145751953125,
+        3.999999761581421,
+        21.26519775390625,
+        2000.104248046875,
+        0,
+        21.26519775390625,
+        2086.145751953125,
+        3.999999761581421
+      ],
+      "normal": [
+        0,
+        -0.0464390330016613,
+        0.9989212155342102
+      ]
+    },
+    {
+      "address": 44243016,
+      "bounds": [
+        21.26519775390625,
+        281.2651672363281,
+        2000.104248046875,
+        2086.145751953125,
+        0,
+        3.999999761581421
+      ],
+      "vertices": [
+        281.2651672363281,
+        2000.104248046875,
+        0,
+        21.26519775390625,
+        2000.104248046875,
+        0,
+        281.2651672363281,
+        2086.145751953125,
+        3.999999761581421
+      ],
+      "normal": [
+        0,
+        -0.0464390330016613,
+        0.9989212155342102
+      ]
+    }
+  ]
+}
