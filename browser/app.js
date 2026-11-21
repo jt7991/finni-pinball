@@ -1,6 +1,6 @@
 import {createLeaderboard} from './leaderboard.js';
 import {createViews,createDmd} from './views.js';
-import {prepareRenderer,configureRenderer} from './renderer.js';
+import {prepareRenderer,configureRenderer,startTable} from './renderer.js';
 const actions = [
   ['left','Left flipper','ShiftLeft'],['right','Right flipper','ShiftRight'],
   ['launch','Launch','Enter'],['start','Start','Digit1'],
@@ -259,7 +259,7 @@ async function boot(){
     $('play').onclick=()=>{
       enginePhase='Starting table';$('play').disabled=true;$('loading').textContent='Starting the table…';
       try{
-        const result=engine.ccall('vpinball_wasm_start','number',['string'],['/tables/finni.vpx']);
+        const result=startTable(engine,'/tables/finni.vpx');
         if(result!==1)throw Error(`VPX could not start this table (code ${result}). See the engine log.`);
         // The native table now owns its decoded art/audio. Replay uses the
         // running player, so retaining the packed upload only wastes memory.
