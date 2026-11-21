@@ -2,6 +2,7 @@
 // Collection event dispatch follows Visual Pinball eventproxy.h / ieditable.cpp,
 // 195f214dd4849b8ef6113fd377258b78d0dec3bf. See licenses/VPX-Physics-NOTICE.txt.
 import {VbsEngine} from '@devscholar/vbs-engine-js';
+import {createImpulsePlunger} from './impulse-plunger.js';
 
 export const KEY={left:42,right:54,launch:28,start:2,action:57,nudgeLeft:44,nudgeForward:45,nudgeRight:53};
 const empty=()=>{};
@@ -10,11 +11,12 @@ const empty=()=>{};
 // semantics. No Visual Pinball, COM, native scripting host or global integration.
 export function createRules(source,specs,host={}) {
   const engine=new VbsEngine({hostIntegration:false,maxExecutionTime:2000});
-  const objects=new Map(),timers=new Map(),delays=[],flashes=new Map(),sequences=new Map();
+  const objects=new Map(),timers=new Map(),delays=[],flashes=new Map(),sequences=new Map(),generatedEvents=new Map();
   const methods=new Set([...source.matchAll(/^\s*(?:Sub|Function)[ \t]+(\w+)/gmi)].map(m=>m[1].toLowerCase()));
   const functions=new Set([...source.matchAll(/^\s*Function[ \t]+(\w+)/gmi)].map(m=>m[1].toLowerCase()));
   let time=0,activeBall=null;
   const run=(name,...args)=>{
+    const generated=generatedEvents.get(name.toLowerCase());if(generated)return generated(...args);
     if(!methods.has(name.toLowerCase()))return;
     try{
       const parameters=args.map((arg,i)=>{
@@ -33,7 +35,7 @@ export function createRules(source,specs,host={}) {
 
   function object(spec){
     const name=spec.name,lower=name.toLowerCase();
-    const state={name,x:spec.center?.x??spec.position?.x??0,y:spec.center?.y??spec.position?.y??0,z:spec.position?.z??0,
+    const state={name,x:spec.center?.x??spec.position?.x??0,y:spec.center?.y??spec.position?.y??0,z:spec.position?.z??0,radius:spec.radius??0,
       state:spec.state_u32??spec.state??0,visible:spec.is_visible??true,collidable:spec.is_collidable??true,
       enabled:spec.is_enabled??false,timerenabled:false,timerinterval:spec.timer_interval??100,
       interval:spec.timer_interval??100,blinkinterval:spec.blink_interval??125,intensity:spec.intensity??1,
@@ -79,6 +81,16 @@ export function createRules(source,specs,host={}) {
   for(let i=1;i<=41;i++)if(!objects.has(`digit${String(i).padStart(3,'0')}`))object({name:`digit${String(i).padStart(3,'0')}`});
   const extras=['Table1','digitgrid','HostPlunger'];
   for(const name of extras)if(!objects.has(name.toLowerCase()))object({name});
+  const impulsePlunger=createImpulsePlunger({
+    random:host.scriptRandom,
+    sound:name=>{if(name)host.sound?.(name,{});},
+    initTimer:(trigger,update)=>generatedEvents.set(`${trigger.name}_timer`.toLowerCase(),update),
+    createEvents:(trigger,add,remove)=>{
+      generatedEvents.set(`${trigger.name}_hit`.toLowerCase(),()=>add(activeBall));
+      generatedEvents.set(`${trigger.name}_unhit`.toLowerCase(),()=>remove(activeBall));
+    },
+  });
+  objects.set('hostplunger',impulsePlunger);engine.addObject('HostPlunger',impulsePlunger);
   objects.get('table1').width=952;objects.get('table1').height=2115;
   for(const c of specs.collections)engine.addCode(`Dim ${c.name}\n${c.name}=Array(${c.items.filter(n=>objects.has(n.toLowerCase())).join(',')})`);
   const natives={

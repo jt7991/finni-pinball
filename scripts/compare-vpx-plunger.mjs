@@ -23,15 +23,24 @@ for(const scenario of fixture.cases){
       g.plunger.updateNativeShapes();
     }
     g.rules.execute('Plunger.PullBack');g.rules.schedule(scenario.actualDelay,'Plunger.Fire');
-    let elapsed=0;const samples=[];
+    let elapsed=0;const samples=[],traceSamples=[];
+    const traceRows=new Map((process.argv.includes('--trace')||fixture.traceRegression?scenario.timerTrace??[]:[]).filter(r=>r[0]==='STATE').map(row=>[row[1]-1,row]));
+    const observeTrace=ms=>{
+      const row=traceRows.get(ms);if(!row)return;
+      const expected=row.slice(2,11);for(let i=3;i<9;i++)expected[i]/=1e6;
+      const b=r.proxy,actual=[b.x,b.y,b.z,b.velx,b.vely,b.velz,b.angvelx,b.angvely,b.angvelz];
+      const error=offset=>Math.hypot(...actual.slice(offset,offset+3).map((n,i)=>n-expected[offset+i]));
+      traceSamples.push({ms,expected,actual,positionError:error(0),velocityError:error(3),angularError:error(6)});
+    };
+    observeTrace(0);
     for(const expected of scenario.samples){
-      const ms=expected[0];for(let i=0;i<Math.round((ms-elapsed)/1000/STEP);i++)g.step();elapsed=ms;
+      const ms=expected[0];for(let i=0;i<Math.round((ms-elapsed)/1000/STEP);i++){g.step();observeTrace(elapsed+i+1);}elapsed=ms;
       const p=r.body.translation(),v=r.body.linvel(),w=r.body.angvel();
       const actual=[ms,p.x*100,2115-p.y*100,p.z*100,v.x,-v.y,v.z,-w.x/100,w.y/100,-w.z/100,...g.flippers.map(f=>90-f.angle*180/Math.PI),g.plunger.position];
       samples.push({expected,actual,positionError:Math.hypot(...actual.slice(1,4).map((n,i)=>n-expected[i+1])),velocityError:Math.hypot(...actual.slice(4,7).map((n,i)=>n-expected[i+4])),plungerError:Math.abs(actual[12]-expected[12])});
     }
-    const report={name:scenario.name,actualDelay:scenario.actualDelay,maxPositionError:Math.max(...samples.map(r=>r.positionError)),maxVelocityError:Math.max(...samples.map(r=>r.velocityError)),maxPlungerError:Math.max(...samples.map(r=>r.plungerError)),maxNativeSpeed:Math.max(...samples.map(r=>Math.hypot(...r.expected.slice(4,6)))),maxModelSpeed:Math.max(...samples.map(r=>Math.hypot(...r.actual.slice(4,6)))),physicsStats:g.physicsStats,samples,...(g.nativeRandomAudit?{nativeRandomAudit:g.nativeRandomAudit}:{})};reports.push(report);
-    if(!process.argv.includes('--json'))console.log(JSON.stringify({...report,samples:undefined,nativeRandomAudit:undefined}));
+    const report={name:scenario.name,actualDelay:scenario.actualDelay,maxPositionError:Math.max(...samples.map(r=>r.positionError)),maxVelocityError:Math.max(...samples.map(r=>r.velocityError)),maxPlungerError:Math.max(...samples.map(r=>r.plungerError)),maxNativeSpeed:Math.max(...samples.map(r=>Math.hypot(...r.expected.slice(4,6)))),maxModelSpeed:Math.max(...samples.map(r=>Math.hypot(...r.actual.slice(4,6)))),physicsStats:g.physicsStats,samples,...(traceRows.size?{traceSamples}:{}),...(g.nativeRandomAudit?{nativeRandomAudit:g.nativeRandomAudit}:{})};reports.push(report);
+    if(!process.argv.includes('--json'))console.log(JSON.stringify({...report,samples:undefined,traceSamples:undefined,nativeRandomAudit:undefined}));
   }finally{g.dispose();}
 }
 fs.writeFileSync(process.argv.find(a=>a.startsWith('--report='))?.slice(9)??'.work/three-review/vpx-plunger-comparison.json',JSON.stringify(reports,null,2));

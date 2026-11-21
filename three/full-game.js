@@ -39,7 +39,6 @@ class FullGame extends Pinball {
       kick:(name,ball,angle,speed,inclination)=>this.kick(name,ball,angle,speed,inclination),
       flipper:(side,down)=>{this.held[side]=down;},plunger:down=>{this.held.launch=down;if(down)this.plunger.pull();else this.launch();},
       plungerPosition:()=>this.plunger.position,
-      autofire:()=>this.autofire(),
       nudge:(angle,strength)=>this.cabinetNudge.nudge(angle,strength),
       sound:(name,settings)=>media?.play(name,settings),stopSound:name=>media?.stop(name),
       shake:strength=>emit({type:'shake',strength}),
@@ -227,9 +226,7 @@ class FullGame extends Pinball {
     this.plunger.fire();this.charge=0;
   }
   autofire(){
-    // cvpmImpulseP.AutoFire is a separate coil acting on balls in swPlunger;
-    // it does not release the manual rod or add the old minimum launch speed.
-    for(const rec of this.records)if(rec.inLane){const v=rec.body.linvel();rec.body.setLinvel({x:v.x,y:45-this.random()*1.5,z:v.z},true);}
+    this.rules.objects.get('hostplunger').autofire();
   }
 
   sync(){

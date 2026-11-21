@@ -3,7 +3,7 @@ flipper-contact.js, mesh-contact.js, target-contact.js, target-motion.js, plunge
 native-ball.js, native-ball-response.js, native-angular.js, native-flipper-contact.js,
 native-mesh-contact.js, native-vector.js, native-curve.js, native-ramp.js,
 native-tree.js, native-dynamic-tree.js, native-ball-collision.js, native-random.js,
-native-rubber.js, native-target.js, kicker.js and playfield-contact.js is adapted from
+native-rubber.js, native-target.js, kicker.js, impulse-plunger.js and playfield-contact.js is adapted from
 Visual Pinball, copyright its respective contributors, licensed GPLv3 or later.
 These derived modules are distributed under GPL-3.0-or-later.
 The target mesh source headers in references/vpx-physics/meshes are also GPLv3+;
@@ -12,6 +12,9 @@ their generated collision geometry is included in public/objects.json.
 Reference version used by vpinball-wasm 0.3.4:
 195f214dd4849b8ef6113fd377258b78d0dec3bf
 https://github.com/vpinball/vpinball/tree/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/physics
+
+impulse-plunger.js adapts cvpmImpulseP from the same revision's scripts/core.vbs:
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/scripts/core.vbs
 
 The JavaScript adaptation retains native float position and angular-momentum
 integration, uses Three.js world units for contact queries, analytic tapered

@@ -9,6 +9,10 @@ The unmodified target mesh headers are retained here so the generated collision
 geometry can be reproduced without fetching upstream files. See
 `three/public/licenses/VPX-Physics-NOTICE.txt` and `GPL-3.0.txt`.
 
+`cvpmImpulseP.vbs` retains the unmodified impulse-plunger class from that
+revision's `scripts/core.vbs`. `three/impulse-plunger.js` adapts the table's coil
+ball dictionary, generated trigger/timer events, power and sound behavior.
+
 The current native contact work additionally adapts TriggerLineSeg,
 TriggerHitCircle, Hit3DPoly, flipper face/end searches, Float32 vector response
 and the HitLine3D cylinder transform. Binary primitive collision meshes can be

@@ -4,7 +4,7 @@ import {writeFile,readFile} from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 const [debug,base,output]=process.argv.slice(2);
-const probeKind=process.argv.includes('--ball-pairs')?'ball-pairs':process.argv.includes('--triggers')?'triggers':process.argv.includes('--targets')?'targets':process.argv.includes('--gates')?'gates':process.argv.includes('--spinners')?'spinners':process.argv.includes('--plunger')?'plunger':process.argv.includes('--nudge')?'nudge':'contacts';
+const probeKind=process.argv.includes('--autofire')?'autofire':process.argv.includes('--ball-pairs')?'ball-pairs':process.argv.includes('--triggers')?'triggers':process.argv.includes('--targets')?'targets':process.argv.includes('--gates')?'gates':process.argv.includes('--spinners')?'spinners':process.argv.includes('--plunger')?'plunger':process.argv.includes('--nudge')?'nudge':'contacts';
 const reference=await(await fetch(new URL('/reference-metadata.json',base))).json();
 const recordTimers=!!reference.instrumentation&&!process.argv.includes('--no-timer-trace');
 const recordAllBalls=process.argv.includes('--all-ball-state');
@@ -28,12 +28,17 @@ if(recordRng){
 const ballStateFields=['X','Y','Z','VelX','VelY','VelZ','AngMomX','AngMomY','AngMomZ','Mass','Radius','ID'];
 if(recordAllBalls)reference.initialBallStateColumns=ballStateFields;
 const traceMilliseconds=Number(process.argv.find(a=>a.startsWith('--trace-ms='))?.slice(11)??70);
+const traceFrom=Number(process.argv.find(a=>a.startsWith('--trace-from-ms='))?.split('=')[1]??0);
 assert.ok(Number.isInteger(traceMilliseconds)&&traceMilliseconds>=1&&traceMilliseconds<=1000,'trace duration must be 1..1000ms');
+assert.ok(Number.isInteger(traceFrom)&&traceFrom>=0&&traceFrom<traceMilliseconds,'trace start must precede its end');
+if(traceFrom)assert.ok(reference.instrumentation?.stateTraceWindow,'reference supports a bounded state-trace window');
 reference.timerTraceCaptured=recordTimers;
 if(recordTimers)reference.traceMilliseconds=traceMilliseconds;
+if(traceFrom)reference.traceFromMilliseconds=traceFrom;
 assert.deepEqual(reference.controlledOverrides,{scatter:0,default_scatter:0},'controlled native table metadata');
 const runtimeOverrides={'LeftFlipper.Scatter':0,'RightFlipper.Scatter':0};
 const columns=['ms','x','y','z','vx','vy','vz','wx','wy','wz','left','right',...(probeKind==='triggers'?['balls_over']:probeKind==='plunger'?['plunger_position']:probeKind==='targets'?['target009_dropped','target010_dropped','target011_dropped','target009_offset','target010_offset','target011_offset','score']:['spinners','gates'].includes(probeKind)?[probeKind==='gates'?'gate_angle':'spinner_angle','score','left_spinner_count']:[])];
+if(probeKind==='autofire')columns.push('plunger_position','coil_balls');
 if(recordKickers)columns.push('ball_count','score','balls_in_hole');
 if(probeKind==='ball-pairs')columns.push('other_x','other_y','other_z','other_vx','other_vy','other_vz','other_wx','other_wy','other_wz');
 reference.timerSynchronization='RollingTimer disabled/enabled immediately before each initial state, resetting its 10ms phase.';
@@ -104,6 +109,13 @@ if(probeKind==='plunger'){
   cases.length=0;
   for(const delay of [50,100,200,400,600,1000])cases.push({name:`plunger-${delay}`,plunger:true,delay,x:906.5192,y:1900.1128,z:25,vx:0,vy:0,sampleCount:100});
 }
+if(probeKind==='autofire'){
+  reference.impulseOverrides={randomOut:0};
+  cases.length=0;
+  cases.push({name:'coil-rest',autofire:true,delay:40,x:906.8096,y:1904.0642,z:25,vx:0,vy:0,sampleCount:24});
+  cases.push({name:'coil-edge',autofire:true,delay:40,x:906.8096,y:1862.0642,z:25,vx:0,vy:0,sampleCount:24});
+  cases.push({name:'coil-miss',autofire:true,delay:40,x:906.8096,y:1840,z:25,vx:0,vy:0,sampleCount:24});
+}
 if(probeKind==='nudge'){
   cases.length=0;
   const pocket=process.argv.includes('--pocket');reference.nudgeScenario=pocket?'target-wire-pocket-delayed':'flat';
@@ -136,7 +148,7 @@ if(probeKind==='targets'){
 }
 if(exactDelay!==undefined){
   const driven=cases.filter(s=>!selected||s.name===selected);
-  assert.ok(driven.length&&driven.every(s=>s.side),'exact clock scheduling requires selected flipper scenarios');
+  assert.ok(driven.length&&driven.every(s=>s.side||s.plunger),'exact clock scheduling requires selected flipper or plunger scenarios');
 }
 try{
   await call('Page.enable');await call('Emulation.setFocusEmulationEnabled',{enabled:true});
@@ -226,6 +238,12 @@ try{
     const values=(await marker('PLUNGER_SETTINGS')).split(':').map(parseFloat);assert.equal(values.length,properties.length);assert.ok(values.every(Number.isFinite));
     reference.nativePlungerProperties=Object.fromEntries(properties.map((p,i)=>[p,values[i]]));console.log('Native plunger settings',JSON.stringify(reference.nativePlungerProperties));
   }
+  if(probeKind==='autofire'){
+    await script('PlungerIM.Random 0:Dim RefCoilBalls,RefCoilBall,RefCoilTrace');
+    await script('Debug.Print "COIL_SETTINGS|" & PlungerIM.Strength & ":" & PlungerIM.Time & ":" & PlungerIM.RandomOut');
+    const [strength,time,randomOut]=(await marker('COIL_SETTINGS')).split(':').map(parseFloat);
+    reference.nativeImpulsePlungerProperties={strength,time,randomOut};assert.equal(strength,45);assert.equal(randomOut,0);
+  }
   if(process.argv.includes('--isolate-floor')){
     await script('Ramp020.Collidable=False:Target011.Collidable=False:rpeg001.Collidable=False');
     Object.assign(runtimeOverrides,{'Ramp020.Collidable':false,'Target011.Collidable':false,'rpeg001.Collidable':false});
@@ -246,27 +264,30 @@ try{
       assert.deepEqual((await marker('GATE_STATE')).split(':').map(parseFloat),[-1,0]);
     }
     if(scenario.trigger){scenario.runtimeOverrides={[`${scenario.trigger}.Enabled`]:true};await script(`${scenario.trigger}.Enabled=True`);}
-    const command=scenario.setupCode??(scenario.gate?`${scenario.gate}.Open=${scenario.open?'True':'False'}`:scenario.plunger?'Plunger.Fire':scenario.nudgeAngle!==undefined?`Nudge ${scenario.nudgeAngle},${scenario.force}`:scenario.side?`Sol${scenario.side==='left'?'L':'R'}Flipper ${scenario.press===false?0:1}`:'');
+    const command=scenario.setupCode??(scenario.autofire?'PlungerIM.AutoFire':scenario.gate?`${scenario.gate}.Open=${scenario.open?'True':'False'}`:scenario.plunger?'Plunger.Fire':scenario.nudgeAngle!==undefined?`Nudge ${scenario.nudgeAngle},${scenario.force}`:scenario.side?`Sol${scenario.side==='left'?'L':'R'}Flipper ${scenario.press===false?0:1}`:'');
     const inputMarker=`CONTACT_INPUT_${scenario.name}`;
     const input=`Debug.Print "${inputMarker}|" & GameTime:${command}`;
     let drive=command?(scenario.delay?`vpmtimer.addtimer ${scenario.delay},"${input.replaceAll('"','""')} '"`:input):'';
-    if(exactDelay!==undefined&&scenario.side)drive=`RefDriveMarker="${inputMarker}":RefDriveSide=${scenario.side==='left'?1:2}:RefDrivePress=${scenario.press===false?0:1}:RefDriveAt=GameTime+${Number(exactDelay)}`;
+    if(exactDelay!==undefined&&(scenario.side||scenario.plunger))drive=`RefDriveMarker="${inputMarker}":RefDriveSide=${scenario.plunger?3:scenario.side==='left'?1:2}:RefDrivePress=${scenario.press===false?0:1}:RefDriveAt=GameTime+${Number(exactDelay)}`;
     if(scenario.plunger)drive='Plunger.PullBack:'+drive;
     const closeMarker=`CONTACT_GATE_CLOSE_${scenario.name}`;
     if(scenario.closeDelay){const close=`Debug.Print "${closeMarker}|" & GameTime:${scenario.gate}.Open=False`;drive+=`:vpmtimer.addtimer ${scenario.closeDelay},"${close.replaceAll('"','""')} '"`;}
-    const trace=recordTimers?`RefTrace="":Set RefTraceBall=RefBall:RefTraceUntil=GameTime+${traceMilliseconds}:RefTraceOn=True:`:'';
+    const trace=recordTimers?`RefTrace="":Set RefTraceBall=RefBall:${traceFrom?`RefTraceFrom=GameTime+${traceFrom}:`:''}RefTraceUntil=GameTime+${traceMilliseconds}:RefTraceOn=True:`:'';
     // Capture every body in the same synchronous call as the measured reset.
     // Explicit Double formatting preserves the original Single's low bits.
     const allBalls=recordAllBalls?'RefInitBalls=GetBalls:RefInitTrace="":For RefInitIdx=0 To UBound(RefInitBalls):Set RefInitBall=RefInitBalls(RefInitIdx):RefInitTrace=RefInitTrace & '+ballStateFields.map(p=>`CStr(CDbl(RefInitBall.${p}))`).join(' & ":" & ')+' & ";":Next:Debug.Print "BALL_INIT|" & GameTime & "|" & RefInitTrace:':'';
     const plungerInit=scenario.plunger?'Debug.Print "PLUNGER_INIT|" & CStr(CDbl(Plunger.Position)):':'';
+    const coilInit=scenario.autofire?'RefCoilBalls=PlungerIM.Balls:RefCoilTrace="":For Each RefCoilBall In RefCoilBalls:RefCoilTrace=RefCoilTrace & RefCoilBall.ID & ",":Next:Debug.Print "COIL_INIT|" & swPlunger.BallCntOver & ":" & swPlungerRest.BallCntOver & ":" & CLng(bBallInPlungerLane) & ":" & RefCoilTrace:':'';
     const finishTrail=recordTrails?'RefTrailOn=False:RefTrailBalls=GetBalls:RefTrailRow=CStr(GameTime) & "|":For RefTrailIndex=0 To UBound(RefTrailBalls):Set RefTrailBall=RefTrailBalls(RefTrailIndex):RefTrailRow=RefTrailRow & RefTrailBall.ID & ":" & CStr(CDbl(RefTrailBall.X)) & ":" & CStr(CDbl(RefTrailBall.Y)) & ":" & CStr(CDbl(RefTrailBall.Z)) & ";":Next:RefTrailSlots((GameTime\\10) Mod 10)=RefTrailRow:':'';
     const other=scenario.otherBall,otherReset=other?(other.spawn?`Set RefOtherBall=${other.spawn}.CreateBall:`:'')+reset(other.x,other.y,other.vx,other.vy,other.z,other.vz).replaceAll('RefBall.','RefOtherBall.')+':':'';
-    await script(`${finishTrail}${trace}RollingTimer.Enabled=False:RollingTimer.Enabled=True:${reset(scenario.x,scenario.y,scenario.vx,scenario.vy,scenario.z,scenario.vz)}:${otherReset}${drive?drive+':':''}${allBalls}${plungerInit}Debug.Print "CONTACT_INIT|" & GameTime & ":" & RefBall.AngMomX & ":" & RefBall.AngMomY & ":" & RefBall.AngMomZ & ":" & RefBall.X & ":" & RefBall.Y & ":" & RefBall.Z`);
+    await script(`${finishTrail}${trace}RollingTimer.Enabled=False:RollingTimer.Enabled=True:${reset(scenario.x,scenario.y,scenario.vx,scenario.vy,scenario.z,scenario.vz)}:${otherReset}${allBalls}${plungerInit}${coilInit}${drive?drive+':':''}Debug.Print "CONTACT_INIT|" & GameTime & ":" & RefBall.AngMomX & ":" & RefBall.AngMomY & ":" & RefBall.AngMomZ & ":" & RefBall.X & ":" & RefBall.Y & ":" & RefBall.Z`);
     const initial=(await marker('CONTACT_INIT')).split(':').map(parseFloat);assert.equal(initial.length,7);assert.deepEqual(initial.slice(1,4),[0,0,0],'native spin reset');
     for(const [actual,expected]of [[initial[4],scenario.x],[initial[5],scenario.y],[initial[6],scenario.z??25]])assert.ok(Math.abs(actual-expected)<.001,`native initial position ${actual} vs ${expected}`);
     const origin=initial[0],samples=[],rawSamples=[];
     const initialPlungerPosition=scenario.plunger?parseFloat(await marker('PLUNGER_INIT')):undefined;
     if(scenario.plunger)assert.ok(Number.isFinite(initialPlungerPosition));
+    let initialCoilState;
+    if(scenario.autofire){const [coil,rest,inLane,ids]=(await marker('COIL_INIT')).replace(/'$/,'').split(':');initialCoilState={coilCount:Number(coil),restCount:Number(rest),inLane:Number(inLane)!==0,ballIDs:ids.split(',').filter(Boolean).map(Number)};}
     let initialBallStates,rawInitialBallStates,initialMeasuredBallID;
     const initialBallTrails=[],rawInitialBallTrails=[];
     if(recordAllBalls){
@@ -288,7 +309,7 @@ try{
       const mechanism=scenario.spinner??scenario.gate;
       const targetFields=scenario.target?['Target009','Target010','Target011'].map(n=>`CLng(${n}.IsDropped)`).concat(['Target009','Target010','Target011'].map(n=>`CLng(${n}.CurrentAnimOffset*1000000)`),'Score(CurrentPlayer)'):null;
       const pairFields=scenario.otherBall?['X','Y','Z',...['VelX','VelY','VelZ','AngVelX','AngVelY','AngVelZ']].map((p,i)=>i<3?`RefOtherBall.${p}`:`CLng(RefOtherBall.${p}*1000000)`):null;
-      const extra=pairFields?' & ":" & '+pairFields.join(' & ":" & '):scenario.kicker?' & ":" & (UBound(GetBalls)+1) & ":" & Score(CurrentPlayer) & ":" & BallsInHole':scenario.trigger?` & ":" & ${scenario.trigger}.BallCntOver`:mechanism?` & ":" & CLng(${mechanism}.CurrentAngle*1000000) & ":" & Score(CurrentPlayer) & ":" & LeftSpinnerCount(CurrentPlayer)`:targetFields?' & ":" & '+targetFields.join(' & ":" & '):scenario.plunger?' & ":" & Plunger.Position':'';
+      const extra=pairFields?' & ":" & '+pairFields.join(' & ":" & '):scenario.autofire?' & ":" & Plunger.Position & ":" & (UBound(PlungerIM.Balls)+1)':scenario.kicker?' & ":" & (UBound(GetBalls)+1) & ":" & Score(CurrentPlayer) & ":" & BallsInHole':scenario.trigger?` & ":" & ${scenario.trigger}.BallCntOver`:mechanism?` & ":" & CLng(${mechanism}.CurrentAngle*1000000) & ":" & Score(CurrentPlayer) & ":" & LeftSpinnerCount(CurrentPlayer)`:targetFields?' & ":" & '+targetFields.join(' & ":" & '):scenario.plunger?' & ":" & Plunger.Position':'';
       await script(park+'Debug.Print "CONTACT_SAMPLE|" & GameTime & ":" & RefBall.X & ":" & RefBall.Y & ":" & RefBall.Z & ":" & CLng(RefBall.VelX*1000000) & ":" & CLng(RefBall.VelY*1000000) & ":" & CLng(RefBall.VelZ*1000000) & ":" & CLng(RefBall.AngVelX*1000000) & ":" & CLng(RefBall.AngVelY*1000000) & ":" & CLng(RefBall.AngVelZ*1000000) & ":" & LeftFlipper.CurrentAngle & ":" & RightFlipper.CurrentAngle'+extra);
       const raw=await marker('CONTACT_SAMPLE');rawSamples.push(raw);
       const values=raw.split(':').map(parseFloat);assert.equal(values.length,columns.length);assert.ok(values.every(Number.isFinite));for(let k=4;k<10;k++)values[k]/=1000000;values[0]-=origin;samples.push(values);
@@ -325,8 +346,8 @@ try{
       const balls=positions.split(';').filter(Boolean).map(row=>row.split(':').map(Number));assert.ok(balls.every(row=>row.length===4&&row.every(Number.isFinite)));
       initialBallTrails.push({slot,ms:ms-origin,balls});
     }
-    results.push({...scenario,initial,actualDelay,...closing,samples,rawSamples,...(scenario.plunger?{initialPlungerPosition}:{}),...(timerTrace?{timerTrace}:{}),...(recordAllBalls?{initialBallStates,rawInitialBallStates,initialMeasuredBallID}:{}),...(recordTrails?{initialBallTrails,rawInitialBallTrails}:{}),...(recordRng?{initialNativeRandom,nativeRandomFrames}:{})});console.log(scenario.name,'input at',actualDelay,JSON.stringify(samples.at(-1)));
+    results.push({...scenario,initial,actualDelay,...closing,samples,rawSamples,...(scenario.plunger?{initialPlungerPosition}:{}),...(initialCoilState?{initialCoilState}:{}),...(timerTrace?{timerTrace}:{}),...(recordAllBalls?{initialBallStates,rawInitialBallStates,initialMeasuredBallID}:{}),...(recordTrails?{initialBallTrails,rawInitialBallTrails}:{}),...(recordRng?{initialNativeRandom,nativeRandomFrames}:{})});console.log(scenario.name,'input at',actualDelay,JSON.stringify(samples.at(-1)));
     const suffix=probeKind==='ball-pairs'?`ball-pairs-${selected??'reference'}`:recordKickers?'kickers-reference':rawAnimation&&selected?`raw-${recordTimers?'timing-':''}${selected}`:reference.geometryProbe&&selected?`geometry-${recordTimers?'timing-':''}${selected}`:reference.shooterProbe&&selected?`${recordTimers?'timing-':''}${selected}`:['spinners','gates','targets','triggers'].includes(probeKind)&&selected?`${probeKind}-${reference.instrumentation?.spinnerTraceColumns?'timing-':''}${reference.animationBallIsolation?'isolated-animation-':''}${selected}`:`${reference.geometryProbe?'geometry':probeKind==='contacts'?'contact':probeKind}-reference`;
-    await writeFile(`${output}/vpx-${suffix}${recordAllBalls?'-all-balls':''}${recordTrails?'-trails':''}${recordRng?'-rng':''}${recordTimers&&traceMilliseconds!==70?`-${traceMilliseconds}ms`:''}.json`,JSON.stringify({...reference,probeKind,runtimeOverrides,columns,cases:results},null,2));
+    await writeFile(`${output}/vpx-${suffix}${recordAllBalls?'-all-balls':''}${recordTrails?'-trails':''}${recordRng?'-rng':''}${recordTimers&&traceMilliseconds!==70?`-${traceMilliseconds}ms`:''}${traceFrom?`-from${traceFrom}ms`:''}.json`,JSON.stringify({...reference,probeKind,runtimeOverrides,columns,cases:results},null,2));
   }
 }finally{socket.close();}

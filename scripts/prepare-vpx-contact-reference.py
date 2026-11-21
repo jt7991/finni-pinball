@@ -51,7 +51,7 @@ if args.instrument_timers:
     script_path=extracted/'script.vbs'
     script=script_path.read_text()
     script+='\nDim RefTraceOn,RefTrace\nRefTraceOn=False:RefTrace=""\n'
-    script+='Dim RefDriveAt,RefDriveSide,RefDrivePress,RefDriveMarker,RefTraceBall,RefTraceUntil,RefStateTraceOn\nRefDriveAt=0:RefStateTraceOn=True\n'
+    script+='Dim RefDriveAt,RefDriveSide,RefDrivePress,RefDriveMarker,RefTraceBall,RefTraceUntil,RefStateTraceOn,RefTraceFrom\nRefDriveAt=0:RefStateTraceOn=True:RefTraceFrom=0\n'
     if args.instrument_ball_trails:
         script+='Dim RefTrailOn,RefTrailSlots(9),RefTrailBalls,RefTrailBall,RefTrailIndex,RefTrailRow,RefTrailSlot\nRefTrailOn=False\n'
     for name,marker in [('RollingTimer_Timer','ROLL'),('LeftFlipper_Timer','FLIP')]:
@@ -63,8 +63,10 @@ if args.instrument_timers:
         Debug.Print RefDriveMarker & "|" & GameTime
         If RefDriveSide=1 Then
             SolLFlipper RefDrivePress
-        Else
+        ElseIf RefDriveSide=2 Then
             SolRFlipper RefDrivePress
+        ElseIf RefDriveSide=3 Then
+            Plunger.Fire
         End If
     End If
 '''
@@ -76,11 +78,11 @@ if args.instrument_timers:
     state_fields=['GameTime','RefTraceBall.X','RefTraceBall.Y','RefTraceBall.Z']
     state_fields+=['CLng(RefTraceBall.'+p+'*1000000)' for p in ['VelX','VelY','VelZ','AngVelX','AngVelY','AngVelZ']]
     state_fields+=['RightFlipper.CurrentAngle','RightFlipper.Strength','RightFlipper.Elasticity','RightFlipper.EOSTorque']
-    state='    If RefTraceOn And RefStateTraceOn And GameTime<=RefTraceUntil Then RefTrace=RefTrace & "STATE|" & '+' & "|" & '.join(state_fields)+' & ";"\n'
+    state='    If RefTraceOn And RefStateTraceOn And GameTime>=RefTraceFrom And GameTime<=RefTraceUntil Then RefTrace=RefTrace & "STATE|" & '+' & "|" & '.join(state_fields)+' & ";"\n'
     if args.instrument_rng:
         state+='    If RefTraceOn Then Debug.Print "RNG_FRAME|" & GameTime\n'
     if args.instrument_spinners:
-        state+='    If RefTraceOn And RefStateTraceOn And GameTime<=RefTraceUntil Then RefTrace=RefTrace & "SPIN|" & GameTime & "|" & CLng(Spinner001.CurrentAngle*1000000) & "|" & CLng(Spinner002.CurrentAngle*1000000) & ";"\n'
+        state+='    If RefTraceOn And RefStateTraceOn And GameTime>=RefTraceFrom And GameTime<=RefTraceUntil Then RefTrace=RefTrace & "SPIN|" & GameTime & "|" & CLng(Spinner001.CurrentAngle*1000000) & "|" & CLng(Spinner002.CurrentAngle*1000000) & ";"\n'
     if args.instrument_ball_trails:
         # The timer observes the previous physics step's position. The probe
         # snapshots the final completed step before teleporting the test ball.
@@ -114,6 +116,7 @@ if args.instrument_timers:
     metadata['instrumentation']={
         'timerTrace':['RollingTimer_Timer','LeftFlipper_Timer'],
         'optionalStateTrace':True,
+        'stateTraceWindow':True,
         'stateColumns':['ms','x','y','z','vx_micro','vy_micro','vz_micro','wx_micro','wy_micro','wz_micro','right_angle','right_strength','right_elasticity','right_eos_torque'],
         'changes':'Record native timer clocks and ball state before each physics update while RefTraceOn is true. Optional exact-clock input at RefDriveAt is delivered at the start of LeftFlipper_Timer. Authored timer bodies and rules are retained.'}
     if args.instrument_spinners:metadata['instrumentation']['spinnerTraceColumns']=['ms','spinner001_angle_micro','spinner002_angle_micro']
