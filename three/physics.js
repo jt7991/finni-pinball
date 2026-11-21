@@ -19,6 +19,7 @@ import {NativeDynamicTree} from './native-dynamic-tree.js';
 import {nativeBallHit,collideNativeBalls} from './native-ball-collision.js';
 import {collideNativeBumper} from './native-bumper.js';
 import {collideNativeSlingshot} from './native-slingshot.js';
+import {nativeHitDescriptor,collideNativeHitSurface} from './native-hit-event.js';
 
 export const STEP = 1 / 1000;
 export const RADIUS = 0.25;
@@ -84,7 +85,7 @@ export class Pinball {
     this.tags = new Map();
     this.colliderLabels = new Map();
     this.contactMaterials=new Map();this.changedMaterials=new Set();this.queryBall=new RAPIER.Ball(RADIUS);
-    this.nativeMeshes=[];this.nativeMeshGrid=new Map();this.nativeGlobalMeshes=[];this.nativeBumpers=new Map();this.nativeSlingshots=new Map();
+    this.nativeMeshes=[];this.nativeMeshGrid=new Map();this.nativeGlobalMeshes=[];this.nativeBumpers=new Map();this.nativeSlingshots=new Map();this.nativeHitObjects=new Map();
     this.nativeParts=new Map([...layout.items,...(layout.rubbers??[])].map(item=>[item.name.toLowerCase(),item]));
     this.nativeParts.set('playfield_mesh',layout.playfield);this.nativeTreeEnabled=this.nativePositionUnits&&this.nativeFlipperContacts&&physics.native_tree!==false;
     this.nativeBallContacts=this.nativeTreeEnabled&&physics.native_ball_contacts!==false;this.ballCollisionSwap=false;this.dynamicBallTree=new NativeDynamicTree();
@@ -121,7 +122,7 @@ export class Pinball {
     for(const item of layout.rubbers??[]){
       const collider={handle:`rubber:${item.name}`,enabled:item.is_collidable,isEnabled(){return this.enabled;},setEnabled(value){this.enabled=!!value;}};
       this.colliderLabels.set(collider.handle,item.name);
-      this.registerMesh({collider,mesh:nativeRubberMesh(item),material:{...this.playfieldMaterial,...item.contact_physics},native_source_order:item.native_source_order});
+      this.registerMesh({collider,mesh:nativeRubberMesh(item),hitEvents:nativeHitDescriptor(item),material:{...this.playfieldMaterial,...item.contact_physics},native_source_order:item.native_source_order});
     }
     // The exported walls contain the shooter lane and curved upper feed.
     const ball = RAPIER.RigidBodyDesc.dynamic().setTranslation(9.03, 1.4, RADIUS)
@@ -150,7 +151,7 @@ export class Pinball {
       .setSensor(this.nativeFlipperContacts).setCollisionGroups(STATIC_GROUP)
       .setRestitution(surfaceRestitution(material.elasticity)).setRestitutionCombineRule(RAPIER.CoefficientCombineRule.Multiply).setFriction(material.friction));
     this.colliderLabels.set(collider.handle,item.name);
-    if(this.nativeFlipperContacts)this.registerMesh({collider,mesh,name:item.name,source_order:item.source_order,material:{...this.playfieldMaterial,...material}});
+    if(this.nativeFlipperContacts)this.registerMesh({collider,mesh,name:item.name,hitEvents:nativeHitDescriptor(item),source_order:item.source_order,material:{...this.playfieldMaterial,...material}});
   }
 
   cabinet(spec){
@@ -209,7 +210,7 @@ export class Pinball {
         mesh.addPolygon(points.map(p=>({...p,z:item.height_top*.01})));
         if(item.is_bottom_solid)mesh.addPolygon([...points].reverse().map(p=>({...p,z:item.height_bottom*.01})));
         if(mesh.shapes.some(shape=>shape.slingshot))this.nativeSlingshots.set(item.name.toLowerCase(),sling);
-        this.registerMesh({collider,mesh,material:{...this.playfieldMaterial,...material},name:item.name,source_order:item.source_order});
+        this.registerMesh({collider,mesh,hitEvents:nativeHitDescriptor(item),material:{...this.playfieldMaterial,...material},name:item.name,source_order:item.source_order});
       }
     }
     const points = item.drag_points.map(point), bottom = item.height_bottom * .01;
@@ -236,7 +237,7 @@ export class Pinball {
     }
     const collider=this.world.createCollider(RAPIER.ColliderDesc.trimesh(new Float32Array(surface.vertices),new Uint32Array(surface.indices),RAPIER.TriMeshFlags.FIX_INTERNAL_EDGES_TWO_SIDED)
       .setSensor(this.nativeFlipperContacts).setCollisionGroups(STATIC_GROUP).setRestitutionCombineRule(RAPIER.CoefficientCombineRule.Multiply).setFriction(material.friction).setRestitution(surfaceRestitution(material.elasticity)));
-    if(this.nativeFlipperContacts)this.registerMesh({collider,mesh:nativeMesh,material:{...this.playfieldMaterial,...material,elasticity_falloff:0},source_order:item.source_order});
+    if(this.nativeFlipperContacts)this.registerMesh({collider,mesh:nativeMesh,hitEvents:nativeHitDescriptor(item),material:{...this.playfieldMaterial,...material,elasticity_falloff:0},source_order:item.source_order});
     this.contactMaterials.set(collider.handle,{collider,...material});
     this.colliderLabels.set(collider.handle,item.name);
     collider.setEnabled(item.is_collidable!==false);
@@ -304,6 +305,7 @@ export class Pinball {
   }
 
   registerMesh(record){
+    if(record.hitEvents){record.hitEvents.collider=record.collider;this.nativeHitObjects.set(record.hitEvents.name.toLowerCase(),record.hitEvents);}
     record.order=record.source_order??(-100000+this.nativeMeshes.length);
     this.nativeMeshes.push(record);
     this.nativeTree=null;
@@ -538,6 +540,10 @@ export class Pinball {
               if(this.rules)this.rules.hit(sling.name,'Slingshot',event.r.proxy);
               else if(this.state==='playing'&&!this.tilted)this.award(10,'sling');
             });
+            continue;
+          }
+          if(event.mesh.hitEvents&&impactBody.native){
+            collideNativeHitSurface(impactBody,event.hit,shape,event.mesh.hitEvents,event.mesh.material,RADIUS,this.random,()=>this.rules?.hit(event.mesh.hitEvents.name,'Hit',event.r.proxy));
             continue;
           }
           if(sling&&!this.tilted&&event.hit.vn<=-sling.threshold){

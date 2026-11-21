@@ -2,7 +2,7 @@ import {nativeRandom} from '../three/native-random.js';
 // Measurement overrides are applied only by comparison tools, never gameplay.
 export function applyReferencePhysics(layout,objects,fixture){
   Object.assign(layout.physics,fixture.controlledOverrides);
-  if(fixture.allScatterZero)for(const item of [...layout.items,...objects.objects]){
+  if(fixture.allScatterZero)for(const item of [...layout.items,...(layout.rubbers??[]),...objects.objects]){
     if('scatter' in item)item.scatter=0;
     if(item.contact_physics)item.contact_physics.scatter=0;
   }

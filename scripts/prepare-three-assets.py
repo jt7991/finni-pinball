@@ -83,7 +83,7 @@ for path in source_files:
     kind, item = next(iter(data.items()))
     object_order[kind,item['name']]=source_order[path.name]
     if kind == 'Wall':
-        items.append({'kind': kind, **{k: item[k] for k in ('name', 'is_collidable', 'height_bottom', 'height_top', 'is_bottom_solid', 'slingshot_force', 'slingshot_threshold', 'elasticity', 'friction', 'elasticity_falloff', 'scatter', 'physics_material', 'overwrite_physics', 'drag_points')}})
+        items.append({'kind': kind, **{k: item[k] for k in ('name', 'is_collidable', 'hit_event', 'threshold', 'height_bottom', 'height_top', 'is_bottom_solid', 'slingshot_force', 'slingshot_threshold', 'elasticity', 'friction', 'elasticity_falloff', 'scatter', 'physics_material', 'overwrite_physics', 'drag_points')}})
     elif kind in ('Bumper', 'Flipper', 'Plunger') or kind == 'Kicker' and item['name'] == 'HellHouse':
         items.append({'kind': kind, **item})
     elif kind == 'Ramp':
@@ -93,7 +93,7 @@ for path in source_files:
     elif kind=='Primitive' and item.get('is_collidable') and not item.get('is_toy') and item['name']!='playfield_mesh':
         if not item['use_3d_mesh'] or item['collision_reduction_factor']!=0:
             raise ValueError(f"Unported native primitive collision variant: {item['name']}")
-        fields=('name','position','size','rot_and_tra','elasticity','elasticity_falloff','friction','scatter','physics_material','overwrite_physics')
+        fields=('name','position','size','rot_and_tra','hit_event','threshold','elasticity','elasticity_falloff','friction','scatter','physics_material','overwrite_physics')
         items.append({'kind':kind,**{k:item[k] for k in fields},'collision_mesh':primitive_collision(path,item)})
 
 for item in items:
@@ -140,7 +140,7 @@ for path in source_files:
     specs.append({'kind':kind,**{k:v for k,v in item.items() if k in (
         'name','center','position','rot_z','rot_and_tra','rotation','radius','shape','drag_points',
         'height','height_bottom','height_top','is_collidable','is_enabled','is_visible','size','target_type','collection','update_interval',
-        'is_dropped','state','state_u32','color','color2','intensity','blink_interval',
+        'is_dropped','state','state_u32','color','color2','intensity','blink_interval','hit_event','threshold',
         'is_timer_enabled','timer_interval','surface','hit_height','width','length')}})
     specs[-1]['native_source_order']=source_order[path.name]
     if kind in ('Spinner','Gate'):

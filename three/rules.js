@@ -42,7 +42,7 @@ export function createRules(source,specs,host={}) {
       color:spec.color??0xffffff,colorfull:spec.color2??0xffffff,imagea:'d_empty',userValue:0,
       isdropped:spec.is_dropped??false,open:false,rotx:spec.rot_and_tra?.[0]??0,roty:spec.rot_and_tra?.[1]??0,rotz:spec.rot_z??spec.rot_and_tra?.[2]??0,
       currentangle:0,startangle:0,endangle:0,transz:0,height:spec.height??50,sequenceactive:false,sequencestate:0,
-      threshold:spec.threshold??0,force:spec.force??0,scatter:spec.scatter??0,hashitevent:spec.hit_event??false,disabled:false,slingshotthreshold:spec.slingshot_threshold??0};
+      threshold:spec.threshold??0,force:spec.force??0,scatter:spec.scatter??0,hashitevent:spec.hit_event??false,hitthreshold:0,disabled:false,slingshotthreshold:spec.slingshot_threshold??0};
     const actions={
       createball:()=>host.createBall?.(name)??{x:state.x,y:state.y,z:25,velx:0,vely:0,velz:0},
       createsizedballwithmass:()=>host.createBall?.(name)??{x:state.x,y:state.y,z:25,velx:0,vely:0,velz:0},
@@ -63,7 +63,7 @@ export function createRules(source,specs,host={}) {
       getballs:()=>host.balls?.()??[],
     };
     const proxy=new Proxy(state,{
-      get(target,key){if(typeof key==='symbol')return target[key];const k=key.toLowerCase();if(spec.kind==='Plunger'&&k==='position')return host.plungerPosition?.()??0;if(spec.kind==='Gate'||spec.kind==='HitTarget'||spec.kind==='Bumper'||spec.kind==='Wall'){const value=host.mechanismValue?.(name,k);if(value!==undefined)return value;}return k in actions?actions[k]:target[k]??0;},
+      get(target,key){if(typeof key==='symbol')return target[key];const k=key.toLowerCase();if(spec.kind==='Plunger'&&k==='position')return host.plungerPosition?.()??0;if(spec.kind==='Gate'||spec.kind==='HitTarget'||spec.kind==='Bumper'||spec.kind==='Wall'||spec.kind==='Primitive'&&k==='hitthreshold'){const value=host.mechanismValue?.(name,k);if(value!==undefined)return value;}return k in actions?actions[k]:target[k]??0;},
       set(target,key,v){const k=String(key).toLowerCase();target[k]=v;
         if(k==='enabled'&&spec.kind==='Timer'||k==='timerenabled'){
           const enabled=!!v,timerKey=k==='enabled'?lower:`${lower}:timer`;

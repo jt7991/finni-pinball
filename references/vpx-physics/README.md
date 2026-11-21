@@ -214,3 +214,37 @@ physics RNG state, because its sound already consumed the native draws at the
 recorded clock. All twenty-four cases retain all 4,812 observed RNG states,
 callback times/arguments and trajectories within .001 VPU / .000001 velocity
 and angular velocity. The position bound reflects native CStr precision.
+
+`vpx-material-events-native-state.json` adds seventeen wall/primitive/rubber
+recordings. Build a separate table with `--instrument-materials
+--instrument-ball-trails --instrument-rng --all-scatter-zero` and capture with
+`--material-events --all-ball-state --ball-trails --rng-state --native-internals
+--no-state-trace`. The observer prepends logging to the original sound collection
+handlers, retains their bodies, and observes previously empty Camera1/Camera2/
+Rubber001 Hit handlers. Run `node scripts/compare-vpx-material-events.mjs --check`.
+
+Native Surface sets event flags on its components, but their collision classes
+decide whether to dispatch: vertical faces, vertical corner lines and points
+can fire Hit, while horizontal 3D edges and polygons with eNull cannot. Primitive,
+rubber and ramp components use ePrimitive, enabling triangle/polygon/3D-edge
+events as well. Rubber's threshold is hard-coded to 2. Primitive HitThreshold
+updates before native rest-event filtering, only for the relevant collision
+classes. HasHitEvent and Threshold setters change stored settings without
+rebuilding these colliders; the initial event metadata remains baked. Collidable
+still updates the actual collision components.
+
+`native-hit-event.js` preserves those rules and NativeBall's shared per-ball
+last-event position and squared-travel filter. Dispatch runs after reflection
+at the collision clock with the correct ActiveBall. This restores the authored
+rubber collection sounds and the three long-band 110-point awards. The replay
+checks sound names/times, post-response volume/pitch, scores, callback velocity,
+primitive HitThreshold and all 1,739 observed physics RNG frames. Dense native
+memory replay had zero position difference across all four balls and velocity
+difference below 2e-9. Quiet hits, silent wall tops/edges, active corner points,
+disabled colliders and a temporarily enabled native 3D rubber are included.
+
+The accepted mesh/physics numbers are retained. The asset generator now includes
+hit_event/threshold metadata. `prepare-three-event-metadata.py --source-dir
+EXTRACTED_GAMEITEMS` updates just that metadata for existing accepted assets,
+without regenerating geometry. The reference helper also zeroes scatter on the
+Rubber array when a diagnostic fixture declares allScatterZero.
