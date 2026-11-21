@@ -29,7 +29,7 @@ try{
   await call('Page.navigate',{url:`${base}/?graphics-test=${quality}`});
   await wait('!!window.finni && !document.getElementById("play").disabled');
   const settings=await evaluate(`finni.engine.FS.readFile('/libsdl/VPinballX/10.8/VPinballX.ini',{encoding:'utf8'})`);
-  for(const [key,expected] of [['BallTrail',0],['ForceMotionBlurOff',1]])assert.equal(Number(settings.match(new RegExp('^'+key+'\\s*=\\s*(.*)$','m'))?.[1]),expected,`${quality}: ${key}`);
+  for(const [key,expected] of [['BallTrail',0],['ForceMotionBlurOff',1],['DisableLightingForBalls',1]])assert.equal(Number(settings.match(new RegExp('^'+key+'\\s*=\\s*(.*)$','m'))?.[1]),expected,`${quality}: ${key}`);
   if(quality==='performance'){
    assert.equal(Number(settings.match(/^AAFactor\s*=\s*(.*)$/m)?.[1]),1,'Native internal resolution factor');
    for(const text of ['MaxTexDimension=2048','DisableAO=1','PFReflection=0','ForceBloomOff=1'])assert.ok(settings.includes(text),text);

@@ -75,6 +75,22 @@ try{
   await wait('document.body.classList.contains("playing")');await delay(500);
   await evaluate(`finni.evaluate('Debug.Print "BALL_TRAIL_CHECK|" & Table1.BallTrail')`);
   assert.ok(await evaluate(`document.getElementById('log').textContent.includes('BALL_TRAIL_CHECK|0')`),'Native table ball trail is disabled after loading legacy preferences');
+  const ballMaterial=await evaluate(`new Promise(resolve=>{
+    const p=WebGL2RenderingContext.prototype,draw=p.drawElements;let material=null;
+    p.drawElements=function(...args){
+      const program=this.getParameter(this.CURRENT_PROGRAM);
+      if(!material&&this.getUniformLocation(program,'tex_ball_color'))material={
+        unlit:this.getUniform(program,this.getUniformLocation(program,'w_h_disableLighting'))[2],
+        alpha:this.getUniform(program,this.getUniformLocation(program,'cBase_Alpha'))[3],
+        blending:this.isEnabled(this.BLEND),
+      };
+      return draw.apply(this,args);
+    };
+    setTimeout(()=>{p.drawElements=draw;resolve(material)},200);
+  })`);
+  assert.deepEqual(ballMaterial,{unlit:1,alpha:1,blending:false},'Real ball draws use opaque chrome without playfield transmission or excessive table lighting');
+  await evaluate(`finni.evaluate('Debug.Print "BALL_DECAL_CHECK|" & Table1.BallFrontDecal')`);
+  assert.ok(await evaluate(`document.getElementById('log').textContent.includes("BALL_DECAL_CHECK|'")`),'No scratch overlay on new game balls');
   assert.equal(await evaluate(`finni.engine.FS.analyzePath('/tables/finni.vpx').exists`),false,'Packed table upload released after startup');
   const shaders=await evaluate('shaderTest');
   assert.ok(shaders.lightBlends>0,'Real VPX light passes preserve HDR target alpha');

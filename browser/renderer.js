@@ -47,6 +47,9 @@ export function configureRenderer(engine,{mobile=false,quality='auto'}={}){
     '[Player]',
     'BallTrail=0',
     'ForceMotionBlurOff=1',
+    // Use the ball's chrome environment texture directly. Table lighting and
+    // full-strength playfield reflections otherwise wash it into the artwork.
+    'DisableLightingForBalls=1',
     ...(performance?[
     `AAFactor=${engine.finniRenderDensity?1:0.5}`,
     'MaxTexDimension=2048',

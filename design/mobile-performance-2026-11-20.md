@@ -10,11 +10,13 @@ The 166,285,312-byte packed table is handed to MEMFS with `canOwn:true`, avoidin
 
 ## Android lighting correction
 
+Ball material: the source table has `BallPlayfieldReflectionScale=3`, clamped by the engine to a full-strength playfield reflection. Reducing it alone did not resolve the washed-out ball in Android diagnostics. All browser profiles now use `DisableLightingForBalls=1`, retaining the ball's chrome/environment texture while bypassing table lighting and the previous-frame playfield-reflection path. `Table1.BallFrontDecal=""` removes the noisy scratch overlay before game balls are created. An actual Android ball-draw probe confirmed alpha 1 and blending disabled; bypassing lighting gave it a darker metallic edge. The real-engine regression checks the resulting ball shader uniforms and native decal setting.
+
 The Android hardware-GPU emulator showed large solid white bulb-light polygons over the playfield. Bypassing bulb draws and invalidating the static prepass removed them; ordinary geometry and classic lamp meshes rendered correctly.
 
 VPX's bulb/flashers encode additive strength using source alpha as high as 9999. The upstream reverse-subtract blend applies that strength to alpha too. A one-pixel RGBA16F reproduction returned finite RGB and non-finite alpha: squaring 9999 exceeds the half-float range. Preserving destination alpha for the specific `SRC_ALPHA, ONE_MINUS_SRC_COLOR` blend removed the white polygons in the live Android diagnostic. The RGB blend factors and shader calculations remain unchanged; ordinary transparency keeps its native factors.
 
-`startTable` installs the correction on the context the engine creates, without creating an early context or changing its attributes. The real-engine integration check confirms VPX light passes use the corrected blend. A GPU regression verifies expected RGB, finite alpha, ordinary transparency and idempotent installation. The existing high-precision depth/HDR sampler patch also remains in place.
+`startTable` installs the correction on the context the engine creates, without creating an early context or changing its attributes. The real-engine integration check confirms VPX light passes use the corrected blend. A GPU regression verifies expected RGB, finite alpha, ordinary transparency and idempotent installation. The existing high-precision depth/HDR sampler patch also remains in place. A subsequent fresh Android session still showed white light polygons with static prerendering enabled, despite the corrected alpha factors reaching the GPU. Disabling the static prepass removed them for the ball appearance comparison. **The lighting correction is incomplete; do not treat the diagnostic images as confirmation of a startup fix.** The static-prepass workaround is not enabled in shipped code.
 
 ## Android measurements and limits
 

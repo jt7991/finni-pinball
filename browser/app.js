@@ -264,6 +264,9 @@ async function boot(){
         // Legacy tables can import their own trail preference over the global
         // setting. Keep one sharp ball even when the packed table requests it.
         evaluate('Table1.BallTrail=0');
+        // New game balls retain their chrome texture without the source
+        // table's dense scratch overlay, which sparkles into a ghostly rim.
+        evaluate('Table1.BallFrontDecal=""');
         // The native table now owns its decoded art/audio. Replay uses the
         // running player, so retaining the packed upload only wastes memory.
         engine.FS.unlink('/tables/finni.vpx');
