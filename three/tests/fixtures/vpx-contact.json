@@ -2583,5 +2583,13 @@
       "position": 0.5,
       "velocity": 0.7
     }
-  }
+  },
+  "nativeRuleState": {
+    "selectionBallCount": 3,
+    "measuredBallIndex": 2,
+    "measuredBallRole": "animation",
+    "rollingTimerEnabled": true,
+    "lockedBallOffset": 3
+  },
+  "comparisonScope": "Raw engine contacts. The probe selected an animation ball before the delayed playable ball existed; authored rolling/spin/speed controls skip this ball. The port controller is disabled only when replaying this fixture."
 }

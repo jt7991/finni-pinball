@@ -812,13 +812,18 @@ Const maxvel = 52 'max ball velocity during game play. EM: 20-35  SS: 35-50
 ' rolling routines
 
 Const tnob = 19   'total number of balls, use a high number so you may test the table without errors.
-Const lob = 3    'number of locked balls
+Const lob = 0    'number of locked balls
 Dim rolling()
 ReDim rolling(tnob)
 
 InitRolling
 
 Sub InitRolling
+    Dim i
+    For i = 0 to tnob
+        rolling(i) = False
+    Next
+    RollingTimer.Enabled = 1
 End Sub
 
 

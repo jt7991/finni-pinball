@@ -18,9 +18,28 @@ test('physics materials retain the actual VPX rubber and metal overrides',()=>{
   assert.equal(peg.elasticity,.3);assert.equal(peg.contact_physics.elasticity,.9);assert.equal(peg.contact_physics.friction,.9);
 });
 
-test('loaded heel/tip shots, free sliding and cradle releases retain the native comparison baseline',()=>{
+test('raw engine heel/tip, sliding and cradle contacts retain their independently measured baseline',()=>{
   const reports=JSON.parse(execFileSync(process.execPath,['scripts/compare-vpx-contact.mjs','--check','--json'],{cwd:root,encoding:'utf8'}));
   assert.equal(reports.length,11);assert.equal(reports.filter(r=>r.name.includes('cradle')).length,2);
+});
+
+test('the authored 10ms controller updates every playable ball through real VB arrays and angular momentum',async()=>{
+  const g=await createFullGame(json('layout'),json('objects'),fs.readFileSync(new URL('../public/rules.vbs',import.meta.url),'utf8'),()=>{});
+  try{
+    g.start();for(let i=0;i<1.7/STEP;i++)g.step();g.spawn('BallRelease');
+    assert.equal(g.rules.value('UBound(GetBalls())'),1);
+    const [a,b]=g.records;
+    for(const r of [a,b]){r.held=null;r.body.setBodyType(RAPIER.RigidBodyType.Dynamic,true);}
+    a.body.setLinvel({x:60,y:30,z:3},true);b.body.setLinvel({x:-40,y:-70,z:5},true);
+    for(const r of [a,b])r.body.setAngvel({x:8,y:10,z:20},true);
+    g.rules.tick(.01);
+    assert.ok(Math.abs(a.body.linvel().x-52)<1e-5);assert.ok(Math.abs(a.body.linvel().y-26)<1e-5);
+    assert.ok(Math.abs(b.body.linvel().x+40*52/70)<1e-5);assert.ok(Math.abs(b.body.linvel().y+52)<1e-5);
+    for(const r of [a,b]){assert.ok(Math.abs(r.body.angvel().z-19)<1e-5);assert.equal(r.body.angvel().x,8);assert.equal(r.body.angvel().y,10);}
+    assert.equal(a.body.linvel().z,3);assert.equal(b.body.linvel().z,5);
+    assert.ok(Math.abs(a.proxy.angmomz+47.5)<1e-5);assert.ok(Math.abs(a.proxy.angvelz+.19)<1e-5);
+    a.proxy.angvelz=100;assert.equal(a.body.angvel().z,19,'deprecated AngVel setters remain read-only');
+  }finally{g.dispose();}
 });
 
 test('target-slot floors, elevated walls and both omitted ramps are present',()=>{

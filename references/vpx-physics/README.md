@@ -15,6 +15,13 @@ builds a separate zero-scatter table under this worktree's ignored `.work/`;
 `scripts/serve-vpx-reference.py --metadata ... --port 0` serves that copy with
 matching metadata. The original table is never changed.
 
+The corrected contact probe waits for the real plunger switch and verifies four
+balls at selection time: three animation balls followed by the playable ball.
+Earlier contact measurements selected an animation ball during startup. They
+remain explicitly scoped as a raw-engine baseline; the authored ball controller
+does not apply to that ball. The separate playable-ball fixture includes the
+authored 10ms spin/speed controller and records unresolved contact divergences.
+
 The `slot-back` fixture records a target/wire pocket that also holds the ball in
 native VPX. Keep this separate from port regressions. The randomized gameplay
 probe still reports it as a stall; it has no blanket exception or automatic rescue.

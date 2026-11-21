@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {createFullGame} from '../three/full-game.js';
 import {STEP} from '../three/physics.js';
 const fixture=JSON.parse(fs.readFileSync(process.argv.slice(2).find(a=>!a.startsWith('--'))??'three/tests/fixtures/vpx-contact.json'));
+assert.ok(fixture.probeKind!=='plunger','Use a plunger comparator for these measurements');
 const layout=JSON.parse(fs.readFileSync('three/public/layout.json')),objects=JSON.parse(fs.readFileSync('three/public/objects.json')),source=fs.readFileSync('three/public/rules.vbs','utf8');
 Object.assign(layout.physics,fixture.controlledOverrides);
 if(process.argv.includes('--native-contact-solver'))layout.physics.native_flipper_contacts=true;
@@ -16,6 +17,8 @@ for(const scenario of fixture.cases){
       for(const m of g.nativeMeshes)if(g.colliderLabels.get(m.collider.handle)?.toLowerCase()===name)m.collider.setEnabled(value);
     }
     if(scenario.startRaised){g.rules.run(`Sol${scenario.side==='left'?'L':'R'}Flipper`,true);for(let i=0;i<.2/STEP;i++)g.step();}
+    if(fixture.timerSynchronization){const timer=g.rules.objects.get('rollingtimer');timer.enabled=false;timer.enabled=true;}
+    if(fixture.nativeRuleState?.measuredBallRole==='animation')g.rules.objects.get('rollingtimer').enabled=false;
     r.body.setTranslation({x:scenario.x*.01,y:(2115-scenario.y)*.01,z:(scenario.z??25)*.01},true);r.body.setLinvel({x:scenario.vx,y:-scenario.vy,z:0},true);r.body.setAngvel({x:0,y:0,z:0},true);
     if(scenario.side){const command=`Sol${scenario.side==='left'?'L':'R'}Flipper`;
       const pressed=scenario.press===false?0:1;

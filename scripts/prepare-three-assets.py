@@ -110,7 +110,9 @@ script=re.sub(r'Sub LilDPInit\b.*?End Sub','Sub LilDPInit\nEnd Sub',script,flags
 # Physical toy bobble is animated by Three.js rather than three invisible VPX balls.
 script=re.sub(r'Sub LilDPShake\(strength\).*?End Sub','Sub LilDPShake(strength)\n HostShake strength\nEnd Sub',script,flags=re.S|re.I)
 script=re.sub(r'Sub lilShakeTimer_Timer\b.*?End Sub','Sub lilShakeTimer_Timer\nEnd Sub',script,flags=re.S|re.I)
-script=re.sub(r'Sub InitRolling\b.*?End Sub','Sub InitRolling\nEnd Sub',script,flags=re.S|re.I)
+# The JS host omits the three bobble balls. GetBalls therefore starts directly
+# with playable balls; retain the original 10ms spin/speed controller and audio.
+script=script.replace('Const lob = 3','Const lob = 0')
 script=re.sub(r'^Sub FlashForMs\(MyLight, TotalPeriod, BlinkPeriod, FinalState\).*?^End Sub',
               'Sub FlashForMs(MyLight, TotalPeriod, BlinkPeriod, FinalState)\n HostFlash MyLight, TotalPeriod, BlinkPeriod, FinalState\nEnd Sub',script,flags=re.S|re.I|re.M)
 (OUT/'rules.vbs').write_text(script)

@@ -117,10 +117,18 @@ class FullGame extends Pinball {
     const rec={body,collider,held:key==='ballrelease'?'lane':key,previous:{...p},cooldowns:new Map(),laneTime:this.time};
     rec.proxy=new Proxy({radius:25,mass:1,id:body.handle},{
       get:(target,key)=>{
-        if(typeof key!=='string')return target[key];key=key.toLowerCase();const q=body.translation(),v=body.linvel();
+        if(typeof key!=='string')return target[key];key=key.toLowerCase();
+        if(/^ang(mom|vel)[xyz]$/.test(key)){
+          const axis=key.at(-1),sign=axis==='y'?1:-1;
+          return body.angvel()[axis]*sign*(key.startsWith('angmom')?2.5*body.mass():.01);
+        }
+        const q=body.translation(),v=body.linvel();
         return ({x:q.x*100,y:2115-q.y*100,z:q.z*100,velx:v.x,vely:-v.y,velz:v.z})[key]??target[key]??0;
       },
-      set:(_target,key,v)=>{key=String(key).toLowerCase();const p={...body.translation()},vel={...body.linvel()};
+      set:(_target,key,v)=>{key=String(key).toLowerCase();
+        if(/^angmom[xyz]$/.test(key)){const axis=key.at(-1),w={...body.angvel()};w[axis]=v*(axis==='y'?1:-1)/(2.5*body.mass());body.setAngvel(w,true);return true;}
+        if(/^angvel[xyz]$/.test(key))return true; // Deprecated read-only native properties.
+        const p={...body.translation()},vel={...body.linvel()};
         if(key==='x')p.x=v*.01;if(key==='y')p.y=(2115-v)*.01;if(key==='z')p.z=v*.01;
         if(key==='velx')vel.x=v;if(key==='vely')vel.y=-v;if(key==='velz')vel.z=v;
         body.setTranslation(p,true);body.setLinvel(vel,true);return true;},
@@ -240,19 +248,10 @@ class FullGame extends Pinball {
     for(const rec of [...this.records]){
       if(rec.held)continue;
       const p=rec.body.translation(),v=rec.body.linvel();
-      if(p.x>=2.4&&p.x<=2.92&&p.y>=17.81&&p.y<=18.25&&p.z>=.29&&p.z<=.6)this.rules.run('FinniLockRampAssist',rec.proxy);
-      if(rec.previous.z>.35&&p.z<.3&&v.z<-1)this.media?.play('fx_balldrop',{volume:Math.min(1,Math.abs(v.z)/17),pan:p.x/4.76-1});
       if(p.x>8.85&&p.y<2.9&&Math.abs(v.y)<1&&this.time-rec.laneTime>1){
         rec.held='lane';rec.body.setBodyType(RAPIER.RigidBodyType.KinematicPositionBased,true);this.inLane=true;this.rules.hit('swPlungerRest','Hit',rec.proxy);
       }
       if(p.y<1||p.x<-.5||p.x>10||p.z<-.5)this.rules.hit('Drain','Hit',rec.proxy);
-    }
-    if(this.syncCount%Math.round(.1/STEP)===0)for(let i=0;i<6;i++){
-      const rec=this.records[i],name=`fx_ballrolling${i+3}`;
-      if(!rec||rec.held){this.media?.stop(name);continue;}
-      const v=rec.body.linvel(),p=rec.body.translation(),speed=Math.hypot(v.x,v.y);
-      if(speed>1)this.media?.play(name,{loop:-1,volume:Math.min(.7,speed*speed/2000),pan:p.x/4.76-1,rate:Math.min(2,.7+speed/30)});
-      else this.media?.stop(name);
     }
     if(++this.syncCount%Math.round(1/(30*STEP))===0)this.sync();
   }
