@@ -30,7 +30,6 @@ for(const scenario of fixture.cases){
     if(scenario.startRaised){g.rules.run(`Sol${scenario.side==='left'?'L':'R'}Flipper`,true);for(let i=0;i<.2/STEP;i++)g.step();}
     if(fixture.timerSynchronization){const timer=g.rules.objects.get('rollingtimer');timer.enabled=false;timer.enabled=true;}
     placeReferenceBall(g,r,scenario);
-    r=restoreReferenceBalls(g,fixture,scenario,r);
     const frameClocks=new Set((scenario.animationFrames??[]).map(row=>row[0]));
     if(scenario.animationFrames?.length){
       const first=scenario.animationFrames[0];g.frameAnimations=true;g.lastAnimationTime=Math.round(g.time*1000)+first[0]-first[1];
@@ -40,6 +39,11 @@ for(const scenario of fixture.cases){
       const pressed=scenario.press===false?0:1;
       if(scenario.actualDelay??scenario.delay)g.rules.schedule(scenario.actualDelay??scenario.delay,`${command} ${pressed}`);else g.rules.run(command,!!pressed);
     }
+    // CONTACT_INIT and the first physics RNG marker follow an immediate input.
+    // Replay that input before installing their observed post-input RNG states;
+    // otherwise its sound draws are counted twice. Ball snapshots were taken
+    // in the same script call before the input, which does not move a ball.
+    r=restoreReferenceBalls(g,fixture,scenario,r);
     let elapsed=0;const samples=[],traceSamples=[];
     const traceRows=new Map((fixture.traceRegression?scenario.timerTrace:[]).filter(r=>r[0]==='STATE').map(row=>[row[1]-1,row]));
     const observeTrace=ms=>{
@@ -58,6 +62,11 @@ for(const scenario of fixture.cases){
       const velocityError=Math.hypot(...actual.slice(4,7).map((n,i)=>n-expected[i+4]));
       const flipperAngleError=Math.max(...['leftflipper','rightflipper'].map((name,i)=>Math.abs(g.rules.objects.get(name).currentangle-(fixture.flipperAngleScalarEncoding?Math.fround(expected[10+i]):expected[10+i]))));
       samples.push({expected,actual,positionError,velocityError,flipperAngleError});
+    }
+    const through=fixture.nativeBodyRegression?.throughMilliseconds;
+    if(through!==undefined){
+      assert.ok(Number.isInteger(through)&&through>=elapsed,'native coverage ends after the last public sample');
+      for(let ms=elapsed+1;ms<=through;ms++){g.step();if(frameClocks.has(ms))g.prepareFrame();if(fixture.traceRegression)observeTrace(ms);}
     }
     const bodies=(g.nativeBodyAudit??[]).flatMap(row=>row.bodies),nativeBodySummary={frames:g.nativeBodyAudit?.length??0,bodies:bodies.length};
     for(const key of ['positionError','velocityError','momentumError','orientationError'])nativeBodySummary[key]=Math.max(0,...bodies.map(body=>body[key]??0));
