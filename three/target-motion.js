@@ -5,7 +5,7 @@ const f=Math.fround;
 export class TargetMotion {
   constructor(spec,collider,clock,emit){
     this.spec=spec;this.collider=collider;this.clock=clock;this.emit=emit;
-    this.dropped=!!spec.is_dropped;this.collidable=!!spec.is_collidable;this.fireEvents=!!spec.use_hit_event;this.visible=!!spec.is_visible;this.offset=this.dropped?-52:0;this.moving=false;this.down=false;this.waitUntil=0;this.ball=null;
+    this.dropped=!!spec.is_dropped;this.collidable=!!spec.is_collidable;this.fireEvents=!!spec.use_hit_event;this.visible=!!spec.is_visible;this.offset=this.dropped?-52:0;this.moving=false;this.down=!this.dropped;this.hitPending=false;this.waitUntil=0;this.ball=null;
     this.refresh();
   }
   refresh(){this.collider.setEnabled(this.collidable&&!this.dropped);}
@@ -18,10 +18,14 @@ export class TargetMotion {
   }
   hit(ball){
     if(this.dropped||!this.spec.use_hit_event)return false;
-    this.down=true;this.moving=true;this.ball=ball;return true;
+    this.hitPending=true;this.ball=ball;return true;
   }
   update(milliseconds){
-    if(!this.moving||!this.visible)return;
+    if(!this.visible)return;
+    // Collision arms a hit; native UpdateAnimation consumes it after script
+    // setters, at the next visible frame. Hidden targets retain the pending hit.
+    if(this.hitPending){if(!this.dropped)this.down=true;this.moving=true;this.hitPending=false;}
+    if(!this.moving)return;
     let step=f(this.spec.drop_speed);if(this.down)step=-step;else if(this.clock()<this.waitUntil)step=0;
     this.offset=f(this.offset+f(step*milliseconds));
     if(this.down?this.offset<=-52:this.offset>=0){

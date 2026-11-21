@@ -217,6 +217,7 @@ if(probeKind==='targets'){
   cases.push({name:'Target010-front-corner',target:'Target010',x:590.6739702224731,y:837.7343965530396,z:25.33487311553955,vx:-8.314886093139648,vy:-4.348639488220215,vz:-.29163968563079834,sampleCount:60});
   cases.push({name:'Target010-front-face',target:'Target010',x:spec.position.x+n.x*(offset+40),y:spec.position.y+n.y*(offset+40),z:25,vx:-n.x*8,vy:-n.y*8,sampleCount:60});
   cases.push({name:'Target011-timed-hold',target:'Target011',x:612.3,y:803.1,z:25,vx:0,vy:0,sampleCount:540,setupCode:'bLilDPMB=True:bMultiBallMode=True:LilDPHits=4:LilDPHitsNeeded(CurrentPlayer)=1:LilDPJackpot(CurrentPlayer)=500000:LilDPTimer.Enabled=False:LilDPTimer.Interval=100:LilDPTimer.Enabled=True'});
+  cases.push({name:'Target011-soak-hold',target:'Target011',x:612.3,y:803.1,z:25,vx:0,vy:0,sampleCount:1080,setupCode:'bLilDPMB=True:bMultiBallMode=True:LilDPHits=4:LilDPHitsNeeded(CurrentPlayer)=3:LilDPJackpot(CurrentPlayer)=790000:LilDPTimer.Enabled=False:LilDPTimer.Interval=350:LilDPTimer.Enabled=True'});
 }
 if(exactDelay!==undefined){
   const driven=cases.filter(s=>!selected||s.name===selected);
