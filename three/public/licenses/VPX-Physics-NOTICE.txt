@@ -3,7 +3,7 @@ flipper-contact.js, mesh-contact.js, target-contact.js, target-motion.js, plunge
 native-ball.js, native-ball-response.js, native-angular.js, native-flipper-contact.js,
 native-mesh-contact.js, native-vector.js, native-curve.js, native-ramp.js,
 native-tree.js, native-dynamic-tree.js, native-ball-collision.js, native-random.js, native-hit-event.js,
-native-rubber.js, native-target.js, native-bumper.js, native-slingshot.js, native-sound.js, kicker.js, impulse-plunger.js and playfield-contact.js is adapted from
+native-rubber.js, native-target.js, native-target-event.js, native-bumper.js, native-slingshot.js, native-sound.js, kicker.js, impulse-plunger.js and playfield-contact.js is adapted from
 Visual Pinball, copyright its respective contributors, licensed GPLv3 or later.
 These derived modules are distributed under GPL-3.0-or-later.
 The target mesh source headers in references/vpx-physics/meshes are also GPLv3+;
@@ -18,6 +18,9 @@ native-slingshot.js adapts LineSegSlingshot::Collide in the same file.
 native-hit-event.js preserves shape-specific Hit dispatch, native ball event
 history filtering and SetupHitObject event metadata from collide.cpp,
 collideex.cpp, and parts/surface.cpp, primitive.cpp, rubber.cpp and ramp.cpp.
+native-target-event.js preserves target triangle/edge/point event eligibility,
+incoming thresholds, animation arming and target-specific event history from
+collide.cpp, collideex.cpp and parts/hittarget.cpp.
 native-flipper-contact.js includes HitFlipper::Collide event timing and speed
 arguments. full-game.js also preserves Flipper::get_CurrentAngle conversion:
 https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/parts/flipper.cpp

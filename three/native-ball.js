@@ -7,7 +7,7 @@ export class NativeBall {
     this.rapier=body;this.position=null;this.lastWorld=null;
     this.eventPosition={x:-10000,y:-10000,z:-10000};this.eventDistance=0;
     this.body={translation:()=>this.translation(),setTranslation:(p,wake)=>this.setTranslation(p,wake),handle:body.handle};
-    this.body.acceptHitEvent=()=>this.acceptHitEvent();
+    this.body.acceptHitEvent=distance=>this.acceptHitEvent(distance);
     this.body.advanceTrigger=()=>this.advanceTrigger();
     this.body.native=this;
     for(const method of ['linvel','setLinvel','angvel','setAngvel','mass','applyImpulse','applyTorqueImpulse','collider'])this.body[method]=(...args)=>body[method](...args);
@@ -31,9 +31,9 @@ export class NativeBall {
     this.eventDistance=f(this.eventDistance+f(f(f(dx*dx)+f(dy*dy))+f(dz*dz)));
     this.position={x:f(start.x+dx),y:f(start.y+dy),z:f(start.z+dz)};this.publish();
   }
-  acceptHitEvent(){
+  acceptHitEvent(normalDistance=.25){
     const p=this.sync(),last=this.eventPosition,dx=f(last.x-p.x),dy=f(last.y-p.y),dz=f(last.z-p.z);
-    if(this.eventDistance<.5&&f(f(f(dx*dx)+f(dy*dy))+f(dz*dz))<=.25)return false;
+    if(this.eventDistance<.5&&f(f(f(dx*dx)+f(dy*dy))+f(dz*dz))<=normalDistance)return false;
     this.eventDistance=0;this.eventPosition={...p};return true;
   }
   advanceTrigger(){

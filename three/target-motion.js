@@ -5,7 +5,7 @@ const f=Math.fround;
 export class TargetMotion {
   constructor(spec,collider,clock,emit){
     this.spec=spec;this.collider=collider;this.clock=clock;this.emit=emit;
-    this.dropped=!!spec.is_dropped;this.collidable=!!spec.is_collidable;this.offset=this.dropped?-52:0;this.moving=false;this.down=false;this.waitUntil=0;this.ball=null;
+    this.dropped=!!spec.is_dropped;this.collidable=!!spec.is_collidable;this.fireEvents=!!spec.use_hit_event;this.visible=!!spec.is_visible;this.offset=this.dropped?-52:0;this.moving=false;this.down=false;this.waitUntil=0;this.ball=null;
     this.refresh();
   }
   refresh(){this.collider.setEnabled(this.collidable&&!this.dropped);}
@@ -21,12 +21,12 @@ export class TargetMotion {
     this.down=true;this.moving=true;this.ball=ball;return true;
   }
   update(milliseconds){
-    if(!this.moving||!this.spec.is_visible)return;
+    if(!this.moving||!this.visible)return;
     let step=f(this.spec.drop_speed);if(this.down)step=-step;else if(this.clock()<this.waitUntil)step=0;
     this.offset=f(this.offset+f(step*milliseconds));
     if(this.down?this.offset<=-52:this.offset>=0){
       const down=this.down;this.offset=down?-52:0;this.dropped=down;this.down=false;this.moving=false;this.refresh();
-      if(this.spec.use_hit_event)this.emit(down?'Dropped':'Raised',this.ball);
+      if(this.fireEvents)this.emit(down?'Dropped':'Raised',this.ball);
     }
   }
 }

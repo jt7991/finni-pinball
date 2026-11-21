@@ -99,6 +99,12 @@ if(process.argv.includes('--flippers')){
       g.step();
       }catch(cause){error={message:cause.message,at:g.time};break;}
     }
+    if(full&&stuck){
+      stuck.rules=Object.fromEntries(['bLilDPMB','bMultiBallMode','LilDPHits','LilDPHitsNeeded(CurrentPlayer)','LilDPJackpot(CurrentPlayer)','bChooseBattle','Tilted'].map(name=>[name,g.rules.value(name)]));
+      stuck.targets=[...g.targetMotions].map(([name,target])=>({name,dropped:target.dropped,offset:target.offset,moving:target.moving,down:target.down,collidable:target.collidable}));
+      stuck.pendingTimers=[...g.rules.timers.values()].filter(t=>/LilDP|DropTarget/i.test(t.handler)).map(t=>({handler:t.handler,at:t.at,interval:t.object.interval}));
+      stuck.pendingStatements=g.rules.delays.map(d=>({...d}));if(nudged)stuck.nextNudge=nextNudge;
+    }
     const result={seed,seconds,simulatedSeconds:Number(g.time.toFixed(2)),stuck,error,state:g.state,score:g.score,launched,flips,maximumBalls,maximumSpeed:Number(maximumSpeed.toFixed(2)),completedGames,...(nudged?{nudgeCount}:{}),...(runtimeRandom?{random:{algorithm:'MWC64X',initialPhysicsRandom,finalPhysicsRandom:g.random.getState(),physicsDraws:g.random.calls,initialScriptRandom,finalScriptRandom:g.rules?.scriptRandom.getState()}}:{}),physicsStats:g.physicsStats};results.push(result);console.log(JSON.stringify(result));g.dispose();
     fs.mkdirSync('.work/three-physics',{recursive:true});fs.writeFileSync(`.work/three-physics/${seedArgument?`progress-${reportName}`:multiball?'progress-multiball':'progress'}.json`,JSON.stringify(results,null,2));
   }

@@ -21,6 +21,7 @@ import {collideNativeBumper} from './native-bumper.js';
 import {collideNativeSlingshot} from './native-slingshot.js';
 import {nativeHitDescriptor,collideNativeHitSurface} from './native-hit-event.js';
 import {runtimeNativeRandom} from './native-random.js';
+import {collideNativeTarget} from './native-target-event.js';
 
 export const STEP = 1 / 1000;
 export const RADIUS = 0.25;
@@ -536,6 +537,12 @@ export class Pinball {
             continue;
           }
           const shape=event.mesh.mesh.shapes[event.hit.id],sling=shape.slingshot;
+          if(event.mesh.targetEvent&&impactBody.native){
+            const previous=this.targetEventBall;this.targetEventBall=event.r.proxy;
+            try{collideNativeTarget(impactBody,event.hit,shape,event.mesh.targetEvent,event.mesh.material,RADIUS,this.random,()=>this.rules?.hit(event.mesh.targetEvent.target.name,'Hit',event.r.proxy));}
+            finally{this.targetEventBall=previous;}
+            continue;
+          }
           if(sling&&impactBody.native){
             collideNativeSlingshot(impactBody,event.hit,shape,sling,event.mesh.material,RADIUS,this.random,()=>{
               if(this.rules)this.rules.hit(sling.name,'Slingshot',event.r.proxy);

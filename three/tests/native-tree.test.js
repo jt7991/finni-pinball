@@ -49,6 +49,20 @@ test('frame candidate reuse preserves ordered scalar visits as sphere centers ch
   assert.deepEqual(actual,expected,'a different tree invalidates the frame cache');assert.equal(compared,1000);
 });
 
+test('temporal broad candidates preserve exact AABB and sphere visits across slow motion, teleports and boundary escapes',()=>{
+  const entries=Array.from({length:1600},(_,id)=>{const x=(id*137)%952,y=(id*271)%2115,z=(id*31)%180;return {id,bounds:{left:x-30,right:x+40,top:y-20,bottom:y+50,low:z,high:z+20}};});
+  const tree=new NativeTree(entries,{left:0,right:952,top:0,bottom:2115}),cache={};let reused=0,rebuilt=0,last;
+  const compare=(x,y,z,vx,vy)=>{
+    const query=nativeMeshQuery({x:x*.01,y:(2115-y)*.01,z:z*.01},{x:vx,y:vy,z:0},.25,.001),expected=[],actual=[];
+    tree.query(query,e=>expected.push(e.id));tree.query(query,e=>actual.push(e.id),cache);assert.deepEqual(actual,expected);
+    if(last===cache.region)reused++;else rebuilt++;last=cache.region;
+    for(const dx of [-10,0,10]){const moved={...query,p:{...query.p,x:Math.fround(query.p.x+dx)}};const a=[],b=[];tree.query(moved,e=>a.push(e.id));tree.query(moved,e=>b.push(e.id),cache);assert.deepEqual(b,a,'sphere is rechecked against the fixed frame bounds');}
+  };
+  for(let frame=0;frame<400;frame++)compare(400+frame*.2,1100+frame*.15,25+Math.sin(frame*.01)*4,3,2);
+  for(const [x,y,z]of [[200,1100,25],[800,1100,25],[800,100,25],[800,1900,25],[800,1900,-200],[800,1900,300],[0,0,0],[952,2115,180]])compare(x,y,z,60,-20);
+  assert.ok(reused>390,'nearby frames reuse broad candidates');assert.ok(rebuilt>=8,'all-axis escapes rebuild before narrowing');
+});
+
 test('fractional-height vertical posts retain an exactly horizontal collision normal',()=>{
   const mesh=new ContactMesh({vertices:[],indices:[]});
   // A generic normalized 3D edge can acquire a slight tilt when this height

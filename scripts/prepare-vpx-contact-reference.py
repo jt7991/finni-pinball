@@ -18,9 +18,10 @@ parser.add_argument('--instrument-bumpers',action='store_true',help='Observe bum
 parser.add_argument('--instrument-slingshots',action='store_true',help='Observe native slingshot callback clocks and post-response velocities.')
 parser.add_argument('--instrument-flippers',action='store_true',help='Observe native flipper Collide arguments and base Hit events.')
 parser.add_argument('--instrument-materials',action='store_true',help='Observe wall/rubber sound collection events and representative primitive/rubber Hit callbacks.')
+parser.add_argument('--instrument-targets',action='store_true',help='Observe target Hit callbacks and native incoming HitThreshold.')
 parser.add_argument('--all-scatter-zero',action='store_true',help='Also zero every material/object scatter field in a separate reference copy.')
 args=parser.parse_args()
-if args.instrument_spinners or args.instrument_ball_trails or args.instrument_rng or args.instrument_bumpers or args.instrument_slingshots or args.instrument_flippers or args.instrument_materials:args.instrument_timers=True
+if args.instrument_spinners or args.instrument_ball_trails or args.instrument_rng or args.instrument_bumpers or args.instrument_slingshots or args.instrument_flippers or args.instrument_materials or args.instrument_targets:args.instrument_timers=True
 source=args.source_root.resolve()
 tool=source/'.tools/vpxtool/vpxtool.exe'
 table=source/'runtime/Finni-Big-Day.vpx'
@@ -106,6 +107,14 @@ Sub RefMaterialHit(name)
     If RefTraceOn Then RefTrace=RefTrace & "MATERIAL|" & GameTime & "|" & name & "|" & CStr(CDbl(ActiveBall.VelX)) & "|" & CStr(CDbl(ActiveBall.VelY)) & "|" & CStr(CDbl(ActiveBall.VelZ)) & "|" & CStr(CDbl(hitThreshold)) & ";"
 End Sub
 '''
+    if args.instrument_targets:
+        for name in ['Target001','Target005','Target010']:
+            observer=f'    If RefTraceOn Then RefTrace=RefTrace & "TARGET|" & GameTime & "|{name}|" & CStr(CDbl(ActiveBall.VelX)) & "|" & CStr(CDbl(ActiveBall.VelY)) & "|" & CStr(CDbl(ActiveBall.VelZ)) & "|" & CStr(CDbl({name}.HitThreshold)) & ";"\n'
+            pattern=rf'(Sub {name}_Hit[^\r\n]*[\r\n]+)'
+            if re.search(pattern,script,re.I):
+                script,count=re.subn(pattern,lambda m:m[1]+observer,script,count=1,flags=re.I)
+                if count!=1:raise RuntimeError('Missing target handler '+name)
+            else:script+=f'\nSub {name}_Hit\n'+observer+'End Sub\n'
     if args.instrument_ball_trails:
         script+='Dim RefTrailOn,RefTrailSlots(9),RefTrailBalls,RefTrailBall,RefTrailIndex,RefTrailRow,RefTrailSlot\nRefTrailOn=False\n'
     for name,marker in [('RollingTimer_Timer','ROLL'),('LeftFlipper_Timer','FLIP')]:
@@ -182,6 +191,7 @@ if args.instrument_timers:
     if args.instrument_slingshots:metadata['instrumentation']['slingshotTrace']={'callbacks':'SLING records handler entry clock, side and post-response velocity.','scriptRandom':'SCRIPT_RND preserves original LilDPShake inputs and one native RNG call per output.'}
     if args.instrument_flippers:metadata['instrumentation']['flipperTrace']={'callbacks':'FLIP_COLLIDE records clock, side, native speed argument and post-response velocity. FLIP_HIT observes the previously empty base-radius Hit event.'}
     if args.instrument_materials:metadata['instrumentation']['materialTrace']={'callbacks':'MATERIAL records clock, object name, post-response velocity and primitive HitThreshold at the beginning of authored sound collection handlers or previously empty individual handlers. Existing handler bodies retained.'}
+    if args.instrument_targets:metadata['instrumentation']['targetTrace']={'callbacks':'TARGET records clock, object name, post-response velocity and HitThreshold before the existing target Hit handler, or in the previously empty Target010_Hit handler.'}
 (out/'metadata.json').write_text(json.dumps(metadata,indent=2)+'\n')
 print(diff)
 print(f'Controlled native reference: {copy}')

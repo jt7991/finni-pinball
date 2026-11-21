@@ -44,18 +44,27 @@ export class NativeTree {
     // sphere test again at every query, including zero-time collisions.
     if(frameCache){
       if(frameCache.tree!==this||frameCache.box!==query.box){
-        frameCache.tree=this;frameCache.box=query.box;
-        const candidates=frameCache.entries??=[];candidates.length=0;const box=query.box;
-        const collect=node=>{
-          for(let i=node.start;i<node.start+node.count;i++){
-            const entry=this.entries[i],b=entry.bounds;
-            if(!(box.right<b.left||box.left>b.right||box.bottom<b.top||box.top>b.bottom||box.high<b.low||box.low>b.high))candidates.push(entry);
-          }
-          if(!node.children)return;
-          const left=box.left<=node.x,right=box.right>=node.x;
-          if(box.top<=node.y){if(left)collect(node.children[0]);if(right)collect(node.children[1]);}
-          if(box.bottom>=node.y){if(left)collect(node.children[2]);if(right)collect(node.children[3]);}
-        };collect(this.root);
+        const box=query.box,region=frameCache.region;
+        if(frameCache.tree!==this||!region||box.left<region.left||box.right>region.right||box.top<region.top||box.bottom>region.bottom||box.low<region.low||box.high>region.high){
+          // Broad candidates may survive several frames. The enlarged box only
+          // selects a superset: every new frame still applies its exact native
+          // AABB, and every collision query still applies its exact sphere.
+          const margin=32,bounds=frameCache.region={left:box.left-margin,right:box.right+margin,top:box.top-margin,bottom:box.bottom+margin,low:box.low-margin,high:box.high+margin};
+          const broad=frameCache.broad??=[];broad.length=0;
+          const collect=node=>{
+            for(let i=node.start;i<node.start+node.count;i++){
+              const entry=this.entries[i],b=entry.bounds;
+              if(!(bounds.right<b.left||bounds.left>b.right||bounds.bottom<b.top||bounds.top>b.bottom||bounds.high<b.low||bounds.low>b.high))broad.push(entry);
+            }
+            if(!node.children)return;
+            const left=bounds.left<=node.x,right=bounds.right>=node.x;
+            if(bounds.top<=node.y){if(left)collect(node.children[0]);if(right)collect(node.children[1]);}
+            if(bounds.bottom>=node.y){if(left)collect(node.children[2]);if(right)collect(node.children[3]);}
+          };collect(this.root);
+        }
+        frameCache.tree=this;frameCache.box=box;
+        const candidates=frameCache.entries??=[];candidates.length=0;
+        for(const entry of frameCache.broad){const b=entry.bounds;if(!(box.right<b.left||box.left>b.right||box.bottom<b.top||box.top>b.bottom||box.high<b.low||box.low>b.high))candidates.push(entry);}
       }
       for(const entry of frameCache.entries)if(nativeBoundsOverlap(entry.bounds,query,true))visit(entry);
       return;

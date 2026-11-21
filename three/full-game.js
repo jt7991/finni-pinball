@@ -15,6 +15,7 @@ import {nativeTargetMesh} from './native-target.js';
 import {Kicker} from './kicker.js';
 import {nativeSurfaceHeight} from './native-ramp.js';
 import {nativePitchFactor} from './native-sound.js';
+import {nativeTargetEvent} from './native-target-event.js';
 
 export async function createFullGame(layout,specs,source,emit,media) {
   await RAPIER.init();
@@ -89,10 +90,13 @@ class FullGame extends Pinball {
       collider=this.world.createCollider(RAPIER.ColliderDesc.trimesh(new Float32Array(vertices),new Uint32Array(spec.collision_mesh.indices),RAPIER.TriMeshFlags.FIX_INTERNAL_EDGES)
         .setTranslation(p.x,p.y,base).setRotation(rotation).setSensor(true).setRestitution(spec.contact_physics.elasticity).setFriction(spec.contact_physics.friction));
       const mesh=new ContactMesh(nativeTargetMesh(spec,spec.collision_mesh.vertices,spec.collision_mesh.indices),{preserveNormals:true,edgeKeys:new Set()}),material={...this.playfieldMaterial,...spec.contact_physics};
-      this.registerMesh({collider,mesh,material,source_order:spec.source_order});
+      const target=nativeTargetEvent(spec,collider,()=>this.targetMotions.get(key)?.dropped??!!this.rules?.objects.get(key)?.isdropped,()=>this.targetMotions.get(key)?.hit(this.targetEventBall));
+      this.nativeHitObjects.set(key,target);
+      const fireEvents=!!spec.use_hit_event&&(!spec.target_type.startsWith('drop')||!!spec.is_legacy);
+      this.registerMesh({collider,mesh,material,source_order:spec.source_order,targetEvent:{target,fireEvents}});
       this.contactMaterials.set(collider.handle,{collider,...spec.contact_physics});
       if(spec.target_type.startsWith('drop')&&!spec.is_legacy){
-        this.registerMesh({collider,mesh:dropTargetFront(spec,mesh),material,source_order:spec.source_order});
+        this.registerMesh({collider,mesh:dropTargetFront(spec,mesh),material,source_order:spec.source_order,targetEvent:{target,fireEvents:!!spec.use_hit_event}});
         const y=-.181738*size.y*.01,low=-.160074*size.z*.01,high=1.789926*size.z*.01,half=.55*size.x*.01;
         const centerY=p.y+y*Math.cos(a),centerX=p.x-y*Math.sin(a);
         const sensor=this.world.createCollider(RAPIER.ColliderDesc.cuboid(half,.0005,(high-low)/2)
@@ -155,7 +159,12 @@ class FullGame extends Pinball {
       return;
     }
     const target=this.targetMotions.get(name.toLowerCase());
-    if(target){if(key==='isdropped')target.setDropped(v,this.targetEventBall??this.records[0]?.proxy);if(key==='collidable')target.setCollidable(v);this.targetFronts.get(name.toLowerCase())?.setEnabled(collider.isEnabled());return;}
+    if(target){if(key==='isdropped')target.setDropped(v,this.targetEventBall??this.records[0]?.proxy);if(key==='collidable')target.setCollidable(v);if(key==='hashitevent')target.fireEvents=!!v;if(key==='visible')target.visible=!!v;this.targetFronts.get(name.toLowerCase())?.setEnabled(collider.isEnabled());return;}
+    if(this.nativeParts.get(name.toLowerCase())?.kind==='HitTarget'){
+      const state=this.rules?.objects.get(name.toLowerCase());
+      if(key==='isdropped'||key==='collidable')collider.setEnabled((key==='collidable'?!!v:!!state?.collidable)&&!(key==='isdropped'?!!v:!!state?.isdropped));
+      return;
+    }
     const gate=this.gates.find(g=>g.spec.name.toLowerCase()===name.toLowerCase());
     if(gate){if(key==='open')gate.setOpen(v);if(key==='collidable')gate.setCollidable(v);return;}
     if(key==='isdropped'){collider.setEnabled(!v);this.targetFronts.get(name.toLowerCase())?.setEnabled(!v);}
@@ -285,6 +294,7 @@ class FullGame extends Pinball {
       if(other){if(started&&!this.nativeBallContacts){const u=rec.body.linvel(),v=other.body.linvel();this.rules.run('OnBallBallCollision',rec.proxy,other.proxy,Math.hypot(u.x-v.x,u.y-v.y,u.z-v.z));}return;}
       const tag=this.tags.get(this.byCollider.has(a)?b:a);if(!tag)return;
       if(tag.kind==='target-body'||tag.kind==='spinner-body'||tag.kind==='gate-body'||tag.kind==='trigger-body'||tag.kind==='kicker-body')return;
+      if(this.nativePositionUnits&&tag.spec?.kind==='HitTarget')return;
       if(this.nativeFlipperContacts&&tag.kind==='bumper')return;
       if(this.nativePositionUnits&&tag.kind==='sling')return;
       if(this.nativePositionUnits&&tag.kind==='flipper')return;
