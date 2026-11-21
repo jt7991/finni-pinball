@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {createFullGame} from '../three/full-game.js';
 import {STEP} from '../three/physics.js';
-import {applyReferencePhysics,referenceRandom} from './reference-physics.mjs';
+import {applyReferencePhysics,referenceRandom,placeReferenceBall,restoreReferenceBalls} from './reference-physics.mjs';
 const fixture=JSON.parse(fs.readFileSync(process.argv.slice(2).find(a=>!a.startsWith('--'))??'three/tests/fixtures/vpx-contact.json'));
 assert.ok(!fixture.probeKind||fixture.probeKind==='contacts','Use the dedicated plunger or nudge comparator for those measurements');
 const layout=JSON.parse(fs.readFileSync('three/public/layout.json')),objects=JSON.parse(fs.readFileSync('three/public/objects.json')),source=fs.readFileSync('three/public/rules.vbs','utf8');
@@ -13,7 +13,13 @@ for(const scenario of fixture.cases){
   const g=await createFullGame(layout,objects,source,()=>{});
   g.random=referenceRandom();
   try{
-    g.start();for(let i=0;i<2/STEP;i++)g.step();g.launch();const r=g.records[0];
+    g.start();for(let i=0;i<2/STEP;i++)g.step();g.launch();let r=g.records[0];
+    if(fixture.nativeRuleState?.measuredBallRole==='animation'){
+      // The old raw recordings selected an animation ball before the playable
+      // ball existed. Preserve that role and physical ball count in the replay.
+      if(!scenario.initialBallStates)for(const playable of [...g.records])g.remove('BallRelease',playable.proxy);
+      r=g.toyRecords[fixture.nativeRuleState.measuredBallIndex];assert.ok(r,'recorded native animation ball index');
+    }
     for(const [key,value]of Object.entries(fixture.runtimeOverrides??{}))if(key.endsWith('.Collidable')){
       const name=key.slice(0,-11).toLowerCase();
       for(const m of g.nativeMeshes)if(g.colliderLabels.get(m.collider.handle)?.toLowerCase()===name)m.collider.setEnabled(value);
@@ -23,8 +29,8 @@ for(const scenario of fixture.cases){
     }
     if(scenario.startRaised){g.rules.run(`Sol${scenario.side==='left'?'L':'R'}Flipper`,true);for(let i=0;i<.2/STEP;i++)g.step();}
     if(fixture.timerSynchronization){const timer=g.rules.objects.get('rollingtimer');timer.enabled=false;timer.enabled=true;}
-    if(fixture.nativeRuleState?.measuredBallRole==='animation')g.rules.objects.get('rollingtimer').enabled=false;
-    r.body.setTranslation({x:scenario.x*.01,y:(2115-scenario.y)*.01,z:(scenario.z??25)*.01},true);r.body.setLinvel({x:scenario.vx,y:-scenario.vy,z:scenario.vz??0},true);r.body.setAngvel({x:0,y:0,z:0},true);
+    placeReferenceBall(g,r,scenario);
+    r=restoreReferenceBalls(g,fixture,scenario,r);
     if(scenario.side){const command=`Sol${scenario.side==='left'?'L':'R'}Flipper`;
       const pressed=scenario.press===false?0:1;
       if(scenario.actualDelay??scenario.delay)g.rules.schedule(scenario.actualDelay??scenario.delay,`${command} ${pressed}`);else g.rules.run(command,!!pressed);

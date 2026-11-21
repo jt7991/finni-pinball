@@ -6,6 +6,26 @@ import {f,add,sub,mul,div,dot,cross,length,unit,nativeNormal} from './native-vec
 import {ContactMesh} from './mesh-contact.js';
 const world=p=>({x:p.x*.01,y:(2115-p.y)*.01,z:(p.z??0)*.01});
 const xyLength=(a,b)=>length({x:f(a.x-b.x),y:f(a.y-b.y),z:0});
+export function nativeSurfaceHeight(item,x,y){
+  if(item.kind==='Wall')return f(item.height_top);
+  if(item.kind!=='Ramp')return 0;
+  const curve=nativeDragCurve(item.drag_points,false,4);x=f(x);y=f(y);
+  let nearest=Infinity,segment=-1,point;
+  for(let i=0;i<curve.length-1;i++){
+    const a=curve[i],b=curve[i+1],A=f(a.y-b.y),B=f(b.x-a.x),C=-f(f(A*a.x)+f(B*a.y));
+    const distance=f(Math.abs(f(f(f(A*x)+f(B*y))+C))/f(Math.sqrt(f(f(A*A)+f(B*B)))));
+    if(distance>=nearest)continue;
+    const D=-B,F=-f(f(D*x)+f(A*y)),det=f(f(A*A)-f(B*D)),inverse=det!==0?f(1/det):0;
+    const px=f(f(f(B*F)-f(A*C))*inverse),py=f(f(f(C*D)-f(A*F))*inverse);
+    if(px<f(Math.min(a.x,b.x)-f(.1))||px>f(Math.max(a.x,b.x)+f(.1))||py<f(Math.min(a.y,b.y)-f(.1))||py>f(Math.max(a.y,b.y)+f(.1)))continue;
+    nearest=distance;segment=i;point={x:px,y:py};
+  }
+  if(segment<0)return 0;
+  let total=0,start=0;
+  for(let i=1;i<curve.length;i++){const distance=xyLength(curve[i],curve[i-1]);total=f(total+distance);if(i<=segment)start=f(start+distance);}
+  start=f(start+xyLength(point,curve[segment]));
+  return f(f(curve[segment].z+f(f(start/total)*f(f(item.height_top)-f(item.height_bottom))))+f(item.height_bottom));
+}
 export function nativeRampSurface(item){
   const center=nativeDragCurve(item.drag_points,false,400),count=center.length,right=[],left=[],vertices=[],indices=[],heights=[];
   let total=0,distance=0;for(let i=1;i<count;i++)total=f(total+xyLength(center[i-1],center[i]));

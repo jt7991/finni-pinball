@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {createFullGame} from '../three/full-game.js';
 import {STEP} from '../three/physics.js';
-import {referenceRandom} from './reference-physics.mjs';
+import {referenceRandom,placeReferenceBall} from './reference-physics.mjs';
 const fixture=JSON.parse(fs.readFileSync('three/tests/fixtures/vpx-heel-milliseconds.json'));
 const layout=JSON.parse(fs.readFileSync('three/public/layout.json')),objects=JSON.parse(fs.readFileSync('three/public/objects.json')),source=fs.readFileSync('three/public/rules.vbs','utf8');Object.assign(layout.physics,fixture.controlledOverrides);
 const scenario=fixture.cases[0],g=await createFullGame(layout,objects,source,()=>{}),samples=[];
@@ -10,7 +10,7 @@ g.random=referenceRandom();
 try{
   g.start();for(let i=0;i<2/STEP;i++)g.step();const r=g.records[0];
   const timer=g.rules.objects.get('rollingtimer');timer.enabled=false;timer.enabled=true;
-  r.body.setTranslation({x:scenario.x*.01,y:(2115-scenario.y)*.01,z:.25},true);r.body.setLinvel({x:0,y:-6,z:0},true);r.body.setAngvel({x:0,y:0,z:0},true);
+  placeReferenceBall(g,r,{...scenario,z:25,vx:0,vy:6,vz:0});
   g.rules.schedule(scenario.actualDelay,'SolRFlipper 1');
   // Native STATE is recorded in the timer before that millisecond's physics
   // update; it observes the ball after the previous millisecond's displacement.

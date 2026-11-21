@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {createFullGame} from '../three/full-game.js';
 import {STEP} from '../three/physics.js';
-import {applyReferencePhysics,referenceRandom} from './reference-physics.mjs';
+import {applyReferencePhysics,referenceRandom,placeReferenceBall} from './reference-physics.mjs';
 const fixture=JSON.parse(fs.readFileSync(process.argv.slice(2).find(a=>!a.startsWith('--'))??'three/tests/fixtures/vpx-gates.json'));
 assert.equal(fixture.probeKind,'gates');
 const layout=JSON.parse(fs.readFileSync('three/public/layout.json')),objects=JSON.parse(fs.readFileSync('three/public/objects.json')),source=fs.readFileSync('three/public/rules.vbs','utf8');applyReferencePhysics(layout,objects,fixture);
@@ -20,7 +20,7 @@ for(const c of fixture.cases){
     for(const [path,value]of Object.entries(c.runtimeOverrides??{})){const dot=path.lastIndexOf('.');g.rules.objects.get(path.slice(0,dot).toLowerCase())[path.slice(dot+1).toLowerCase()]=value;}
     if(c.actualCloseDelay!==undefined)g.rules.schedule(c.actualCloseDelay,`${c.gate}.Open=False`);
     const timer=g.rules.objects.get('rollingtimer');timer.enabled=false;timer.enabled=true;
-    const reset=(x,y,z,vx=0,vy=0)=>{r.body.setTranslation({x:x*.01,y:(2115-y)*.01,z:z*.01},true);r.body.setLinvel({x:vx,y:-vy,z:0},true);r.body.setAngvel({x:0,y:0,z:0},true);};
+    const reset=(x,y,z,vx=0,vy=0)=>placeReferenceBall(g,r,{x,y,z,vx,vy});
     reset(c.x,c.y,c.z,c.vx,c.vy);
     const gate=g.gates.find(s=>s.spec.name===c.gate);assert.ok(gate,c.gate);
     let elapsed=0;const samples=[];

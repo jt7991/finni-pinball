@@ -8,13 +8,17 @@ export function nativeMeshQuery(p,v,radius,duration){
   const box={left:f(center.x-extent),right:f(center.x+extent),top:f(center.y-extent),bottom:f(center.y+extent),low:f(center.z-extent),high:f(center.z+extent)},hitRadius=f(f(box.right-box.left)*.5);
   return {p:center,v:velocity,r,dt:f(duration*100),extent,box,radiusSquared:f(hitRadius*hitRadius)};
 }
-function overlaps(shape,query){
-  if(shape.kind==='plane')return true;
+export function nativeMeshBounds(shape){
+  if(shape.kind==='plane')return null;
   let box=shape.nativeBounds;
   if(!box){
     const points=shape.points.map(position);
     box=shape.nativeBounds={left:Math.min(...points.map(p=>p.x)),right:Math.max(...points.map(p=>p.x)),top:Math.min(...points.map(p=>p.y)),bottom:Math.max(...points.map(p=>p.y)),low:Math.min(...points.map(p=>p.z)),high:Math.max(...points.map(p=>p.z))};
+    if(shape.kind==='wall'||shape.vertical){box.low=f(shape.low*100);box.high=f(shape.high*100);}
   }
+  return box;
+}
+export function nativeBoundsOverlap(box,query){
   const a=query.box;if(!a)return true;
   if(a.right<box.left||a.left>box.right||a.bottom<box.top||a.top>box.bottom||a.high<box.low||a.low>box.high)return false;
   const p=query.p,dx=f(Math.max(f(box.left-p.x),0)+Math.max(f(p.x-box.right),0)),dy=f(Math.max(f(box.top-p.y),0)+Math.max(f(p.y-box.bottom),0)),dz=f(Math.max(f(box.low-p.z),0)+Math.max(f(p.z-box.high),0));
@@ -22,13 +26,17 @@ function overlaps(shape,query){
 }
 const valid=(t,dt)=>Number.isFinite(t)&&t>=0&&!Object.is(t,-0)&&t<=dt;
 const transform=(m,v)=>({x:dot(m[0],v),y:dot(m[1],v),z:dot(m[2],v)});
+export function nativeTriangleIsDegenerate(points){
+  const [a,b,c]=points.map(position),normal=cross(sub(b,a),sub(c,a));
+  return dot(normal,normal)<f(.01);
+}
 function lineMatrix(direction){
   let axis={x:direction.y,y:-direction.x,z:0};const squared=dot(axis,axis);
   axis=squared<=f(1e-6)?{x:1,y:0,z:0}:div(axis,f(Math.sqrt(squared)));
   const {x,y,z}=axis,c=direction.z,s=-f(Math.sqrt(f(1-f(c*c)))),t=f(1-c),xx=f(x*x),yy=f(y*y),zz=f(z*z),xy=f(f(x*y)*t),zx=f(f(z*x)*t),yz=f(f(y*z)*t);
   return [{x:f(xx+f(c*f(1-xx))),y:f(xy+f(z*s)),z:f(zx-f(y*s))},{x:f(xy-f(z*s)),y:f(yy+f(c*f(1-yy))),z:f(yz+f(x*s))},{x:f(zx+f(y*s)),y:f(yz-f(x*s)),z:f(zz+f(c*f(1-zz)))}];
 }
-function shapeData(s){
+export function nativeMeshShapeData(s){
   if(s.native)return s.native;
   const n={kind:s.kind,a:s.a?position(s.a):null};
   if(s.kind==='triangle'){
@@ -44,7 +52,8 @@ function shapeData(s){
     n.n={x:f(d.y*inverse),y:f(-d.x*inverse),z:0};n.length=len;n.low=f(s.low*100);n.high=f(s.high*100);
   }else if(s.kind==='plane'){n.n=nativeNormal(s.normal);n.d=f(s.d*100-s.normal.y*2115);}
   else{
-    if(s.axis){
+    if(s.vertical){n.vertical=true;n.low=f(s.low*100);n.high=f(s.high*100);}
+    else if(s.axis){
       const b=s.kind==='circle'?add(n.a,mul(nativeNormal(s.axis),f(s.length*100))):position(s.points[1]),d=sub(b,n.a);n.length=length(d);n.axis=unit(d);
       if(s.kind==='edge'){
         n.matrix=lineMatrix(n.axis);const a=transform(n.matrix,n.a),endZ=transform(n.matrix,b).z;
@@ -56,8 +65,8 @@ function shapeData(s){
   s.native=n;return n;
 }
 export function nativeMeshHit(shape,worldP,worldV,radius,duration,query){
-  query??=nativeMeshQuery(worldP,worldV,radius,duration);if(!overlaps(shape,query))return null;
-  const s=shapeData(shape);if(s.degenerate)return null;
+  query??=nativeMeshQuery(worldP,worldV,radius,duration);const bounds=nativeMeshBounds(shape);if(bounds&&!nativeBoundsOverlap(bounds,query))return null;
+  const s=nativeMeshShapeData(shape);if(s.degenerate)return null;
   const {p,v,r,dt}=query;
   let time=0,contact=false,gap,vn,normal=s.n;
   if(['triangle','polygon','wall','plane'].includes(s.kind)){
@@ -94,24 +103,26 @@ export function nativeMeshHit(shape,worldP,worldV,radius,duration,query){
     }
   }else{
     let d=sub(p,s.a),dv=v,localP,localV;const total=f(r+s.radius);
-    if(s.matrix){localP=transform(s.matrix,p);localV=transform(s.matrix,v);d={x:f(localP.x-s.xy.x),y:f(localP.y-s.xy.y),z:0};dv={...localV,z:0};}
+    if(s.vertical){d={...d,z:0};dv={...v,z:0};}
+    else if(s.matrix){localP=transform(s.matrix,p);localV=transform(s.matrix,v);d={x:f(localP.x-s.xy.x),y:f(localP.y-s.xy.y),z:0};dv={...localV,z:0};}
     else if(s.axis){d=sub(d,mul(s.axis,dot(d,s.axis)));dv=sub(v,mul(s.axis,dot(v,s.axis)));}
     const squared=dot(d,d),distance=f(Math.sqrt(squared));if(distance<=f(1e-6))return null;
     const b=dot(d,dv);vn=f(b/distance);gap=f(distance-total);if(vn>f(s.kind==='circle'?.0001:.099)||s.kind==='circle'&&gap< -r)return null;
-    if(gap<f(.05)){if(Math.abs(vn)<=f(.099))contact=true;else time=s.axis&&s.kind!=='circle'?f(-gap/vn):Math.max(0,f(-gap/vn));}
+    if(gap<f(.05)){if(Math.abs(vn)<=f(.099))contact=true;else time=(s.axis||s.vertical)&&s.kind!=='circle'?f(-gap/vn):Math.max(0,f(-gap/vn));}
     else{
       const a=dot(dv,dv);if(a<f(1e-8))return null;
       const bb=f(2*b),c=f(squared-f(total*total)),disc=f(f(bb*bb)-f(f(4*a)*c));if(disc<0)return null;
       const root=f(Math.sqrt(disc)),inverse=f(-.5/a),t1=f(f(bb+root)*inverse),t2=f(f(bb-root)*inverse);time=f(t1*t2)<0?Math.max(t1,t2):Math.min(t1,t2);
     }
     if(!valid(time,dt))return null;
-    if(s.matrix){const z=f(localP.z+f(localV.z*time));if(z<s.low||z>s.high)return null;}
+    if(s.vertical){const z=f(p.z+f(v.z*time));if(z<s.low||z>s.high)return null;}
+    else if(s.matrix){const z=f(localP.z+f(localV.z*time));if(z<s.low||z>s.high)return null;}
     else if(s.axis){const at=add(p,mul(v,time)),along=dot(sub(at,s.a),s.axis),skin=s.kind==='circle'?f(r*.5):0;if(along< -skin||along>f(s.length+skin))return null;}
     // Native advances absolute coordinates before subtracting the cylinder/
     // point center. Moving the subtraction before the advance loses different
     // low bits in Float32, especially at playfield seams far from the origin.
     if(s.matrix)normal=unit({x:f(f(localP.x+f(localV.x*time))-s.xy.x),y:f(f(localP.y+f(localV.y*time))-s.xy.y),z:0});
-    else if(s.kind==='circle')normal=unit({x:f(f(p.x+f(v.x*time))-s.a.x),y:f(f(p.y+f(v.y*time))-s.a.y),z:0});
+    else if(s.kind==='circle'||s.vertical)normal=unit({x:f(f(p.x+f(v.x*time))-s.a.x),y:f(f(p.y+f(v.y*time))-s.a.y),z:0});
     else normal=unit(sub(add(p,mul(v,time)),s.a));
     if(s.matrix)normal={x:f(f(f(s.matrix[0].x*normal.x)+f(s.matrix[1].x*normal.y))+f(s.matrix[2].x*normal.z)),y:f(f(f(s.matrix[0].y*normal.x)+f(s.matrix[1].y*normal.y))+f(s.matrix[2].y*normal.z)),z:f(f(f(s.matrix[0].z*normal.x)+f(s.matrix[1].z*normal.y))+f(s.matrix[2].z*normal.z))};
   }

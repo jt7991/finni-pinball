@@ -45,6 +45,11 @@ export class Trigger {
     }
     return hits;
   }
+  hitShape(shape,query,duration,body){
+    if(!this.collider.isEnabled())return null;
+    const member=(this.members.get(body)??0)>0,dt=f(duration*100);
+    return shape.kind==='circle'?this.circle(shape,query.p,query.v,query.r,dt,member,body):this.planar(shape,query.p,query.v,query.r,dt,member);
+  }
   planar(s,p,v,r,dt,member){
     const poly=s.kind==='poly',a=poly?s.points[0]:s.a,n=s.n;
     const dx=f(p.x-a.x),dy=f(p.y-a.y),gap=poly?dot(n,sub(sub(p,mul(n,r)),a)):f(f(f(dx*n.x)+f(dy*n.y))-f(.005)),vn=dot(v,n),inside=gap<=0;

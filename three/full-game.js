@@ -11,6 +11,9 @@ import {Spinner} from './spinner.js';
 import {Gate} from './gate.js';
 import {TargetMotion} from './target-motion.js';
 import {Trigger} from './trigger.js';
+import {nativeTargetMesh} from './native-target.js';
+import {Kicker} from './kicker.js';
+import {nativeSurfaceHeight} from './native-ramp.js';
 
 export async function createFullGame(layout,specs,source,emit,media) {
   await RAPIER.init();
@@ -22,9 +25,10 @@ class FullGame extends Pinball {
     super(layout,emit);
     this.cabinetNudge=new CabinetNudge();
     this.placeholder=this.ball;this.ballCollider.setEnabled(false);
-    this.records=[];this.byCollider=new Map();this.captures=new Map();this.mechanisms=new Map(this.nativeMeshes.map(m=>[this.colliderLabels.get(m.collider.handle)?.toLowerCase(),m.collider]));
+    this.records=[];this.toyRecords=[];this.physicalRecords=[];this.byCollider=new Map();this.captures=new Map();this.mechanisms=new Map(this.nativeMeshes.map(m=>[this.colliderLabels.get(m.collider.handle)?.toLowerCase(),m.collider]));
     this.targetFronts=new Map();this.targetMotions=new Map();this.targetEventBall=null;
     this.specs=specs;this.media=media;this.pendingCreate=null;this.syncCount=0;
+    for(const spec of specs.objects)this.nativeParts.set(spec.name.toLowerCase(),{...this.nativeParts.get(spec.name.toLowerCase()),...spec});
     for(const spec of specs.objects)this.addMechanism(spec);
     const storage={
       load:key=>{try{return JSON.parse(localStorage.getItem(`finni-three-rule-${key}`)??'""');}catch{return '';}},
@@ -41,7 +45,7 @@ class FullGame extends Pinball {
       shake:strength=>emit({type:'shake',strength}),
       message:text=>emit({type:'message',text}),mechanism:(name,k,v)=>this.mechanism(name,k,v),
       mechanismValue:(name,key)=>{const lower=name.toLowerCase(),target=this.targetMotions.get(lower);if(target)return ({isdropped:target.dropped?1:0,currentanimoffset:target.offset})[key];const gate=this.gates.find(g=>g.spec.name.toLowerCase()===lower);if(gate)return ({currentangle:gate.currentAngle,collidable:gate.enabled,open:gate.open})[key];},
-      balls:()=>this.records.map(r=>r.proxy),...storage,
+      balls:()=>[...this.toyRecords,...this.records].map(r=>r.proxy),...storage,
     });
     this.rules.init();
     this.rules.execute('bFreePlay=True:BallsPerGame=3');
@@ -50,12 +54,8 @@ class FullGame extends Pinball {
 
   surface(spec) {
     if(!spec.surface)return 0;
-    const ramp=this.ramps.find(r=>r.name.toLowerCase()===spec.surface.toLowerCase());
-    if(!ramp)return 0;
-    const p=point(spec.center??spec.position),edge=ramp.edges[0];
-    let nearest=edge[0],distance=Infinity;
-    for(const a of edge){const d=Math.hypot(a.x-p.x,a.y-p.y);if(d<distance){distance=d;nearest=a;}}
-    return nearest.z;
+    const item=this.nativeParts.get(spec.surface.toLowerCase());if(!item)return 0;
+    const p=spec.center??spec.position;return nativeSurfaceHeight(item,p.x,p.y)*.01;
   }
 
   addMechanism(spec) {
@@ -84,9 +84,7 @@ class FullGame extends Pinball {
       const vertices=spec.collision_mesh.vertices.flatMap(v=>[v[0]*size.x*.01,-v[1]*size.y*.01,v[2]*size.z*.01]);
       collider=this.world.createCollider(RAPIER.ColliderDesc.trimesh(new Float32Array(vertices),new Uint32Array(spec.collision_mesh.indices),RAPIER.TriMeshFlags.FIX_INTERNAL_EDGES)
         .setTranslation(p.x,p.y,base).setRotation(rotation).setSensor(true).setRestitution(spec.contact_physics.elasticity).setFriction(spec.contact_physics.friction));
-      const worldVertices=[];
-      for(let i=0;i<vertices.length;i+=3){const x=vertices[i],y=vertices[i+1];worldVertices.push(p.x+x*Math.cos(a)-y*Math.sin(a),p.y+x*Math.sin(a)+y*Math.cos(a),base+vertices[i+2]);}
-      const mesh=new ContactMesh({vertices:worldVertices,indices:spec.collision_mesh.indices},{invertNormals:true,edgeKeys:new Set()}),material={...this.playfieldMaterial,...spec.contact_physics};
+      const mesh=new ContactMesh(nativeTargetMesh(spec,spec.collision_mesh.vertices,spec.collision_mesh.indices),{preserveNormals:true,edgeKeys:new Set()}),material={...this.playfieldMaterial,...spec.contact_physics};
       this.registerMesh({collider,mesh,material,source_order:spec.source_order});
       this.contactMaterials.set(collider.handle,{collider,...spec.contact_physics});
       if(spec.target_type.startsWith('drop')&&!spec.is_legacy){
@@ -118,13 +116,15 @@ class FullGame extends Pinball {
           const bracket={handle:`gate-bracket:${name}`,isEnabled:()=>true};
           const mesh=new ContactMesh({vertices:[],indices:[]}),angle=Math.fround(spec.rotation*Math.fround(Math.PI/180));
           for(const sign of [-1,1]){const x=Math.fround(Math.fround(spec.center.x)+sign*Math.fround(Math.fround(Math.cos(angle))*Math.fround(spec.length*.5))),y=Math.fround(Math.fround(spec.center.y)+sign*Math.fround(Math.fround(Math.sin(angle))*Math.fround(spec.length*.5)));mesh.addCircle(point({x,y}),.0001,z,z+spec.height*.01);}
-          this.colliderLabels.set(bracket.handle,name+' bracket');this.registerMesh({collider:bracket,mesh,material:{elasticity:.3,elasticity_falloff:0,friction:.3,scatter:0,default_scatter:0,difficulty:0}});
+          this.colliderLabels.set(bracket.handle,name+' bracket');this.registerMesh({collider:bracket,mesh,native_source_order:spec.native_source_order,treeRank:2,material:{elasticity:.3,elasticity_falloff:0,friction:.3,scatter:0,default_scatter:0,difficulty:0}});
         }
       }
     }
-    if(spec.kind==='Kicker'&&['hellhouse','lock'].includes(key)){
+    if(spec.kind==='Kicker'){
       collider=this.world.createCollider(RAPIER.ColliderDesc.cylinder(.25,(spec.radius??30)*.01)
         .setTranslation(p.x,p.y,z+.25).setRotation({x:Math.SQRT1_2,y:0,z:0,w:Math.SQRT1_2}).setSensor(true));
+      collider.setEnabled(spec.is_enabled);
+      if(this.nativeTreeEnabled){const kicker=new Kicker(spec,z,rec=>this.captures.set(key,rec),(event,rec)=>this.rules?.hit(name,event,rec.proxy));kicker.collider=collider;this.kickers.push(kicker);}
     }
     if(collider){
       if(spec.kind==='HitTarget'&&spec.target_type.startsWith('drop'))this.targetMotions.set(key,new TargetMotion(spec,collider,()=>Math.round(this.time*1000),(event,ball)=>{
@@ -134,7 +134,7 @@ class FullGame extends Pinball {
       collider.setCollisionGroups(STATIC_GROUP);collider.setRestitution(surfaceRestitution(collider.restitution()));collider.setRestitutionCombineRule(RAPIER.CoefficientCombineRule.Multiply);
       this.colliderLabels.set(collider.handle,name);
       collider.setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS);
-      this.tags.set(collider.handle,{kind:spec.kind==='Trigger'&&this.nativeFlipperContacts?'trigger-body':spec.kind==='Spinner'?'spinner-body':spec.kind==='Gate'&&this.nativeFlipperContacts?'gate-body':this.targetFronts.has(key)?'target-body':'mechanism',name,spec});this.mechanisms.set(key,collider);
+      this.tags.set(collider.handle,{kind:spec.kind==='Kicker'&&this.nativeTreeEnabled?'kicker-body':spec.kind==='Trigger'&&this.nativeFlipperContacts?'trigger-body':spec.kind==='Spinner'?'spinner-body':spec.kind==='Gate'&&this.nativeFlipperContacts?'gate-body':this.targetFronts.has(key)?'target-body':'mechanism',name,spec});this.mechanisms.set(key,collider);
     }
   }
 
@@ -152,15 +152,18 @@ class FullGame extends Pinball {
 
   spawn(name) {
     const key=name.toLowerCase(),spec=this.specs.objects.find(s=>s.name.toLowerCase()===key);
-    const p=key==='ballrelease'?{x:this.plunger.spec.center.x*.01,y:(2115-this.plunger.end-5)*.01,z:RADIUS}:{...point(spec?.center??{x:293.68,y:473.63}),z:this.surface(spec??{})+RADIUS};
+    const p={...point(spec?.center??{x:293.68,y:473.63}),z:this.surface(spec??{})+RADIUS};
     const body=this.world.createRigidBody(RAPIER.RigidBodyDesc.dynamic().setTranslation(p.x,p.y,p.z)
       .setCcdEnabled(true).setCanSleep(false));
+    if(this.nativePlayfieldContacts)body.setGravityScale(0,true);
     const collider=this.world.createCollider(RAPIER.ColliderDesc.ball(RADIUS).setMass(1).setRestitution(BALL_RESTITUTION).setRestitutionCombineRule(RAPIER.CoefficientCombineRule.Multiply).setFriction(0).setFrictionCombineRule(RAPIER.CoefficientCombineRule.Max)
       .setCollisionGroups(BALL_GROUP).setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS),body);
-    const rec={body,collider,held:key==='ballrelease'?null:key,inLane:key==='ballrelease',previous:{...p},cooldowns:new Map(),laneTime:this.time};
+    if(this.nativePositionUnits)this.nativeBall(body).body.setTranslation(p,true);
+    const isToy=['he','la','ra'].includes(key),rec={body,collider,isToy,held:key,inLane:false,previous:{...p},cooldowns:new Map(),laneTime:this.time};
     rec.proxy=new Proxy({radius:25,mass:1,id:body.handle},{
       get:(target,key)=>{
         if(typeof key!=='string')return target[key];key=key.toLowerCase();
+        if(rec.removed)return rec.lastState[key]??target[key]??0;
         if(/^ang(mom|vel)[xyz]$/.test(key)){
           const axis=key.at(-1),sign=axis==='y'?1:-1;
           if(this.nativePositionUnits){const native=this.nativeBall(body);native.syncAngular();return key.startsWith('angmom')?native.angularMomentum[axis]:Math.fround(native.angularMomentum[axis]/native.inertia);}
@@ -170,6 +173,7 @@ class FullGame extends Pinball {
         return ({x:q.x*100,y:2115-q.y*100,z:q.z*100,velx:v.x,vely:-v.y,velz:v.z})[key]??target[key]??0;
       },
       set:(_target,key,v)=>{key=String(key).toLowerCase();
+        if(rec.removed){rec.lastState[key]=v;return true;}
         if(/^angmom[xyz]$/.test(key)){const axis=key.at(-1);if(this.nativePositionUnits){this.nativeBall(body).setAngularMomentum(axis,v);return true;}const w={...body.angvel()};w[axis]=v*(axis==='y'?1:-1)/(2.5*body.mass());body.setAngvel(w,true);return true;}
         if(/^angvel[xyz]$/.test(key))return true; // Deprecated read-only native properties.
         const positionBody=this.nativePositionUnits?this.nativeBall(body).body:body;
@@ -179,29 +183,35 @@ class FullGame extends Pinball {
         positionBody.setTranslation(p,true);body.setLinvel(vel,true);return true;},
     });
     if(rec.held)body.setBodyType(RAPIER.RigidBodyType.KinematicPositionBased,true);
-    this.records.push(rec);this.byCollider.set(collider.handle,rec);this.captures.set(key,rec);this.pendingCreate=rec;this.ball=body;
-    if(key==='ballrelease'){
-      this.inLane=true;
-    }
+    (isToy?this.toyRecords:this.records).push(rec);this.physicalRecords.push(rec);this.byCollider.set(collider.handle,rec);this.captures.set(key,rec);this.pendingCreate=rec;if(!isToy)this.ball=body;
+    const kicker=this.kickers.find(k=>k.key===key);if(kicker){kicker.members.set(this.nativeBall(body).body,1);kicker.captured=rec;}
     return rec.proxy;
   }
 
   remove(name,ball) {
-    const rec=this.records.find(r=>r.proxy===ball)??this.captures.get(name.toLowerCase());if(!rec)return;
-    this.byCollider.delete(rec.collider.handle);this.records.splice(this.records.indexOf(rec),1);
+    const rec=[...this.toyRecords,...this.records].find(r=>r.proxy===ball)??this.captures.get(name.toLowerCase());if(!rec)return;
+    // Native COM references remain readable after DestroyBall removes a body
+    // from physics. Rules may still hold ActiveBall during the same callback.
+    rec.lastState=Object.fromEntries(['x','y','z','velx','vely','velz','angmomx','angmomy','angmomz','angvelx','angvely','angvelz'].map(key=>[key,rec.proxy[key]]));
+    rec.removed=true;this.physicalRecords.splice(this.physicalRecords.indexOf(rec),1);for(const kicker of this.kickers)kicker.release(rec);
+    const list=rec.isToy?this.toyRecords:this.records;this.byCollider.delete(rec.collider.handle);list.splice(list.indexOf(rec),1);
     for(const [key,value]of this.captures)if(value===rec)this.captures.delete(key);
     this.world.removeRigidBody(rec.body);this.ball=this.records[0]?.body??this.placeholder;
   }
 
   kick(name,_ball,angle,speed,inclination=0) {
-    const key=name.toLowerCase(),rec=this.pendingCreate??this.captures.get(key);this.pendingCreate=null;
+    const key=name.toLowerCase(),rec=this.captures.get(key);if(this.pendingCreate===rec)this.pendingCreate=null;
     if(!rec)return;
-    if(key==='ballrelease')return; // Ball rolls into its plunger rest; launch is player controlled.
-    const a=angle*Math.PI/180;
+    for(const kicker of this.kickers)kicker.release(rec);
+    // VPX Kick releases at the captured center. Only KickXYZ/KickZ translate
+    // it; inventing a lateral offset changes both scoop shots and lane feeds.
+    const f=Math.fround,a=f(f(angle)*f(Math.PI/180));let elevation=f(inclination),horizontal=f(speed);
+    if(Math.abs(elevation)>f(Math.PI/2))elevation=f(elevation*f(Math.PI/180));
+    const vertical=f(f(Math.sin(elevation))*horizontal);if(vertical>0)horizontal=f(horizontal*f(Math.cos(elevation)));
     rec.held=null;rec.body.setBodyType(RAPIER.RigidBodyType.Dynamic,true);
-    const p=rec.body.translation();rec.body.setTranslation({x:p.x+Math.sin(a)*.4,y:p.y+Math.cos(a)*.4,z:p.z+.02},true);
-    rec.body.setLinvel({x:Math.sin(a)*speed,y:Math.cos(a)*speed,z:Math.sin(inclination)*speed},true);
-    rec.cooldowns.set(key,this.time+.7);this.captures.delete(key);
+    rec.body.setAngvel({x:0,y:0,z:0},true);
+    rec.body.setLinvel({x:f(f(Math.sin(a))*horizontal),y:f(f(Math.cos(a))*horizontal),z:vertical},true);
+    this.captures.delete(key);
   }
 
   start(){this.input('start',true);this.input('start',false);}
@@ -239,15 +249,16 @@ class FullGame extends Pinball {
     this.time+=STEP;
     this.rules.tick(STEP);
     for(const [name,target]of this.targetMotions){target.update(STEP*1000);this.targetFronts.get(name)?.setEnabled(target.collider.isEnabled());}
-    for(const rec of this.records){rec.previous={...rec.body.translation()};rec.previousVelocity={...rec.body.linvel()};}
+    const physicalRecords=this.physicalRecords;
+    for(const rec of physicalRecords){rec.previous={...rec.body.translation()};rec.previousVelocity={...rec.body.linvel()};}
     this.driveFlippers();
     for(const f of this.flippers){
       const state=this.rules.objects.get(f.side==='left'?'leftflipper':'rightflipper');
       state.startangle=90-f.rest*180/Math.PI;state.endangle=90-f.raised*180/Math.PI;
       f.collider.setRestitution(surfaceRestitution(Number(state.elasticity)||0));
     }
-    this.prepareContacts(this.records);
-    this.stepPhysics(this.records);
+    this.prepareContacts(physicalRecords);
+    this.stepPhysics(physicalRecords);
     for(const spinner of this.spinners)this.rules.objects.get(spinner.spec.name.toLowerCase()).currentangle=spinner.currentAngle;
     this.charge=this.held.launch?1.2*this.plunger.charge:0;
     this.readFlippers();
@@ -260,7 +271,7 @@ class FullGame extends Pinball {
       const other=this.byCollider.get(a)===rec?this.byCollider.get(b):this.byCollider.get(a);
       if(other){if(started){const u=rec.body.linvel(),v=other.body.linvel();this.rules.run('OnBallBallCollision',rec.proxy,other.proxy,Math.hypot(u.x-v.x,u.y-v.y,u.z-v.z));}return;}
       const tag=this.tags.get(this.byCollider.has(a)?b:a);if(!tag)return;
-      if(tag.kind==='target-body'||tag.kind==='spinner-body'||tag.kind==='gate-body'||tag.kind==='trigger-body')return;
+      if(tag.kind==='target-body'||tag.kind==='spinner-body'||tag.kind==='gate-body'||tag.kind==='trigger-body'||tag.kind==='kicker-body')return;
       if(!started){if(tag.spec?.kind==='Trigger'){if(tag.name.toLowerCase()==='swplungerrest')rec.inLane=false;this.rules.hit(tag.name,'UnHit',rec.proxy);}return;}
       if(tag.spec?.kind==='Trigger'){
         if(tag.name.toLowerCase()==='swplungerrest')rec.inLane=true;

@@ -41,8 +41,8 @@ export function createRules(source,specs,host={}) {
       isdropped:spec.is_dropped??false,open:false,rotx:spec.rot_and_tra?.[0]??0,roty:spec.rot_and_tra?.[1]??0,rotz:spec.rot_z??spec.rot_and_tra?.[2]??0,
       currentangle:0,startangle:0,endangle:0,transz:0,height:spec.height??50,sequenceactive:false,sequencestate:0};
     const actions={
-      createball:()=>host.createBall?.(name),
-      createsizedballwithmass:()=>host.createBall?.(name),
+      createball:()=>host.createBall?.(name)??{x:state.x,y:state.y,z:25,velx:0,vely:0,velz:0},
+      createsizedballwithmass:()=>host.createBall?.(name)??{x:state.x,y:state.y,z:25,velx:0,vely:0,velz:0},
       destroyball:()=>host.destroyBall?.(name,activeBall),
       kick:(angle,speed,inclination=0)=>host.kick?.(name,activeBall,angle,speed,inclination),
       rotatetoend:()=>host.flipper?.(lower.startsWith('left')?'left':'right',true),
@@ -67,7 +67,7 @@ export function createRules(source,specs,host={}) {
           if(enabled)timers.set(timerKey,{object:proxy,handler:`${name}_Timer`,at:time+Math.max(.001,Number(k==='enabled'?target.interval:target.timerinterval)/1000),property:k});
           else timers.delete(timerKey);
         }
-        if(k==='isdropped'||k==='collidable'||k==='open'||k==='enabled'&&spec.kind==='Trigger')host.mechanism?.(name,k,v);
+        if(k==='isdropped'||k==='collidable'||k==='open'||k==='enabled'&&['Trigger','Kicker'].includes(spec.kind))host.mechanism?.(name,k,v);
         return true;},
       has(target,key){return typeof key==='string'&&(key.toLowerCase() in target||key.toLowerCase() in actions);},
       ownKeys(target){return [...new Set([...Reflect.ownKeys(target),...Object.keys(actions)])];},

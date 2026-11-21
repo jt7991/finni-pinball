@@ -36,12 +36,20 @@ faces. Its collision shapes remain independent of the visible wire GLB.
 Native ball momentum is preserved across Rapier orientation updates unless a
 physical ball/ball contact actually requires adopting the Rapier result.
 
-The camera reference gates now pass. The full suite still has four unchanged
-failures: directional nudge speed, upper-ramp geometry contact, wire-entry path
-and the old raw left-tip/floor recording. Native quadtree traversal and its
-duplicate contact visits are not ported. Shrinking every mechanism's search
-time in the existing grid order regressed the strict heel recording; query
-limits must be integrated with the native traversal, not applied in isolation.
+The pinned wasm32 build uses scalar quadtree traversal, without the x86/ARM SSE
+duplicate-visit behavior. `native-tree.js` now retains that scalar partition and
+query order, including disabled shapes. `native-rubber.js` and
+`native-target.js` retain source float mesh transforms; vertical posts use
+HitLineZ instead of a slightly tilted generic cylinder transform.
+
+The authored three physical animation balls are now restored. Their collisions
+split time for every moving part. New `--all-ball-state` native captures retain
+every body's exact initial float state; fresh raw-flipper and spinner fixtures
+retain their existing acceptance limits and closely reproduce both trajectories.
+The kicker fixture also checks exact sampled lifecycle, score and pocket count.
+Older fixtures omit the hidden bodies' initial state and several gates currently
+fail. They remain in the suite with unchanged limits. Rapier ball/ball response,
+remaining contact/rule timing and complete gameplay parity are still unfinished.
 
 Native measurement fixtures include their source-table hash, controlled-table
 hash and the exact comparison overrides. `scripts/prepare-vpx-contact-reference.py`

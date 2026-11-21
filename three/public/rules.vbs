@@ -159,13 +159,38 @@ Dim aBall, bBall, cBall
 LilDPInit
 
 Sub LilDPInit
+    Set aBall = he.createball
+    Set bBall = la.createball
+    Set cBall = ra.createball
+    he.Kick 0, 0
+    la.Kick 0, 0
+    ra.Kick 0, 0
+    lilShakeTimer.Enabled = 1
 End Sub
 
-Sub LilDPShake(strength)
- HostShake strength
+Sub LilDPShake(strength) 'strength could be from 1 to 5
+    aball.velx = - strength * RND(1)
+    aball.vely = - strength * RND(1)
+    bball.velx = - strength * RND(1)
+    bball.vely = - strength * RND(1)
+    cball.velx = - strength * RND(1)
+    cball.vely = - strength * RND(1)
 End Sub
 
 Sub lilShakeTimer_Timer
+    Dim a, b, c, d, e, f
+    a = he.y - aball.y
+    b = aball.x - he.x
+    LilHead.rotx = - a
+    LilHead.roty = b
+    c = la.y - bball.y
+    d = bball.x - la.x
+    LilLeftArm.rotx = - c
+    LilLeftArm.roty = d
+    e = ra.y - cball.y
+    f = cball.x - ra.x
+    LilRightArm.rotx = e
+    LilRightArm.roty = f
 End Sub
 
 '******
@@ -812,7 +837,7 @@ Const maxvel = 52 'max ball velocity during game play. EM: 20-35  SS: 35-50
 ' rolling routines
 
 Const tnob = 19   'total number of balls, use a high number so you may test the table without errors.
-Const lob = 0    'number of locked balls
+Const lob = 3    'number of locked balls
 Dim rolling()
 ReDim rolling(tnob)
 

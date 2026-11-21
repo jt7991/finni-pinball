@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {createFullGame} from '../three/full-game.js';
 import {STEP} from '../three/physics.js';
-import {applyReferencePhysics,referenceRandom} from './reference-physics.mjs';
+import {applyReferencePhysics,referenceRandom,placeReferenceBall} from './reference-physics.mjs';
 const fixture=JSON.parse(fs.readFileSync(process.argv.slice(2).find(a=>!a.startsWith('--'))??'three/tests/fixtures/vpx-nudge.json'));
 const layout=JSON.parse(fs.readFileSync('three/public/layout.json')),objects=JSON.parse(fs.readFileSync('three/public/objects.json')),source=fs.readFileSync('three/public/rules.vbs','utf8');applyReferencePhysics(layout,objects,fixture);
 const reports=[];
@@ -12,7 +12,7 @@ for(const c of fixture.cases){
   try{
     g.start();for(let i=0;i<2/STEP;i++)g.step();const r=g.records[0];
     const timer=g.rules.objects.get('rollingtimer');timer.enabled=false;timer.enabled=true;
-    r.body.setTranslation({x:c.x*.01,y:(2115-c.y)*.01,z:c.z*.01},true);r.body.setLinvel({x:0,y:0,z:0},true);r.body.setAngvel({x:0,y:0,z:0},true);
+    placeReferenceBall(g,r,{...c,vx:0,vy:0,vz:0});
     if(c.actualDelay)g.rules.schedule(c.actualDelay,`Nudge ${c.nudgeAngle},${c.force}`);else g.rules.execute(`Nudge ${c.nudgeAngle},${c.force}`);
     let elapsed=0;const samples=[];
     for(const expected of c.samples){

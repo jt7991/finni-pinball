@@ -77,16 +77,19 @@ def primitive_collision(path,item):
     # outward normals. Keep the OBJ triangle order, including native seams.
     return {'vertices':vertices,'indices':indices}
 items = []
+rubbers = []
 for path in source_files:
     data = json.loads(path.read_text())
     kind, item = next(iter(data.items()))
     object_order[kind,item['name']]=source_order[path.name]
-    if kind == 'Wall' and item.get('is_collidable'):
-        items.append({'kind': kind, **{k: item[k] for k in ('name', 'height_bottom', 'height_top', 'is_bottom_solid', 'slingshot_force', 'slingshot_threshold', 'elasticity', 'friction', 'elasticity_falloff', 'scatter', 'physics_material', 'overwrite_physics', 'drag_points')}})
+    if kind == 'Wall':
+        items.append({'kind': kind, **{k: item[k] for k in ('name', 'is_collidable', 'height_bottom', 'height_top', 'is_bottom_solid', 'slingshot_force', 'slingshot_threshold', 'elasticity', 'friction', 'elasticity_falloff', 'scatter', 'physics_material', 'overwrite_physics', 'drag_points')}})
     elif kind in ('Bumper', 'Flipper', 'Plunger') or kind == 'Kicker' and item['name'] == 'HellHouse':
         items.append({'kind': kind, **item})
-    elif kind == 'Ramp' and item.get('is_collidable'):
+    elif kind == 'Ramp':
         items.append({'kind': kind, **item})
+    elif kind == 'Rubber':
+        rubbers.append({'kind':kind,**item,'native_source_order':source_order[path.name],'contact_physics':contact_physics(item)})
     elif kind=='Primitive' and item.get('is_collidable') and not item.get('is_toy') and item['name']!='playfield_mesh':
         if not item['use_3d_mesh'] or item['collision_reduction_factor']!=0:
             raise ValueError(f"Unported native primitive collision variant: {item['name']}")
@@ -122,7 +125,7 @@ data = {'width': 952, 'height': 2115, 'scale': 0.01,
         'physics':{'gravity':gamedata['gravity'],'slope':gamedata['angle_tilt_min'],
                    'friction':gamedata['friction'],'elasticity':gamedata['elasticity'],
                    'elasticity_falloff':gamedata['elastic_falloff'],'scatter':gamedata['scatter'],
-                   'default_scatter':gamedata['default_scatter'],'difficulty':gamedata['global_difficulty']},'playfield':playfield,'items': items}
+                   'default_scatter':gamedata['default_scatter'],'difficulty':gamedata['global_difficulty']},'playfield':playfield,'items': items,'rubbers':rubbers}
 (OUT / 'layout.json').write_text(json.dumps(data, separators=(',', ':')))
 specs=[]
 target_shapes={}
@@ -142,6 +145,8 @@ for path in source_files:
     specs[-1]['native_source_order']=source_order[path.name]
     if kind in ('Spinner','Gate'):
         specs[-1].update({k:item[k] for k in ('damping','angle_max','angle_min','elasticity','friction','scatter','gravity_factor','two_way','show_bracket') if k in item})
+    if kind=='Kicker':
+        specs[-1].update({k:item[k] for k in ('legacy_mode','fall_through','hit_accuracy','scatter')})
     if kind=='HitTarget':
         specs[-1].update({k:item[k] for k in ('is_legacy','use_hit_event','threshold','drop_speed','raise_delay')})
         specs[-1]['contact_physics']=contact_physics(item)
@@ -180,13 +185,8 @@ for timer in ('LilDPTimer','LilDPSpinner'):
         return body
     script,count=re.subn(pattern,bind_timer,script,count=1,flags=re.S|re.I)
     if count!=1:raise ValueError(f'Missing native timer handler {timer}')
-script=re.sub(r'Sub LilDPInit\b.*?End Sub','Sub LilDPInit\nEnd Sub',script,flags=re.S|re.I)
-# Physical toy bobble is animated by Three.js rather than three invisible VPX balls.
-script=re.sub(r'Sub LilDPShake\(strength\).*?End Sub','Sub LilDPShake(strength)\n HostShake strength\nEnd Sub',script,flags=re.S|re.I)
-script=re.sub(r'Sub lilShakeTimer_Timer\b.*?End Sub','Sub lilShakeTimer_Timer\nEnd Sub',script,flags=re.S|re.I)
-# The JS host omits the three bobble balls. GetBalls therefore starts directly
-# with playable balls; retain the original 10ms spin/speed controller and audio.
-script=script.replace('Const lob = 3','Const lob = 0')
+# Retain the three physical bobble balls, their authored shake/animation timer
+# and original GetBalls locked-ball offset. They participate in native timing.
 script=re.sub(r'^Sub FlashForMs\(MyLight, TotalPeriod, BlinkPeriod, FinalState\).*?^End Sub',
               'Sub FlashForMs(MyLight, TotalPeriod, BlinkPeriod, FinalState)\n HostFlash MyLight, TotalPeriod, BlinkPeriod, FinalState\nEnd Sub',script,flags=re.S|re.I|re.M)
 (OUT/'rules.vbs').write_text(script)

@@ -144,12 +144,16 @@ test('the authored 10ms controller updates every playable ball through real VB a
   const g=await createFullGame(json('layout'),json('objects'),fs.readFileSync(new URL('../public/rules.vbs',import.meta.url),'utf8'),()=>{});
   try{
     g.start();for(let i=0;i<1.7/STEP;i++)g.step();g.spawn('BallRelease');
-    assert.equal(g.rules.value('UBound(GetBalls())'),1);
+    assert.equal(g.toyRecords.length,3);
+    assert.equal(g.rules.value('UBound(GetBalls())'),4);
+    assert.equal(g.rules.value('lob'),3,'authored controller skips the three bobble balls');
+    const toyVelocities=g.toyRecords.map(r=>r.body.linvel());
     const [a,b]=g.records;
     for(const r of [a,b]){r.held=null;r.body.setBodyType(RAPIER.RigidBodyType.Dynamic,true);}
     a.body.setLinvel({x:60,y:30,z:3},true);b.body.setLinvel({x:-40,y:-70,z:5},true);
     for(const r of [a,b])r.body.setAngvel({x:8,y:10,z:20},true);
     g.rules.tick(.01);
+    for(const [index,r]of g.toyRecords.entries())assert.deepEqual(r.body.linvel(),toyVelocities[index],'rolling controller leaves animation balls alone');
     assert.ok(Math.abs(a.body.linvel().x-52)<1e-5);assert.ok(Math.abs(a.body.linvel().y-26)<1e-5);
     assert.ok(Math.abs(b.body.linvel().x+40*52/70)<1e-5);assert.ok(Math.abs(b.body.linvel().y+52)<1e-5);
     for(const r of [a,b]){assert.ok(Math.abs(r.body.angvel().z-19)<1e-5);assert.equal(r.body.angvel().x,8);assert.equal(r.body.angvel().y,10);}

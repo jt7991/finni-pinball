@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {createFullGame} from '../three/full-game.js';
-import {applyReferencePhysics,referenceRandom} from './reference-physics.mjs';
+import {applyReferencePhysics,referenceRandom,placeReferenceBall} from './reference-physics.mjs';
 
 // Independently captured native states are observed at the end of the flipper
 // timer, immediately before that millisecond's physics update.
@@ -13,8 +13,7 @@ g.random=referenceRandom();
 try{
   g.start();for(let ms=0;ms<2000;ms++)g.step();g.launch();
   const c=fixture.cases[0],r=g.records[0],timer=g.rules.objects.get('rollingtimer');timer.enabled=false;timer.enabled=true;
-  r.body.setTranslation({x:c.x*.01,y:(2115-c.y)*.01,z:c.z*.01},true);
-  r.body.setLinvel({x:c.vx,y:-c.vy,z:c.vz??0},true);r.body.setAngvel({x:0,y:0,z:0},true);
+  placeReferenceBall(g,r,c);
   let elapsed=0;const samples=[];
   for(const row of c.timerTrace.filter(row=>row[0]==='STATE')){
     const ms=row[1]-1;while(elapsed<ms){g.step();elapsed++;}

@@ -6,6 +6,10 @@ const [debug,base,output]=process.argv.slice(2);
 const probeKind=process.argv.includes('--triggers')?'triggers':process.argv.includes('--targets')?'targets':process.argv.includes('--gates')?'gates':process.argv.includes('--spinners')?'spinners':process.argv.includes('--plunger')?'plunger':process.argv.includes('--nudge')?'nudge':'contacts';
 const reference=await(await fetch(new URL('/reference-metadata.json',base))).json();
 const recordTimers=!!reference.instrumentation&&!process.argv.includes('--no-timer-trace');
+const recordAllBalls=process.argv.includes('--all-ball-state');
+const recordKickers=process.argv.includes('--kickers');
+const ballStateFields=['X','Y','Z','VelX','VelY','VelZ','AngMomX','AngMomY','AngMomZ','Mass','Radius','ID'];
+if(recordAllBalls)reference.initialBallStateColumns=ballStateFields;
 const traceMilliseconds=Number(process.argv.find(a=>a.startsWith('--trace-ms='))?.slice(11)??70);
 assert.ok(Number.isInteger(traceMilliseconds)&&traceMilliseconds>=1&&traceMilliseconds<=1000,'trace duration must be 1..1000ms');
 reference.timerTraceCaptured=recordTimers;
@@ -13,6 +17,7 @@ if(recordTimers)reference.traceMilliseconds=traceMilliseconds;
 assert.deepEqual(reference.controlledOverrides,{scatter:0,default_scatter:0},'controlled native table metadata');
 const runtimeOverrides={'LeftFlipper.Scatter':0,'RightFlipper.Scatter':0};
 const columns=['ms','x','y','z','vx','vy','vz','wx','wy','wz','left','right',...(probeKind==='triggers'?['balls_over']:probeKind==='plunger'?['plunger_position']:probeKind==='targets'?['target009_dropped','target010_dropped','target011_dropped','target009_offset','target010_offset','target011_offset','score']:['spinners','gates'].includes(probeKind)?[probeKind==='gates'?'gate_angle':'spinner_angle','score','left_spinner_count']:[])];
+if(recordKickers)columns.push('ball_count','score','balls_in_hole');
 reference.timerSynchronization='RollingTimer disabled/enabled immediately before each initial state, resetting its 10ms phase.';
 const tabs=await(await fetch(`${debug}/json/list`)).json();
 const socket=new WebSocket(tabs.find(t=>t.type==='page').webSocketDebuggerUrl);
@@ -48,6 +53,14 @@ if(process.argv.includes('--geometry')){
 if(process.argv.includes('--shooter')){
   reference.shooterProbe=true;cases.length=0;
   for(const speed of [36,52])cases.push({name:`shooter-feed-${speed}`,x:905,y:1800,z:25,vx:0,vy:-speed,sampleCount:96});
+}
+if(process.argv.includes('--feed')){
+  cases.length=0;
+  cases.push({name:'ballrelease-feed',x:839.7799,y:1804.9163,z:25,vx:4,vy:0,sampleCount:120});
+}
+if(recordKickers){
+  cases.length=0;
+  cases.push({name:'hellhouse-capture',kicker:'HellHouse',x:293.68433,y:530,z:25,vx:0,vy:-8,sampleCount:120});
 }
 if(probeKind==='triggers'){
   cases.length=0;
@@ -110,6 +123,7 @@ try{
   await wait('document.body.classList.contains("ball-in-plunger")');
   const rawAnimation=process.argv.includes('--raw-animation');
   await script(`Dim RefBalls,RefBall:RefBalls=GetBalls:Set RefBall=RefBalls(${rawAnimation?'0':'UBound(RefBalls)'})`);
+  if(recordAllBalls)await script('Dim RefInitBalls,RefInitBall,RefInitIdx,RefInitTrace');
   await script('Debug.Print "REFERENCE_RULE_STATE|" & (UBound(RefBalls)+1) & ":" & CLng(RollingTimer.Enabled) & ":" & maxvel & ":" & lob');
   const state=(await marker('REFERENCE_RULE_STATE')).split(':').map(parseFloat);assert.equal(state.length,4);assert.ok(state.every(Number.isFinite));
   reference.nativeRuleState={ballCount:state[0],measuredBallIndex:rawAnimation?0:state[0]-1,measuredBallRole:rawAnimation?'animation':'playable',rollingTimerEnabled:!!state[1],maxvel:state[2],lockedBallOffset:state[3]};console.log('Native rule state',JSON.stringify(reference.nativeRuleState));
@@ -190,10 +204,20 @@ try{
     const closeMarker=`CONTACT_GATE_CLOSE_${scenario.name}`;
     if(scenario.closeDelay){const close=`Debug.Print "${closeMarker}|" & GameTime:${scenario.gate}.Open=False`;drive+=`:vpmtimer.addtimer ${scenario.closeDelay},"${close.replaceAll('"','""')} '"`;}
     const trace=recordTimers?`RefTrace="":Set RefTraceBall=RefBall:RefTraceUntil=GameTime+${traceMilliseconds}:RefTraceOn=True:`:'';
-    await script(`${trace}RollingTimer.Enabled=False:RollingTimer.Enabled=True:${reset(scenario.x,scenario.y,scenario.vx,scenario.vy,scenario.z,scenario.vz)}:${drive?drive+':':''}Debug.Print "CONTACT_INIT|" & GameTime & ":" & RefBall.AngMomX & ":" & RefBall.AngMomY & ":" & RefBall.AngMomZ & ":" & RefBall.X & ":" & RefBall.Y & ":" & RefBall.Z`);
+    // Capture every body in the same synchronous call as the measured reset.
+    // Explicit Double formatting preserves the original Single's low bits.
+    const allBalls=recordAllBalls?'RefInitBalls=GetBalls:RefInitTrace="":For RefInitIdx=0 To UBound(RefInitBalls):Set RefInitBall=RefInitBalls(RefInitIdx):RefInitTrace=RefInitTrace & '+ballStateFields.map(p=>`CStr(CDbl(RefInitBall.${p}))`).join(' & ":" & ')+' & ";":Next:Debug.Print "BALL_INIT|" & GameTime & "|" & RefInitTrace:':'';
+    await script(`${trace}RollingTimer.Enabled=False:RollingTimer.Enabled=True:${reset(scenario.x,scenario.y,scenario.vx,scenario.vy,scenario.z,scenario.vz)}:${drive?drive+':':''}${allBalls}Debug.Print "CONTACT_INIT|" & GameTime & ":" & RefBall.AngMomX & ":" & RefBall.AngMomY & ":" & RefBall.AngMomZ & ":" & RefBall.X & ":" & RefBall.Y & ":" & RefBall.Z`);
     const initial=(await marker('CONTACT_INIT')).split(':').map(parseFloat);assert.equal(initial.length,7);assert.deepEqual(initial.slice(1,4),[0,0,0],'native spin reset');
     for(const [actual,expected]of [[initial[4],scenario.x],[initial[5],scenario.y],[initial[6],scenario.z??25]])assert.ok(Math.abs(actual-expected)<.001,`native initial position ${actual} vs ${expected}`);
     const origin=initial[0],samples=[],rawSamples=[];
+    let initialBallStates,rawInitialBallStates,initialMeasuredBallID;
+    if(recordAllBalls){
+      rawInitialBallStates=(await marker('BALL_INIT')).replace(/'$/,'');const [clock,rows]=rawInitialBallStates.split('|');assert.equal(Number(clock),origin,'all bodies share the initial clock');
+      initialBallStates=rows.split(';').filter(Boolean).map(row=>row.split(':').map(Number));
+      assert.ok(initialBallStates.length>=state[0]);assert.ok(initialBallStates.every(row=>row.length===ballStateFields.length&&row.every(Number.isFinite)));
+      await script('Debug.Print "MEASURED_BALL_ID|" & RefBall.ID');initialMeasuredBallID=parseFloat(await marker('MEASURED_BALL_ID'));assert.ok(initialBallStates.some(row=>row.at(-1)===initialMeasuredBallID));
+    }
     // The native UI retains only 120 log lines. Cache delayed input clocks as
     // soon as they appear, before a long observation run rolls them out.
     let inputAt,closeAt;
@@ -206,7 +230,7 @@ try{
       const park=scenario.parkFromSample!==undefined&&i>=scenario.parkFromSample?reset(430,1500,0,0)+':':'';
       const mechanism=scenario.spinner??scenario.gate;
       const targetFields=scenario.target?['Target009','Target010','Target011'].map(n=>`CLng(${n}.IsDropped)`).concat(['Target009','Target010','Target011'].map(n=>`CLng(${n}.CurrentAnimOffset*1000000)`),'Score(CurrentPlayer)'):null;
-      const extra=scenario.trigger?` & ":" & ${scenario.trigger}.BallCntOver`:mechanism?` & ":" & CLng(${mechanism}.CurrentAngle*1000000) & ":" & Score(CurrentPlayer) & ":" & LeftSpinnerCount(CurrentPlayer)`:targetFields?' & ":" & '+targetFields.join(' & ":" & '):scenario.plunger?' & ":" & Plunger.Position':'';
+      const extra=scenario.kicker?' & ":" & (UBound(GetBalls)+1) & ":" & Score(CurrentPlayer) & ":" & BallsInHole':scenario.trigger?` & ":" & ${scenario.trigger}.BallCntOver`:mechanism?` & ":" & CLng(${mechanism}.CurrentAngle*1000000) & ":" & Score(CurrentPlayer) & ":" & LeftSpinnerCount(CurrentPlayer)`:targetFields?' & ":" & '+targetFields.join(' & ":" & '):scenario.plunger?' & ":" & Plunger.Position':'';
       await script(park+'Debug.Print "CONTACT_SAMPLE|" & GameTime & ":" & RefBall.X & ":" & RefBall.Y & ":" & RefBall.Z & ":" & CLng(RefBall.VelX*1000000) & ":" & CLng(RefBall.VelY*1000000) & ":" & CLng(RefBall.VelZ*1000000) & ":" & CLng(RefBall.AngVelX*1000000) & ":" & CLng(RefBall.AngVelY*1000000) & ":" & CLng(RefBall.AngVelZ*1000000) & ":" & LeftFlipper.CurrentAngle & ":" & RightFlipper.CurrentAngle'+extra);
       const raw=await marker('CONTACT_SAMPLE');rawSamples.push(raw);
       const values=raw.split(':').map(parseFloat);assert.equal(values.length,columns.length);assert.ok(values.every(Number.isFinite));for(let k=4;k<10;k++)values[k]/=1000000;values[0]-=origin;samples.push(values);
@@ -228,8 +252,8 @@ try{
       assert.ok(timerTrace[0][1]<=10,'full trace must include the first timer callbacks');
     }
     const closing=scenario.closeDelay?{actualCloseDelay:closeAt-origin}:{};if(scenario.closeDelay)assert.ok(Number.isFinite(closing.actualCloseDelay)&&closing.actualCloseDelay>0,'observed native gate-close clock');
-    results.push({...scenario,initial,actualDelay,...closing,samples,rawSamples,...(timerTrace?{timerTrace}:{})});console.log(scenario.name,'input at',actualDelay,JSON.stringify(samples.at(-1)));
-    const suffix=rawAnimation&&selected?`raw-${recordTimers?'timing-':''}${selected}`:reference.geometryProbe&&selected?`geometry-${recordTimers?'timing-':''}${selected}`:reference.shooterProbe&&selected?`${recordTimers?'timing-':''}${selected}`:['spinners','gates','targets','triggers'].includes(probeKind)&&selected?`${probeKind}-${reference.instrumentation?.spinnerTraceColumns?'timing-':''}${reference.animationBallIsolation?'isolated-animation-':''}${selected}`:`${reference.geometryProbe?'geometry':probeKind==='contacts'?'contact':probeKind}-reference`;
-    await writeFile(`${output}/vpx-${suffix}${recordTimers&&traceMilliseconds!==70?`-${traceMilliseconds}ms`:''}.json`,JSON.stringify({...reference,probeKind,runtimeOverrides,columns,cases:results},null,2));
+    results.push({...scenario,initial,actualDelay,...closing,samples,rawSamples,...(timerTrace?{timerTrace}:{}),...(recordAllBalls?{initialBallStates,rawInitialBallStates,initialMeasuredBallID}:{})});console.log(scenario.name,'input at',actualDelay,JSON.stringify(samples.at(-1)));
+    const suffix=recordKickers?'kickers-reference':rawAnimation&&selected?`raw-${recordTimers?'timing-':''}${selected}`:reference.geometryProbe&&selected?`geometry-${recordTimers?'timing-':''}${selected}`:reference.shooterProbe&&selected?`${recordTimers?'timing-':''}${selected}`:['spinners','gates','targets','triggers'].includes(probeKind)&&selected?`${probeKind}-${reference.instrumentation?.spinnerTraceColumns?'timing-':''}${reference.animationBallIsolation?'isolated-animation-':''}${selected}`:`${reference.geometryProbe?'geometry':probeKind==='contacts'?'contact':probeKind}-reference`;
+    await writeFile(`${output}/vpx-${suffix}${recordAllBalls?'-all-balls':''}${recordTimers&&traceMilliseconds!==70?`-${traceMilliseconds}ms`:''}.json`,JSON.stringify({...reference,probeKind,runtimeOverrides,columns,cases:results},null,2));
   }
 }finally{socket.close();}

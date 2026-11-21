@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {createFullGame} from '../three/full-game.js';
 import {STEP} from '../three/physics.js';
-import {applyReferencePhysics,referenceRandom} from './reference-physics.mjs';
+import {applyReferencePhysics,referenceRandom,placeReferenceBall} from './reference-physics.mjs';
 const fixture=JSON.parse(fs.readFileSync(process.argv.slice(2).find(a=>!a.startsWith('--'))??'three/tests/fixtures/vpx-targets.json'));
 assert.equal(fixture.probeKind,'targets');
 const layout=JSON.parse(fs.readFileSync('three/public/layout.json')),objects=JSON.parse(fs.readFileSync('three/public/objects.json')),source=fs.readFileSync('three/public/rules.vbs','utf8');applyReferencePhysics(layout,objects,fixture);
@@ -13,7 +13,7 @@ for(const c of fixture.cases){
     g.start();for(let ms=0;ms<2000;ms++)g.step();g.launch();const r=g.records[0];
     const timer=g.rules.objects.get('rollingtimer');timer.enabled=false;timer.enabled=true;
     if(c.setupCode)g.rules.execute(c.setupCode);
-    r.body.setTranslation({x:c.x*.01,y:(2115-c.y)*.01,z:c.z*.01},true);r.body.setLinvel({x:c.vx,y:-c.vy,z:c.vz??0},true);r.body.setAngvel({x:0,y:0,z:0},true);
+    placeReferenceBall(g,r,c);
     let elapsed=0;const samples=[];
     for(const expected of c.samples){
       for(let ms=elapsed;ms<expected[0];ms++)g.step();elapsed=expected[0];

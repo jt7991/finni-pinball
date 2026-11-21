@@ -29,7 +29,7 @@ test('unchanged drop flags preserve a pending hit and scripted drops complete on
 test('full runtime launches, feeds real switches and creates Friendship balls',async()=>{
   const events=[],g=await createFullGame(json('layout'),json('objects'),source,e=>events.push(e.type));
   try{
-    g.start();ticks(g,1.7);assert.equal(g.records.length,1);assert.equal(g.inLane,true);
+    g.start();ticks(g,2.1);assert.equal(g.records.length,1);assert.equal(g.inLane,true);
     g.input('launch',true);ticks(g,1);g.input('launch',false);assert.equal(g.records[0].held,null);
     ticks(g,1);assert.ok(g.records[0].body.translation().y>10,'ball feeds onto main playfield');
     const before=g.score;
@@ -45,7 +45,7 @@ test('full runtime launches, feeds real switches and creates Friendship balls',a
 test('native bonus, game over and replay complete across three physical drains',async()=>{
   const g=await createFullGame(json('layout'),json('objects'),source,()=>{});
   try{
-    g.start();ticks(g,1.7);
+    g.start();ticks(g,2.1);
     for(let ball=1;ball<=3;ball++){
       const rec=g.records.find(r=>r.inLane);assert.ok(rec,`ball ${ball} released`);
       g.rules.execute('bBallSaverActive=False:bBallSaverReady=False');

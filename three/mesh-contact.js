@@ -3,7 +3,7 @@
 // Pinball contributors, 195f214dd4849b8ef6113fd377258b78d0dec3bf, collide.cpp,
 // collideex.cpp and hitball.cpp. See public/licenses/VPX-Physics-NOTICE.txt.
 import {collideNativeSurface,supportNativeSurface} from './native-ball-response.js';
-import {nativeMeshHit,nativeMeshQuery} from './native-mesh-contact.js';
+import {nativeMeshHit,nativeMeshQuery,nativeTriangleIsDegenerate} from './native-mesh-contact.js';
 const add=(a,b)=>({x:a.x+b.x,y:a.y+b.y,z:a.z+b.z});
 const sub=(a,b)=>({x:a.x-b.x,y:a.y-b.y,z:a.z-b.z});
 const mul=(a,s)=>({x:a.x*s,y:a.y*s,z:a.z*s});
@@ -26,8 +26,12 @@ export class ContactMesh{
     for(let i=0;i<mesh.indices.length;i+=3){
       const ids=mesh.indices.slice(i,i+3),[a,b,c]=ids.map(i=>points[i]),ab=sub(b,a),ac=sub(c,a),raw=cross(ab,ac);
       // This is the upward-facing playfield, including its authored holes.
-      const n=dot(raw,raw)>=1e-10?unit(raw):null;
-      if(n){if(options.invertNormals||(!options.preserveNormals&&n.z<0))Object.assign(n,mul(n,-1));insert({kind:'triangle',points:[a,b,c],a,ab,ac,n});if(options.twoSided)insert({kind:'triangle',points:[a,b,c],a,ab,ac,n:mul(n,-1)});}
+      const n=dot(raw,raw)>0?unit(raw):null;
+      if(n){
+        if(options.invertNormals||(!options.preserveNormals&&n.z<0))Object.assign(n,mul(n,-1));
+        const triangle={kind:'triangle',points:[a,b,c],a,ab,ac,n};
+        if(!nativeTriangleIsDegenerate(triangle.points)){insert(triangle);if(options.twoSided)insert({...triangle,n:mul(n,-1)});}
+      }
       for(let j=0;j<3;j++){
         // Native triangles reverse their render winding, but their edge
         // cylinders keep the original index order and endpoint orientation.
@@ -39,14 +43,14 @@ export class ContactMesh{
         const a=points[k],b=points[l],edge={a,b,normals:[n]};edges.set(key,edge);
         if(options.coplanarJoints!==false){
           const delta=sub(b,a),length=Math.hypot(delta.x,delta.y,delta.z);
-          if(length>1e-9)insert({kind:'edge',points:[a,b],a,axis:mul(delta,1/length),length});
+          insert({kind:'edge',points:[a,b],a,axis:mul(delta,1/length),length});
         }
       }
     }
     for(const {a,b,normals}of edges.values()){
       if(options.coplanarJoints!==false)continue;
       if(options.coplanarJoints===false&&normals.length>1&&normals.every(n=>!n||!normals[0]||dot(cross(n,normals[0]),cross(n,normals[0]))<1e-8))continue;
-      const delta=sub(b,a),length=Math.hypot(delta.x,delta.y,delta.z);if(length>1e-9)insert({kind:'edge',points:[a,b],a,axis:mul(delta,1/length),length});
+      const delta=sub(b,a),length=Math.hypot(delta.x,delta.y,delta.z);insert({kind:'edge',points:[a,b],a,axis:mul(delta,1/length),length});
     }
     if(options.points!==false)for(const a of points)insert({kind:'point',points:[a],a});
   }
@@ -81,7 +85,7 @@ export class ContactMesh{
     if(joint)this.addVertical(a,height1,height2+height);
   }
   addEdge(a,b){
-    const delta=sub(b,a),length=Math.hypot(delta.x,delta.y,delta.z);if(length<1e-9)return;
+    const delta=sub(b,a),length=Math.hypot(delta.x,delta.y,delta.z);
     this.insert({kind:'edge',points:[a,b],a,axis:mul(delta,1/length),length});
   }
   addPoint(a){this.insert({kind:'point',points:[a],a});}
@@ -92,7 +96,7 @@ export class ContactMesh{
     this.insert({kind:'polygon',points,a:points[0],n:unit(normal)});
   }
   addPlane(normal,d){const plane={kind:'plane',normal,d,id:this.shapes.length};this.shapes.push(plane);this.planes.push(plane);}
-  addVertical(a,low,high){if(high<=low)return;this.insert({kind:'edge',points:[{...a,z:low},{...a,z:high}],a:{...a,z:low},axis:{x:0,y:0,z:1},length:high-low});}
+  addVertical(a,low,high){this.insert({kind:'edge',vertical:true,low,high,points:[{...a,z:low},{...a,z:high}],a:{...a,z:low},axis:{x:0,y:0,z:1},length:high-low});}
   addCircle(center,radius,low,high){this.insert({kind:'circle',points:[{x:center.x-radius,y:center.y-radius,z:low},{x:center.x+radius,y:center.y+radius,z:high}],a:{...center,z:low},axis:{x:0,y:0,z:1},length:high-low,radius});}
 }
 function planeHit(p,v,radius,duration,s){

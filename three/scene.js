@@ -112,9 +112,8 @@ export async function createView(canvas, game) {
       if(m.mechanism)m.obj.quaternion.setFromAxisAngle(m.axis,m.mechanism.angle).multiply(m.quaternion);
       if(/discoball/i.test(m.obj.name))m.obj.rotation.y=m.rotation.y+Number(m.state.rotz)*Math.PI/180;
       if(/LilHead|LilLeftArm|LilRightArm/.test(m.obj.name)){
-        const remaining=Math.max(0,shakeUntil-game.time);
-        m.obj.rotation.x=m.rotation.x+Math.sin(game.time*29)*remaining*shakeStrength*.035;
-        m.obj.rotation.z=m.rotation.z+Math.sin(game.time*23)*remaining*shakeStrength*.025;
+        m.obj.rotation.x=m.rotation.x-Number(m.state.rotx)*Math.PI/180;
+        m.obj.rotation.z=m.rotation.z-Number(m.state.roty)*Math.PI/180;
       }
     }
     if(lights.geometry){
