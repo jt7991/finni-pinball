@@ -3,6 +3,7 @@
 // 195f214dd4849b8ef6113fd377258b78d0dec3bf. See licenses/VPX-Physics-NOTICE.txt.
 import {VbsEngine} from '@devscholar/vbs-engine-js';
 import {createImpulsePlunger} from './impulse-plunger.js';
+import {createScriptRandom,registerScriptRandom} from './script-random.js';
 
 export const KEY={left:42,right:54,launch:28,start:2,action:57,nudgeLeft:44,nudgeForward:45,nudgeRight:53};
 const empty=()=>{};
@@ -11,6 +12,7 @@ const empty=()=>{};
 // semantics. No Visual Pinball, COM, native scripting host or global integration.
 export function createRules(source,specs,host={}) {
   const engine=new VbsEngine({hostIntegration:false,maxExecutionTime:2000});
+  const scriptRandom=createScriptRandom();registerScriptRandom(engine,scriptRandom);
   const objects=new Map(),timers=new Map(),delays=[],flashes=new Map(),sequences=new Map(),generatedEvents=new Map();
   const methods=new Set([...source.matchAll(/^\s*(?:Sub|Function)[ \t]+(\w+)/gmi)].map(m=>m[1].toLowerCase()));
   const functions=new Set([...source.matchAll(/^\s*Function[ \t]+(\w+)/gmi)].map(m=>m[1].toLowerCase()));
@@ -85,7 +87,7 @@ export function createRules(source,specs,host={}) {
   const extras=['Table1','digitgrid','HostPlunger'];
   for(const name of extras)if(!objects.has(name.toLowerCase()))object({name});
   const impulsePlunger=createImpulsePlunger({
-    random:host.scriptRandom,
+    random:()=>host.scriptRandom?.()??scriptRandom.rnd(),
     sound:name=>{if(name)host.sound?.(name,{});},
     initTimer:(trigger,update)=>generatedEvents.set(`${trigger.name}_timer`.toLowerCase(),update),
     createEvents:(trigger,add,remove)=>{
@@ -186,7 +188,7 @@ export function createRules(source,specs,host={}) {
       if(age>=duration)seq.current=null;
     }
   }
-  return {engine,objects,run,execute,value,tick,hit,schedule,
+  return {engine,objects,run,execute,value,tick,hit,schedule,scriptRandom,
     init(){run('Table1_Init');execute('bFreePlay=True:BallsPerGame=3:SongVolume=0.2');},
     key(action,down){run(down?'Table1_KeyDown':'Table1_KeyUp',KEY[action]);},
     get time(){return time;},get timers(){return timers;},get delays(){return delays;},

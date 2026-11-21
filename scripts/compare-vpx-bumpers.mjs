@@ -22,11 +22,11 @@ for(const scenario of fixture.cases){
     game.rules.hit=(name,event,ball)=>{
       if(!/^Bumper[123]$/i.test(name)||event!=='Hit')return hit(name,event,ball);
       events.push({ms:Math.round(game.time*1000)-origin,index:Number(name.slice(-1)),velocity:[ball.velx,ball.vely,ball.velz]});
-      const original=Math.random;
+      const original=game.rules.scriptRandom.rnd;
       // These are observed native script RNG OUTPUTS, not fitted seeds. Scope
       // replay to the synchronous callback; physical RNG state is independent.
-      Math.random=()=>{const row=randomRows[randomAt++];if(!row){unexpectedRandom++;return original();}return row[2];};
-      try{return hit(name,event,ball);}finally{Math.random=original;}
+      game.rules.scriptRandom.rnd=()=>{const row=randomRows[randomAt++];if(!row){unexpectedRandom++;return original();}return row[2];};
+      try{return hit(name,event,ball);}finally{game.rules.scriptRandom.rnd=original;}
     };
     if(scenario.repeatBumperReset){
       game.rules.engine.addCode('Dim HostBumperProbeBall');

@@ -1,0 +1,21 @@
+script-random.js adapts Global_Rnd, Global_Randomize and the initial script
+context state from Wine/libwinevbs. Copyright 2011 Jacek Caban for CodeWeavers.
+
+Source: vpinball/libwinevbs, b5503c581b7d0e6f4f1d84d604cf5e9372c940d7
+https://github.com/vpinball/libwinevbs/blob/b5503c581b7d0e6f4f1d84d604cf5e9372c940d7/wine/dlls/vbscript/global.c
+https://github.com/vpinball/libwinevbs/blob/b5503c581b7d0e6f4f1d84d604cf5e9372c940d7/wine/dlls/vbscript/vbdisp.c
+
+This library is free software; you can redistribute it and/or modify it under
+the terms of the GNU Lesser General Public License as published by the Free
+Software Foundation; either version 2.1 of the License, or (at your option)
+any later version.
+
+This library is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+details. A copy is provided in LGPL-2.1.txt.
+
+The JavaScript adaptation uses a DataView to preserve the native Single and
+Double bit-pattern seeds, Math.imul for modulo-2^32 arithmetic, and per-script
+interpreter registration. The published VPX-engine recording in
+tests/fixtures/vpx-script-random.json verifies the algorithm and conversions.

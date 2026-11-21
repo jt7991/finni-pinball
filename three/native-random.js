@@ -2,6 +2,13 @@
 // Visual Pinball contributors' MWC64X and float mapping, core/def.h,
 // 195f214dd4849b8ef6113fd377258b78d0dec3bf. See public/licenses/VPX-Physics-NOTICE.txt.
 const f=Math.fround;
+export function runtimeNativeRandom(){
+  const words=new Uint32Array(2);
+  // Independent entropy, once per engine lifetime. Never derive physical
+  // randomness from script Rnd, decorative effects or a trajectory seed.
+  do{globalThis.crypto.getRandomValues(words);}while((words[0]===0&&words[1]===0)||(words[0]===0xffffffff&&words[1]===4294883354));
+  return nativeRandom(words[0],words[1]);
+}
 export function nativeRandom(low,high){
   let x=low>>>0,c=high>>>0,calls=0;
   const output=()=>{

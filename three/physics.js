@@ -20,6 +20,7 @@ import {nativeBallHit,collideNativeBalls} from './native-ball-collision.js';
 import {collideNativeBumper} from './native-bumper.js';
 import {collideNativeSlingshot} from './native-slingshot.js';
 import {nativeHitDescriptor,collideNativeHitSurface} from './native-hit-event.js';
+import {runtimeNativeRandom} from './native-random.js';
 
 export const STEP = 1 / 1000;
 export const RADIUS = 0.25;
@@ -90,7 +91,7 @@ export class Pinball {
     this.nativeParts.set('playfield_mesh',layout.playfield);this.nativeTreeEnabled=this.nativePositionUnits&&this.nativeFlipperContacts&&physics.native_tree!==false;
     this.nativeBallContacts=this.nativeTreeEnabled&&physics.native_ball_contacts!==false;this.ballCollisionSwap=false;this.dynamicBallTree=new NativeDynamicTree();
     this.nativeTreeBounds={left:layout.cabinet?.left??0,right:layout.cabinet?.right??layout.width,top:layout.cabinet?.top??0,bottom:layout.cabinet?.bottom??layout.height};
-    this.random=Math.random;
+    this.random=runtimeNativeRandom();
     this.flippers = [];
     this.spinners = [];
     this.gates = [];

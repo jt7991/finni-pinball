@@ -1,0 +1,771 @@
+{
+  "probeKind": "script-random",
+  "engineSha256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+  "source": "https://github.com/vpinball/libwinevbs/blob/b5503c581b7d0e6f4f1d84d604cf5e9372c940d7/wine/dlls/vbscript/global.c",
+  "capture": "Synchronous native evaluate; integer Single outputs in 2^-24 units; no intervening table timers.",
+  "cases": [
+    {
+      "name": "negative--1",
+      "statements": [
+        "Rnd(-1)",
+        "Rnd(0)",
+        "Rnd",
+        "Rnd()",
+        "Rnd(1)",
+        "Rnd(0)",
+        "Rnd(-1)",
+        "Rnd(1)"
+      ],
+      "samples": [
+        {
+          "step": 0,
+          "units": 3758214,
+          "type": 4
+        },
+        {
+          "step": 1,
+          "units": 3758214,
+          "type": 4
+        },
+        {
+          "step": 2,
+          "units": 601393,
+          "type": 4
+        },
+        {
+          "step": 3,
+          "units": 1448752,
+          "type": 4
+        },
+        {
+          "step": 4,
+          "units": 2755891,
+          "type": 4
+        },
+        {
+          "step": 5,
+          "units": 2755891,
+          "type": 4
+        },
+        {
+          "step": 6,
+          "units": 3758214,
+          "type": 4
+        },
+        {
+          "step": 7,
+          "units": 601393,
+          "type": 4
+        }
+      ]
+    },
+    {
+      "name": "negative--2",
+      "statements": [
+        "Rnd(-2)",
+        "Rnd(0)",
+        "Rnd",
+        "Rnd()",
+        "Rnd(1)",
+        "Rnd(0)",
+        "Rnd(-2)",
+        "Rnd(1)"
+      ],
+      "samples": [
+        {
+          "step": 0,
+          "units": 11967619,
+          "type": 4
+        },
+        {
+          "step": 1,
+          "units": 11967619,
+          "type": 4
+        },
+        {
+          "step": 2,
+          "units": 11113786,
+          "type": 4
+        },
+        {
+          "step": 3,
+          "units": 12338965,
+          "type": 4
+        },
+        {
+          "step": 4,
+          "units": 3235204,
+          "type": 4
+        },
+        {
+          "step": 5,
+          "units": 3235204,
+          "type": 4
+        },
+        {
+          "step": 6,
+          "units": 11967619,
+          "type": 4
+        },
+        {
+          "step": 7,
+          "units": 11113786,
+          "type": 4
+        }
+      ]
+    },
+    {
+      "name": "negative--0.5",
+      "statements": [
+        "Rnd(-0.5)",
+        "Rnd(0)",
+        "Rnd",
+        "Rnd()",
+        "Rnd(1)",
+        "Rnd(0)",
+        "Rnd(-0.5)",
+        "Rnd(1)"
+      ],
+      "samples": [
+        {
+          "step": 0,
+          "units": 12146822,
+          "type": 4
+        },
+        {
+          "step": 1,
+          "units": 12146822,
+          "type": 4
+        },
+        {
+          "step": 2,
+          "units": 8990001,
+          "type": 4
+        },
+        {
+          "step": 3,
+          "units": 9837360,
+          "type": 4
+        },
+        {
+          "step": 4,
+          "units": 11144499,
+          "type": 4
+        },
+        {
+          "step": 5,
+          "units": 11144499,
+          "type": 4
+        },
+        {
+          "step": 6,
+          "units": 12146822,
+          "type": 4
+        },
+        {
+          "step": 7,
+          "units": 8990001,
+          "type": 4
+        }
+      ]
+    },
+    {
+      "name": "negative--123.456",
+      "statements": [
+        "Rnd(-123.456)",
+        "Rnd(0)",
+        "Rnd",
+        "Rnd()",
+        "Rnd(1)",
+        "Rnd(0)",
+        "Rnd(-123.456)",
+        "Rnd(1)"
+      ],
+      "samples": [
+        {
+          "step": 0,
+          "units": 6654994,
+          "type": 4
+        },
+        {
+          "step": 1,
+          "units": 6654994,
+          "type": 4
+        },
+        {
+          "step": 2,
+          "units": 9552525,
+          "type": 4
+        },
+        {
+          "step": 3,
+          "units": 1362716,
+          "type": 4
+        },
+        {
+          "step": 4,
+          "units": 2403695,
+          "type": 4
+        },
+        {
+          "step": 5,
+          "units": 2403695,
+          "type": 4
+        },
+        {
+          "step": 6,
+          "units": 6654994,
+          "type": 4
+        },
+        {
+          "step": 7,
+          "units": 9552525,
+          "type": 4
+        }
+      ]
+    },
+    {
+      "name": "negative--16777217",
+      "statements": [
+        "Rnd(-16777217)",
+        "Rnd(0)",
+        "Rnd",
+        "Rnd()",
+        "Rnd(1)",
+        "Rnd(0)",
+        "Rnd(-16777217)",
+        "Rnd(1)"
+      ],
+      "samples": [
+        {
+          "step": 0,
+          "units": 1607778,
+          "type": 4
+        },
+        {
+          "step": 1,
+          "units": 1607778,
+          "type": 4
+        },
+        {
+          "step": 2,
+          "units": 9309597,
+          "type": 4
+        },
+        {
+          "step": 3,
+          "units": 14690796,
+          "type": 4
+        },
+        {
+          "step": 4,
+          "units": 8507647,
+          "type": 4
+        },
+        {
+          "step": 5,
+          "units": 8507647,
+          "type": 4
+        },
+        {
+          "step": 6,
+          "units": 1607778,
+          "type": 4
+        },
+        {
+          "step": 7,
+          "units": 9309597,
+          "type": 4
+        }
+      ]
+    },
+    {
+      "name": "randomize-0",
+      "statements": [
+        "Rnd(-1)",
+        "Randomize 0",
+        "Rnd(0)",
+        "Rnd(1)",
+        "Rnd",
+        "Rnd(0)",
+        "Randomize 0",
+        "Rnd(0)",
+        "Rnd(1)"
+      ],
+      "samples": [
+        {
+          "step": 0,
+          "units": 3758214,
+          "type": 4
+        },
+        {
+          "step": 1,
+          "units": 134,
+          "type": 4
+        },
+        {
+          "step": 2,
+          "units": 134,
+          "type": 4
+        },
+        {
+          "step": 3,
+          "units": 5584177,
+          "type": 4
+        },
+        {
+          "step": 4,
+          "units": 5374768,
+          "type": 4
+        },
+        {
+          "step": 5,
+          "units": 5374768,
+          "type": 4
+        },
+        {
+          "step": 6,
+          "units": 48,
+          "type": 4
+        },
+        {
+          "step": 7,
+          "units": 48,
+          "type": 4
+        },
+        {
+          "step": 8,
+          "units": 4218419,
+          "type": 4
+        }
+      ]
+    },
+    {
+      "name": "randomize-1",
+      "statements": [
+        "Rnd(-1)",
+        "Randomize 1",
+        "Rnd(0)",
+        "Rnd(1)",
+        "Rnd",
+        "Rnd(0)",
+        "Randomize 1",
+        "Rnd(0)",
+        "Rnd(1)"
+      ],
+      "samples": [
+        {
+          "step": 0,
+          "units": 3758214,
+          "type": 4
+        },
+        {
+          "step": 1,
+          "units": 4190342,
+          "type": 4
+        },
+        {
+          "step": 2,
+          "units": 4190342,
+          "type": 4
+        },
+        {
+          "step": 3,
+          "units": 5596465,
+          "type": 4
+        },
+        {
+          "step": 4,
+          "units": 1143600,
+          "type": 4
+        },
+        {
+          "step": 5,
+          "units": 1143600,
+          "type": 4
+        },
+        {
+          "step": 6,
+          "units": 4190256,
+          "type": 4
+        },
+        {
+          "step": 7,
+          "units": 4190256,
+          "type": 4
+        },
+        {
+          "step": 8,
+          "units": 4230707,
+          "type": 4
+        }
+      ]
+    },
+    {
+      "name": "randomize-2",
+      "statements": [
+        "Rnd(-1)",
+        "Randomize 2",
+        "Rnd(0)",
+        "Rnd(1)",
+        "Rnd",
+        "Rnd(0)",
+        "Randomize 2",
+        "Rnd(0)",
+        "Rnd(1)"
+      ],
+      "samples": [
+        {
+          "step": 0,
+          "units": 3758214,
+          "type": 4
+        },
+        {
+          "step": 1,
+          "units": 4194438,
+          "type": 4
+        },
+        {
+          "step": 2,
+          "units": 4194438,
+          "type": 4
+        },
+        {
+          "step": 3,
+          "units": 9778481,
+          "type": 4
+        },
+        {
+          "step": 4,
+          "units": 9569072,
+          "type": 4
+        },
+        {
+          "step": 5,
+          "units": 9569072,
+          "type": 4
+        },
+        {
+          "step": 6,
+          "units": 4194352,
+          "type": 4
+        },
+        {
+          "step": 7,
+          "units": 4194352,
+          "type": 4
+        },
+        {
+          "step": 8,
+          "units": 8412723,
+          "type": 4
+        }
+      ]
+    },
+    {
+      "name": "randomize--1",
+      "statements": [
+        "Rnd(-1)",
+        "Randomize -1",
+        "Rnd(0)",
+        "Rnd(1)",
+        "Rnd",
+        "Rnd(0)",
+        "Randomize -1",
+        "Rnd(0)",
+        "Rnd(1)"
+      ],
+      "samples": [
+        {
+          "step": 0,
+          "units": 3758214,
+          "type": 4
+        },
+        {
+          "step": 1,
+          "units": 12578950,
+          "type": 4
+        },
+        {
+          "step": 2,
+          "units": 12578950,
+          "type": 4
+        },
+        {
+          "step": 3,
+          "units": 13985073,
+          "type": 4
+        },
+        {
+          "step": 4,
+          "units": 9532208,
+          "type": 4
+        },
+        {
+          "step": 5,
+          "units": 9532208,
+          "type": 4
+        },
+        {
+          "step": 6,
+          "units": 12578864,
+          "type": 4
+        },
+        {
+          "step": 7,
+          "units": 12578864,
+          "type": 4
+        },
+        {
+          "step": 8,
+          "units": 12619315,
+          "type": 4
+        }
+      ]
+    },
+    {
+      "name": "randomize-0.5",
+      "statements": [
+        "Rnd(-1)",
+        "Randomize 0.5",
+        "Rnd(0)",
+        "Rnd(1)",
+        "Rnd",
+        "Rnd(0)",
+        "Randomize 0.5",
+        "Rnd(0)",
+        "Rnd(1)"
+      ],
+      "samples": [
+        {
+          "step": 0,
+          "units": 3758214,
+          "type": 4
+        },
+        {
+          "step": 1,
+          "units": 4186246,
+          "type": 4
+        },
+        {
+          "step": 2,
+          "units": 4186246,
+          "type": 4
+        },
+        {
+          "step": 3,
+          "units": 1414449,
+          "type": 4
+        },
+        {
+          "step": 4,
+          "units": 9495344,
+          "type": 4
+        },
+        {
+          "step": 5,
+          "units": 9495344,
+          "type": 4
+        },
+        {
+          "step": 6,
+          "units": 4186160,
+          "type": 4
+        },
+        {
+          "step": 7,
+          "units": 4186160,
+          "type": 4
+        },
+        {
+          "step": 8,
+          "units": 48691,
+          "type": 4
+        }
+      ]
+    },
+    {
+      "name": "randomize-123.456",
+      "statements": [
+        "Rnd(-1)",
+        "Randomize 123.456",
+        "Rnd(0)",
+        "Rnd(1)",
+        "Rnd",
+        "Rnd(0)",
+        "Randomize 123.456",
+        "Rnd(0)",
+        "Rnd(1)"
+      ],
+      "samples": [
+        {
+          "step": 0,
+          "units": 3758214,
+          "type": 4
+        },
+        {
+          "step": 1,
+          "units": 10318214,
+          "type": 4
+        },
+        {
+          "step": 2,
+          "units": 10318214,
+          "type": 4
+        },
+        {
+          "step": 3,
+          "units": 8446513,
+          "type": 4
+        },
+        {
+          "step": 4,
+          "units": 12778544,
+          "type": 4
+        },
+        {
+          "step": 5,
+          "units": 12778544,
+          "type": 4
+        },
+        {
+          "step": 6,
+          "units": 10318128,
+          "type": 4
+        },
+        {
+          "step": 7,
+          "units": 10318128,
+          "type": 4
+        },
+        {
+          "step": 8,
+          "units": 7080755,
+          "type": 4
+        }
+      ]
+    },
+    {
+      "name": "randomize-2147483647",
+      "statements": [
+        "Rnd(-1)",
+        "Randomize 2147483647",
+        "Rnd(0)",
+        "Rnd(1)",
+        "Rnd",
+        "Rnd(0)",
+        "Randomize 2147483647",
+        "Rnd(0)",
+        "Rnd(1)"
+      ],
+      "samples": [
+        {
+          "step": 0,
+          "units": 3758214,
+          "type": 4
+        },
+        {
+          "step": 1,
+          "units": 12460166,
+          "type": 4
+        },
+        {
+          "step": 2,
+          "units": 12460166,
+          "type": 4
+        },
+        {
+          "step": 3,
+          "units": 10147121,
+          "type": 4
+        },
+        {
+          "step": 4,
+          "units": 74544,
+          "type": 4
+        },
+        {
+          "step": 5,
+          "units": 74544,
+          "type": 4
+        },
+        {
+          "step": 6,
+          "units": 12460080,
+          "type": 4
+        },
+        {
+          "step": 7,
+          "units": 12460080,
+          "type": 4
+        },
+        {
+          "step": 8,
+          "units": 8781363,
+          "type": 4
+        }
+      ]
+    },
+    {
+      "name": "coercions",
+      "statements": [
+        "Rnd(-1)",
+        "Rnd(True)",
+        "Rnd(False)",
+        "Rnd(Empty)",
+        "Rnd(\"2\")",
+        "Rnd(\"-0.5\")",
+        "Rnd(0)",
+        "Randomize \"123.456\"",
+        "Rnd(1)"
+      ],
+      "samples": [
+        {
+          "step": 0,
+          "units": 3758214,
+          "type": 4
+        },
+        {
+          "step": 1,
+          "units": 3758214,
+          "type": 4
+        },
+        {
+          "step": 2,
+          "units": 3758214,
+          "type": 4
+        },
+        {
+          "step": 3,
+          "units": 3758214,
+          "type": 4
+        },
+        {
+          "step": 4,
+          "units": 601393,
+          "type": 4
+        },
+        {
+          "step": 5,
+          "units": 12146822,
+          "type": 4
+        },
+        {
+          "step": 6,
+          "units": 12146822,
+          "type": 4
+        },
+        {
+          "step": 7,
+          "units": 10318214,
+          "type": 4
+        },
+        {
+          "step": 8,
+          "units": 8446513,
+          "type": 4
+        }
+      ]
+    }
+  ]
+}

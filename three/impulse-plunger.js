@@ -4,7 +4,9 @@
 
 // This coil is independent of the physical manual rod. Its ball dictionary is
 // populated by the configured trigger's generated Hit/UnHit events.
-export function createImpulsePlunger({random=()=>Math.fround(Math.random()),sound=()=>{},initTimer=()=>{},createEvents=()=>{}}={}){
+import {createScriptRandom} from './script-random.js';
+export function createImpulsePlunger({random,sound=()=>{},initTimer=()=>{},createEvents=()=>{}}={}){
+  random??=createScriptRandom().rnd;
   const balls=new Map(),triggers=[];
   const state={x:0,y:0,strength:0,res:1,size:1,solenoid:0,impowerout:0,time:0,mcount:0,pull:0,impowertrans:0,cfactor:0,auto:false,randomout:0,switchnum:0,switchon:0,ballon:0};
   let enabled=false,entrySound,exitSound,exitBallSound,proxy;
