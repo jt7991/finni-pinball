@@ -17,11 +17,29 @@ test('physics materials retain the actual VPX rubber and metal overrides',()=>{
   const peg=layout.items.find(i=>i.name==='rpeg003');
   assert.equal(peg.elasticity,.3);assert.equal(peg.contact_physics.elasticity,.9);assert.equal(peg.contact_physics.friction,.9);
 });
+
+test('loaded heel/tip shots, free sliding and cradle releases retain the native comparison baseline',()=>{
+  const reports=JSON.parse(execFileSync(process.execPath,['scripts/compare-vpx-contact.mjs','--check','--json'],{cwd:root,encoding:'utf8'}));
+  assert.equal(reports.length,11);assert.equal(reports.filter(r=>r.name.includes('cradle')).length,2);
+});
+
+test('target-slot floors, elevated walls and both omitted ramps are present',()=>{
+  const layout=json('layout');
+  for(const name of ['hole015','hole030','apron','Wall024','Ramp001','Ramp064'])assert.ok(layout.items.some(i=>i.name===name),name);
+  const floor=layout.items.find(i=>i.name==='hole015');assert.equal(floor.height_top,0);assert.equal(floor.height_bottom,-20);
+  assert.equal(layout.playfield.vertices.length/3,293);assert.equal(layout.playfield.indices.length/3,339);
+});
+
+test('the target/wire pocket matches the independently recorded native VPX trap',()=>{
+  const reports=JSON.parse(execFileSync(process.execPath,['scripts/compare-vpx-contact.mjs','three/tests/fixtures/vpx-slot-back.json','--check','--json'],{cwd:root,encoding:'utf8'}));
+  assert.equal(reports.length,1);assert.equal(reports[0].name,'slot-back');
+});
 test('free rolling reaches the native horizontal speed without artificial drag',async()=>{
-  const g=await createGame(json('layout'));
+  const layout=json('layout');layout.playfield=null;layout.items=layout.items.filter(i=>i.kind==='Kicker');layout.physics.scatter=0;
+  const g=await createGame(layout);
   try{
     g.start();g.launch();g.ball.setTranslation({x:4.3,y:6.15,z:.25},true);g.ball.setLinvel({x:10,y:0,z:0},true);g.ball.setAngvel({x:0,y:0,z:0},true);
-    for(let i=0;i<.1/STEP;i++)g.step();const a=g.ball.linvel().x;
+    for(let i=0;i<.15/STEP;i++)g.step();const a=g.ball.linvel().x;
     assert.ok(Math.abs(a-50/7)<.01,`native slide-to-roll speed: ${a}`);
     for(let i=0;i<.1/STEP;i++)g.step();assert.ok(Math.abs(g.ball.linvel().x-a)<.005,'no invented rolling drag');
   }finally{g.dispose();}

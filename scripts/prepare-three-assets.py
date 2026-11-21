@@ -7,6 +7,7 @@ import json
 import shutil
 import sys
 import argparse
+import re
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -42,11 +43,11 @@ items = []
 for path in sorted(source.glob('*.json')):
     data = json.loads(path.read_text())
     kind, item = next(iter(data.items()))
-    if kind == 'Wall' and item.get('is_collidable') and item['height_bottom'] < 50 and item['height_top'] > 0:
-        items.append({'kind': kind, **{k: item[k] for k in ('name', 'height_bottom', 'height_top', 'elasticity', 'friction', 'elasticity_falloff', 'scatter', 'physics_material', 'overwrite_physics', 'drag_points')}})
+    if kind == 'Wall' and item.get('is_collidable'):
+        items.append({'kind': kind, **{k: item[k] for k in ('name', 'height_bottom', 'height_top', 'is_bottom_solid', 'slingshot_force', 'slingshot_threshold', 'elasticity', 'friction', 'elasticity_falloff', 'scatter', 'physics_material', 'overwrite_physics', 'drag_points')}})
     elif kind in ('Bumper', 'Flipper') or kind == 'Kicker' and item['name'] == 'HellHouse':
         items.append({'kind': kind, **item})
-    elif kind == 'Ramp' and item.get('is_collidable') and item['name'] not in ('Ramp001', 'Ramp064'):
+    elif kind == 'Ramp' and item.get('is_collidable'):
         items.append({'kind': kind, **item})
 
 for item in items:
@@ -57,11 +58,30 @@ for item in items:
         item['drag_points'] = [{k: round(p[k], 4) if type(p[k]) is float else p[k]
                                 for k in ('x', 'y', 'smooth', 'is_slingshot', *(['z'] if item['kind']=='Ramp' else []))} for p in item['drag_points']]
 gamedata=json.loads((source.parent/'gamedata.json').read_text())
+# vpxtool OBJ coordinates already include the primitive's 1/100 mesh scale;
+# OBJ reverses Z. This table's playfield primitive has identity transforms.
+playfield={'vertices':[],'indices':[]}
+for line in (source/'Primitive.playfield_mesh.obj').read_text().splitlines():
+    if line.startswith('v '):
+        x,y,z=map(float,line.split()[1:4])
+        playfield['vertices'].extend([x,21.15-y,-z])
+    elif line.startswith('f '):
+        face=[int(p.split('/')[0])-1 for p in line.split()[1:]]
+        for i in range(1,len(face)-1):playfield['indices'].extend([face[0],face[i],face[i+1]])
 data = {'width': 952, 'height': 2115, 'scale': 0.01,
         'physics':{'gravity':gamedata['gravity'],'slope':gamedata['angle_tilt_min'],
-                   'friction':gamedata['friction'],'elasticity':gamedata['elasticity']},'items': items}
+                   'friction':gamedata['friction'],'elasticity':gamedata['elasticity'],
+                   'elasticity_falloff':gamedata['elastic_falloff'],'scatter':gamedata['scatter'],
+                   'default_scatter':gamedata['default_scatter'],'difficulty':gamedata['global_difficulty']},'playfield':playfield,'items': items}
 (OUT / 'layout.json').write_text(json.dumps(data, separators=(',', ':')))
 specs=[]
+target_shapes={}
+for target_type,file,prefix in [('drop_target_simple','dropTargetT3Mesh.h','hitTargetT3'),('hit_target_rectangle','hitTargetRectangleMesh.h','hitTargetRectangle')]:
+    header=(ROOT/'references/vpx-physics/meshes'/file).read_text()
+    vertex_body=re.search(prefix+r'Mesh\[[^]]+\]\s*=\s*\{(.*?)\};',header,re.S)[1]
+    vertices=[list(map(float,re.findall(r'[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?',line)))[:3] for line in re.findall(r'\{([^{}]+)\}',vertex_body)]
+    indices=list(map(int,re.findall(r'\d+',re.search(prefix+r'Indices\[[^]]+\]\s*=\s*\{(.*?)\};',header,re.S)[1])))
+    target_shapes[target_type]={'vertices':vertices,'indices':indices}
 for path in sorted(source.glob('*.json')):
     kind,item=next(iter(json.loads(path.read_text()).items()))
     specs.append({'kind':kind,**{k:v for k,v in item.items() if k in (
@@ -69,6 +89,12 @@ for path in sorted(source.glob('*.json')):
         'height','height_bottom','height_top','is_collidable','is_enabled','is_visible','size','target_type','collection','update_interval',
         'is_dropped','state','state_u32','color','color2','intensity','blink_interval',
         'is_timer_enabled','timer_interval','surface','hit_height','width','length')}})
+    if kind=='HitTarget':
+        specs[-1].update({k:item[k] for k in ('is_legacy','use_hit_event','threshold','drop_speed','raise_delay')})
+        material=materials.get(item.get('physics_material'))
+        specs[-1]['contact_physics']={k:(material[k if k!='scatter' else 'scatter_angle'] if material and not item.get('overwrite_physics') else item.get(k,0)) for k in ('elasticity','elasticity_falloff','friction','scatter')}
+        shape=target_shapes[item['target_type']]
+        specs[-1]['collision_mesh']=shape
     if 'drag_points' in specs[-1]:specs[-1]['drag_points']=[{'x':p['x'],'y':p['y']} for p in specs[-1]['drag_points']]
 (OUT/'objects.json').write_text(json.dumps({'objects':specs,'collections':json.loads((source.parent/'collections.json').read_text())},separators=(',',':')))
 script=(source.parent/'script.vbs').read_text()

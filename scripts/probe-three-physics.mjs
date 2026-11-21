@@ -8,6 +8,9 @@ const contactNames=(g,ball)=>{
   const names=new Set();g.world.contactPairsWith(ball,other=>g.world.contactPair(ball,other,manifold=>{
     if(Array.from({length:manifold.numContacts()},(_,i)=>manifold.contactDist(i)).some(d=>d<.005))names.add(g.colliderLabels.get(other.handle)??g.tags.get(other.handle)?.name??'unlabeled');
   }));
+  const body=ball.parent();if(body)for(const m of g.nativeMeshes){
+    if(m.collider.isEnabled()&&m.mesh.hitsAt(body.translation(),{x:0,y:0,z:0},RADIUS,STEP).length)names.add(g.colliderLabels.get(m.collider.handle)??'native mesh');
+  }
   return [...names];
 };
 const round=p=>Object.fromEntries(['x','y','z'].map(k=>[k,Number(p[k].toFixed(3))]));
@@ -35,6 +38,7 @@ if(process.argv.includes('--flippers')){
   for(let seed=firstSeed;seed<firstSeed+cases;seed++){
     const g=full?await createFullGame(layout,specs,source,()=>{}):await createGame(layout);
     let randomState=seed+1243;const random=()=>{randomState=(Math.imul(randomState,1664525)+1013904223)>>>0;return randomState/4294967296;};
+    g.random=random;
     g.start();if(full)g.rules.execute(`Randomize ${seed+1}`);
     let stuck=null,error=null,completedGames=0,flips=0,maximumBalls=0,launched=0,maximumSpeed=0,qualified=false;
     const motion=new Map(),captures=new Map(),flipUntil={left:0,right:0},nextFlip={left:0,right:0};
@@ -86,7 +90,7 @@ if(process.argv.includes('--flippers')){
       g.step();
       }catch(cause){error={message:cause.message,at:g.time};break;}
     }
-    const result={seed,seconds,simulatedSeconds:Number(g.time.toFixed(2)),stuck,error,state:g.state,score:g.score,launched,flips,maximumBalls,maximumSpeed:Number(maximumSpeed.toFixed(2)),completedGames};results.push(result);console.log(JSON.stringify(result));g.dispose();
+    const result={seed,seconds,simulatedSeconds:Number(g.time.toFixed(2)),stuck,error,state:g.state,score:g.score,launched,flips,maximumBalls,maximumSpeed:Number(maximumSpeed.toFixed(2)),completedGames,physicsStats:g.physicsStats};results.push(result);console.log(JSON.stringify(result));g.dispose();
     fs.mkdirSync('.work/three-physics',{recursive:true});fs.writeFileSync(`.work/three-physics/${seedArgument?`progress-${reportName}`:multiball?'progress-multiball':'progress'}.json`,JSON.stringify(results,null,2));
   }
 }

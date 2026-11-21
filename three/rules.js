@@ -118,12 +118,13 @@ export function createRules(source,specs,host={}) {
   function hit(name,kind='Hit',ball){activeBall=ball;engine.addObject('ActiveBall',ball??{});return run(`${name}_${kind}`);}
   function tick(dt){
     time+=dt;
-    for(const delay of [...delays])if(delay.at<=time){delays.splice(delays.indexOf(delay),1);execute(delay.statement);}
-    // A 1 ms live-catch timer must advance four/five times per 240 Hz physics
-    // step. Dropping those ticks stretched its ten-ms window to about forty ms.
+    for(const delay of [...delays])if(delay.at<=time+1e-9){delays.splice(delays.indexOf(delay),1);execute(delay.statement);}
+    // Preserve every authored tick, including the 1ms flipper/live-catch timer.
     for(const [key,t]of [...timers])while(t.at<=time+1e-9&&timers.get(key)===t){
       const milliseconds=Number(t.property==='enabled'?t.object.interval:t.object.timerinterval);
-      t.at+=Math.max(.001,milliseconds/1000);engine.addObject('Me',t.object);run(t.handler);
+      // Me only supplies timer properties here. Its methods are already bound
+      // under the object's own name; don't re-register them every millisecond.
+      t.at+=Math.max(.001,milliseconds/1000);engine.addObject('Me',t.object,false);run(t.handler);
     }
     for(const [name,f]of flashes){
       if(time>=f.end){f.light[f.property]=f.finish;flashes.delete(name);}

@@ -35,11 +35,12 @@ test('native bonus, game over and replay complete across three physical drains',
     g.start();ticks(g,1.7);assert.equal(g.state,'playing');assert.equal(g.ballNumber,1);assert.equal(g.records.length,1);
   }finally{g.dispose();}
 });
-test('production flippers with authored trick timers deliver symmetric heel and tip shots',async()=>{
+test('authored flipper trick timers deliver symmetric shots on a controlled flat playfield',async()=>{
+  const layout=json('layout');layout.playfield=null;layout.physics.scatter=0;
   for(const offset of [.35,1.05])for(const delay of [.02,.06]){
     const shots=[];
     for(const side of ['left','right']){
-      const g=await createFullGame(json('layout'),json('objects'),source,()=>{});
+      const g=await createFullGame(layout,json('objects'),source,()=>{});
       try{
         g.start();ticks(g,1.7);g.launch();
         const f=g.flippers.find(f=>f.side===side),ball=g.records[0].body,sign=side==='left'?1:-1;
@@ -48,7 +49,10 @@ test('production flippers with authored trick timers deliver symmetric heel and 
         let maximum=0,height=0,shot=false;
         for(let i=0;i<.18/STEP;i++){
           if(i*STEP>=delay&&!g.held[side])g.input(side,true);
-          g.step();const v=ball.linvel();maximum=Math.max(maximum,Math.hypot(v.x,v.y));height=Math.max(height,ball.translation().z);shot||=v.y>2;
+          g.step();const v=ball.linvel();
+          // Compare the flipper exit, before asymmetric table targets can alter it.
+          if(ball.translation().y<6){maximum=Math.max(maximum,Math.hypot(v.x,v.y));height=Math.max(height,ball.translation().z);}
+          shot||=v.y>2;
         }
         assert.ok(shot);assert.ok(maximum<65);assert.ok(height<.3);
         shots.push(maximum);
@@ -56,4 +60,16 @@ test('production flippers with authored trick timers deliver symmetric heel and 
     }
     assert.ok(Math.abs(shots[0]-shots[1])<.1,`authored flipper response ${offset}/${delay}: ${shots}`);
   }
+});
+
+test('the native floor beneath the drop-target slot prevents the wire-entry jam',async()=>{
+  const g=await createFullGame(json('layout'),json('objects'),source,()=>{});
+  try{
+    g.start();ticks(g,1.7);g.launch();const r=g.records[0];
+    r.body.setTranslation({x:6.105,y:12.825,z:.207},true);r.body.setLinvel({x:0,y:0,z:0},true);r.body.setAngvel({x:0,y:0,z:0},true);
+    ticks(g,4);const p=r.body.translation();
+    assert.ok(p.z>.24,'slot has its authored floor');
+    assert.ok(Math.hypot(p.x-6.105,p.y-12.825)>.5,`slot releases ball: ${JSON.stringify(p)}`);
+    assert.equal(g.physicsStats.substepBudgetExceeded,0);
+  }finally{g.dispose();}
 });

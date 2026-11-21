@@ -1,0 +1,65 @@
+// Controlled native VPX contact measurements. All state comes from the live
+// engine; every case resets both linear velocity and angular momentum.
+import {writeFile} from 'node:fs/promises';
+import assert from 'node:assert/strict';
+const [debug,base,output]=process.argv.slice(2);
+const reference=await(await fetch(new URL('/reference-metadata.json',base))).json();
+assert.deepEqual(reference.controlledOverrides,{scatter:0,default_scatter:0},'controlled native table metadata');
+const runtimeOverrides={'LeftFlipper.Scatter':0,'RightFlipper.Scatter':0};
+const tabs=await(await fetch(`${debug}/json/list`)).json();
+const socket=new WebSocket(tabs.find(t=>t.type==='page').webSocketDebuggerUrl);
+await new Promise(r=>socket.addEventListener('open',r,{once:true}));
+let seq=0;const pending=new Map();
+socket.addEventListener('message',event=>{const d=JSON.parse(event.data);if(d.id){const p=pending.get(d.id);pending.delete(d.id);d.error?p.reject(Error(d.error.message)):p.resolve(d.result);}});
+const call=(method,params={})=>new Promise((resolve,reject)=>{const id=++seq;pending.set(id,{resolve,reject});socket.send(JSON.stringify({id,method,params}));});
+const evaluate=async expression=>{const r=await call('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true,userGesture:true});if(r.exceptionDetails)throw Error(JSON.stringify(r.exceptionDetails));return r.result.value;};
+const wait=async expression=>{for(let i=0;i<1200;i++){if(await evaluate(expression))return;await new Promise(r=>setTimeout(r,50));}throw Error(`Timed out: ${expression}`);};
+const script=code=>evaluate(`finni.evaluate(${JSON.stringify(code)})`);
+const marker=async label=>evaluate(`document.getElementById('log').textContent.split(${JSON.stringify(label+'|')}).at(-1).split(String.fromCharCode(10))[0]`);
+const reset=(x,y,vx,vy,z=25)=>`RefBall.X=${x}:RefBall.Y=${y}:RefBall.Z=${z}:RefBall.VelX=${vx}:RefBall.VelY=${vy}:RefBall.VelZ=0:RefBall.AngMomX=0:RefBall.AngMomY=0:RefBall.AngMomZ=0`;
+const cases=[{name:'slide',x:430,y:1500,vx:10,vy:0}];
+for(const side of ['left','right'])for(const offset of [35,105])for(const delay of [0,40])cases.push({name:`${side}-${offset}-${delay}`,side,delay,x:(side==='left'?274.4583:592.20245)+(side==='left'?offset:-offset),y:1736.8932,vx:0,vy:6});
+for(const side of ['left','right']){
+  const a=(side==='left'?22:158)*Math.PI/180,sy=side==='left'?.43:-.43;
+  cases.push({name:`${side}-cradle-release`,side,startRaised:true,press:false,delay:100,sampleCount:24,
+    x:(side==='left'?274.4583:592.20245)+100*(.35*Math.cos(a)-sy*Math.sin(a)),
+    y:1786.8932-100*(.35*Math.sin(a)+sy*Math.cos(a)),vx:0,vy:0});
+}
+cases.push({name:'wire-entry',x:610.5,y:832.5,z:20.7,vx:0,vy:0,sampleCount:96});
+cases.push({name:'slot-back',x:612.3,y:803.1,z:25,vx:0,vy:0,sampleCount:96});
+const selected=process.argv.find(a=>a.startsWith('--case='))?.slice(7);
+try{
+  await call('Page.enable');await call('Emulation.setFocusEmulationEnabled',{enabled:true});
+  await call('Page.navigate',{url:base});console.log('Loading native contact reference');
+  await wait('!!window.finni && !document.getElementById("play").disabled');await evaluate('document.getElementById("play").click()');await wait('document.body.classList.contains("playing")');
+  await script('Dim RefBalls,RefBall:RefBalls=GetBalls:Set RefBall=RefBalls(UBound(RefBalls))');
+  await script('LeftFlipper.Scatter=0:RightFlipper.Scatter=0');
+  if(process.argv.includes('--isolate-floor')){
+    await script('Ramp020.Collidable=False:Target011.Collidable=False:rpeg001.Collidable=False');
+    Object.assign(runtimeOverrides,{'Ramp020.Collidable':false,'Target011.Collidable':false,'rpeg001.Collidable':false});
+    await script('Debug.Print "ISOLATE|" & Ramp020.Collidable & ":" & Target011.Collidable & ":" & playfield_mesh.Collidable');
+    const flags=await marker('ISOLATE');assert.ok(flags.startsWith('False:False:True'),'slot neighbors disabled');console.log('Slot neighbor isolation flags',flags);
+  }
+  const results=[];
+  for(const scenario of cases.filter(s=>!selected||s.name===selected)){
+    await script(`SolLFlipper 0:SolRFlipper 0:${reset(430,1400,0,0)}`);await new Promise(r=>setTimeout(r,400));
+    if(scenario.startRaised){await script(`Sol${scenario.side==='left'?'L':'R'}Flipper 1`);await new Promise(r=>setTimeout(r,200));}
+    const command=scenario.side?`Sol${scenario.side==='left'?'L':'R'}Flipper ${scenario.press===false?0:1}`:'';
+    const inputMarker=`CONTACT_INPUT_${scenario.name}`;
+    const input=`Debug.Print "${inputMarker}|" & GameTime:${command}`;
+    const drive=command?(scenario.delay?`vpmtimer.addtimer ${scenario.delay},"${input.replaceAll('"','""')} '"`:input):'';
+    await script(`${reset(scenario.x,scenario.y,scenario.vx,scenario.vy,scenario.z)}:${drive?drive+':':''}Debug.Print "CONTACT_INIT|" & GameTime & ":" & RefBall.AngMomX & ":" & RefBall.AngMomY & ":" & RefBall.AngMomZ & ":" & RefBall.X & ":" & RefBall.Y & ":" & RefBall.Z`);
+    const initial=(await marker('CONTACT_INIT')).split(':').map(parseFloat);assert.equal(initial.length,7);assert.deepEqual(initial.slice(1,4),[0,0,0],'native spin reset');
+    for(const [actual,expected]of [[initial[4],scenario.x],[initial[5],scenario.y],[initial[6],scenario.z??25]])assert.ok(Math.abs(actual-expected)<.001,`native initial position ${actual} vs ${expected}`);
+    const origin=initial[0],samples=[],rawSamples=[];
+    for(let i=0;i<(scenario.sampleCount??12);i++){
+      await script('Debug.Print "CONTACT_SAMPLE|" & GameTime & ":" & RefBall.X & ":" & RefBall.Y & ":" & RefBall.Z & ":" & CLng(RefBall.VelX*1000000) & ":" & CLng(RefBall.VelY*1000000) & ":" & CLng(RefBall.VelZ*1000000) & ":" & CLng(RefBall.AngVelX*1000000) & ":" & CLng(RefBall.AngVelY*1000000) & ":" & CLng(RefBall.AngVelZ*1000000) & ":" & LeftFlipper.CurrentAngle & ":" & RightFlipper.CurrentAngle');
+      const raw=await marker('CONTACT_SAMPLE');rawSamples.push(raw);
+      const values=raw.split(':').map(parseFloat);assert.equal(values.length,12);assert.ok(values.every(Number.isFinite));for(let k=4;k<10;k++)values[k]/=1000000;values[0]-=origin;samples.push(values);
+      await new Promise(r=>setTimeout(r,5));
+    }
+    const actualDelay=command?parseFloat(await marker(inputMarker))-origin:0;
+    results.push({...scenario,initial,actualDelay,samples,rawSamples});console.log(scenario.name,'input at',actualDelay,JSON.stringify(samples.at(-1)));
+    await writeFile(`${output}/vpx-contact-reference.json`,JSON.stringify({...reference,runtimeOverrides,columns:['ms','x','y','z','vx','vy','vz','wx','wy','wz','left','right'],cases:results},null,2));
+  }
+}finally{socket.close();}

@@ -118,11 +118,12 @@ test('unloaded flippers lift symmetrically, ease off EOS and return after short 
   }finally{g.dispose();}
 });
 
-test('early and late heel/tip shots remain symmetric with bounded energy and no vertical kick',async()=>{
+test('isolated heel/tip shots on a flat, zero-scatter playfield remain symmetric',async()=>{
+  const controlled={...layout,playfield:null,physics:{...layout.physics,scatter:0}};
   for(const offset of [.35,.6,.85,1.05])for(const delay of [0,.02,.04,.06]){
     const shots=[];
     for(const side of ['left','right']){
-      const g=await createGame(layout);g.start();g.launch();
+      const g=await createGame(controlled);g.start();g.launch();
       try{
         const f=g.flippers.find(f=>f.side===side),sign=side==='left'?1:-1;
         position(g,{x:f.p.x+sign*offset,y:f.p.y+.5,z:RADIUS+.005},{x:0,y:-6,z:0});

@@ -1,0 +1,18 @@
+Native physics behavior in physics.js, full-game.js, drag-curve.js,
+flipper-contact.js, mesh-contact.js and playfield-contact.js is adapted from
+Visual Pinball, copyright its respective contributors, licensed GPLv3 or later.
+These derived modules are distributed under GPL-3.0-or-later.
+The target mesh source headers in references/vpx-physics/meshes are also GPLv3+;
+their generated collision geometry is included in public/objects.json.
+
+Reference version used by vpinball-wasm 0.3.4:
+195f214dd4849b8ef6113fd377258b78d0dec3bf
+https://github.com/vpinball/vpinball/tree/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/physics
+
+The JavaScript adaptation uses Three.js world units, analytic tapered flipper
+contacts and a Rapier world for the remaining bodies. Its source is included in
+the three/ directory alongside the build scripts and dependency manifest.
+
+See GPL-3.0.txt for the license. Preserve these notices and supply corresponding
+source when redistributing a combined build. Table artwork, audio, fonts and
+third-party libraries retain their separately documented rights and licenses.

@@ -2,7 +2,9 @@ import fs from 'node:fs';
 import {createFullGame} from '../three/full-game.js';
 import {STEP} from '../three/physics.js';
 const fixture=JSON.parse(fs.readFileSync('three/tests/fixtures/vpx-motion.json'));
-const g=await createFullGame(JSON.parse(fs.readFileSync('three/public/layout.json')),JSON.parse(fs.readFileSync('three/public/objects.json')),fs.readFileSync('three/public/rules.vbs','utf8'),()=>{});
+const layout=JSON.parse(fs.readFileSync('three/public/layout.json'));
+if(process.argv.includes('--native-contact-solver'))layout.physics.native_flipper_contacts=true;
+const g=await createFullGame(layout,JSON.parse(fs.readFileSync('three/public/objects.json')),fs.readFileSync('three/public/rules.vbs','utf8'),()=>{});
 const advance=seconds=>{for(let i=0;i<Math.round(seconds/STEP);i++)g.step();};
 const errors=[];
 try{
