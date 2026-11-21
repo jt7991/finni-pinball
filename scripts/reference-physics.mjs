@@ -7,6 +7,11 @@ export function readReferenceFixture(path){
   const data=fs.readFileSync(path),decoded=data[0]===31&&data[1]===139?gunzipSync(data):data;
   return JSON.parse(decoded.toString('utf8'));
 }
+export function summarizeNativePlunger(frames){
+  if(!frames)return undefined;
+  const keys=['pos','speed','travelLimit','pullForce','reverseImpulse','fireTimer','fireSpeed','fireBounce'];
+  return {frames:frames.length,observations:Object.fromEntries(keys.map(key=>[key,frames.filter(frame=>Number.isFinite(frame.errors[key])).length])),errors:Object.fromEntries(keys.map(key=>[key,Math.max(0,...frames.map(frame=>frame.errors[key]??0))]))};
+}
 // Measurement overrides are applied only by comparison tools, never gameplay.
 export function applyReferencePhysics(layout,objects,fixture){
   Object.assign(layout.physics,fixture.controlledOverrides);
@@ -51,6 +56,13 @@ export function restoreReferenceBalls(game,fixture,scenario,fallback){
   if(!measured)throw Error('native measured ball missing from initial snapshot');
   if(scenario.initialNativeInternals){
     const internals=scenario.initialNativeInternals,idColumn=columns.indexOf('ID');
+    if(internals.plunger){
+      const observed=internals.plunger,plunger=game.plunger;
+      for(const key of ['rest','start','end'])if(plunger[key]!==observed[key])throw Error('Native plunger dimension differs: '+key);
+      if(plunger.spec.stroke!==observed.length||observed.autoFireTimer||observed.addRetractMotion||observed.retractMotion)throw Error('Unsupported native plunger control state');
+      for(const key of ['pos','speed','travelLimit','pullForce','reverseImpulse','fireTimer','fireSpeed','fireBounce'])if(Number.isFinite(observed[key]))plunger[key]=observed[key];
+      plunger.cancelled=false;plunger.updateNativeShapes();
+    }
     game.ballCollisionSwap=internals.swapBallCollisions;
     for(const body of internals.balls){
       const index=scenario.initialBallStates.findIndex(row=>row[idColumn]===body.id),record=records[index];if(!record)throw Error('native internal state refers to a missing body');
@@ -85,6 +97,20 @@ export function restoreReferenceBalls(game,fixture,scenario,fallback){
     }
     const initial=scenario.initialNativeRandom,frames=new Map(scenario.nativeRandomFrames.map(([ms,low,high])=>[ms,[low,high]])),bodyFrames=new Map(scenario.nativeRandomFrames.filter(row=>row[3]).map(row=>[row[0],row[3]])),first=frames.get(1)??[initial.low,initial.high],random=nativeRandom(...first);
     game.random=random;game.nativeRandomAudit=[];game.nativeBodyAudit=[];const step=game.step.bind(game),origin=Math.round(game.time*1000);
+    if(scenario.initialNativeInternals?.plunger){
+      game.nativePlungerAudit=[];const update=game.plunger.updateVelocity.bind(game.plunger);
+      game.plunger.updateVelocity=()=>{
+        // RNG_FRAME is emitted after native script timers, before mover
+        // velocity updates. Sample at that same phase, including Fire input.
+        const ms=Math.round(game.time*1000)-origin,expected=bodyFrames.get(ms)?.plunger;
+        if(expected){
+          const actual=Object.fromEntries(['pos','speed','travelLimit','pullForce','reverseImpulse','fireTimer','fireSpeed','fireBounce'].map(key=>[key,game.plunger[key]])),errors={};
+          for(const [key,value]of Object.entries(actual))if(Number.isFinite(expected[key]))errors[key]=Math.abs(value-expected[key]);
+          game.nativePlungerAudit.push({ms,actual,expected,errors});
+        }
+        update();
+      };
+    }
     game.step=()=>{
       const ms=Math.round(game.time*1000)-origin+1,expected=frames.get(ms),actual=random.getState();
       const agrees=!expected||actual.every((word,i)=>word===expected[i]);

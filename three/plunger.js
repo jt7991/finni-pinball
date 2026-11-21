@@ -26,7 +26,7 @@ export class Plunger {
   get fraction(){return f(f(this.pos-this.end)/f(this.spec.stroke));}
   get position(){return f(25*Math.max(0,Math.min(1,this.fraction)));}
   get charge(){return Math.max(0,(this.fraction-this.rest)/(1-this.rest));}
-  pull(){this.cancelled=false;this.speed=0;this.pullForce=this.spec.speed_pull;}
+  pull(){this.cancelled=false;this.speed=0;this.pullForce=f(this.spec.speed_pull);}
   fire(){
     this.cancelled=false;
     this.pullForce=0;
@@ -40,15 +40,17 @@ export class Plunger {
   }
   cancel(){this.cancelled=true;this.pullForce=0;this.fireTimer=0;this.fireSpeed=0;this.speed=0;}
   updateVelocity(){
+    // The fixed native rod mass folds these force divisions to rounded
+    // reciprocal multiplications, including the tracking spring's 1/(30*13).
     if(this.fireTimer>0){this.speed=this.fireSpeed;this.fireTimer--;}
     else if(this.pullForce){
-      this.speed=f(this.speed+f(f(this.pullForce)/this.mass));
+      this.speed=f(this.speed+f(f(this.pullForce)*f(1/this.mass)));
       if(this.pos>this.start){this.speed=0;this.pos=this.start;}
       if(this.pos<f(this.end+f(this.rest*f(this.spec.stroke)))){this.speed=0;this.pos=f(this.end+f(this.rest*f(this.spec.stroke)));}
     }else if(this.spec.is_mech_plunger){
       this.speed=f(this.speed*f(.95));
       const dx=f(this.rest-this.fraction);
-      this.speed=f(this.speed+f(f(f(f(f(.1)*f(this.spec.mech_strength))*dx)*f(this.spec.stroke))/(this.mass*13)));
+      this.speed=f(this.speed+f(f(f(f(f(.1)*f(this.spec.mech_strength))*dx)*f(this.spec.stroke))*f(1/(this.mass*13))));
       this.speed=f(this.speed+this.reverseImpulse);
     }
     this.reverseImpulse=0;

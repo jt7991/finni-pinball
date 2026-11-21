@@ -7,6 +7,7 @@ import {writeFile,readFile} from 'node:fs/promises';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {nativeBallMemoryObserver} from './native-ball-memory-observer.mjs';
+import {nativePlungerMemoryObserver} from './native-plunger-memory-observer.mjs';
 const [debug,base,output]=process.argv.slice(2);
 const probeKind=process.argv.includes('--target-events')?'target-events':process.argv.includes('--material-events')?'material-events':process.argv.includes('--flipper-events')?'flipper-events':process.argv.includes('--slingshots')?'slingshots':process.argv.includes('--bumpers')?'bumpers':process.argv.includes('--autofire')?'autofire':process.argv.includes('--ball-pairs')?'ball-pairs':process.argv.includes('--triggers')?'triggers':process.argv.includes('--targets')?'targets':process.argv.includes('--gates')?'gates':process.argv.includes('--spinners')?'spinners':process.argv.includes('--plunger')?'plunger':process.argv.includes('--nudge')?'nudge':'contacts';
 const reference=await(await fetch(new URL('/reference-metadata.json',base))).json();
@@ -17,6 +18,9 @@ const recordTrails=process.argv.includes('--ball-trails');
 const recordRng=process.argv.includes('--rng-state');
 const recordInternals=process.argv.includes('--native-internals');
 const recordContactSlots=process.argv.includes('--contact-slots');
+const recordPlunger=process.argv.includes('--plunger-state');
+if(recordPlunger)assert.ok(recordInternals,'plunger state requires pinned native memory capture');
+const plungerSpec=recordPlunger?JSON.parse(await readFile(new URL('../three/public/layout.json',import.meta.url),'utf8')).items.find(item=>item.kind==='Plunger'):undefined;
 if(recordContactSlots)assert.ok(recordInternals,'retained contact slots require pinned native memory capture');
 if(recordContactSlots)reference.nativeContactStorageCapture='Read-only retained CollisionEvent vector slots (48-byte ABI). Physics clears vector size after a pass; slots beyond the previous pass may be stale. These diagnostics are not the current active contact list.';
 if(recordInternals)assert.ok(recordRng&&recordAllBalls,'native internals require pinned memory capture and all body states');
@@ -42,6 +46,16 @@ if(recordInternals){
 }
 const ballStateFields=['X','Y','Z','VelX','VelY','VelZ','AngMomX','AngMomY','AngMomZ','Mass','Radius','ID'];
 if(recordAllBalls)reference.initialBallStateColumns=ballStateFields;
+const referenceNumber=value=>{const parts=value.split('@');return parts.length===2?Number(parts[0])*2**Number(parts[1]):Number(value);};
+// Native CStr(CDbl()) can lose the exponent of tiny velocities/momenta in
+// this engine. Encode those Single getters as an exact integer times 2^e.
+// Multiplication/division by two preserves every Single bit in a Double.
+const ballStateRow=()=>ballStateFields.map((property,index)=>{
+  const separator=index?'RefInitTrace=RefInitTrace & ":":':'';
+  if(!/^(Vel|AngMom)/.test(property))return separator+`RefInitTrace=RefInitTrace & CStr(CDbl(RefInitBall.${property}))`;
+  return separator+`RefExactValue=CDbl(RefInitBall.${property}):RefExactExponent=0:If RefExactValue<>0 Then:Do While Abs(RefExactValue)<8388608:RefExactValue=RefExactValue*2:RefExactExponent=RefExactExponent-1:Loop:Do While Abs(RefExactValue)>=16777216:RefExactValue=RefExactValue/2:RefExactExponent=RefExactExponent+1:Loop:End If:RefInitTrace=RefInitTrace & CStr(CLng(RefExactValue)) & "@" & CStr(RefExactExponent)`;
+}).join(':');
+if(recordAllBalls)reference.initialBallStateScalarEncoding='Velocity and momentum are exact signed integer mantissas times 2^exponent, encoded mantissa@exponent in raw rows; parsed numeric columns are unchanged. Other fields use native Double text.';
 const traceMilliseconds=Number(process.argv.find(a=>a.startsWith('--trace-ms='))?.slice(11)??70);
 const traceFrom=Number(process.argv.find(a=>a.startsWith('--trace-from-ms='))?.split('=')[1]??0);
 assert.ok(Number.isInteger(traceMilliseconds)&&traceMilliseconds>=1&&traceMilliseconds<=1000,'trace duration must be 1..1000ms');
@@ -225,9 +239,11 @@ try{
     const memory=window.nativeReferenceMemories.find(m=>m.buffer.byteLength>${reference.nativeRandom.stateAddress+8});if(!memory)throw Error('Native WASM memory was not observed');
     const element=document.getElementById('log'),descriptor=Object.getOwnPropertyDescriptor(Node.prototype,'textContent');window.nativeRandomRecords=[];
     ${recordInternals?`window.nativeBallObserver=(${nativeBallMemoryObserver.toString()})(memory,[0,0.17098337411880493,-1.626798152923584],${reference.nativePhysicsMaxLoops},${recordContactSlots});window.nativeInternalSnapshots=[];`:''}
+    ${recordPlunger?`window.nativePlungerObserver=(${nativePlungerMemoryObserver.toString()})(memory,${JSON.stringify(plungerSpec)});window.nativePlungerLayout=window.nativePlungerObserver.scan();const readBallState=window.nativeBallObserver.read;window.nativeBallObserver.read=rows=>({...readBallState(rows),plunger:window.nativePlungerObserver.read()});`:''}
     Object.defineProperty(element,'textContent',{get(){return descriptor.get.call(this);},set(value){
       const line=String(value).split('\\n').at(-1),match=line.match(/(RNG_FRAME|CONTACT_INIT)\\|(\\d+)/);
-      ${recordInternals?`if(line.includes('BALL_SCAN|')||line.includes('BALL_INIT|')){try{const kind=line.includes('BALL_SCAN|')?'BALL_SCAN':'BALL_INIT',payload=line.slice(line.indexOf(kind+'|')),[,clock,bodyRows]=payload.split('|'),rows=bodyRows.replace(/'$/,'').split(';').filter(Boolean).map(row=>row.split(':').map(Number));if(kind==='BALL_SCAN')window.nativeBallLayout=window.nativeBallObserver.scan(rows);else window.nativeInternalSnapshots.push({ms:Number(clock),...window.nativeBallObserver.read(rows)});}catch(error){window.nativeBallObserverFailure=error.message;}}`:''}
+      ${recordPlunger?`if(line.includes('PLUNGER_ABI_CHECK|')){const expected=Number(line.slice(line.indexOf('PLUNGER_ABI_CHECK|')+18).replace(/'$/,'')),actual=window.nativePlungerObserver.read().position;window.nativePlungerValidation={expected,actual,agrees:Math.fround(expected)===actual};}`:''}
+      ${recordInternals?`if(line.includes('BALL_SCAN|')||line.includes('BALL_INIT|')){try{const kind=line.includes('BALL_SCAN|')?'BALL_SCAN':'BALL_INIT',payload=line.slice(line.indexOf(kind+'|')),[,clock,bodyRows]=payload.split('|'),rows=bodyRows.replace(/'$/,'').split(';').filter(Boolean).map(row=>row.split(':').map((${referenceNumber.toString()})));if(kind==='BALL_SCAN')window.nativeBallLayout=window.nativeBallObserver.scan(rows);else window.nativeInternalSnapshots.push({ms:Number(clock),...window.nativeBallObserver.read(rows)});}catch(error){window.nativeBallObserverFailure=error.message;}}`:''}
       // The RNG marker is a diagnostic memory-read clock. Rendering it into
       // the log at 1000Hz can exhaust VPX's timer budget and skip callbacks.
       if(match?.[1]!=='RNG_FRAME')descriptor.set.call(this,value);if(!match)return;
@@ -235,13 +251,18 @@ try{
       window.nativeRandomRecords.push({kind:match[1],ms:Number(match[2]),low,high${recordInternals?`,internals:window.nativeBallLayout?window.nativeBallObserver.read():undefined`:''}});
     }});return true;
   })()`);
+  if(recordPlunger){
+    await script('Debug.Print "PLUNGER_ABI_CHECK|" & CStr(CDbl(Plunger.Position))');
+    reference.nativePlungerMemory=await evaluate('({layout:window.nativePlungerLayout,validation:window.nativePlungerValidation})');
+    assert.ok(reference.nativePlungerMemory.validation?.agrees,'native plunger COM Position validates the memory ABI');
+  }
   if(omitStateTrace){await script('RefStateTraceOn=False');reference.stateTraceCaptured=false;}
   const rawAnimation=process.argv.includes('--raw-animation')||probeKind==='ball-pairs';
   await script(`Dim RefBalls,RefBall:RefBalls=GetBalls:Set RefBall=RefBalls(${rawAnimation?'0':'UBound(RefBalls)'})`);
   if(probeKind==='ball-pairs')await script('Dim RefOtherBall:Set RefOtherBall=RefBalls(1)');
-  if(recordAllBalls)await script('Dim RefInitBalls,RefInitBall,RefInitIdx,RefInitTrace');
+  if(recordAllBalls)await script('Dim RefInitBalls,RefInitBall,RefInitIdx,RefInitTrace,RefExactValue,RefExactExponent');
   if(recordInternals){
-    await script('RefInitBalls=GetBalls:RefInitTrace="":For RefInitIdx=0 To UBound(RefInitBalls):Set RefInitBall=RefInitBalls(RefInitIdx):RefInitTrace=RefInitTrace & '+ballStateFields.map(p=>`CStr(CDbl(RefInitBall.${p}))`).join(' & ":" & ')+' & ";":Next:Debug.Print "BALL_SCAN|" & GameTime & "|" & RefInitTrace');
+    await script('RefInitBalls=GetBalls:RefInitTrace="":For RefInitIdx=0 To UBound(RefInitBalls):Set RefInitBall=RefInitBalls(RefInitIdx):'+ballStateRow()+':RefInitTrace=RefInitTrace & ";":Next:Debug.Print "BALL_SCAN|" & GameTime & "|" & RefInitTrace');
     reference.nativeMemoryLayout=await evaluate('window.nativeBallLayout');assert.ok(reference.nativeMemoryLayout,await evaluate('window.nativeBallObserverFailure'));
   }
   await script('Debug.Print "REFERENCE_RULE_STATE|" & (UBound(RefBalls)+1) & ":" & CLng(RollingTimer.Enabled) & ":" & maxvel & ":" & lob');
@@ -369,7 +390,7 @@ try{
     const trace=recordTimers?`RefTrace="":Set RefTraceBall=RefBall:${traceFrom?`RefTraceFrom=GameTime+${traceFrom}:`:''}RefTraceUntil=GameTime+${traceMilliseconds}:RefTraceOn=True:`:'';
     // Capture every body in the same synchronous call as the measured reset.
     // Explicit Double formatting preserves the original Single's low bits.
-    const allBalls=recordAllBalls?'RefInitBalls=GetBalls:RefInitTrace="":For RefInitIdx=0 To UBound(RefInitBalls):Set RefInitBall=RefInitBalls(RefInitIdx):RefInitTrace=RefInitTrace & '+ballStateFields.map(p=>`CStr(CDbl(RefInitBall.${p}))`).join(' & ":" & ')+' & ";":Next:Debug.Print "BALL_INIT|" & GameTime & "|" & RefInitTrace:':'';
+    const allBalls=recordAllBalls?'RefInitBalls=GetBalls:RefInitTrace="":For RefInitIdx=0 To UBound(RefInitBalls):Set RefInitBall=RefInitBalls(RefInitIdx):'+ballStateRow()+':RefInitTrace=RefInitTrace & ";":Next:Debug.Print "BALL_INIT|" & GameTime & "|" & RefInitTrace:':'';
     const plungerInit=scenario.plunger?'Debug.Print "PLUNGER_INIT|" & CStr(CDbl(Plunger.Position)):':'';
     const coilInit=scenario.autofire?'RefCoilBalls=PlungerIM.Balls:RefCoilTrace="":For Each RefCoilBall In RefCoilBalls:RefCoilTrace=RefCoilTrace & RefCoilBall.ID & ",":Next:Debug.Print "COIL_INIT|" & swPlunger.BallCntOver & ":" & swPlungerRest.BallCntOver & ":" & CLng(bBallInPlungerLane) & ":" & RefCoilTrace:':'';
     const finishTrail=recordTrails?'RefTrailOn=False:RefTrailBalls=GetBalls:RefTrailRow=CStr(GameTime) & "|":For RefTrailIndex=0 To UBound(RefTrailBalls):Set RefTrailBall=RefTrailBalls(RefTrailIndex):RefTrailRow=RefTrailRow & RefTrailBall.ID & ":" & CStr(CDbl(RefTrailBall.X)) & ":" & CStr(CDbl(RefTrailBall.Y)) & ":" & CStr(CDbl(RefTrailBall.Z)) & ";":Next:RefTrailSlots((GameTime\\10) Mod 10)=RefTrailRow:':'';
@@ -388,7 +409,7 @@ try{
     const initialBallTrails=[],rawInitialBallTrails=[];
     if(recordAllBalls){
       rawInitialBallStates=(await marker('BALL_INIT')).replace(/'$/,'');const [clock,rows]=rawInitialBallStates.split('|');assert.equal(Number(clock),origin,'all bodies share the initial clock');
-      initialBallStates=rows.split(';').filter(Boolean).map(row=>row.split(':').map(Number));
+      initialBallStates=rows.split(';').filter(Boolean).map(row=>row.split(':').map(referenceNumber));
       assert.ok(initialBallStates.length>=state[0]);assert.ok(initialBallStates.every(row=>row.length===ballStateFields.length&&row.every(Number.isFinite)));
       await script('Debug.Print "MEASURED_BALL_ID|" & RefBall.ID');initialMeasuredBallID=parseFloat(await marker('MEASURED_BALL_ID'));assert.ok(initialBallStates.some(row=>row.at(-1)===initialMeasuredBallID));
     }
@@ -444,6 +465,6 @@ try{
     }
     results.push({...scenario,initial,actualDelay,...closing,samples,rawSamples,...(initialNativeInternals?{initialNativeInternals}:{}),...(scenario.plunger?{initialPlungerPosition}:{}),...(initialCoilState?{initialCoilState}:{}),...(timerTrace?{timerTrace}:{}),...(recordAllBalls?{initialBallStates,rawInitialBallStates,initialMeasuredBallID}:{}),...(recordTrails?{initialBallTrails,rawInitialBallTrails}:{}),...(recordRng?{initialNativeRandom,nativeRandomFrames}:{})});console.log(scenario.name,'input at',actualDelay,JSON.stringify(samples.at(-1)));
     const suffix=probeKind==='ball-pairs'?`ball-pairs-${selected??'reference'}`:recordKickers?'kickers-reference':rawAnimation&&selected?`raw-${recordTimers?'timing-':''}${selected}`:reference.geometryProbe&&selected?`geometry-${recordTimers?'timing-':''}${selected}`:reference.shooterProbe&&selected?`${recordTimers?'timing-':''}${selected}`:['spinners','gates','targets','triggers','flipper-events','material-events','target-events'].includes(probeKind)&&selected?`${probeKind}-${reference.instrumentation?.spinnerTraceColumns?'timing-':''}${reference.animationBallIsolation?'isolated-animation-':''}${selected}`:`${reference.geometryProbe?'geometry':probeKind==='contacts'?'contact':probeKind}-reference`;
-    await writeFile(`${output}/vpx-${suffix}${recordAllBalls?'-all-balls':''}${recordTrails?'-trails':''}${recordRng?'-rng':''}${recordInternals?'-internals':''}${recordContactSlots?'-contact-slots':''}${recordTimers&&traceMilliseconds!==70?`-${traceMilliseconds}ms`:''}${traceFrom?`-from${traceFrom}ms`:''}.json`,JSON.stringify({...reference,probeKind,runtimeOverrides,columns,cases:results},null,2));
+    await writeFile(`${output}/vpx-${suffix}${recordAllBalls?'-all-balls':''}${recordTrails?'-trails':''}${recordRng?'-rng':''}${recordInternals?'-internals':''}${recordPlunger?'-plunger-state':''}${recordContactSlots?'-contact-slots':''}${recordTimers&&traceMilliseconds!==70?`-${traceMilliseconds}ms`:''}${traceFrom?`-from${traceFrom}ms`:''}.json`,JSON.stringify({...reference,probeKind,runtimeOverrides,columns,cases:results},null,2));
   }
 }finally{socket.close();}

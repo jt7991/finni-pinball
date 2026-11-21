@@ -37,6 +37,9 @@ ball masses and the resulting reverse recoil.
 Its manual Fire calculation also retains the compiled reciprocal factors
 from Plunger::Fire and PlungerMoverObject::Fire, verified by unchanged native
 function recordings and complete per-frame ball-state launch captures.
+Its tracking spring and pull acceleration retain the compiled rounded mass
+reciprocals in PlungerMoverObject::UpdateVelocities, verified against unchanged
+native function outputs and read-only per-frame plunger memory recordings.
 native-flipper-contact.js includes HitFlipper::Collide event timing and speed
 arguments. full-game.js also preserves Flipper::get_CurrentAngle conversion:
 https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/parts/flipper.cpp

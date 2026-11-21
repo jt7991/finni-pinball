@@ -1,8 +1,8 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {createFullGame} from '../three/full-game.js';
-import {applyReferencePhysics,referenceRandom,placeReferenceBall,restoreReferenceBalls} from './reference-physics.mjs';
-const path=process.argv.slice(2).find(a=>!a.startsWith('--'))??'three/tests/fixtures/vpx-triggers.json',fixture=JSON.parse(fs.readFileSync(path));
+import {applyReferencePhysics,referenceRandom,placeReferenceBall,restoreReferenceBalls,readReferenceFixture,summarizeNativePlunger} from './reference-physics.mjs';
+const path=process.argv.slice(2).find(a=>!a.startsWith('--'))??'three/tests/fixtures/vpx-triggers.json',fixture=readReferenceFixture(path);
 assert.equal(fixture.probeKind,'triggers');
 const layout=JSON.parse(fs.readFileSync('three/public/layout.json')),objects=JSON.parse(fs.readFileSync('three/public/objects.json')),source=fs.readFileSync('three/public/rules.vbs','utf8');applyReferencePhysics(layout,objects,fixture);
 const reports=[];
@@ -27,8 +27,11 @@ for(const c of fixture.cases){
       for(let ms=elapsed;ms<expected[0];ms++)g.step();elapsed=expected[0];const p=r.body.translation(),v=r.body.linvel(),count=trigger.members.get(g.nativeBall(r.body).body)??0;
       samples.push({ms:elapsed,count,expectedCount:expected[12],position:[p.x*100,2115-p.y*100,p.z*100],positionError:Math.hypot(p.x*100-expected[1],2115-p.y*100-expected[2],p.z*100-expected[3]),velocityError:Math.hypot(v.x-expected[4],-v.y-expected[5],v.z-expected[6])});
     }
-    const report={name:c.name,events,maxPositionError:Math.max(...samples.map(s=>s.positionError)),maxVelocityError:Math.max(...samples.map(s=>s.velocityError)),membershipMismatches:samples.filter(s=>s.count!==s.expectedCount).length,physicsStats:g.physicsStats,samples,...(g.nativeRandomAudit?{nativeRandomAudit:g.nativeRandomAudit}:{})};reports.push(report);
-    if(!process.argv.includes('--json'))console.log(JSON.stringify({...report,samples:undefined,nativeRandomAudit:undefined}));
+    const bodies=(g.nativeBodyAudit??[]).flatMap(frame=>frame.bodies),nativeBodySummary={frames:g.nativeBodyAudit?.length??0,bodies:bodies.length};
+    for(const key of ['positionError','velocityError','momentumError','orientationError'])nativeBodySummary[key]=Math.max(0,...bodies.map(body=>body[key]??0));
+    const nativePlungerSummary=summarizeNativePlunger(g.nativePlungerAudit);
+    const report={name:c.name,events,maxPositionError:Math.max(...samples.map(s=>s.positionError)),maxVelocityError:Math.max(...samples.map(s=>s.velocityError)),membershipMismatches:samples.filter(s=>s.count!==s.expectedCount).length,physicsStats:g.physicsStats,samples,...(g.nativeRandomAudit?{nativeRandomAudit:g.nativeRandomAudit,nativeBodySummary}:{}),...(nativePlungerSummary?{nativePlungerSummary}:{}),...(process.argv.includes('--body-audit')?{nativeBodyAudit:g.nativeBodyAudit,nativePlungerAudit:g.nativePlungerAudit}:{})};reports.push(report);
+    if(!process.argv.includes('--json'))console.log(JSON.stringify({...report,samples:undefined,nativeRandomAudit:undefined,nativeBodyAudit:undefined,nativePlungerAudit:undefined}));
   }finally{g.dispose();}
 }
 fs.writeFileSync(process.argv.find(a=>a.startsWith('--report='))?.slice(9)??'.work/three-review/vpx-triggers-comparison.json',JSON.stringify(reports,null,2));
@@ -40,4 +43,13 @@ if(process.argv.includes('--check'))for(const r of reports){
     assert.ok(s.positionError<limit.earlyPosition,r.name+' initial switch position '+s.positionError);assert.ok(s.velocityError<limit.earlyVelocity,r.name+' initial switch velocity '+s.velocityError);
   }
   assert.equal(r.membershipMismatches,0,r.name+' native volume membership');assert.equal(r.physicsStats.substepBudgetExceeded,0);
+  if(fixture.nativeBodyRegression){
+    const limit=fixture.nativeBodyRegression;assert.ok(r.nativeBodySummary.frames>=limit.frames,'complete native body-frame coverage');
+    for(const key of ['positionError','velocityError','momentumError','orientationError'])if(limit[key]!==undefined)assert.ok(r.nativeBodySummary[key]<=limit[key],`${r.name} native body ${key}`);
+  }
+  if(fixture.nativePlungerRegression){
+    const limit=fixture.nativePlungerRegression;assert.ok(r.nativePlungerSummary?.frames>=limit.frames,'complete native plunger-frame coverage');
+    for(const [key,value]of Object.entries(limit.observations??{}))assert.ok(r.nativePlungerSummary.observations[key]>=value,`${r.name} native plunger ${key} observation coverage`);
+    for(const [key,value]of Object.entries(limit.errors))assert.ok(r.nativePlungerSummary.errors[key]<=value,`${r.name} native plunger ${key}`);
+  }
 }

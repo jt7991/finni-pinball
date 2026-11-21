@@ -1,0 +1,427 @@
+{
+  "engineSha256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+  "upstreamCommit": "195f214dd4849b8ef6113fd377258b78d0dec3bf",
+  "provenance": "Unchanged pinned WASM UpdateVelocities function4472 and GetPosition function2385, original function indices/signatures retained, unused functions trap. Manual mech plunger, no sensor position, 180VPU stroke/30unit mass. Deterministic independent input states; expected values are native execution outputs.",
+  "cases": [
+    {
+      "input": {
+        "pos": 1988.9302978515625,
+        "end": 1850,
+        "start": 2030,
+        "stroke": 180,
+        "rest": 0.16666670143604279,
+        "speed": 0.5593500733375549,
+        "force": 0,
+        "reverse": 0.027623534202575684,
+        "strength": 85,
+        "timer": 0,
+        "fireSpeed": -2.7024426460266113
+      },
+      "expected": {
+        "pos": 1988.9302978515625,
+        "speed": -1.8151158094406128,
+        "reverse": 0,
+        "timer": 0
+      }
+    },
+    {
+      "input": {
+        "pos": 1972.1387939453125,
+        "end": 1850,
+        "start": 2030,
+        "stroke": 180,
+        "rest": 0.16666670143604279,
+        "speed": 1.0574651956558228,
+        "force": 0,
+        "reverse": -0.04575957730412483,
+        "strength": 20.257036209106445,
+        "timer": 0,
+        "fireSpeed": -6.1745805740356445
+      },
+      "expected": {
+        "pos": 1972.1387939453125,
+        "speed": 0.480253130197525,
+        "reverse": 0,
+        "timer": 0
+      }
+    },
+    {
+      "input": {
+        "pos": 1899.6390380859375,
+        "end": 1850,
+        "start": 2030,
+        "stroke": 180,
+        "rest": 0.16666670143604279,
+        "speed": 0.2979809045791626,
+        "force": 0,
+        "reverse": 0.04004288837313652,
+        "strength": 89.72737121582031,
+        "timer": 0,
+        "fireSpeed": 8.016512870788574
+      },
+      "expected": {
+        "pos": 1899.6390380859375,
+        "speed": -0.1287107914686203,
+        "reverse": 0,
+        "timer": 0
+      }
+    },
+    {
+      "input": {
+        "pos": 2020.7037353515625,
+        "end": 1850,
+        "start": 2030,
+        "stroke": 180,
+        "rest": 0.16666670143604279,
+        "speed": -0.4914228916168213,
+        "force": 0,
+        "reverse": -0.018803691491484642,
+        "strength": 85,
+        "timer": 0,
+        "fireSpeed": 1.913901448249817
+      },
+      "expected": {
+        "pos": 2020.7037353515625,
+        "speed": -3.5522751808166504,
+        "reverse": 0,
+        "timer": 0
+      }
+    },
+    {
+      "input": {
+        "pos": 2039.5057373046875,
+        "end": 1850,
+        "start": 2030,
+        "stroke": 180,
+        "rest": 0.16666670143604279,
+        "speed": 0.2602934241294861,
+        "force": 0,
+        "reverse": 0.04616924375295639,
+        "strength": 85,
+        "timer": 0,
+        "fireSpeed": -3.0552947521209717
+      },
+      "expected": {
+        "pos": 2039.5057373046875,
+        "speed": -3.1829588413238525,
+        "reverse": 0,
+        "timer": 0
+      }
+    },
+    {
+      "input": {
+        "pos": 2038.610595703125,
+        "end": 1850,
+        "start": 2030,
+        "stroke": 180,
+        "rest": 0.16666670143604279,
+        "speed": 0.42303934693336487,
+        "force": 0,
+        "reverse": 0.012559367343783379,
+        "strength": 85,
+        "timer": 0,
+        "fireSpeed": 0.8139290809631348
+      },
+      "expected": {
+        "pos": 2038.610595703125,
+        "speed": -3.0424509048461914,
+        "reverse": 0,
+        "timer": 0
+      }
+    },
+    {
+      "input": {
+        "pos": 2016.8536376953125,
+        "end": 1850,
+        "start": 2030,
+        "stroke": 180,
+        "rest": 0.16666670143604279,
+        "speed": 1.3223806619644165,
+        "force": 0,
+        "reverse": 0.01302663516253233,
+        "strength": 85,
+        "timer": 0,
+        "fireSpeed": -3.191343069076538
+      },
+      "expected": {
+        "pos": 2016.8536376953125,
+        "speed": -1.7134193181991577,
+        "reverse": 0,
+        "timer": 0
+      }
+    },
+    {
+      "input": {
+        "pos": 2025.10205078125,
+        "end": 1850,
+        "start": 2030,
+        "stroke": 180,
+        "rest": 0.16666670143604279,
+        "speed": -0.935880720615387,
+        "force": 0,
+        "reverse": 0.0025047811213880777,
+        "strength": 66.42991638183594,
+        "timer": 0,
+        "fireSpeed": 8.638856887817383
+      },
+      "expected": {
+        "pos": 2025.10205078125,
+        "speed": -3.3581504821777344,
+        "reverse": 0,
+        "timer": 0
+      }
+    },
+    {
+      "input": {
+        "pos": 2022.0008544921875,
+        "end": 1850,
+        "start": 2030,
+        "stroke": 180,
+        "rest": 0.16666670143604279,
+        "speed": -1.054774522781372,
+        "force": 0,
+        "reverse": -0.04107660427689552,
+        "strength": 61.04144287109375,
+        "timer": 0,
+        "fireSpeed": 8.722492218017578
+      },
+      "expected": {
+        "pos": 2022.0008544921875,
+        "speed": -3.2656607627868652,
+        "reverse": 0,
+        "timer": 0
+      }
+    },
+    {
+      "input": {
+        "pos": 1992.9571533203125,
+        "end": 1850,
+        "start": 2030,
+        "stroke": 180,
+        "rest": 0.16666670143604279,
+        "speed": -1.1174054145812988,
+        "force": 0,
+        "reverse": -0.008593487553298473,
+        "strength": 85,
+        "timer": 0,
+        "fireSpeed": 9.786184310913086
+      },
+      "expected": {
+        "pos": 1992.9571533203125,
+        "speed": -3.532015323638916,
+        "reverse": 0,
+        "timer": 0
+      }
+    },
+    {
+      "input": {
+        "pos": 1961.0848388671875,
+        "end": 1850,
+        "start": 2030,
+        "stroke": 180,
+        "rest": 0.16666670143604279,
+        "speed": 0.8423891663551331,
+        "force": 0,
+        "reverse": -0.029784895479679108,
+        "strength": 85,
+        "timer": 0,
+        "fireSpeed": 4.269970893859863
+      },
+      "expected": {
+        "pos": 1961.0848388671875,
+        "speed": -0.9967488050460815,
+        "reverse": 0,
+        "timer": 0
+      }
+    },
+    {
+      "input": {
+        "pos": 1971.8092041015625,
+        "end": 1850,
+        "start": 2030,
+        "stroke": 180,
+        "rest": 0.16666670143604279,
+        "speed": 1.4915480613708496,
+        "force": 0,
+        "reverse": 0.0005357664194889367,
+        "strength": 105.33836364746094,
+        "timer": 0,
+        "fireSpeed": -0.32378190755844116
+      },
+      "expected": {
+        "pos": 1971.8092041015625,
+        "speed": -1.062245488166809,
+        "reverse": 0,
+        "timer": 0
+      }
+    },
+    {
+      "input": {
+        "pos": 2035.4820556640625,
+        "end": 1850,
+        "start": 2030,
+        "stroke": 180,
+        "rest": 0.16666670143604279,
+        "speed": 0.12239562720060349,
+        "force": 0,
+        "reverse": -0.011820295825600624,
+        "strength": 85,
+        "timer": 0,
+        "fireSpeed": 9.29455852508545
+      },
+      "expected": {
+        "pos": 2035.4820556640625,
+        "speed": -3.2842559814453125,
+        "reverse": 0,
+        "timer": 0
+      }
+    },
+    {
+      "input": {
+        "pos": 2001.75244140625,
+        "end": 1850,
+        "start": 2030,
+        "stroke": 180,
+        "rest": 0.16666670143604279,
+        "speed": -0.835055947303772,
+        "force": 0,
+        "reverse": 0.03608965128660202,
+        "strength": 85,
+        "timer": 0,
+        "fireSpeed": -9.67679214477539
+      },
+      "expected": {
+        "pos": 2001.75244140625,
+        "speed": -3.410792589187622,
+        "reverse": 0,
+        "timer": 0
+      }
+    },
+    {
+      "input": {
+        "pos": 1961.5181884765625,
+        "end": 1850,
+        "start": 2030,
+        "stroke": 180,
+        "rest": 0.16666670143604279,
+        "speed": 1.9727458953857422,
+        "force": 0,
+        "reverse": 0.042703140527009964,
+        "strength": 85,
+        "timer": 0,
+        "fireSpeed": -6.188483715057373
+      },
+      "expected": {
+        "pos": 1961.5181884765625,
+        "speed": 0.14013312757015228,
+        "reverse": 0,
+        "timer": 0
+      }
+    },
+    {
+      "input": {
+        "pos": 2026.90771484375,
+        "end": 1850,
+        "start": 2030,
+        "stroke": 180,
+        "rest": 0.16666670143604279,
+        "speed": -0.2574191093444824,
+        "force": 0,
+        "reverse": 0.010071012191474438,
+        "strength": 85,
+        "timer": 0,
+        "fireSpeed": -5.058050155639648
+      },
+      "expected": {
+        "pos": 2026.90771484375,
+        "speed": -3.436311721801758,
+        "reverse": 0,
+        "timer": 0
+      }
+    },
+    {
+      "input": {
+        "pos": 1969.7476806640625,
+        "end": 1850,
+        "start": 2030,
+        "stroke": 180,
+        "rest": 0.16666670143604279,
+        "speed": -0.9410284161567688,
+        "force": 0,
+        "reverse": -0.009890838526189327,
+        "strength": 85,
+        "timer": 0,
+        "fireSpeed": -4.963463306427002
+      },
+      "expected": {
+        "pos": 1969.7476806640625,
+        "speed": -2.8599071502685547,
+        "reverse": 0,
+        "timer": 0
+      }
+    },
+    {
+      "input": {
+        "pos": 2002.7388916015625,
+        "end": 1850,
+        "start": 2030,
+        "stroke": 180,
+        "rest": 0.16666670143604279,
+        "speed": -1.4017095565795898,
+        "force": 0,
+        "reverse": 0.007568764500319958,
+        "strength": 107.47010040283203,
+        "timer": 0,
+        "fireSpeed": -9.195236206054688
+      },
+      "expected": {
+        "pos": 2002.7388916015625,
+        "speed": -4.706302165985107,
+        "reverse": 0,
+        "timer": 0
+      }
+    },
+    {
+      "input": {
+        "pos": 1949.381103515625,
+        "end": 1850,
+        "start": 2030,
+        "stroke": 180,
+        "rest": 0.16666670143604279,
+        "speed": -1.832617998123169,
+        "force": 0,
+        "reverse": -0.036559876054525375,
+        "strength": 85,
+        "timer": 0,
+        "fireSpeed": -0.9560911655426025
+      },
+      "expected": {
+        "pos": 1949.381103515625,
+        "speed": -3.289699077606201,
+        "reverse": 0,
+        "timer": 0
+      }
+    },
+    {
+      "input": {
+        "pos": 1961.6351318359375,
+        "end": 1850,
+        "start": 2030,
+        "stroke": 180,
+        "rest": 0.16666670143604279,
+        "speed": 0.28540536761283875,
+        "force": 0,
+        "reverse": 0.03315498307347298,
+        "strength": 85,
+        "timer": 0,
+        "fireSpeed": 4.415691375732422
+      },
+      "expected": {
+        "pos": 1961.6351318359375,
+        "speed": -1.474937081336975,
+        "reverse": 0,
+        "timer": 0
+      }
+    }
+  ]
+}

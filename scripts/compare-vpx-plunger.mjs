@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {createFullGame} from '../three/full-game.js';
 import {STEP} from '../three/physics.js';
-import {applyReferencePhysics,referenceRandom,placeReferenceBall,restoreReferenceBalls,readReferenceFixture} from './reference-physics.mjs';
+import {applyReferencePhysics,referenceRandom,placeReferenceBall,restoreReferenceBalls,readReferenceFixture,summarizeNativePlunger} from './reference-physics.mjs';
 const fixture=readReferenceFixture(process.argv.slice(2).find(a=>!a.startsWith('--'))??'three/tests/fixtures/vpx-plunger.json');
 const layout=JSON.parse(fs.readFileSync('three/public/layout.json')),objects=JSON.parse(fs.readFileSync('three/public/objects.json')),source=fs.readFileSync('three/public/rules.vbs','utf8');
 applyReferencePhysics(layout,objects,fixture);
@@ -15,7 +15,7 @@ for(const scenario of fixture.cases){
     placeReferenceBall(g,r,{...scenario,vx:0,vy:0,vz:0});
     const timer=g.rules.objects.get('rollingtimer');timer.enabled=false;timer.enabled=true;
     r=restoreReferenceBalls(g,fixture,scenario,r);
-    if(scenario.initialPlungerPosition!==undefined){
+    if(scenario.initialPlungerPosition!==undefined&&!scenario.initialNativeInternals?.plunger){
       // The public native position is Float32; converting it back identifies
       // the rod's VPU coordinate at this snapshot, before PullBack zeros speed.
       g.plunger.pos=Math.fround(g.plunger.end+Math.fround(Math.fround(scenario.initialPlungerPosition/25)*Math.fround(g.plunger.spec.stroke)));
@@ -41,8 +41,9 @@ for(const scenario of fixture.cases){
     }
     const bodies=(g.nativeBodyAudit??[]).flatMap(frame=>frame.bodies),nativeBodySummary={frames:g.nativeBodyAudit?.length??0,bodies:bodies.length};
     for(const key of ['positionError','velocityError','momentumError','orientationError'])nativeBodySummary[key]=Math.max(0,...bodies.map(body=>body[key]??0));
-    const report={name:scenario.name,actualDelay:scenario.actualDelay,maxPositionError:Math.max(...samples.map(r=>r.positionError)),maxVelocityError:Math.max(...samples.map(r=>r.velocityError)),maxPlungerError:Math.max(...samples.map(r=>r.plungerError)),maxNativeSpeed:Math.max(...samples.map(r=>Math.hypot(...r.expected.slice(4,6)))),maxModelSpeed:Math.max(...samples.map(r=>Math.hypot(...r.actual.slice(4,6)))),physicsStats:g.physicsStats,samples,...(traceRows.size?{traceSamples}:{}),...(g.nativeRandomAudit?{nativeRandomAudit:g.nativeRandomAudit,nativeBodySummary}:{}),...(process.argv.includes('--body-audit')?{nativeBodyAudit:g.nativeBodyAudit}:{})};reports.push(report);
-    if(!process.argv.includes('--json'))console.log(JSON.stringify({...report,samples:undefined,traceSamples:undefined,nativeRandomAudit:undefined,nativeBodyAudit:undefined}));
+    const nativePlungerSummary=summarizeNativePlunger(g.nativePlungerAudit);
+    const report={name:scenario.name,actualDelay:scenario.actualDelay,maxPositionError:Math.max(...samples.map(r=>r.positionError)),maxVelocityError:Math.max(...samples.map(r=>r.velocityError)),maxPlungerError:Math.max(...samples.map(r=>r.plungerError)),maxNativeSpeed:Math.max(...samples.map(r=>Math.hypot(...r.expected.slice(4,6)))),maxModelSpeed:Math.max(...samples.map(r=>Math.hypot(...r.actual.slice(4,6)))),physicsStats:g.physicsStats,samples,...(traceRows.size?{traceSamples}:{}),...(g.nativeRandomAudit?{nativeRandomAudit:g.nativeRandomAudit,nativeBodySummary}:{}),...(nativePlungerSummary?{nativePlungerSummary}:{}),...(process.argv.includes('--body-audit')?{nativeBodyAudit:g.nativeBodyAudit,nativePlungerAudit:g.nativePlungerAudit}:{})};reports.push(report);
+    if(!process.argv.includes('--json'))console.log(JSON.stringify({...report,samples:undefined,traceSamples:undefined,nativeRandomAudit:undefined,nativeBodyAudit:undefined,nativePlungerAudit:undefined}));
   }finally{g.dispose();}
 }
 fs.writeFileSync(process.argv.find(a=>a.startsWith('--report='))?.slice(9)??'.work/three-review/vpx-plunger-comparison.json',JSON.stringify(reports,null,2));
@@ -65,6 +66,11 @@ if(process.argv.includes('--check'))for(const r of reports){
   if(fixture.nativeBodyRegression){
     const limit=fixture.nativeBodyRegression;assert.ok(r.nativeBodySummary.frames>=limit.frames,'complete native physics-frame coverage');
     for(const key of ['positionError','velocityError','momentumError','orientationError'])if(limit[key]!==undefined)assert.ok(r.nativeBodySummary[key]<=limit[key],`${r.name} every native body ${key}: ${r.nativeBodySummary[key]}`);
+  }
+  if(fixture.nativePlungerRegression){
+    const limit=fixture.nativePlungerRegression;assert.ok(r.nativePlungerSummary?.frames>=limit.frames,'complete native plunger-frame coverage');
+    for(const [key,value]of Object.entries(limit.observations??{}))assert.ok(r.nativePlungerSummary.observations[key]>=value,`${r.name} native plunger ${key} observation coverage`);
+    for(const [key,value]of Object.entries(limit.errors))assert.ok(r.nativePlungerSummary.errors[key]<=value,`${r.name} native plunger ${key}: ${r.nativePlungerSummary.errors[key]}`);
   }
   assert.equal(r.physicsStats.substepBudgetExceeded,0);
 }
