@@ -5,6 +5,7 @@ import RAPIER from '@dimforge/rapier3d-compat';
 import {Pinball,STEP,RADIUS,point,BALL_GROUP,STATIC_GROUP,BALL_RESTITUTION,surfaceRestitution} from './physics.js';
 import {createRules} from './rules.js';
 import {ContactMesh} from './mesh-contact.js';
+import {dropTargetFront} from './target-contact.js';
 import {CabinetNudge} from './cabinet-nudge.js';
 
 export async function createFullGame(layout,specs,source,emit,media) {
@@ -71,9 +72,11 @@ class FullGame extends Pinball {
         .setTranslation(p.x,p.y,base).setRotation(rotation).setSensor(true).setRestitution(spec.contact_physics.elasticity).setFriction(spec.contact_physics.friction));
       const worldVertices=[];
       for(let i=0;i<vertices.length;i+=3){const x=vertices[i],y=vertices[i+1];worldVertices.push(p.x+x*Math.cos(a)-y*Math.sin(a),p.y+x*Math.sin(a)+y*Math.cos(a),base+vertices[i+2]);}
-      this.registerMesh({collider,mesh:new ContactMesh({vertices:worldVertices,indices:spec.collision_mesh.indices},{invertNormals:true}),material:{...this.playfieldMaterial,...spec.contact_physics},source_order:spec.source_order});
+      const mesh=new ContactMesh({vertices:worldVertices,indices:spec.collision_mesh.indices},{invertNormals:true,edgeKeys:new Set()}),material={...this.playfieldMaterial,...spec.contact_physics};
+      this.registerMesh({collider,mesh,material,source_order:spec.source_order});
       this.contactMaterials.set(collider.handle,{collider,...spec.contact_physics});
       if(spec.target_type.startsWith('drop')&&!spec.is_legacy){
+        this.registerMesh({collider,mesh:dropTargetFront(spec,mesh),material,source_order:spec.source_order});
         const y=-.181738*size.y*.01,low=-.160074*size.z*.01,high=1.789926*size.z*.01,half=.55*size.x*.01;
         const centerY=p.y+y*Math.cos(a),centerX=p.x-y*Math.sin(a);
         const sensor=this.world.createCollider(RAPIER.ColliderDesc.cuboid(half,.0005,(high-low)/2)

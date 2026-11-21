@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import RAPIER from '@dimforge/rapier3d-compat';
 import {createFullGame} from '../full-game.js';
 import {STEP,createGame} from '../physics.js';
+import {applyReferencePhysics,referenceRandom} from '../../scripts/reference-physics.mjs';
 const root=new URL('../../',import.meta.url);
 const json=name=>JSON.parse(fs.readFileSync(new URL(`../public/${name}.json`,import.meta.url)));
 test('production flipper trajectory matches captured native VPX samples within .01 degrees',()=>{
@@ -66,6 +67,21 @@ test('native cabinet and primitive impacts match independent controlled geometry
 test('scripted primitive rotation changes appearance while retaining the native baked collider',()=>{
   const reports=JSON.parse(execFileSync(process.execPath,['scripts/compare-vpx-contact.mjs','three/tests/fixtures/vpx-camera-animation.json','--json'],{cwd:root,encoding:'utf8'}));
   assert.ok(reports[0].maxPositionError<.03);assert.ok(reports[0].maxVelocityError<.002);
+});
+
+test('nonlegacy target front geometry restores the native initial displacement and wire-entry path',async()=>{
+  const fixture=JSON.parse(fs.readFileSync(new URL('fixtures/vpx-wire-entry.json',import.meta.url)));
+  const reports=JSON.parse(execFileSync(process.execPath,['scripts/compare-vpx-contact.mjs','three/tests/fixtures/vpx-wire-entry.json','--check','--json'],{cwd:root,encoding:'utf8'}));
+  assert.equal(reports.length,1);
+  const layout=json('layout'),objects=json('objects');applyReferencePhysics(layout,objects,fixture);
+  const g=await createFullGame(layout,objects,fs.readFileSync(new URL('../public/rules.vbs',import.meta.url),'utf8'),()=>{});g.random=referenceRandom();
+  try{
+    g.start();for(let ms=0;ms<2000;ms++)g.step();g.launch();
+    const c=fixture.cases[0],r=g.records[0],timer=g.rules.objects.get('rollingtimer');timer.enabled=false;timer.enabled=true;
+    r.body.setTranslation({x:c.x*.01,y:(2115-c.y)*.01,z:c.z*.01},true);r.body.setLinvel({x:0,y:0,z:0},true);r.body.setAngvel({x:0,y:0,z:0},true);
+    g.step();const p=r.body.translation(),native=c.timerTrace.find(row=>row[0]==='STATE'&&row[1]===2).slice(2,5);
+    assert.ok(Math.hypot(p.x*100-native[0],2115-p.y*100-native[1],p.z*100-native[2])<.01,'independently observed 1ms displacement');
+  }finally{g.dispose();}
 });
 
 test('raw engine heel/tip, sliding and cradle contacts retain their independently measured baseline',()=>{

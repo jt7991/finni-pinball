@@ -28,6 +28,13 @@ remaining left-boundary and return-pocket differences.
 to the native probe. The script sets Camera1.RotY=90 before releasing the ball.
 Its physics still follows the baked startup collider, which the port preserves.
 
+The nonlegacy front hit-plane constants from `parts/hittarget.cpp` are adapted
+in `three/target-contact.js` under the same GPLv3-or-later license. The plane is
+physical as well as event-generating, and shares native edge IDs with the body.
+`vpx-wire-entry.json` is an independent all-scatter-zero instrumented capture
+that exposed the missing shape. Its raw 1ms trace verifies the initial contact
+displacement; the full path separately guards against the old downfield escape.
+
 The corrected contact probe waits for the real plunger switch and verifies four
 balls at selection time: three animation balls followed by the playable ball.
 Earlier contact measurements selected an animation ball during startup. They

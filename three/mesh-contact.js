@@ -12,7 +12,7 @@ const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 export class ContactMesh{
   constructor(mesh,options={}){
     const points=[];for(let i=0;i<mesh.vertices.length;i+=3)points.push({x:mesh.vertices[i],y:mesh.vertices[i+1],z:mesh.vertices[i+2]});
-    this.grid=new Map();const edges=new Map();this.shapes=[];this.planes=[];
+    this.grid=new Map();const edges=new Map();this.edgeKeys=options.edgeKeys;this.shapes=[];this.planes=[];
     this.bounds={minZ:Infinity,maxZ:-Infinity};
     const insert=shape=>{
       shape.id=this.shapes.length;this.shapes.push(shape);
@@ -29,6 +29,8 @@ export class ContactMesh{
       for(let j=0;j<3;j++){
         const k=ids[j],l=ids[(j+1)%3],key=[Math.min(k,l),Math.max(k,l)].join(':');
         if(edges.has(key)){edges.get(key).normals.push(n);continue;}
+        if(this.edgeKeys?.has(key))continue;
+        this.edgeKeys?.add(key);
         const a=points[k],b=points[l],edge={a,b,normals:[n]};edges.set(key,edge);
         if(options.coplanarJoints!==false){
           const delta=sub(b,a),length=Math.hypot(delta.x,delta.y,delta.z);

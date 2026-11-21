@@ -77,10 +77,14 @@ test('ramp geometry supports an elevated ball and quick nudges tilt',async()=>{
 test('previous rollover and wire-end jams let balls leave',async()=>{
   for(const p of [{x:5.08,y:18.79,z:RADIUS},{x:8.105,y:6.77,z:RADIUS}]){
     const g=await createGame(layout);
+    g.random=()=>.5;
     try{
-      g.start();g.launch();position(g,p,{x:0,y:-5,z:0});ticks(g,2);
-      const q=g.ball.translation();
-      assert.ok(Math.hypot(q.x-p.x,q.y-p.y)>1,`escaped ${JSON.stringify(p)} to ${JSON.stringify(q)}`);
+      g.start();g.launch();position(g,p,{x:0,y:-5,z:0});let travelled=0;
+      for(let i=0;i<2/STEP;i++){
+        g.step();const q=g.ball.translation();travelled=Math.max(travelled,Math.hypot(q.x-p.x,q.y-p.y));
+      }
+      // Later rebounds can legitimately return near the starting coordinates.
+      assert.ok(travelled>1,`left the jam at ${JSON.stringify(p)}: ${travelled}`);
     }finally{g.dispose();}
   }
 });
