@@ -62,9 +62,10 @@ export function flipperHit(body,f,angle,omega,radius,duration){
   return classify(time,at(time));
 }
 export function resolveFlipperContact(body,f,contact,material,radius){
+  const flipperBody=f.nativeMotion?.body??f.body;
   const n=contact.normal,p=body.translation(),mass=body.mass(),ballI=.4*mass*radius*radius;
   const rB=scale(n,-radius),hit=plus(p,rB),rF=minus(hit,{...f.p,z:p.z}),lever=cross(rF,n).z;
-  const omega=f.body.angvel().z;
+  const omega=flipperBody.angvel().z;
   const relative=minus(plus(body.linvel(),cross(body.angvel(),rB)),{x:-omega*rF.y,y:omega*rF.x,z:0});
   const vn=dot(relative,n);
   if(contact.gap<-1e-6)body.setTranslation(plus(p,scale(n,Math.min(.05,-contact.gap*.9875))),true);
@@ -77,21 +78,22 @@ export function resolveFlipperContact(body,f,contact,material,radius){
   if(f.contactTorque&&angular*f.contactTorque<0&&(Math.abs(angular/f.contactTorque)<=.005||vn+impulse/mass>0)){
     impulse=-(1+elasticity)*vn*mass;angular=0;
   }
-  body.applyImpulse(scale(n,impulse),true);f.body.applyTorqueImpulse({x:0,y:0,z:angular},true);
+  body.applyImpulse(scale(n,impulse),true);flipperBody.applyTorqueImpulse({x:0,y:0,z:angular},true);
   const tangent=minus(relative,scale(n,vn)),length=Math.hypot(tangent.x,tangent.y,tangent.z);
   if(length>.000001){
     const t=scale(tangent,1/length),a=cross(rB,t),b=cross(rF,t);
     const inverse=1/mass+dot(a,a)/ballI+dot(b,b)/f.inertia;
     const friction=clamp(-dot(relative,t)/inverse,-material.friction*impulse,material.friction*impulse);
     body.applyImpulse(scale(t,friction),true);body.applyTorqueImpulse(scale(a,friction),true);
-    f.body.applyTorqueImpulse({x:0,y:0,z:-b.z*friction},true);
+    flipperBody.applyTorqueImpulse({x:0,y:0,z:-b.z*friction},true);
   }
   return true;
 }
 export function supportFlipper(body,f,hit,gravity,friction,radius,duration){
+  const flipperBody=f.nativeMotion?.body??f.body;
   const n=hit.profile.normal,p=body.translation(),mass=body.mass(),ballI=.4*mass*radius*radius;
   if(hit.profile.gap<0)body.applyImpulse(scale(n,.1*mass),true);
-  const rB=scale(n,-radius),rF=minus(plus(p,rB),{...f.p,z:p.z}),omega=f.body.angvel().z;
+  const rB=scale(n,-radius),rF=minus(plus(p,rB),{...f.p,z:p.z}),omega=flipperBody.angvel().z;
   const vrel=minus(plus(body.linvel(),cross(body.angvel(),rB)),{x:-omega*rF.y,y:omega*rF.x,z:0}),vn=dot(vrel,n);
   if(vn>.099)return;
   const w=body.angvel(),aB=plus(gravity,cross(w,cross(w,rB)));
@@ -100,7 +102,7 @@ export function supportFlipper(body,f,hit,gravity,friction,radius,duration){
   if(normalAcc>=0)return;
   const lever=cross(rF,n),force=-normalAcc/(1/mass+dot(lever,lever)/f.inertia);
   body.applyImpulse(scale(n,force*duration-hit.vn*mass),true);
-  f.body.applyTorqueImpulse({x:0,y:0,z:-force*duration*lever.z},true);
+  flipperBody.applyTorqueImpulse({x:0,y:0,z:-force*duration*lever.z},true);
   const slip=minus(vrel,scale(n,vn)),speed=Math.hypot(slip.x,slip.y,slip.z);
   let t,numerator,sign=1;
   if(speed<.01){
@@ -111,5 +113,5 @@ export function supportFlipper(body,f,hit,gravity,friction,radius,duration){
   const b=cross(rB,t),a=cross(rF,t),denominator=1/mass+dot(b,b)/ballI+sign*dot(a,a)/f.inertia;
   const impulse=clamp(numerator/denominator,-force*friction*.01,force*friction*.01)*duration/.01;
   body.applyImpulse(scale(t,impulse),true);body.applyTorqueImpulse(scale(b,impulse),true);
-  f.body.applyTorqueImpulse({x:0,y:0,z:-impulse*a.z},true);
+  flipperBody.applyTorqueImpulse({x:0,y:0,z:-impulse*a.z},true);
 }

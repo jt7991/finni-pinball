@@ -9,6 +9,8 @@ import {playfieldHit,supportPlayfield,collidePlayfield} from './playfield-contac
 import {ContactMesh,collideSurface,supportSurface} from './mesh-contact.js';
 import {Plunger} from './plunger.js';
 import {BallSpin} from './ball-spin.js';
+import {NativeBall} from './native-ball.js';
+import {NativeAngular,nativeFlipperInertia} from './native-angular.js';
 
 export const STEP = 1 / 1000;
 export const RADIUS = 0.25;
@@ -90,12 +92,14 @@ export class Pinball {
     this.events = new RAPIER.EventQueue(!this.nativeFlipperContacts);
     this.physicsStats={maxSubsteps:0,substepBudgetExceeded:0};
     this.ballSpin=new BallSpin();
+    this.nativePositionUnits=physics.native_position_units!==false;this.nativeBallStates=new WeakMap();
     this.tags = new Map();
     this.colliderLabels = new Map();
     this.contactMaterials=new Map();this.changedMaterials=new Set();this.queryBall=new RAPIER.Ball(RADIUS);
     this.nativeMeshes=[];this.nativeMeshGrid=new Map();this.nativeGlobalMeshes=[];
     this.random=Math.random;
     this.flippers = [];
+    this.spinners = [];
     this.cooldowns = new Map();
     this.time = 0;
     this.score = 0;
@@ -251,7 +255,7 @@ export class Pinball {
       for (let i=0;i<32;i++) {const a=i/32*Math.PI*2;vertices.push(x+Math.cos(a)*r,Math.sin(a)*r,z);}
     }
     const rest = Math.PI/2-item.start_angle*Math.PI/180, raised = Math.PI/2-item.end_angle*Math.PI/180;
-    const mass=item.mass||1,inertia=mass*length*length/3;
+    const mass=item.mass||1,nativeInertia=nativeFlipperInertia(mass,item.flipper_radius_max),inertia=this.nativePositionUnits?nativeInertia*.0001:mass*length*length/3;
     // Identity joint frames plus a rotated collider keep stroke limits relative
     // to rest on both sides, including the right flipper's angle wrap.
     const anchor=this.world.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(p.x,p.y,0));
@@ -269,6 +273,7 @@ export class Pinball {
     this.tags.set(collider.handle,{kind:'flipper',name:item.name});
     this.colliderLabels.set(collider.handle,item.name);
     this.flippers.push({body,collider,joint,p,length,rest,raised,angle:rest,inertia,strength:item.strength,returnStrength:item.return,baseRadius:item.base_radius*.01,endRadius:item.end_radius*.01,height:item.height*.01,elasticity:item.elasticity,falloff:item.elasticity_falloff,friction:item.friction,side:item.name.startsWith('Left')?'left':'right'});
+    if(this.nativePositionUnits){const f=this.flippers.at(-1),r=Math.fround(Math.PI/180);f.nativeRestAngle=Math.fround(item.start_angle*r);f.nativeRaisedAngle=Math.fround(item.end_angle*r);f.nativeAngle=f.nativeRestAngle;f.nativeMotion=new NativeAngular(body,nativeInertia);}
   }
 
   driveFlippers(){
@@ -282,15 +287,23 @@ export class Pinball {
       const strength=Number(state?.strength)||f.strength*(fromRest<6*Math.PI/180?.2:1);
       const eos=Number(state?.eostorque)||.3,eosAngle=(Number(state?.eostorqueangle)||10)*Math.PI/180;
       const fade=Math.min(1,fromEnd/eosAngle)**4;
-      const torque=strength*(pressed?1:-f.returnStrength)*(eos+(1-eos)*fade)*Math.sign(f.raised-f.rest);
+      let torque=strength*(pressed?1:-f.returnStrength)*(eos+(1-eos)*fade)*Math.sign(f.raised-f.rest);
+      if(f.nativeMotion){
+        const round=Math.fround,angle=round(Math.abs(round(f.nativeAngle-f.nativeRaisedAngle))),limit=round((Number(state?.eostorqueangle)||10)*round(Math.PI/180));
+        let nativeTorque=round(strength);if(!pressed)nativeTorque=round(nativeTorque*round(-f.returnStrength));
+        if(angle<limit){const ratio=round(angle/limit),squared=round(ratio*ratio),lerp=round(squared*squared);nativeTorque=round(nativeTorque*round(lerp+round(round(eos)*round(1-lerp))));}
+        torque=nativeTorque*Math.sign(f.raised-f.rest);
+      }
       f.body.resetTorques(true);
       f.contactTorque=0;
       f.angularAcceleration=torque/f.inertia;
       if(Math.abs(f.angle-(pressed?f.raised:f.rest))<.01&&Math.abs(f.body.angvel().z)<1){
         f.angle=pressed?f.raised:f.rest;f.body.setRotation(quaternion(f.angle-f.rest),true);
+        if(f.nativeAngle!==undefined)f.nativeAngle=pressed?f.nativeRaisedAngle:f.nativeRestAngle;
+        f.nativeMotion?.stop();
         f.body.setAngvel({x:0,y:0,z:0},true);f.stopOmega=0;f.contactTorque=torque;f.angularAcceleration=0;continue;
       }
-      f.body.applyTorqueImpulse({x:0,y:0,z:torque*STEP},true);
+      if(f.nativeMotion)f.nativeMotion.torque(torque);else f.body.applyTorqueImpulse({x:0,y:0,z:torque*STEP},true);
       f.stopOmega=f.body.angvel().z;
     }
   }
@@ -304,7 +317,14 @@ export class Pinball {
     }
   }
 
+  nativeBall(body){
+    let state=this.nativeBallStates.get(body);if(!state){state=new NativeBall(body);this.nativeBallStates.set(body,state);}return state;
+  }
+
   stepPhysics(records){
+    const state=r=>this.nativeBall(r.body);
+    const body=r=>this.nativePositionUnits?state(r).body:r.body;
+    for(const spinner of this.spinners)spinner.updateVelocity();
     this.plunger?.updateVelocity();
     const nudge=this.cabinetNudge?.step(this.incline)??{x:0,y:0,z:0};
     if(!this.nativeFlipperContacts){
@@ -317,11 +337,12 @@ export class Pinball {
       const v=r.body.linvel(),g=this.world.gravity;
       r.body.setLinvel({x:v.x+(g.x+nudge.x)*STEP,y:v.y+(g.y+nudge.y)*STEP,z:v.z+(g.z+nudge.z)*STEP},true);
     }
-    const pose=f=>{const q=f.body.rotation();f.angle=f.rest+2*Math.atan2(q.z,q.w);};
-    let remaining=STEP,count=0,staticCount=10;
-    while(remaining>1e-9&&count++<32){
+    const pose=f=>{if(f.nativeAngle!==undefined){f.angle=Math.PI/2-f.nativeAngle;return;}const q=f.body.rotation();f.angle=f.rest+2*Math.atan2(q.z,q.w);};
+    const nativeTime=value=>Math.fround(value*100)*.01,staticTime=this.nativePositionUnits?nativeTime(.0002):.0002;
+    let remaining=this.nativePositionUnits?nativeTime(STEP):STEP,count=0,staticCount=10;
+    while(remaining>(this.nativePositionUnits?0:1e-9)&&count++<32){
       let event=null,time=remaining;const contacts=[];
-      for(const r of records)if(!r.held){r.queryPosition=r.body.translation();r.queryVelocity=r.body.linvel();}
+      for(const r of records)if(!r.held){r.queryPosition=body(r).translation();r.queryVelocity=r.body.linvel();}
       if(this.plunger)for(const r of records){
         if(r.held)continue;
         const hit=this.plunger.hit(r.queryPosition,r.queryVelocity,r.body.mass(),RADIUS,remaining),key=`${r.body.handle}:plunger`;
@@ -330,7 +351,7 @@ export class Pinball {
       }
       if(this.nativePlayfieldContacts&&!this.playfieldMesh)for(const r of records){
         if(r.held)continue;
-        const hits=this.playfieldMesh?this.playfieldMesh.hitsAt(r.queryPosition,r.queryVelocity,RADIUS,remaining):[playfieldHit(r.body,RADIUS,remaining)];
+        const hits=this.playfieldMesh?this.playfieldMesh.hitsAt(r.queryPosition,r.queryVelocity,RADIUS,remaining):[playfieldHit(body(r),RADIUS,remaining)];
         for(const hit of hits){
           const key=`${r.body.handle}:playfield:${hit?.id??0}`;
           if(hit?.contact)contacts.push({r,hit});
@@ -355,57 +376,81 @@ export class Pinball {
       for(const f of this.flippers){
         pose(f);const omega=f.body.angvel().z;
         const bound=omega>0?Math.max(f.rest,f.raised):Math.min(f.rest,f.raised);
-        const stop=omega?(bound-f.angle)/omega:Infinity;
+        let stop=omega?(bound-f.angle)/omega:Infinity;
+        if(f.nativeMotion&&f.nativeMotion.speed){const target=omega>0?Math.min(f.nativeRestAngle,f.nativeRaisedAngle):Math.max(f.nativeRestAngle,f.nativeRaisedAngle);stop=Math.fround(Math.fround(target-f.nativeAngle)/-f.nativeMotion.speed)*.01;}
         if(stop>0&&stop<=time){event={f,bound};time=stop;}
         for(const r of records){
           if(r.held)continue;
-          const hit=flipperHit(r.body,f,f.angle,omega,RADIUS,remaining),key=`${r.body.handle}:${f.side}`;
+          const hit=flipperHit(body(r),f,f.angle,omega,RADIUS,remaining),key=`${r.body.handle}:${f.side}`;
           if(hit?.contact)contacts.push({r,hit,f});
           else if(hit&&hit.time<=time){event={f,r,key};time=hit.time;}
         }
       }
+      for(const spinner of this.spinners)if(spinner.collider.isEnabled())for(const r of records){
+        if(r.held)continue;
+        const hit=spinner.hit(r.queryPosition,r.queryVelocity,RADIUS,remaining);
+        if(hit?.contact)contacts.push({r,hit,spinner});
+        else if(hit&&hit.time<=time){event={r,hit,spinner};time=hit.time;}
+      }
       // Native allows repeated zero-time impacts. After ten very short impacts,
       // advance by its legacy .02 VPT (0.2ms), rather than ignoring a collider.
-      if(event?.r&&time<.0002&&--staticCount<0){staticCount=0;time=.0002;}
-      if(time>.0002)staticCount=10;
-      if(time>1e-9){this.world.timestep=time;this.world.step(this.events);remaining-=time;}
+      if(this.nativePositionUnits)time=nativeTime(time);
+      if(event?.r&&time<staticTime&&--staticCount<0){staticCount=0;time=staticTime;}
+      if(time>staticTime)staticCount=10;
+      if(time>0){
+        const motions=this.nativePositionUnits?records.filter(r=>!r.held).map(r=>({r,s:state(r),p:{...state(r).sync()},v:r.body.linvel()})):[];
+        const angles=this.flippers.filter(f=>f.nativeAngle!==undefined).map(f=>({f,angle:f.nativeAngle,speed:-f.nativeMotion.speed}));
+        this.world.timestep=time;this.world.step(this.events);remaining=this.nativePositionUnits?Math.fround(Math.fround(remaining*100)-Math.fround(time*100))*.01:remaining-time;
+        for(const {f,angle,speed}of angles){f.nativeAngle=Math.fround(angle+Math.fround(speed*Math.fround(time*100)));f.body.setRotation(quaternion(Math.PI/2-f.nativeAngle-f.rest),true);}
+        for(const {r,s,p,v}of motions){
+          const after=r.body.linvel();
+          let ballContact=false;
+          if(records.length>1)this.world.contactPairsWith(r.collider,other=>{if(other.collisionGroups()===BALL_GROUP)ballContact=true;});
+          // Keep Rapier's resolved displacement when another physical ball has
+          // changed the velocity. Static native contacts use VPX's float units.
+          if(!ballContact&&after.x===v.x&&after.y===v.y&&after.z===v.z)s.displace(p,v,time);else s.sync();
+        }
+      }
       this.plunger?.displace(time);
+      for(const spinner of this.spinners)spinner.displace(time);
       for(const f of this.flippers){
         pose(f);const low=Math.min(f.rest,f.raised),high=Math.max(f.rest,f.raised),omega=f.body.angvel().z;
         const bound=event?.f===f&&!event.r?event.bound:f.angle>=high?high:f.angle<=low?low:null;
         if(bound!==null){
           f.angle=bound;f.body.setRotation(quaternion(f.angle-f.rest),true);
-          if(Math.abs(omega)>=.05&&(bound===high&&omega>0||bound===low&&omega<0))f.body.setAngvel({x:0,y:0,z:-.3*omega},true);
+          if(f.nativeAngle!==undefined)f.nativeAngle=bound===f.rest?f.nativeRestAngle:f.nativeRaisedAngle;
+          if(Math.abs(omega)>=.05&&(bound===high&&omega>0||bound===low&&omega<0)){if(f.nativeMotion)f.nativeMotion.bounce();else f.body.setAngvel({x:0,y:0,z:-.3*omega},true);}
         }
       }
       if(event&&!event.f){
-        this.ballSpin.impact(event.r.body,event.hit.gap);
-        if(event.plunger)this.plunger.collide(event.r.body,event.hit);
+        const impactBody=body(event.r);this.ballSpin.impact(impactBody,event.hit.gap);
+        if(event.spinner)event.spinner.collide(impactBody,event.hit);
+        else if(event.plunger)this.plunger.collide(impactBody,event.hit);
         else if(event.mesh){
           const shape=event.mesh.mesh.shapes[event.hit.id],sling=shape.slingshot;
           if(sling&&!this.tilted&&event.hit.vn<=-sling.threshold){
-            const p=event.r.body.translation(),n=event.hit.normal,t=((p.x-n.x*RADIUS-shape.a.x)*shape.axis.x+(p.y-n.y*RADIUS-shape.a.y)*shape.axis.y)/shape.length;
+            const p=impactBody.translation(),n=event.hit.normal,t=((p.x-n.x*RADIUS-shape.a.x)*shape.axis.x+(p.y-n.y*RADIUS-shape.a.y)*shape.axis.y)/shape.length;
             const force=.5*(1-(2*t-1)**2)*sling.force;
             event.r.body.applyImpulse({x:-n.x*force,y:-n.y*force,z:0},true);
           }
-          collideSurface(event.r.body,event.hit,event.mesh.material,RADIUS,this.random);
+          collideSurface(impactBody,event.hit,event.mesh.material,RADIUS,this.random);
           if(shape.kind==='plane'){
-            const p=event.r.body.translation(),n=shape.normal,gap=p.x*n.x+p.y*n.y+p.z*n.z-RADIUS-shape.d;
-            if(gap<0)event.r.body.setTranslation({x:p.x-gap*n.x,y:p.y-gap*n.y,z:p.z-gap*n.z},true);
+            const p=impactBody.translation(),n=shape.normal,gap=p.x*n.x+p.y*n.y+p.z*n.z-RADIUS-shape.d;
+            if(gap<0)impactBody.setTranslation({x:p.x-gap*n.x,y:p.y-gap*n.y,z:p.z-gap*n.z},true);
           }
           if(event.mesh.bumper&&!this.tilted&&event.hit.vn<=-event.mesh.bumper.threshold){
             const n=event.hit.normal;event.r.body.applyImpulse({x:n.x*event.mesh.bumper.force,y:n.y*event.mesh.bumper.force,z:0},true);
           }
-        }else if(this.playfieldMesh)collideSurface(event.r.body,event.hit,this.playfieldMaterial,RADIUS,this.random);
-        else collidePlayfield(event.r.body,event.hit,this.playfieldMaterial,RADIUS,this.random);
+        }else if(this.playfieldMesh)collideSurface(impactBody,event.hit,this.playfieldMaterial,RADIUS,this.random);
+        else collidePlayfield(impactBody,event.hit,this.playfieldMaterial,RADIUS,this.random);
       }else if(event){
       const f=event.f;pose(f);
       if(event.r){
-        const contact=flipperContact(event.r.body.translation(),f,f.angle,RADIUS);
+        const contact=flipperContact(body(event.r).translation(),f,f.angle,RADIUS);
         if(contact&&contact.gap<=.0005){
-          this.ballSpin.impact(event.r.body,contact.gap);
+          this.ballSpin.impact(body(event.r),contact.gap);
           const state=this.rules?.objects.get(`${f.side}flipper`);
-          resolveFlipperContact(event.r.body,f,contact,{elasticity:state?Number(state.elasticity):f.elasticity,elasticity_falloff:f.falloff??0,friction:f.friction},RADIUS);
+          resolveFlipperContact(body(event.r),f,contact,{elasticity:state?Number(state.elasticity):f.elasticity,elasticity_falloff:f.falloff??0,friction:f.friction},RADIUS);
         }
       }
       }
@@ -414,19 +459,20 @@ export class Pinball {
       // VPX alternates the traversal direction randomly to avoid giving one
       // persistent contact priority on every pass through an embedded pocket.
       if(this.random()<.5)contacts.reverse();
-      for(const {r,hit,f,mesh,plunger}of contacts){
-        if(f)supportFlipper(r.body,f,hit,this.world.gravity,f.friction,RADIUS,time);
-        else if(plunger)supportSurface(r.body,hit,this.world.gravity,{friction:.3},RADIUS,time);
-        else if(mesh)supportSurface(r.body,hit,this.world.gravity,mesh.material,RADIUS,time);
-        else if(this.playfieldMesh)supportSurface(r.body,hit,this.world.gravity,this.playfieldMaterial,RADIUS,time);
-        else supportPlayfield(r.body,hit,this.world.gravity,this.playfieldMaterial,time);
+      for(const {r,hit,f,mesh,plunger,spinner}of contacts){
+        if(f)supportFlipper(body(r),f,hit,this.world.gravity,f.friction,RADIUS,time);
+        else if(plunger)supportSurface(body(r),hit,this.world.gravity,{friction:.3},RADIUS,time);
+        else if(spinner)supportSurface(body(r),hit,this.world.gravity,{friction:.3},RADIUS,time);
+        else if(mesh)supportSurface(body(r),hit,this.world.gravity,mesh.material,RADIUS,time);
+        else if(this.playfieldMesh)supportSurface(body(r),hit,this.world.gravity,this.playfieldMaterial,RADIUS,time);
+        else supportPlayfield(body(r),hit,this.world.gravity,this.playfieldMaterial,time);
       }
-      for(const r of records)this.ballSpin.apply(r.body,Math.round(this.time*1000));
+      for(const r of records)this.ballSpin.apply(body(r),Math.round(this.time*1000));
       if(!event)break;
     }
     if(remaining>1e-9){this.physicsStats.substepBudgetExceeded++;this.world.timestep=remaining;this.world.step(this.events);this.plunger?.displace(remaining);}
     this.physicsStats.maxSubsteps=Math.max(this.physicsStats.maxSubsteps,count);this.world.timestep=STEP;
-    for(const r of records)this.ballSpin.record(r.body,Math.round(this.time*1000));
+    for(const r of records)this.ballSpin.record(body(r),Math.round(this.time*1000));
   }
 
   prepareContacts(records){
@@ -448,6 +494,7 @@ export class Pinball {
 
   readFlippers(){
     for(const f of this.flippers){
+      if(this.nativeFlipperContacts&&f.nativeAngle!==undefined)continue;
       const q=f.body.rotation(),raw=2*Math.atan2(q.z,q.w);
       f.angle=f.rest+Math.atan2(Math.sin(raw),Math.cos(raw));
       if(this.nativeFlipperContacts)continue;

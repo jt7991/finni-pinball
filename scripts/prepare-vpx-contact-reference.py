@@ -10,12 +10,15 @@ ROOT=Path(__file__).resolve().parents[1]
 parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--source-root',type=Path,required=True)
 parser.add_argument('--instrument-timers',action='store_true',help='Build a separate diagnostic table that records actual timer callbacks.')
+parser.add_argument('--instrument-spinners',action='store_true',help='Build a separate timer/plate-angle diagnostic table.')
 parser.add_argument('--all-scatter-zero',action='store_true',help='Also zero every material/object scatter field in a separate reference copy.')
 args=parser.parse_args()
+if args.instrument_spinners:args.instrument_timers=True
 source=args.source_root.resolve()
 tool=source/'.tools/vpxtool/vpxtool.exe'
 table=source/'runtime/Finni-Big-Day.vpx'
 out=ROOT/('.work/vpx-all-scatter'+('-timing' if args.instrument_timers else '')+'-reference' if args.all_scatter_zero else '.work/vpx-timing-reference' if args.instrument_timers else '.work/vpx-contact-reference')
+if args.instrument_spinners:out=ROOT/'.work/vpx-spinner-timing-reference'
 out.mkdir(parents=True,exist_ok=True)
 extracted=out/'extracted'
 subprocess.run([str(tool),'extract',str(table),'-o',str(extracted),'-f'],check=True)
@@ -66,6 +69,8 @@ if args.instrument_timers:
     state_fields+=['CLng(RefTraceBall.'+p+'*1000000)' for p in ['VelX','VelY','VelZ','AngVelX','AngVelY','AngVelZ']]
     state_fields+=['RightFlipper.CurrentAngle','RightFlipper.Strength','RightFlipper.Elasticity','RightFlipper.EOSTorque']
     state='    If RefTraceOn And GameTime<=RefTraceUntil Then RefTrace=RefTrace & "STATE|" & '+' & "|" & '.join(state_fields)+' & ";"\n'
+    if args.instrument_spinners:
+        state+='    If RefTraceOn And GameTime<=RefTraceUntil Then RefTrace=RefTrace & "SPIN|" & GameTime & "|" & CLng(Spinner001.CurrentAngle*1000000) & "|" & CLng(Spinner002.CurrentAngle*1000000) & ";"\n'
     script,count=re.subn(r'(Sub LeftFlipper_Timer\b.*?)(End Sub)',lambda m:m[1]+state+m[2],script,count=1,flags=re.I|re.S)
     if count!=1:raise RuntimeError('Missing flipper state instrumentation point')
     script_path.write_text(script)
@@ -86,6 +91,7 @@ if args.instrument_timers:
         'timerTrace':['RollingTimer_Timer','LeftFlipper_Timer'],
         'stateColumns':['ms','x','y','z','vx_micro','vy_micro','vz_micro','wx_micro','wy_micro','wz_micro','right_angle','right_strength','right_elasticity','right_eos_torque'],
         'changes':'Record native timer clocks and ball state before each physics update while RefTraceOn is true. Optional exact-clock input at RefDriveAt is delivered at the start of LeftFlipper_Timer. Authored timer bodies and rules are retained.'}
+    if args.instrument_spinners:metadata['instrumentation']['spinnerTraceColumns']=['ms','spinner001_angle_micro','spinner002_angle_micro']
 (out/'metadata.json').write_text(json.dumps(metadata,indent=2)+'\n')
 print(diff)
 print(f'Controlled native reference: {copy}')

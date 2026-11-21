@@ -46,6 +46,23 @@ try{
     await writeFile(`${output}/main-ui-${name}.png`,Buffer.from((await call('Page.captureScreenshot',{format:'png'})).data,'base64'));
     console.log('PASS',name,'main UI, real controls, launch and settings');
   }
+  if(await evaluate('!!window.finniThree')){
+    await evaluate('document.getElementById("controls-panel").showPopover()');
+    await wait('document.getElementById("controls-panel").matches(":popover-open")');
+    const plates=await evaluate(`(()=>{
+      const {game,view}=finniThree,render=view.renderer.render;let scene;
+      try{view.renderer.render=function(s,c){scene=s;return render.call(this,s,c);};view.render(1);}finally{view.renderer.render=render;}
+      return game.spinners.map(spinner=>{
+        const plate=scene.getObjectByName(spinner.spec.name+'Plate');if(!plate)return {name:spinner.spec.name,missing:true};
+        const saved=spinner.angle,position=plate.position.clone();spinner.angle=0;view.render(1);const start=plate.quaternion.clone();
+        spinner.angle=Math.PI/2;view.render(1);const rotation=start.angleTo(plate.quaternion),axleMovement=position.distanceTo(plate.position);
+        spinner.angle=saved;view.render(1);return {name:plate.name,rotation,axleMovement};
+      });
+    })()`);
+    assert.equal(plates.length,2);
+    for(const plate of plates){assert.equal(plate.missing,undefined);assert.ok(Math.abs(plate.rotation-Math.PI/2)<1e-6);assert.equal(plate.axleMovement,0);}
+    await writeFile(`${output}/spinner-plate-animation.json`,JSON.stringify(plates,null,2));console.log('PASS original spinner plate meshes rotate around fixed axles');
+  }
   assert.deepEqual(errors,[]);assert.equal(requests.some(url=>/table\.vpx|vpinball\.(wasm|js)/.test(url)),false);
   await writeFile(`${output}/main-ui-startup.json`,JSON.stringify(measurements,null,2));
 }finally{socket.close();}

@@ -1,15 +1,15 @@
 // Controlled native VPX contact measurements. All state comes from the live
 // engine; every case resets both linear velocity and angular momentum.
-import {writeFile} from 'node:fs/promises';
+import {writeFile,readFile} from 'node:fs/promises';
 import assert from 'node:assert/strict';
 const [debug,base,output]=process.argv.slice(2);
-const probeKind=process.argv.includes('--plunger')?'plunger':process.argv.includes('--nudge')?'nudge':'contacts';
+const probeKind=process.argv.includes('--spinners')?'spinners':process.argv.includes('--plunger')?'plunger':process.argv.includes('--nudge')?'nudge':'contacts';
 const reference=await(await fetch(new URL('/reference-metadata.json',base))).json();
 const recordTimers=!!reference.instrumentation&&!process.argv.includes('--no-timer-trace');
 reference.timerTraceCaptured=recordTimers;
 assert.deepEqual(reference.controlledOverrides,{scatter:0,default_scatter:0},'controlled native table metadata');
 const runtimeOverrides={'LeftFlipper.Scatter':0,'RightFlipper.Scatter':0};
-const columns=['ms','x','y','z','vx','vy','vz','wx','wy','wz','left','right',...(probeKind==='plunger'?['plunger_position']:[])];
+const columns=['ms','x','y','z','vx','vy','vz','wx','wy','wz','left','right',...(probeKind==='plunger'?['plunger_position']:probeKind==='spinners'?['spinner_angle','score','left_spinner_count']:[])];
 reference.timerSynchronization='RollingTimer disabled/enabled immediately before each initial state, resetting its 10ms phase.';
 const tabs=await(await fetch(`${debug}/json/list`)).json();
 const socket=new WebSocket(tabs.find(t=>t.type==='page').webSocketDebuggerUrl);
@@ -55,6 +55,15 @@ if(probeKind==='nudge'){
   const pocket=process.argv.includes('--pocket');reference.nudgeScenario=pocket?'target-wire-pocket-delayed':'flat';
   for(const angle of [0,90,270])cases.push({name:`nudge-${angle}`,nudgeAngle:angle,force:2,x:pocket?612.3:430,y:pocket?803.1:1500,z:25,vx:0,vy:0,sampleCount:pocket?120:24,...(pocket?{delay:1000}:{})});
 }
+if(probeKind==='spinners'){
+  cases.length=0;
+  const specs=JSON.parse(await readFile(new URL('../three/public/objects.json',import.meta.url),'utf8')).objects;
+  for(const spinner of specs.filter(s=>s.kind==='Spinner'))for(const [direction,speed]of [[1,6],[1,12],[-1,12],[1,24]]){
+    const a=spinner.rotation*Math.PI/180,n={x:-Math.sin(a),y:Math.cos(a)},p=spinner.center;
+    cases.push({name:`${spinner.name}-${direction>0?'forward':'reverse'}-${speed}`,spinner:spinner.name,direction,speed,x:p.x-n.x*60*direction,y:p.y-n.y*60*direction,z:25,vx:n.x*speed*direction,vy:n.y*speed*direction,sampleCount:180,parkFromSample:12});
+  }
+  for(const c of cases.filter(c=>c.name.endsWith('forward-12')))cases.push({...c,name:c.name.replace('forward','overhead'),z:120,sampleCount:60});
+}
 if(exactDelay!==undefined){
   const driven=cases.filter(s=>!selected||s.name===selected);
   assert.ok(driven.length&&driven.every(s=>s.side),'exact clock scheduling requires selected flipper scenarios');
@@ -81,6 +90,39 @@ try{
   }
   if(process.argv.includes('--rotate-camera')){
     await script('Camera1.RotY=90');runtimeOverrides['Camera1.RotY']=90;
+  }
+  if(probeKind==='spinners'){
+    const specs=JSON.parse(await readFile(new URL('../three/public/objects.json',import.meta.url),'utf8')).objects;
+    const overrides=[];
+    for(const s of specs){
+      if(s.name==='playfield_mesh'||!Number.isInteger(s.native_source_order))continue;
+      const property=['Wall','Ramp','Primitive','HitTarget','Bumper','Gate'].includes(s.kind)?'Collidable':s.kind==='Trigger'?'Enabled':null;
+      if(property){overrides.push({name:s.name,property});runtimeOverrides[`${s.name}.${property}`]=false;}
+    }
+    await script('Dim RefElement');
+    for(let i=0;i<overrides.length;i+=20){
+      const batch=overrides.slice(i,i+20),lookup=o=>`Set RefElement=GetElementByName("${o.name.replaceAll('"','""')}")`;
+      await script(batch.map(o=>`${lookup(o)}:RefElement.${o.property}=False`).join(':'));
+      const label=`ISOLATION_FLAGS_${i}`;
+      await script(`Debug.Print "${label}|" & `+batch.map(o=>`CLng(GetElementByName("${o.name.replaceAll('"','""')}").${o.property})`).join(' & ":" & '));
+      await wait(`document.getElementById('log').textContent.includes(${JSON.stringify(label+'|')})`);
+      const flags=(await marker(label)).split(':').map(parseFloat);assert.equal(flags.length,batch.length);assert.ok(flags.every(n=>n===0),'native mechanism isolation setters took effect');
+    }
+    reference.isolation='Other authored solid geometry and switches disabled; cabinet bounds and the playfield retained. From parkFromSample onward, reset the measured ball to a remote flat spot immediately before each observation so the plate coasts without further strikes.';
+    reference.nativeSpinnerProperties={};
+    for(const name of ['Spinner001','Spinner002']){
+      const properties=['Height','Length','Rotation','Damping','AngleMin','AngleMax','Elasticity'];
+      await script('Debug.Print "SPINNER_SETTINGS|" & '+properties.map(p=>`${name}.${p}`).join(' & ":" & '));
+      const values=(await marker('SPINNER_SETTINGS')).split(':').map(parseFloat);assert.ok(values.every(Number.isFinite));
+      reference.nativeSpinnerProperties[name]=Object.fromEntries(properties.map((p,i)=>[p,values[i]]));
+    }
+    if(process.argv.includes('--isolate-animation-balls')){
+      await script('Dim RefToyBall');reference.animationBallIsolation=[];
+      for(let i=0;i<state[3];i++){
+        const x=-10000-i*200;await script(`Set RefToyBall=RefBalls(${i}):RefToyBall.X=${x}:RefToyBall.Y=0:RefToyBall.Z=-1000:RefToyBall.VelX=0:RefToyBall.VelY=0:RefToyBall.VelZ=0`);
+        reference.animationBallIsolation.push({index:i,x,y:0,z:-1000});
+      }
+    }
   }
   if(probeKind==='plunger'){
     const properties=['ParkPosition','Stroke','PullSpeed','FireSpeed','MomentumXfer','MechStrength'];
@@ -111,9 +153,12 @@ try{
     for(const [actual,expected]of [[initial[4],scenario.x],[initial[5],scenario.y],[initial[6],scenario.z??25]])assert.ok(Math.abs(actual-expected)<.001,`native initial position ${actual} vs ${expected}`);
     const origin=initial[0],samples=[],rawSamples=[];
     for(let i=0;i<(scenario.sampleCount??12);i++){
-      await script('Debug.Print "CONTACT_SAMPLE|" & GameTime & ":" & RefBall.X & ":" & RefBall.Y & ":" & RefBall.Z & ":" & CLng(RefBall.VelX*1000000) & ":" & CLng(RefBall.VelY*1000000) & ":" & CLng(RefBall.VelZ*1000000) & ":" & CLng(RefBall.AngVelX*1000000) & ":" & CLng(RefBall.AngVelY*1000000) & ":" & CLng(RefBall.AngVelZ*1000000) & ":" & LeftFlipper.CurrentAngle & ":" & RightFlipper.CurrentAngle'+(scenario.plunger?' & ":" & Plunger.Position':''));
+      const park=scenario.parkFromSample!==undefined&&i>=scenario.parkFromSample?reset(430,1500,0,0)+':':'';
+      const extra=scenario.spinner?` & ":" & CLng(${scenario.spinner}.CurrentAngle*1000000) & ":" & Score(CurrentPlayer) & ":" & LeftSpinnerCount(CurrentPlayer)`:scenario.plunger?' & ":" & Plunger.Position':'';
+      await script(park+'Debug.Print "CONTACT_SAMPLE|" & GameTime & ":" & RefBall.X & ":" & RefBall.Y & ":" & RefBall.Z & ":" & CLng(RefBall.VelX*1000000) & ":" & CLng(RefBall.VelY*1000000) & ":" & CLng(RefBall.VelZ*1000000) & ":" & CLng(RefBall.AngVelX*1000000) & ":" & CLng(RefBall.AngVelY*1000000) & ":" & CLng(RefBall.AngVelZ*1000000) & ":" & LeftFlipper.CurrentAngle & ":" & RightFlipper.CurrentAngle'+extra);
       const raw=await marker('CONTACT_SAMPLE');rawSamples.push(raw);
       const values=raw.split(':').map(parseFloat);assert.equal(values.length,columns.length);assert.ok(values.every(Number.isFinite));for(let k=4;k<10;k++)values[k]/=1000000;values[0]-=origin;samples.push(values);
+      if(scenario.spinner)values[12]/=1000000;
       await new Promise(r=>setTimeout(r,5));
     }
     const actualDelay=command?parseFloat(await marker(inputMarker))-origin:0;
@@ -124,10 +169,11 @@ try{
       let raw='';
       for(let offset=1;offset<=length;offset+=200){await script(`Debug.Print "TIMER_TRACE_CHUNK|" & Mid(RefTrace,${offset},200)`);raw+=(await marker('TIMER_TRACE_CHUNK')).replace(/'$/,'');}
       timerTrace=raw.trim().split(';').filter(Boolean).map(line=>{const [handler,ms,...fields]=line.split('|');return [handler,Number(ms)-origin,...fields.map(Number)];});
-      assert.ok(timerTrace.every(([name,ms,...fields])=>['ROLL','FLIP','STATE'].includes(name)&&[ms,...fields].every(Number.isFinite)));
+      assert.ok(timerTrace.every(([name,ms,...fields])=>['ROLL','FLIP','STATE','SPIN'].includes(name)&&[ms,...fields].every(Number.isFinite)));
       assert.ok(timerTrace[0][1]<=10,'full trace must include the first timer callbacks');
     }
     results.push({...scenario,initial,actualDelay,samples,rawSamples,...(timerTrace?{timerTrace}:{})});console.log(scenario.name,'input at',actualDelay,JSON.stringify(samples.at(-1)));
-    await writeFile(`${output}/vpx-${reference.geometryProbe?'geometry':probeKind==='contacts'?'contact':probeKind}-reference.json`,JSON.stringify({...reference,probeKind,runtimeOverrides,columns,cases:results},null,2));
+    const suffix=probeKind==='spinners'&&selected?`spinners-${reference.instrumentation?.spinnerTraceColumns?'timing-':''}${reference.animationBallIsolation?'isolated-animation-':''}${selected}`:`${reference.geometryProbe?'geometry':probeKind==='contacts'?'contact':probeKind}-reference`;
+    await writeFile(`${output}/vpx-${suffix}.json`,JSON.stringify({...reference,probeKind,runtimeOverrides,columns,cases:results},null,2));
   }
 }finally{socket.close();}

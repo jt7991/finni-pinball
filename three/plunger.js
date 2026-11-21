@@ -2,13 +2,14 @@
 // Visual Pinball contributors, hitplunger.cpp at
 // 195f214dd4849b8ef6113fd377258b78d0dec3bf. See public/licenses/VPX-Physics-NOTICE.txt.
 import {wallHit,roundHit} from './mesh-contact.js';
+const f=Math.fround;
 
 // Position stays in authored VPU; speed uses native VPU/10ms, numerically equal
 // to world units/s. Displacements are split at the same TOIs as balls/flippers.
 export class Plunger {
   constructor(spec){
-    this.spec=spec;this.mass=30;this.end=spec.center.y-spec.stroke;
-    this.start=spec.center.y;this.rest=spec.park_position;this.pos=this.end+this.rest*spec.stroke;
+    this.spec=spec;this.mass=30;this.end=f(f(spec.center.y)-f(spec.stroke));
+    this.start=f(spec.center.y);this.rest=f(spec.park_position);this.pos=f(this.end+f(this.rest*f(spec.stroke)));
     this.speed=0;this.pullForce=0;this.fireTimer=0;this.fireSpeed=0;this.fireBounce=0;
     this.reverseImpulse=0;this.travelLimit=this.end;
     const left=(spec.center.x-spec.width)*.01,right=(spec.center.x+spec.width)*.01;
@@ -18,36 +19,38 @@ export class Plunger {
     this.fixed=[wall(left,this.base,0,-1,1,0,right-left),wall(left,this.base,-1,0,0,1,0),joint(left,this.base),wall(right,this.base,1,0,0,1,0),joint(right,this.base)];
     this.moving=[wall(left,0,0,1,1,0,right-left),joint(left,0),joint(right,0)];
   }
-  get fraction(){return (this.pos-this.end)/this.spec.stroke;}
+  get fraction(){return f(f(this.pos-this.end)/f(this.spec.stroke));}
   get position(){return 25*this.fraction;}
   get charge(){return Math.max(0,(this.fraction-this.rest)/(1-this.rest));}
   pull(){this.cancelled=false;this.speed=0;this.pullForce=this.spec.speed_pull;}
   fire(){
     this.cancelled=false;
     this.pullForce=0;
-    const start=Math.max(this.rest,this.fraction),dx=start-this.rest;
-    this.pos=this.end+start*this.spec.stroke;
-    this.fireSpeed=-(this.spec.speed_fire/100)*this.spec.stroke*dx*(100/13)/this.mass;
-    this.fireBounce=-Math.min(1,dx/.5)*this.rest;this.fireTimer=200;
+    const start=Math.max(this.rest,this.fraction),dx=f(start-this.rest);
+    this.pos=f(this.end+f(start*f(this.spec.stroke)));
+    this.fireSpeed=f(f(f(-f(f(this.spec.speed_fire)/100)*f(this.spec.stroke))*f(dx*f(100/13)))/this.mass);
+    this.fireBounce=f(-Math.min(1,f(dx/.5))*this.rest);this.fireTimer=200;
   }
   cancel(){this.cancelled=true;this.pullForce=0;this.fireTimer=0;this.fireSpeed=0;this.speed=0;}
   updateVelocity(){
     if(this.fireTimer>0){this.speed=this.fireSpeed;this.fireTimer--;}
     else if(this.pullForce){
-      this.speed+=this.pullForce/this.mass;
+      this.speed=f(this.speed+f(f(this.pullForce)/this.mass));
       if(this.pos>this.start){this.speed=0;this.pos=this.start;}
-      if(this.pos<this.end+this.rest*this.spec.stroke){this.speed=0;this.pos=this.end+this.rest*this.spec.stroke;}
+      if(this.pos<f(this.end+f(this.rest*f(this.spec.stroke)))){this.speed=0;this.pos=f(this.end+f(this.rest*f(this.spec.stroke)));}
     }else if(this.spec.is_mech_plunger){
-      this.speed*=.95;
-      this.speed+=.1*this.spec.mech_strength*(this.rest-this.fraction)*this.spec.stroke/(this.mass*13)+this.reverseImpulse;
+      this.speed=f(this.speed*f(.95));
+      const dx=f(this.rest-this.fraction);
+      this.speed=f(this.speed+f(f(f(f(f(.1)*f(this.spec.mech_strength))*dx)*f(this.spec.stroke))/(this.mass*13)));
+      this.speed=f(this.speed+this.reverseImpulse);
     }
     this.reverseImpulse=0;
   }
   displace(seconds){
-    this.pos=Math.max(this.travelLimit,this.pos+this.speed*seconds*100);
-    const bounce=this.rest+this.fireBounce;
+    this.pos=Math.max(this.travelLimit,f(this.pos+f(this.speed*f(seconds*100))));
+    const bounce=f(this.rest+this.fireBounce);
     if(this.fireTimer&&seconds&&(this.fireSpeed<0?this.fraction<=bounce:this.fraction>=bounce)){
-      this.pos=this.end+bounce*this.spec.stroke;this.fireSpeed*=-.4;this.fireBounce*=-.4;
+      this.pos=f(this.end+f(bounce*f(this.spec.stroke)));this.fireSpeed=f(-this.fireSpeed*f(.4));this.fireBounce=f(this.fireBounce*f(-.4));
     }
     this.pos=Math.max(this.pos,this.travelLimit);
     if(seconds){if(this.pos<this.end){this.pos=this.end;this.speed=0;}else if(this.pos>this.start){this.pos=this.start;this.speed=0;}}

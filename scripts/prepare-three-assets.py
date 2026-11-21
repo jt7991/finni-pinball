@@ -14,7 +14,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--source-root',type=Path,default=ROOT,help='Read local extracted sources/tools here; outputs always stay in this worktree.')
-SOURCE_ROOT=parser.parse_args().source_root.resolve()
+parser.add_argument('--extracted-root',type=Path,help='Read an explicitly selected unmodified extraction, rather than a shared checkout cache.')
+args=parser.parse_args()
+SOURCE_ROOT=args.source_root.resolve()
 sys.path.insert(0, str(SOURCE_ROOT / '.tools/pydeps'))
 from PIL import Image
 
@@ -38,9 +40,11 @@ image.thumbnail((1024, 2048), Image.Resampling.LANCZOS)
 image.save(OUT / 'playfield.webp', quality=88, method=6)
 shutil.copyfile(ROOT / 'assets/fonts/chewy/Chewy-Regular.ttf', OUT / 'chewy.ttf')
 
-source = SOURCE_ROOT / '.work/finni-live-extracted/gameitems'
+source = (args.extracted_root.resolve() if args.extracted_root else SOURCE_ROOT / '.work/finni-live-extracted')/'gameitems'
 materials={m['name']:m for m in json.loads((source.parent/'materials.json').read_text())}
 source_order={item['file_name']:index for index,item in enumerate(json.loads((source.parent/'gameitems.json').read_text()))}
+source_files=sorted(source/name for name in source_order)
+object_order={}
 def primitive_collision(path,item):
     """VPX Primitive::RecalculateMatrices, with vpxtool's OBJ Z reflection."""
     vertices=[];indices=[];rot=item['rot_and_tra'];size=item['size'];position=item['position']
@@ -61,9 +65,10 @@ def primitive_collision(path,item):
     # outward normals. Keep the OBJ triangle order, including native seams.
     return {'vertices':vertices,'indices':indices}
 items = []
-for path in sorted(source.glob('*.json')):
+for path in source_files:
     data = json.loads(path.read_text())
     kind, item = next(iter(data.items()))
+    object_order[kind,item['name']]=source_order[path.name]
     if kind == 'Wall' and item.get('is_collidable'):
         items.append({'kind': kind, **{k: item[k] for k in ('name', 'height_bottom', 'height_top', 'is_bottom_solid', 'slingshot_force', 'slingshot_threshold', 'elasticity', 'friction', 'elasticity_falloff', 'scatter', 'physics_material', 'overwrite_physics', 'drag_points')}})
     elif kind in ('Bumper', 'Flipper', 'Plunger') or kind == 'Kicker' and item['name'] == 'HellHouse':
@@ -77,7 +82,7 @@ for path in sorted(source.glob('*.json')):
         items.append({'kind':kind,**{k:item[k] for k in fields},'collision_mesh':primitive_collision(path,item)})
 
 for item in items:
-    item['source_order']=source_order[f"{item['kind']}.{item['name']}.json"]
+    item['native_source_order']=object_order[item['kind'],item['name']]
     if item['kind'] in ('Wall','Ramp','Primitive'):
         material=materials.get(item.get('physics_material'))
         item['contact_physics']={k:(material[k if k!='scatter' else 'scatter_angle'] if material and not item.get('overwrite_physics') else item.get(k,0)) for k in ('elasticity','elasticity_falloff','friction','scatter')}
@@ -85,10 +90,12 @@ for item in items:
         item['drag_points'] = [{k: round(p[k], 4) if type(p[k]) is float else p[k]
                                 for k in ('x', 'y', 'smooth', 'is_slingshot', *(['z'] if item['kind']=='Ramp' else []))} for p in item['drag_points']]
 gamedata=json.loads((source.parent/'gamedata.json').read_text())
-items.sort(key=lambda item:item['source_order'])
+# Retain the stable grid query order. Native collider insertion order alone is
+# not its quadtree traversal order; keep that index as provenance for a future
+# port of the native broadphase, rather than changing collision priorities.
 # vpxtool OBJ coordinates already include the primitive's 1/100 mesh scale;
 # OBJ reverses Z. This table's playfield primitive has identity transforms.
-playfield={'vertices':[],'indices':[],'source_order':source_order['Primitive.playfield_mesh.json']}
+playfield={'vertices':[],'indices':[],'native_source_order':source_order['Primitive.playfield_mesh.json']}
 for line in (source/'Primitive.playfield_mesh.obj').read_text().splitlines():
     if line.startswith('v '):
         x,y,z=map(float,line.split()[1:4])
@@ -111,14 +118,16 @@ for target_type,file,prefix in [('drop_target_simple','dropTargetT3Mesh.h','hitT
     vertices=[list(map(float,re.findall(r'[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?',line)))[:3] for line in re.findall(r'\{([^{}]+)\}',vertex_body)]
     indices=list(map(int,re.findall(r'\d+',re.search(prefix+r'Indices\[[^]]+\]\s*=\s*\{(.*?)\};',header,re.S)[1])))
     target_shapes[target_type]={'vertices':vertices,'indices':indices}
-for path in sorted(source.glob('*.json')):
+for path in source_files:
     kind,item=next(iter(json.loads(path.read_text()).items()))
     specs.append({'kind':kind,**{k:v for k,v in item.items() if k in (
         'name','center','position','rot_z','rot_and_tra','rotation','radius','shape','drag_points',
         'height','height_bottom','height_top','is_collidable','is_enabled','is_visible','size','target_type','collection','update_interval',
         'is_dropped','state','state_u32','color','color2','intensity','blink_interval',
         'is_timer_enabled','timer_interval','surface','hit_height','width','length')}})
-    specs[-1]['source_order']=source_order[path.name]
+    specs[-1]['native_source_order']=source_order[path.name]
+    if kind in ('Spinner','Gate'):
+        specs[-1].update({k:item[k] for k in ('damping','angle_max','angle_min','elasticity','friction','scatter','gravity_factor','two_way','show_bracket') if k in item})
     if kind=='HitTarget':
         specs[-1].update({k:item[k] for k in ('is_legacy','use_hit_event','threshold','drop_speed','raise_delay')})
         material=materials.get(item.get('physics_material'))
@@ -126,6 +135,18 @@ for path in sorted(source.glob('*.json')):
         shape=target_shapes[item['target_type']]
         specs[-1]['collision_mesh']=shape
     if 'drag_points' in specs[-1]:specs[-1]['drag_points']=[{'x':p['x'],'y':p['y']} for p in specs[-1]['drag_points']]
+appearance=json.loads((ROOT/'three/appearance-overrides.json').read_text())
+for spec in specs:
+    override=appearance['objects'].get(spec['name'])
+    if override:
+        if spec['kind'] not in ('Light','Primitive') or spec['kind']=='Primitive' and spec.get('is_collidable'):
+            raise ValueError(f"Appearance override changes a physical object: {spec['name']}")
+        if set(override)-{'position','drag_points'}:
+            raise ValueError(f"Unsupported appearance fields: {spec['name']}")
+        spec.update(override)
+for extra in appearance['extraObjects']:
+    if extra.get('is_collidable',True):raise ValueError('Decorative extras cannot introduce colliders')
+    specs.append(extra)
 (OUT/'objects.json').write_text(json.dumps({'objects':specs,'collections':json.loads((source.parent/'collections.json').read_text())},separators=(',',':')))
 script=(source.parent/'script.vbs').read_text()
 # The game script is retained in full; only its native-host bootstrap is adapted.

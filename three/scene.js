@@ -28,23 +28,15 @@ export async function createView(canvas, game) {
   const moving=[];
   table.scene.traverse(obj=>{
     const state=game.rules?.objects.get(obj.name.replace(/_Finni$/,'').replace(/Plate$/,'').toLowerCase());
-    if(state)moving.push({obj,state,position:obj.position.clone(),rotation:obj.rotation.clone()});
+    if(state){
+      const spinner=game.spinners?.find(s=>obj.name===s.spec.name+'Plate'),angle=(spinner?.spec.rotation??0)*Math.PI/180;
+      moving.push({obj,state,position:obj.position.clone(),rotation:obj.rotation.clone(),quaternion:obj.quaternion.clone(),spinner,axis:spinner?new THREE.Vector3(Math.cos(angle),0,Math.sin(angle)):null});
+    }
   });
 
   const steel=new THREE.MeshStandardMaterial({color:0xb0bac6,metalness:.65,roughness:.32});
-  const navy=new THREE.MeshStandardMaterial({color:0x182d54,roughness:.5});
   const cream=new THREE.MeshStandardMaterial({color:0xffe7b0,roughness:.38});
   const pink=new THREE.MeshStandardMaterial({color:0xf42480,roughness:.42});
-  const segments=[];
-  // Exterior rails and shooter divider, which are independent of the decorative export.
-  for (const s of game.segments.slice(0,3)) {
-    const length=Math.hypot(s.b.x-s.a.x,s.b.y-s.a.y);
-    const geometry=new THREE.BoxGeometry(length,s.radius*2,s.height);
-    geometry.rotateZ(Math.atan2(s.b.y-s.a.y,s.b.x-s.a.x));
-    geometry.translate((s.a.x+s.b.x)/2,(s.a.y+s.b.y)/2,(s.a.z+s.b.z)/2);
-    segments.push(geometry);
-  }
-  if(segments.length){scene.add(new THREE.Mesh(mergeGeometries(segments),navy));segments.forEach(g=>g.dispose());}
   // Ramp collision strips are deliberately invisible. The accepted model supplies
   // the open wire geometry; filling the strips would turn it into a solid chute.
 
@@ -117,6 +109,7 @@ export async function createView(canvas, game) {
     }
     for(const m of moving){
       m.obj.position.copy(m.position);if(m.state.isdropped)m.obj.position.y-=.04;
+      if(m.spinner)m.obj.quaternion.setFromAxisAngle(m.axis,m.spinner.angle).multiply(m.quaternion);
       if(/discoball/i.test(m.obj.name))m.obj.rotation.y=m.rotation.y+Number(m.state.rotz)*Math.PI/180;
       if(/LilHead|LilLeftArm|LilRightArm/.test(m.obj.name)){
         const remaining=Math.max(0,shakeUntil-game.time);
