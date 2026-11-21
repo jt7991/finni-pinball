@@ -19,6 +19,10 @@ const recordRng=process.argv.includes('--rng-state');
 const recordInternals=process.argv.includes('--native-internals');
 const recordContactSlots=process.argv.includes('--contact-slots');
 const recordPlunger=process.argv.includes('--plunger-state');
+const recordAnimationFrames=process.argv.includes('--animation-frames');
+const recordScriptRng=process.argv.includes('--script-rng-state');
+if(recordScriptRng)assert.ok(recordInternals&&reference.instrumentation?.nativeScriptRngMarkers,'script state requires the separately instrumented table and full memory capture');
+if(recordAnimationFrames)assert.ok(recordRng&&reference.instrumentation?.animationFrameTrace,'animation clocks require the separately instrumented native table and RNG observer');
 if(recordPlunger)assert.ok(recordInternals,'plunger state requires pinned native memory capture');
 const plungerSpec=recordPlunger?JSON.parse(await readFile(new URL('../three/public/layout.json',import.meta.url),'utf8')).items.find(item=>item.kind==='Plunger'):undefined;
 if(recordContactSlots)assert.ok(recordInternals,'retained contact slots require pinned native memory capture');
@@ -237,18 +241,21 @@ try{
   await wait('document.body.classList.contains("ball-in-plunger")');
   if(recordRng)await evaluate(`(()=>{
     const memory=window.nativeReferenceMemories.find(m=>m.buffer.byteLength>${reference.nativeRandom.stateAddress+8});if(!memory)throw Error('Native WASM memory was not observed');
-    const element=document.getElementById('log'),descriptor=Object.getOwnPropertyDescriptor(Node.prototype,'textContent');window.nativeRandomRecords=[];
+    const element=document.getElementById('log'),descriptor=Object.getOwnPropertyDescriptor(Node.prototype,'textContent');window.nativeRandomRecords=[];window.nativeAnimationRecords=[];
     ${recordInternals?`window.nativeBallObserver=(${nativeBallMemoryObserver.toString()})(memory,[0,0.17098337411880493,-1.626798152923584],${reference.nativePhysicsMaxLoops},${recordContactSlots});window.nativeInternalSnapshots=[];`:''}
     ${recordPlunger?`window.nativePlungerObserver=(${nativePlungerMemoryObserver.toString()})(memory,${JSON.stringify(plungerSpec)});window.nativePlungerLayout=window.nativePlungerObserver.scan();const readBallState=window.nativeBallObserver.read;window.nativeBallObserver.read=rows=>({...readBallState(rows),plunger:window.nativePlungerObserver.read()});`:''}
     Object.defineProperty(element,'textContent',{get(){return descriptor.get.call(this);},set(value){
       const line=String(value).split('\\n').at(-1),match=line.match(/(RNG_FRAME|CONTACT_INIT)\\|(\\d+)/);
+      ${recordAnimationFrames?`if(line.includes('ANIMATION_FRAME|')){const row=line.slice(line.indexOf('ANIMATION_FRAME|')+16).replace(/'$/,'').split('|').map(Number);if(row.length!==9||!row.every(Number.isFinite))throw Error('Invalid native animation-frame observation');window.nativeAnimationRecords.push(row);return;}`:''}
       ${recordPlunger?`if(line.includes('PLUNGER_ABI_CHECK|')){const expected=Number(line.slice(line.indexOf('PLUNGER_ABI_CHECK|')+18).replace(/'$/,'')),actual=window.nativePlungerObserver.read().position;window.nativePlungerValidation={expected,actual,agrees:Math.fround(expected)===actual};}`:''}
       ${recordInternals?`if(line.includes('BALL_SCAN|')||line.includes('BALL_INIT|')){try{const kind=line.includes('BALL_SCAN|')?'BALL_SCAN':'BALL_INIT',payload=line.slice(line.indexOf(kind+'|')),[,clock,bodyRows]=payload.split('|'),rows=bodyRows.replace(/'$/,'').split(';').filter(Boolean).map(row=>row.split(':').map((${referenceNumber.toString()})));if(kind==='BALL_SCAN')window.nativeBallLayout=window.nativeBallObserver.scan(rows);else window.nativeInternalSnapshots.push({ms:Number(clock),...window.nativeBallObserver.read(rows)});}catch(error){window.nativeBallObserverFailure=error.message;}}`:''}
       // The RNG marker is a diagnostic memory-read clock. Rendering it into
       // the log at 1000Hz can exhaust VPX's timer budget and skip callbacks.
       if(match?.[1]!=='RNG_FRAME')descriptor.set.call(this,value);if(!match)return;
       const data=new DataView(memory.buffer),low=data.getUint32(${reference.nativeRandom.stateAddress},true),high=data.getUint32(${reference.nativeRandom.stateAddress+4},true);
-      window.nativeRandomRecords.push({kind:match[1],ms:Number(match[2]),low,high${recordInternals?`,internals:window.nativeBallLayout?window.nativeBallObserver.read():undefined`:''}});
+      const record={kind:match[1],ms:Number(match[2]),low,high${recordInternals?`,internals:window.nativeBallLayout?window.nativeBallObserver.read():undefined`:''}};
+      ${recordScriptRng?`if(match[1]==='RNG_FRAME'){const state=Number(line.slice(line.indexOf('RNG_FRAME|')).replace(/'$/,'').split('|')[2]);if(!Number.isInteger(state)||state<0||state>=16777216)throw Error('Invalid native script RNG state');if(record.internals)record.internals.scriptRandom=state;}`:''}
+      window.nativeRandomRecords.push(record);
     }});return true;
   })()`);
   if(recordPlunger){
@@ -332,7 +339,7 @@ try{
   }
   const results=[];
   for(const scenario of cases.filter(s=>!selected||s.name===selected)){
-    if(recordRng)await evaluate('window.nativeRandomRecords.length=0');
+    if(recordRng)await evaluate('window.nativeRandomRecords.length=0;window.nativeAnimationRecords.length=0');
     if(recordTrails)await script('RefTrailOn=True');
     await script(`SolLFlipper 0:SolRFlipper 0:${reset(430,1400,0,0)}`);await new Promise(r=>setTimeout(r,400));
     if(scenario.plunger){await script('Plunger.Fire');await new Promise(r=>setTimeout(r,600));}
@@ -393,10 +400,13 @@ try{
     const allBalls=recordAllBalls?'RefInitBalls=GetBalls:RefInitTrace="":For RefInitIdx=0 To UBound(RefInitBalls):Set RefInitBall=RefInitBalls(RefInitIdx):'+ballStateRow()+':RefInitTrace=RefInitTrace & ";":Next:Debug.Print "BALL_INIT|" & GameTime & "|" & RefInitTrace:':'';
     const plungerInit=scenario.plunger?'Debug.Print "PLUNGER_INIT|" & CStr(CDbl(Plunger.Position)):':'';
     const coilInit=scenario.autofire?'RefCoilBalls=PlungerIM.Balls:RefCoilTrace="":For Each RefCoilBall In RefCoilBalls:RefCoilTrace=RefCoilTrace & RefCoilBall.ID & ",":Next:Debug.Print "COIL_INIT|" & swPlunger.BallCntOver & ":" & swPlungerRest.BallCntOver & ":" & CLng(bBallInPlungerLane) & ":" & RefCoilTrace:':'';
+    const scriptRngInit=recordScriptRng?'Debug.Print "SCRIPT_RANDOM_INIT|" & CLng(Rnd(0)*16777216):':'';
     const finishTrail=recordTrails?'RefTrailOn=False:RefTrailBalls=GetBalls:RefTrailRow=CStr(GameTime) & "|":For RefTrailIndex=0 To UBound(RefTrailBalls):Set RefTrailBall=RefTrailBalls(RefTrailIndex):RefTrailRow=RefTrailRow & RefTrailBall.ID & ":" & CStr(CDbl(RefTrailBall.X)) & ":" & CStr(CDbl(RefTrailBall.Y)) & ":" & CStr(CDbl(RefTrailBall.Z)) & ";":Next:RefTrailSlots((GameTime\\10) Mod 10)=RefTrailRow:':'';
     const other=scenario.otherBall,otherReset=other?(other.spawn?`Set RefOtherBall=${other.spawn}.CreateBall:`:'')+reset(other.x,other.y,other.vx,other.vy,other.z,other.vz).replaceAll('RefBall.','RefOtherBall.')+':':'';
-    await script(`${finishTrail}${trace}RollingTimer.Enabled=False:RollingTimer.Enabled=True:${reset(scenario.x,scenario.y,scenario.vx,scenario.vy,scenario.z,scenario.vz)}:${otherReset}${allBalls}${plungerInit}${coilInit}${drive?drive+':':''}Debug.Print "CONTACT_INIT|" & GameTime & ":" & RefBall.AngMomX & ":" & RefBall.AngMomY & ":" & RefBall.AngMomZ & ":" & RefBall.X & ":" & RefBall.Y & ":" & RefBall.Z`);
+    await script(`${finishTrail}${trace}RollingTimer.Enabled=False:RollingTimer.Enabled=True:${reset(scenario.x,scenario.y,scenario.vx,scenario.vy,scenario.z,scenario.vz)}:${otherReset}${allBalls}${plungerInit}${coilInit}${drive?drive+':':''}${scriptRngInit}Debug.Print "CONTACT_INIT|" & GameTime & ":" & RefBall.AngMomX & ":" & RefBall.AngMomY & ":" & RefBall.AngMomZ & ":" & RefBall.X & ":" & RefBall.Y & ":" & RefBall.Z`);
     const initial=(await marker('CONTACT_INIT')).split(':').map(parseFloat);assert.equal(initial.length,7);assert.deepEqual(initial.slice(1,4),[0,0,0],'native spin reset');
+    const initialScriptRandom=recordScriptRng?Number((await marker('SCRIPT_RANDOM_INIT')).replace(/'$/,'')):undefined;
+    if(recordScriptRng)assert.ok(Number.isInteger(initialScriptRandom)&&initialScriptRandom>=0&&initialScriptRandom<16777216,'observed initial native script RNG state');
     for(const [actual,expected]of [[initial[4],scenario.x],[initial[5],scenario.y],[initial[6],scenario.z??25]])assert.ok(Math.abs(actual-expected)<.001,`native initial position ${actual} vs ${expected}`);
     const origin=initial[0],samples=[],rawSamples=[];
     const initialPlungerPosition=scenario.plunger?parseFloat(await marker('PLUNGER_INIT')):undefined;
@@ -463,8 +473,10 @@ try{
       const balls=positions.split(';').filter(Boolean).map(row=>row.split(':').map(Number));assert.ok(balls.every(row=>row.length===4&&row.every(Number.isFinite)));
       initialBallTrails.push({slot,ms:ms-origin,balls});
     }
-    results.push({...scenario,initial,actualDelay,...closing,samples,rawSamples,...(initialNativeInternals?{initialNativeInternals}:{}),...(scenario.plunger?{initialPlungerPosition}:{}),...(initialCoilState?{initialCoilState}:{}),...(timerTrace?{timerTrace}:{}),...(recordAllBalls?{initialBallStates,rawInitialBallStates,initialMeasuredBallID}:{}),...(recordTrails?{initialBallTrails,rawInitialBallTrails}:{}),...(recordRng?{initialNativeRandom,nativeRandomFrames}:{})});console.log(scenario.name,'input at',actualDelay,JSON.stringify(samples.at(-1)));
+    const animationFrames=recordAnimationFrames?await evaluate(`window.nativeAnimationRecords.filter(row=>row[0]>=${origin}).map(([ms,...rest])=>[ms-${origin},...rest])`):undefined;
+    if(recordAnimationFrames)assert.ok(animationFrames.length&&animationFrames.every(row=>Number.isInteger(row[0])&&Number.isInteger(row[1])&&row[1]>=0),'observed native animation frame clocks');
+    results.push({...scenario,initial,actualDelay,...closing,samples,rawSamples,...(initialNativeInternals?{initialNativeInternals}:{}),...(scenario.plunger?{initialPlungerPosition}:{}),...(initialCoilState?{initialCoilState}:{}),...(timerTrace?{timerTrace}:{}),...(recordAllBalls?{initialBallStates,rawInitialBallStates,initialMeasuredBallID}:{}),...(recordTrails?{initialBallTrails,rawInitialBallTrails}:{}),...(recordRng?{initialNativeRandom,nativeRandomFrames}:{}),...(animationFrames?{animationFrames}:{}),...(recordScriptRng?{initialScriptRandom}:{})});console.log(scenario.name,'input at',actualDelay,JSON.stringify(samples.at(-1)));
     const suffix=probeKind==='ball-pairs'?`ball-pairs-${selected??'reference'}`:recordKickers?'kickers-reference':rawAnimation&&selected?`raw-${recordTimers?'timing-':''}${selected}`:reference.geometryProbe&&selected?`geometry-${recordTimers?'timing-':''}${selected}`:reference.shooterProbe&&selected?`${recordTimers?'timing-':''}${selected}`:['spinners','gates','targets','triggers','flipper-events','material-events','target-events'].includes(probeKind)&&selected?`${probeKind}-${reference.instrumentation?.spinnerTraceColumns?'timing-':''}${reference.animationBallIsolation?'isolated-animation-':''}${selected}`:`${reference.geometryProbe?'geometry':probeKind==='contacts'?'contact':probeKind}-reference`;
-    await writeFile(`${output}/vpx-${suffix}${recordAllBalls?'-all-balls':''}${recordTrails?'-trails':''}${recordRng?'-rng':''}${recordInternals?'-internals':''}${recordPlunger?'-plunger-state':''}${recordContactSlots?'-contact-slots':''}${recordTimers&&traceMilliseconds!==70?`-${traceMilliseconds}ms`:''}${traceFrom?`-from${traceFrom}ms`:''}.json`,JSON.stringify({...reference,probeKind,runtimeOverrides,columns,cases:results},null,2));
+    await writeFile(`${output}/vpx-${suffix}${recordAllBalls?'-all-balls':''}${recordTrails?'-trails':''}${recordRng?'-rng':''}${recordInternals?'-internals':''}${recordPlunger?'-plunger-state':''}${recordAnimationFrames?'-animation-frames':''}${recordScriptRng?'-script-rng':''}${recordContactSlots?'-contact-slots':''}${recordTimers&&traceMilliseconds!==70?`-${traceMilliseconds}ms`:''}${traceFrom?`-from${traceFrom}ms`:''}.json`,JSON.stringify({...reference,probeKind,runtimeOverrides,columns,cases:results},null,2));
   }
 }finally{socket.close();}

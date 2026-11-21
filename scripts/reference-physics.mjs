@@ -43,6 +43,7 @@ export function placeReferenceBall(game,record,scenario){
 // split time for every mover even when they are outside the visible playfield.
 export function restoreReferenceBalls(game,fixture,scenario,fallback){
   if(!scenario.initialBallStates)return fallback;
+  if(scenario.initialScriptRandom!==undefined)game.rules.scriptRandom.restoreState(scenario.initialScriptRandom);
   const records=game.physicalRecords,columns=fixture.initialBallStateColumns;
   if(records.length!==scenario.initialBallStates.length)throw Error('native capture/replay body count differs');
   let measured;
@@ -99,6 +100,7 @@ export function restoreReferenceBalls(game,fixture,scenario,fallback){
     game.random=random;game.nativeRandomAudit=[];game.nativeBodyAudit=[];const step=game.step.bind(game),origin=Math.round(game.time*1000);
     if(scenario.initialNativeInternals?.plunger){
       game.nativePlungerAudit=[];const update=game.plunger.updateVelocity.bind(game.plunger);
+      if(scenario.initialScriptRandom!==undefined)game.nativeScriptRandomAudit=[];
       game.plunger.updateVelocity=()=>{
         // RNG_FRAME is emitted after native script timers, before mover
         // velocity updates. Sample at that same phase, including Fire input.
@@ -107,6 +109,14 @@ export function restoreReferenceBalls(game,fixture,scenario,fallback){
           const actual=Object.fromEntries(['pos','speed','travelLimit','pullForce','reverseImpulse','fireTimer','fireSpeed','fireBounce'].map(key=>[key,game.plunger[key]])),errors={};
           for(const [key,value]of Object.entries(actual))if(Number.isFinite(expected[key]))errors[key]=Math.abs(value-expected[key]);
           game.nativePlungerAudit.push({ms,actual,expected,errors});
+        }
+        if(game.nativeScriptRandomAudit){
+          const expectedState=bodyFrames.get(ms)?.scriptRandom;
+          if(expectedState!==undefined){
+            const actualState=game.rules.scriptRandom.getState(),agrees=actualState===expectedState;
+            game.nativeScriptRandomAudit.push({ms,actual:actualState,expected:expectedState,agrees});
+            if(fixture.nativeScriptRandom?.requireContinuity&&!agrees)throw Error(`Native script random-state progression differs before physics frame ${ms}`);
+          }
         }
         update();
       };

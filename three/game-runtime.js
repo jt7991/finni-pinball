@@ -81,6 +81,7 @@ export function connectSimulation(worker,init,emit=()=>{},media){
   game.start=()=>post({type:'start'});game.input=(action,down)=>post({type:'input',action,down});game.release=()=>{if(!game.error)post({type:'release'});};
   game.setPaused=value=>{if(paused!==value){paused=value;if(!game.error)post({type:'pause',value});}};
   game.flush=()=>request({type:'barrier'});
+  game.prepareFrame=()=>request({type:'frame'});
   game.nativeBall=body=>({orientation:{rotation:()=>body.rotation()}});
   game.debug=command=>request({type:'debug',...command});
   game.dispose=async()=>{try{await request({type:'dispose'});}finally{worker.terminate();}};

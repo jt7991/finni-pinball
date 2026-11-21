@@ -19,9 +19,12 @@ parser.add_argument('--instrument-slingshots',action='store_true',help='Observe 
 parser.add_argument('--instrument-flippers',action='store_true',help='Observe native flipper Collide arguments and base Hit events.')
 parser.add_argument('--instrument-materials',action='store_true',help='Observe wall/rubber sound collection events and representative primitive/rubber Hit callbacks.')
 parser.add_argument('--instrument-targets',action='store_true',help='Observe target Hit callbacks and native incoming HitThreshold.')
+parser.add_argument('--instrument-animation-frames',action='store_true',help='Observe actual native animation-frame clocks and drop-target offsets with an otherwise unused frame timer.')
+parser.add_argument('--instrument-script-rng',action='store_true',help='Read the actual script RNG state through Rnd(0) alongside physics-frame markers.')
 parser.add_argument('--all-scatter-zero',action='store_true',help='Also zero every material/object scatter field in a separate reference copy.')
 args=parser.parse_args()
-if args.instrument_spinners or args.instrument_ball_trails or args.instrument_rng or args.instrument_bumpers or args.instrument_slingshots or args.instrument_flippers or args.instrument_materials or args.instrument_targets:args.instrument_timers=True
+if args.instrument_script_rng:args.instrument_rng=True
+if args.instrument_spinners or args.instrument_ball_trails or args.instrument_rng or args.instrument_bumpers or args.instrument_slingshots or args.instrument_flippers or args.instrument_materials or args.instrument_targets or args.instrument_animation_frames:args.instrument_timers=True
 source=args.source_root.resolve()
 tool=source/'.tools/vpxtool/vpxtool.exe'
 table=source/'runtime/Finni-Big-Day.vpx'
@@ -57,6 +60,17 @@ if args.instrument_timers:
     script=script_path.read_text()
     script+='\nDim RefTraceOn,RefTrace\nRefTraceOn=False:RefTrace=""\n'
     script+='Dim RefDriveAt,RefDriveSide,RefDrivePress,RefDriveMarker,RefTraceBall,RefTraceUntil,RefStateTraceOn,RefTraceFrom\nRefDriveAt=0:RefStateTraceOn=True:RefTraceFrom=0\n'
+    if args.instrument_animation_frames:
+        if re.search(r'\bSub\s+Target010_Timer\b',script,re.I):raise RuntimeError('Animation observer would replace an existing timer handler')
+        timer_path=extracted/'gameitems/HitTarget.Target010.json'
+        timer_data=json.loads(timer_path.read_text());timer=timer_data['HitTarget']
+        if timer['is_timer_enabled']:raise RuntimeError('Animation observer timer is already enabled')
+        timer['is_timer_enabled']=True;timer['timer_interval']=-1
+        timer_path.write_text(json.dumps(timer_data,indent=2)+'\n')
+        fields=['GameTime','GameTime-RefAnimationPreviousClock']+[f'CStr(CDbl({name}.CurrentAnimOffset))' for name in ['Target009','Target010','Target011']]+[f'CLng({name}.IsDropped)' for name in ['Target009','Target010','Target011']]+['Score(CurrentPlayer)']
+        script+='\nDim RefAnimationPreviousClock\nRefAnimationPreviousClock=0\nSub Target010_Timer\n'
+        script+='    If RefTraceOn Then Debug.Print "ANIMATION_FRAME|" & '+' & "|" & '.join(fields)+'\n'
+        script+='    RefAnimationPreviousClock=GameTime\nEnd Sub\n'
     if args.instrument_bumpers:
         for index in range(1,4):
             pattern=rf'(Sub Bumper{index}_Hit\b[^\r\n]*[\r\n]+)'
@@ -143,7 +157,7 @@ End Sub
     state_fields+=['RightFlipper.CurrentAngle','RightFlipper.Strength','RightFlipper.Elasticity','RightFlipper.EOSTorque']
     state='    If RefTraceOn And RefStateTraceOn And GameTime>=RefTraceFrom And GameTime<=RefTraceUntil Then RefTrace=RefTrace & "STATE|" & '+' & "|" & '.join(state_fields)+' & ";"\n'
     if args.instrument_rng:
-        state+='    If RefTraceOn Then Debug.Print "RNG_FRAME|" & GameTime\n'
+        state+='    If RefTraceOn Then Debug.Print "RNG_FRAME|" & GameTime'+(' & "|" & CLng(Rnd(0)*16777216)' if args.instrument_script_rng else '')+'\n'
     if args.instrument_spinners:
         state+='    If RefTraceOn And RefStateTraceOn And GameTime>=RefTraceFrom And GameTime<=RefTraceUntil Then RefTrace=RefTrace & "SPIN|" & GameTime & "|" & CLng(Spinner001.CurrentAngle*1000000) & "|" & CLng(Spinner002.CurrentAngle*1000000) & ";"\n'
     if args.instrument_ball_trails:
@@ -192,6 +206,8 @@ if args.instrument_timers:
     if args.instrument_flippers:metadata['instrumentation']['flipperTrace']={'callbacks':'FLIP_COLLIDE records clock, side, native speed argument and post-response velocity. FLIP_HIT observes the previously empty base-radius Hit event.'}
     if args.instrument_materials:metadata['instrumentation']['materialTrace']={'callbacks':'MATERIAL records clock, object name, post-response velocity and primitive HitThreshold at the beginning of authored sound collection handlers or previously empty individual handlers. Existing handler bodies retained.'}
     if args.instrument_targets:metadata['instrumentation']['targetTrace']={'callbacks':'TARGET records clock, object name, post-response velocity and HitThreshold before the existing target Hit handler, or in the previously empty Target010_Hit handler.'}
+    if args.instrument_animation_frames:metadata['instrumentation']['animationFrameTrace']={'timer':'Previously disabled Target010 timer, interval -1. Handler only reads clocks/target state and writes diagnostic records after native UpdateAnimation. No authored handler is replaced.','columns':['ms','delta_ms','target009_offset','target010_offset','target011_offset','target009_dropped','target010_dropped','target011_dropped','score']}
+    if args.instrument_script_rng:metadata['instrumentation']['nativeScriptRngMarkers']='RNG_FRAME additionally reads CLng(Rnd(0)*16777216), the exact 24-bit native script RNG state, without advancing it.'
 (out/'metadata.json').write_text(json.dumps(metadata,indent=2)+'\n')
 print(diff)
 print(f'Controlled native reference: {copy}')

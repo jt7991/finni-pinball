@@ -92,7 +92,7 @@ try{
         spinner.angle=saved;view.render(1);return {name:plate.name,rotation,axleMovement};
       });
       const state=game.rules.objects.get('target010'),motion=game.targetMotions.get('target010'),mesh=scene.getObjectByName('Target010'),collidable=motion.collidable;
-      const advance=async ticks=>{if(game.workerSimulation)await game.debug({action:'advance',ticks});else for(let ms=0;ms<ticks;ms++)game.step();};
+      const advance=async ticks=>{if(game.workerSimulation){await game.debug({action:'advance',ticks});await game.prepareFrame();}else for(let ms=0;ms<ticks;ms++)game.step();};
       const set=async statement=>{await game.rules.execute(statement);};
       await set('Target010.Collidable=False');await advance(100);await set('Target010.IsDropped=False');await advance(100);view.render(1);const up=mesh.position.y;
       await set('Target010.IsDropped=True');await advance(25);view.render(1);const middle={offset:motion.offset,delta:mesh.position.y-up};

@@ -111,16 +111,19 @@ $('fullscreen').onclick=async()=>{
 };
 document.addEventListener('fullscreenchange',()=>{release();document.body.classList.toggle('fullscreen-play',!!document.fullscreenElement);$('fullscreen').setAttribute('aria-pressed',String(!!document.fullscreenElement));$('fullscreen').setAttribute('aria-label',document.fullscreenElement?'Exit full screen':'Enter full screen');});
 
-function frame(now){
-  try{drawFrame(now);}catch(error){
+async function frame(now){
+  try{await drawFrame(now);}catch(error){
     console.error(error);try{release();pause(true);}catch{}paused=true;
     $('overlay').hidden=false;$('load-status').textContent='The game stopped. Reload to restart.';
     $('play').disabled=false;$('play').textContent='Reload game';$('play').onclick=()=>location.reload();message('Game stopped');
   }
 }
-function drawFrame(now){
+async function drawFrame(now){
   if(game.error)throw game.error;
   game.setPaused(paused);
+  // VPX updates target motion and its rule events in PrepareFrame. Wait for
+  // that ordered worker snapshot before drawing the corresponding frame.
+  await game.prepareFrame();
   // Render the most recently completed native tick. The worker never skips
   // physics ticks to satisfy a display frame, or predicts through collisions.
   view.render(1);display?.draw();

@@ -30,6 +30,7 @@ class FullGame extends Pinball {
     this.placeholder=this.ball;this.ballCollider.setEnabled(false);
     this.records=[];this.toyRecords=[];this.physicalRecords=[];this.byCollider=new Map();this.captures=new Map();this.mechanisms=new Map(this.nativeMeshes.map(m=>[this.colliderLabels.get(m.collider.handle)?.toLowerCase(),m.collider]));
     this.targetFronts=new Map();this.targetMotions=new Map();this.targetEventBall=null;
+    this.frameAnimations=!!options.frameAnimations;this.lastAnimationTime=0;
     this.specs=specs;this.media=media;this.soundNames=new Set(specs.sound_names??[]);this.pendingCreate=null;this.syncCount=0;
     for(const spec of specs.objects)this.nativeParts.set(spec.name.toLowerCase(),{...this.nativeParts.get(spec.name.toLowerCase()),...spec});
     for(const spec of specs.objects)this.addMechanism(spec);
@@ -268,10 +269,19 @@ class FullGame extends Pinball {
     if(!playing&&old==='playing')this.emit({type:'over'});
   }
 
+  updateAnimations(milliseconds){
+    for(const [name,target]of this.targetMotions){target.update(milliseconds);this.targetFronts.get(name)?.setEnabled(target.collider.isEnabled());}
+  }
+
+  prepareFrame(){
+    const now=Math.round(this.time*1000),elapsed=now-this.lastAnimationTime;this.lastAnimationTime=now;
+    if(elapsed>0)this.updateAnimations(Math.fround(elapsed));
+  }
+
   step(){
     this.time+=STEP;
     this.rules.tick(STEP);
-    for(const [name,target]of this.targetMotions){target.update(STEP*1000);this.targetFronts.get(name)?.setEnabled(target.collider.isEnabled());}
+    if(!this.frameAnimations)this.updateAnimations(STEP*1000);
     const physicalRecords=this.physicalRecords;
     for(const rec of physicalRecords){rec.previous={...rec.body.translation()};rec.previousVelocity={...rec.body.linvel()};}
     this.driveFlippers();

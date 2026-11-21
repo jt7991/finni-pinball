@@ -49,7 +49,7 @@ export function createSimulationHost(send,{allowDebug=false,now=()=>performance.
     }
     game=await createFullGame(assets.layout,assets.specs,assets.source,event=>effects.push({type:'event',event}),{
       play:(name,settings)=>effects.push({type:'play',name,settings}),stop:name=>effects.push({type:'stop',name}),
-    },{storage});
+    },{storage,frameAnimations:true});
     send({type:'ready',description:describeGame(game)});publish();
   }
   function debug(command){
@@ -83,6 +83,7 @@ export function createSimulationHost(send,{allowDebug=false,now=()=>performance.
           case 'input':game.input(message.action,message.down);break;
           case 'release':game.release();break;
           case 'pause':pause(message.value);break;
+          case 'frame':game.prepareFrame();game.sync();break;
           case 'execute':game.rules.execute(message.statement);break;
           case 'subscribe':for(const name of message.names??[])names.add(name);for(const query of message.queries??[])queries.add(query);break;
           case 'debug':result=debug(message);break;

@@ -20,7 +20,7 @@ function inspect(game){return {time:game.time,random:game.random.getState(),scri
 
 test('real worker preserves every body, native RNG, authored rules, DMD, audio and control order',async()=>{
   const fixture=assets(),events=[],directEvents=[],sounds=[],directSounds=[];
-  const local=await createFullGame(structuredClone(fixture.layout),structuredClone(fixture.specs),fixture.source,event=>directEvents.push(event),{play:(name,settings)=>directSounds.push(['play',name,settings]),stop:name=>directSounds.push(['stop',name])},{storage:{load:()=>'',save:()=>{}}});
+  const local=await createFullGame(structuredClone(fixture.layout),structuredClone(fixture.specs),fixture.source,event=>directEvents.push(event),{play:(name,settings)=>directSounds.push(['play',name,settings]),stop:name=>directSounds.push(['stop',name])},{storage:{load:()=>'',save:()=>{}},frameAnimations:true});
   const worker=workerAdapter();let remote;
   try{
     remote=await connectSimulation(worker,{assets:fixture},event=>events.push(event),{play:(name,settings)=>sounds.push(['play',name,settings]),stop:name=>sounds.push(['stop',name])});
@@ -42,7 +42,7 @@ test('real worker preserves every body, native RNG, authored rules, DMD, audio a
       assert.deepEqual(events,directEvents);assert.equal(sounds.length,directSounds.length);
       for(let i=0;i<sounds.length;i++)assert.deepEqual(sounds[i],directSounds[i],`ordered audio effect ${i}`);
     };
-    const advance=async ticks=>{for(let i=0;i<ticks;i++)local.step();await remote.debug({action:'advance',ticks});await compare();};
+    const advance=async ticks=>{for(let i=0;i<ticks;i++)local.step();await remote.debug({action:'advance',ticks});local.prepareFrame();local.sync();await remote.prepareFrame();await compare();};
     const input=async(action,down)=>{local.input(action,down);remote.input(action,down);await remote.flush();await compare();};
     local.start();remote.start();await remote.flush();await advance(2100);
     assert.equal(remote.inLane,true);

@@ -22,6 +22,12 @@ export function createScriptRandom({clock=()=>performance.now()}={}){
       state=((seed&0xffff)<<8)|(state&0xff);
     },
     getState(){return state;},
+    // Native reference replay restores the observed initial stream in place:
+    // the interpreter and impulse-plunger closure must keep the same stream.
+    restoreState(value){
+      if(!Number.isInteger(value)||value<0||value>=16777216)throw Error('Invalid 24-bit script random state');
+      state=value;
+    },
   };
 }
 

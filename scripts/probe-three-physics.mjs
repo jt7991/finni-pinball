@@ -18,6 +18,8 @@ const results=[];
 const multiball=process.argv.includes('--multiball');
 const nudged=process.argv.includes('--nudges');
 const runtimeRandom=process.argv.includes('--runtime-random');
+const renderHz=Number(process.argv.find(a=>a.startsWith('--render-hz='))?.split('=')[1]??0);
+if(process.argv.some(a=>a.startsWith('--render-hz='))&&(!Number.isFinite(renderHz)||renderHz<1||renderHz>240||!process.argv.includes('--full')))throw Error('Controlled render cadence requires full runtime and 1..240 Hz');
 const observeAfterStall=Number(process.argv.find(a=>a.startsWith('--observe-after-stall='))?.split('=')[1]??0);
 if(!Number.isFinite(observeAfterStall)||observeAfterStall<0||observeAfterStall>300)throw Error('Stall observation must be 0..300 seconds');
 const ruleContext=g=>({
@@ -27,7 +29,7 @@ const ruleContext=g=>({
   pendingStatements:g.rules.delays.map(d=>({...d})),
 });
 const seedArgument=process.argv.find(a=>a.startsWith('--seed-start=')),firstSeed=Number(seedArgument?.split('=')[1]??0);
-const reportName=(process.argv.includes('--flippers')?'flippers':process.argv.includes('--full')?`full${multiball?'-multiball':''}`:'launches')+(nudged?'-nudges':'')+(runtimeRandom?'-runtime-random':'')+(observeAfterStall?`-observe${observeAfterStall}`:'')+(seedArgument?`-seed${firstSeed}`:'');
+const reportName=(process.argv.includes('--flippers')?'flippers':process.argv.includes('--full')?`full${multiball?'-multiball':''}`:'launches')+(nudged?'-nudges':'')+(runtimeRandom?'-runtime-random':'')+(observeAfterStall?`-observe${observeAfterStall}`:'')+(seedArgument?`-seed${firstSeed}`:'')+(renderHz?`-render${renderHz}`:'');
 if(process.argv.includes('--flippers')){
   for(const side of ['left','right'])for(const offset of [.35,.6,.85,1.05])for(const delay of [0,.02,.04,.06]){
     const g=await createGame(layout);g.start();g.launch();const f=g.flippers.find(f=>f.side===side),sign=side==='left'?1:-1;
@@ -46,7 +48,8 @@ if(process.argv.includes('--flippers')){
   const option=(name,fallback)=>Number(process.argv.find(a=>a.startsWith(`--${name}=`))?.split('=')[1]??fallback);
   const seconds=option('seconds',60),cases=option('cases',24);
   for(let seed=firstSeed;seed<firstSeed+cases;seed++){
-    const g=full?await createFullGame(layout,specs,source,()=>{}):await createGame(layout);
+    const g=full?await createFullGame(layout,specs,source,()=>{},undefined,{frameAnimations:!!renderHz}):await createGame(layout);
+    let renderFrames=0,nextRender=0;
     let randomState=seed+1243;const random=()=>{randomState=(Math.imul(randomState,1664525)+1013904223)>>>0;return randomState/4294967296;};
     const initialPhysicsRandom=runtimeRandom?g.random.getState():undefined;
     if(!runtimeRandom)g.random=random;
@@ -111,13 +114,14 @@ if(process.argv.includes('--flippers')){
         if(!stallRecovery&&(!p||Math.hypot(p.x-stuck.position.x,p.y-stuck.position.y,p.z-stuck.position.z)>.5))stallRecovery={at:Number(g.time.toFixed(3)),position:p?round(p):null,removed:!p,...(full?ruleContext(g):{})};
       }
       g.step();
+      if(renderHz&&g.time*1000>=nextRender){g.prepareFrame();g.sync();renderFrames++;nextRender+=1000/renderHz;}
       }catch(cause){error={message:cause.message,at:g.time};break;}
     }
     if(full&&stuck){
       Object.assign(stuck,firstStallContext??ruleContext(g));
       if(observeAfterStall)stuck.observation={seconds:g.time-firstStallTime,recovery:stallRecovery??null,finalContext:ruleContext(g)};
     }
-    const result={seed,seconds,simulatedSeconds:Number(g.time.toFixed(2)),stuck,error,state:g.state,score:g.score,launched,flips,maximumBalls,maximumSpeed:Number(maximumSpeed.toFixed(2)),completedGames,...(nudged?{nudgeCount}:{}),...(runtimeRandom?{random:{algorithm:'MWC64X',initialPhysicsRandom,finalPhysicsRandom:g.random.getState(),physicsDraws:g.random.calls,initialScriptRandom,finalScriptRandom:g.rules?.scriptRandom.getState()}}:{}),physicsStats:g.physicsStats};results.push(result);console.log(JSON.stringify(result));g.dispose();
+    const result={seed,seconds,...(renderHz?{renderHz,renderFrames}:{}),simulatedSeconds:Number(g.time.toFixed(2)),stuck,error,state:g.state,score:g.score,launched,flips,maximumBalls,maximumSpeed:Number(maximumSpeed.toFixed(2)),completedGames,...(nudged?{nudgeCount}:{}),...(runtimeRandom?{random:{algorithm:'MWC64X',initialPhysicsRandom,finalPhysicsRandom:g.random.getState(),physicsDraws:g.random.calls,initialScriptRandom,finalScriptRandom:g.rules?.scriptRandom.getState()}}:{}),physicsStats:g.physicsStats};results.push(result);console.log(JSON.stringify(result));g.dispose();
     fs.mkdirSync('.work/three-physics',{recursive:true});fs.writeFileSync(`.work/three-physics/${seedArgument?`progress-${reportName}`:multiball?'progress-multiball':'progress'}.json`,JSON.stringify(results,null,2));
   }
 }
