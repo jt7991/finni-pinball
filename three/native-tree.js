@@ -38,7 +38,28 @@ export class NativeTree {
     });
     return node;
   }
-  query(query,visit){
+  query(query,visit,frameCache){
+    // Physics keeps this AABB fixed through a 1ms frame while the sphere center
+    // changes at impacts. Reuse only the ordered AABB candidates; run the native
+    // sphere test again at every query, including zero-time collisions.
+    if(frameCache){
+      if(frameCache.tree!==this||frameCache.box!==query.box){
+        frameCache.tree=this;frameCache.box=query.box;
+        const candidates=frameCache.entries??=[];candidates.length=0;const box=query.box;
+        const collect=node=>{
+          for(let i=node.start;i<node.start+node.count;i++){
+            const entry=this.entries[i],b=entry.bounds;
+            if(!(box.right<b.left||box.left>b.right||box.bottom<b.top||box.top>b.bottom||box.high<b.low||box.low>b.high))candidates.push(entry);
+          }
+          if(!node.children)return;
+          const left=box.left<=node.x,right=box.right>=node.x;
+          if(box.top<=node.y){if(left)collect(node.children[0]);if(right)collect(node.children[1]);}
+          if(box.bottom>=node.y){if(left)collect(node.children[2]);if(right)collect(node.children[3]);}
+        };collect(this.root);
+      }
+      for(const entry of frameCache.entries)if(nativeBoundsOverlap(entry.bounds,query,true))visit(entry);
+      return;
+    }
     const box=query.box,walk=node=>{
       for(let i=node.start;i<node.start+node.count;i++){
         const entry=this.entries[i];if(nativeBoundsOverlap(entry.bounds,query))visit(entry);

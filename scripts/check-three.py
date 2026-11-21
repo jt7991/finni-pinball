@@ -27,7 +27,7 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
             try:
                 urllib.request.urlopen(f'http://127.0.0.1:{port}/json/list');break
             except OSError:time.sleep(.1)
-        runner='probe-vpx-contact.mjs' if '--native-contact' in sys.argv else 'probe-vpx-physics.mjs' if '--native-reference' in sys.argv else 'test-three-ui.mjs'
+        runner='probe-vpx-contact.mjs' if '--native-contact' in sys.argv else 'probe-vpx-physics.mjs' if '--native-reference' in sys.argv else 'benchmark-three-browser.mjs' if '--performance' in sys.argv else 'test-three-ui.mjs'
         subprocess.run(['node',str(ROOT/'scripts'/runner),f'http://127.0.0.1:{port}',
                         sys.argv[1] if len(sys.argv)>1 else 'http://127.0.0.1:5173/three/',str(OUT),*sys.argv[2:]],check=True,timeout=150)
     finally:

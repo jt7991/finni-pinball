@@ -28,6 +28,27 @@ test('scalar collision tree visits every intersecting shape once, including boun
   }
 });
 
+test('frame candidate reuse preserves ordered scalar visits as sphere centers change and frame bounds advance',()=>{
+  const entries=Array.from({length:500},(_,id)=>{
+    const x=(id*137)%952,y=(id*271)%2115,z=(id*31)%180;
+    return {id,bounds:{left:x-30,right:x+40,top:y-20,bottom:y+50,low:z,high:z+20}};
+  });
+  entries.push({id:500,bounds:{left:0,right:952,top:1000,bottom:1010,low:0,high:180}});
+  const bounds={left:0,right:952,top:0,bottom:2115},tree=new NativeTree(entries,bounds),cache={};
+  let compared=0;
+  for(let frame=0;frame<200;frame++){
+    const query=nativeMeshQuery({x:((frame*173)%952)*.01,y:(2115-(frame*277)%2115)*.01,z:(frame%5)*.2},{x:35,y:-60,z:2},.25,.001);
+    for(const offset of [0,5,-5,15,-15]){
+      const changing={...query,p:{...query.p,x:Math.fround(query.p.x+offset),y:Math.fround(query.p.y-offset)}};
+      const expected=[],actual=[];tree.query(changing,entry=>expected.push(entry.id));tree.query(changing,entry=>actual.push(entry.id),cache);
+      assert.deepEqual(actual,expected,'ordered scalar visit list at frame '+frame+' offset '+offset);compared++;
+    }
+  }
+  const otherTree=new NativeTree(entries.slice().reverse(),bounds),query=nativeMeshQuery({x:4.76,y:10,z:.25},{x:0,y:0,z:0},.25,.001),expected=[],actual=[];
+  otherTree.query(query,entry=>expected.push(entry.id));otherTree.query(query,entry=>actual.push(entry.id),cache);
+  assert.deepEqual(actual,expected,'a different tree invalidates the frame cache');assert.equal(compared,1000);
+});
+
 test('fractional-height vertical posts retain an exactly horizontal collision normal',()=>{
   const mesh=new ContactMesh({vertices:[],indices:[]});
   // A generic normalized 3D edge can acquire a slight tilt when this height

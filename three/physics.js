@@ -405,7 +405,7 @@ export class Pinball {
             else if(trigger)hit=trigger.hitShape(shape,r.nativeQuery,time,ball);
             else if(kicker)hit=kicker.hitShape(shape,r.nativeQuery,time,ball);
             accept(hit,{mesh,f,plunger,gate,blocked,spinner,trigger,kicker});
-          });
+          },r.nativeStaticQueryCache??={});
           if(this.nativeBallContacts){if(this.random()<.5){dynamic();staticQuery();}else{staticQuery();dynamic();}}else staticQuery();
           // Native counts very short hits per ball and retains each ball's
           // collision. All hits at the winning time are resolved together.
