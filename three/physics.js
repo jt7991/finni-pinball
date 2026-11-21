@@ -1,12 +1,14 @@
 import RAPIER from '@dimforge/rapier3d-compat';
 import {CatmullRomCurve3, Vector3,Vector2,ShapeUtils} from 'three';
 
-export const STEP = 1 / 240;
+export const STEP = 1 / 1000;
 export const RADIUS = 0.25;
+export const BALL_RESTITUTION=Math.sqrt(.8);
+export const surfaceRestitution=value=>value/BALL_RESTITUTION;
 export const BALL_GROUP=0x00010007,STATIC_GROUP=0x00020001,FLIPPER_GROUP=0x00040001;
-const FLIPPER_SPRING=18000,FLIPPER_DAMPING=145;
 export const point = p => ({x: p.x * .01, y: (2115 - p.y) * .01, z: 0});
 const quaternion = angle => ({x: 0, y: 0, z: Math.sin(angle / 2), w: Math.cos(angle / 2)});
+export const restitutionAtSpeed=(p,speed)=>p.elasticity/(1+Math.max(0,p.elasticity_falloff??0)*Math.abs(speed)/18.53);
 let initialized;
 
 // VPX walls are closed, filled surfaces, with zero outward padding. Padding every
@@ -84,6 +86,7 @@ export class Pinball {
     this.events = new RAPIER.EventQueue(true);
     this.tags = new Map();
     this.colliderLabels = new Map();
+    this.contactMaterials=new Map();this.changedMaterials=new Set();this.queryBall=new RAPIER.Ball(RADIUS);
     this.flippers = [];
     this.cooldowns = new Map();
     this.time = 0;
@@ -109,20 +112,20 @@ export class Pinball {
     const guidePoints=[[8.035,10.775],[8.68,11.15],[8.68,10.6993],[8.0921,10.6993]];
     const guideVertices=[0,.6].flatMap(z=>guidePoints.flatMap(([x,y])=>[x,y,z]));
     const guide=this.world.createCollider(RAPIER.ColliderDesc.convexHull(new Float32Array(guideVertices))
-      .setCollisionGroups(STATIC_GROUP).setRestitutionCombineRule(RAPIER.CoefficientCombineRule.Min).setRestitution(.3).setFriction(.06));
+      .setCollisionGroups(STATIC_GROUP).setRestitutionCombineRule(RAPIER.CoefficientCombineRule.Multiply).setRestitution(surfaceRestitution(.3)).setFriction(.06));
     this.colliderLabels.set(guide.handle,'right-return-post-guide');
     // The exported walls contain the shooter lane and curved upper feed.
     const ball = RAPIER.RigidBodyDesc.dynamic().setTranslation(9.03, 1.4, RADIUS)
-      .setCcdEnabled(true).setLinearDamping(.025).setAngularDamping(.12).setCanSleep(false);
+      .setCcdEnabled(true).setCanSleep(false);
     this.ball = this.world.createRigidBody(ball);
     this.ballCollider = this.world.createCollider(RAPIER.ColliderDesc.ball(RADIUS).setMass(1)
-      .setCollisionGroups(BALL_GROUP).setRestitution(.9).setFriction(.045).setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS), this.ball);
+      .setCollisionGroups(BALL_GROUP).setRestitution(BALL_RESTITUTION).setRestitutionCombineRule(RAPIER.CoefficientCombineRule.Multiply).setFriction(0).setFrictionCombineRule(RAPIER.CoefficientCombineRule.Max).setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS), this.ball);
     this.park();
   }
 
   box(p, half, bounce = .5, friction = .08, rotation = 0, tag, label='playfield') {
     const desc = RAPIER.ColliderDesc.cuboid(...half).setTranslation(p.x,p.y,p.z)
-      .setCollisionGroups(STATIC_GROUP).setRestitutionCombineRule(RAPIER.CoefficientCombineRule.Min).setRotation(quaternion(rotation)).setRestitution(bounce).setFriction(friction);
+      .setCollisionGroups(STATIC_GROUP).setRestitutionCombineRule(RAPIER.CoefficientCombineRule.Multiply).setRotation(quaternion(rotation)).setRestitution(surfaceRestitution(bounce)).setFriction(friction);
     if (tag) desc.setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS);
     const collider = this.world.createCollider(desc);
     this.colliderLabels.set(collider.handle,tag?.name??label);
@@ -141,11 +144,12 @@ export class Pinball {
 
   wall(item) {
     if(item.name==='Wall024')return; // Shallow native shooter deflector; replaced by the open lane feed.
-    const surface=wallSurface(item);
+    const surface=wallSurface(item),material=item.contact_physics??{elasticity:item.elasticity,friction:item.friction??.06};
     if(surface.indices.length){
       const collider=this.world.createCollider(RAPIER.ColliderDesc.trimesh(new Float32Array(surface.vertices),new Uint32Array(surface.indices),RAPIER.TriMeshFlags.FIX_INTERNAL_EDGES)
-        .setCollisionGroups(STATIC_GROUP).setRestitutionCombineRule(RAPIER.CoefficientCombineRule.Min).setRestitution(item.elasticity).setFriction(.06));
+        .setCollisionGroups(STATIC_GROUP).setRestitutionCombineRule(RAPIER.CoefficientCombineRule.Multiply).setRestitution(surfaceRestitution(material.elasticity)).setFriction(material.friction));
       this.colliderLabels.set(collider.handle,item.name);
+      this.contactMaterials.set(collider.handle,{collider,...material});
     }
     const points = item.drag_points.map(point), bottom = Math.max(0, item.height_bottom * .01);
     const height = item.height_top * .01-bottom;
@@ -157,7 +161,7 @@ export class Pinball {
   }
 
   ramp(item) {
-    const surface = rampSurface(item);
+    const surface = rampSurface(item),material=item.contact_physics??{friction:item.friction??.035,elasticity:item.elasticity??0};
     for (const [side, edge] of surface.edges.entries()) {
       const height=(['one_wire','two_wire'].includes(item.ramp_type)?31:side===0?item.right_wall_height:item.left_wall_height)*.01;
       if(height<=0)continue;
@@ -169,7 +173,8 @@ export class Pinball {
       }
     }
     const collider=this.world.createCollider(RAPIER.ColliderDesc.trimesh(new Float32Array(surface.vertices),new Uint32Array(surface.indices),RAPIER.TriMeshFlags.FIX_INTERNAL_EDGES_TWO_SIDED)
-      .setCollisionGroups(STATIC_GROUP).setRestitutionCombineRule(RAPIER.CoefficientCombineRule.Min).setFriction(.035).setRestitution(0));
+      .setCollisionGroups(STATIC_GROUP).setRestitutionCombineRule(RAPIER.CoefficientCombineRule.Multiply).setFriction(material.friction).setRestitution(surfaceRestitution(material.elasticity)));
+    this.contactMaterials.set(collider.handle,{collider,...material});
     this.colliderLabels.set(collider.handle,item.name);
     this.ramps.push({name:item.name,collider,...surface});
   }
@@ -188,12 +193,13 @@ export class Pinball {
     const body = this.world.createRigidBody(RAPIER.RigidBodyDesc.dynamic()
       .setTranslation(p.x,p.y,0).lockTranslations().enabledRotations(false,false,true).setCanSleep(false).setCcdEnabled(true).setGravityScale(0));
     const collider=this.world.createCollider(RAPIER.ColliderDesc.convexHull(new Float32Array(vertices))
-      .setRotation(quaternion(rest)).setCollisionGroups(FLIPPER_GROUP).setRestitutionCombineRule(RAPIER.CoefficientCombineRule.Min).setMassProperties(mass,{x:0,y:0,z:0},{x:inertia,y:inertia,z:inertia},quaternion(0)).setRestitution(item.elasticity).setFriction(item.friction)
+      .setRotation(quaternion(rest)).setCollisionGroups(FLIPPER_GROUP).setRestitutionCombineRule(RAPIER.CoefficientCombineRule.Multiply).setMassProperties(mass,{x:0,y:0,z:0},{x:inertia,y:inertia,z:inertia},quaternion(0)).setRestitution(surfaceRestitution(item.elasticity)).setFriction(item.friction)
       .setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS),body);
     const joint=this.world.createImpulseJoint(RAPIER.JointData.revolute({x:0,y:0,z:0},{x:0,y:0,z:0},{x:0,y:0,z:1}),anchor,body,true);
-    joint.setLimits(Math.min(0,raised-rest),Math.max(0,raised-rest));
-    joint.configureMotorModel(RAPIER.MotorModel.ForceBased);
-    joint.configureMotorPosition(0,FLIPPER_SPRING,FLIPPER_DAMPING);joint.setMotorMaxForce(item.strength*item.return);
+    // The native stop is handled below; keep the joint's predictive limit away
+    // from it so Rapier does not brake the coil before contact.
+    joint.setLimits(Math.min(0,raised-rest)-.2,Math.max(0,raised-rest)+.2);
+    joint.setMotorMaxForce(0);
     this.tags.set(collider.handle,{kind:'flipper',name:item.name});
     this.colliderLabels.set(collider.handle,item.name);
     this.flippers.push({body,collider,joint,p,length,rest,raised,angle:rest,inertia,strength:item.strength,returnStrength:item.return,side:item.name.startsWith('Left')?'left':'right'});
@@ -209,9 +215,31 @@ export class Pinball {
       const state=this.rules?.objects.get(`${f.side}flipper`);
       const strength=Number(state?.strength)||f.strength*(fromRest<6*Math.PI/180?.2:1);
       const eos=Number(state?.eostorque)||.3,eosAngle=(Number(state?.eostorqueangle)||10)*Math.PI/180;
-      const torque=strength*(pressed?1:f.returnStrength)*(fromEnd<eosAngle?eos:1);
-      f.joint.setMotorMaxForce(torque);
-      f.joint.configureMotorPosition(pressed?f.raised-f.rest:0,FLIPPER_SPRING,FLIPPER_DAMPING);
+      const fade=Math.min(1,fromEnd/eosAngle)**4;
+      const torque=strength*(pressed?1:-f.returnStrength)*(eos+(1-eos)*fade)*Math.sign(f.raised-f.rest);
+      f.body.resetTorques(true);
+      if(Math.abs(f.angle-(pressed?f.raised:f.rest))<.01&&Math.abs(f.body.angvel().z)<1){
+        f.angle=pressed?f.raised:f.rest;f.body.setRotation(quaternion(f.angle-f.rest),true);
+        f.body.setAngvel({x:0,y:0,z:0},true);f.stopOmega=0;continue;
+      }
+      f.body.applyTorqueImpulse({x:0,y:0,z:torque*STEP},true);
+      f.stopOmega=f.body.angvel().z;
+    }
+  }
+
+  prepareContacts(records){
+    for(const handle of this.changedMaterials){const m=this.contactMaterials.get(handle);m.collider.setRestitution(surfaceRestitution(m.elasticity));}
+    this.changedMaterials.clear();
+    for(const rec of records){
+      if(rec.held)continue;
+      const v=rec.body.linvel();
+      const hit=this.world.castShape(rec.body.translation(),quaternion(0),v,this.queryBall,0,STEP*2,false,
+        undefined,BALL_GROUP,rec.collider,rec.body,c=>this.contactMaterials.has(c.handle));
+      if(!hit)continue;
+      const m=this.contactMaterials.get(hit.collider.handle),n=hit.normal1;
+      const e=surfaceRestitution(restitutionAtSpeed(m,v.x*n.x+v.y*n.y+v.z*n.z));
+      m.collider.setRestitution(this.changedMaterials.has(m.collider.handle)?Math.min(e,m.collider.restitution()):e);
+      this.changedMaterials.add(m.collider.handle);
     }
   }
 
@@ -219,6 +247,14 @@ export class Pinball {
     for(const f of this.flippers){
       const q=f.body.rotation(),raw=2*Math.atan2(q.z,q.w);
       f.angle=f.rest+Math.atan2(Math.sin(raw),Math.cos(raw));
+      const low=Math.min(f.rest,f.raised),high=Math.max(f.rest,f.raised);
+      const stop=f.angle<=low+.00001&&f.stopOmega<0?low:f.angle>=high-.00001&&f.stopOmega>0?high:null;
+      if(stop!==null){
+        const overshoot=f.angle-stop;
+        f.angle=Math.abs(f.stopOmega)<1?stop:stop-.3*overshoot;
+        f.body.setRotation(quaternion(f.angle-f.rest),true);
+        f.body.setAngvel({x:0,y:0,z:Math.abs(f.stopOmega)<1?0:-.3*f.stopOmega},true);
+      }
     }
   }
 
@@ -227,7 +263,7 @@ export class Pinball {
     // The decorative balloon is bigger than the active ring underneath it.
     const collider=this.world.createCollider(RAPIER.ColliderDesc.cylinder(.32,item.radius*.008)
       .setTranslation(p.x,p.y,.32).setRotation({x:Math.SQRT1_2,y:0,z:0,w:Math.SQRT1_2})
-      .setCollisionGroups(STATIC_GROUP).setRestitutionCombineRule(RAPIER.CoefficientCombineRule.Min).setRestitution(.9).setFriction(.05).setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS));
+      .setCollisionGroups(STATIC_GROUP).setRestitutionCombineRule(RAPIER.CoefficientCombineRule.Multiply).setRestitution(surfaceRestitution(.9)).setFriction(.05).setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS));
     this.tags.set(collider.handle,{kind:'bumper',name:item.name,p});
   }
 
@@ -285,6 +321,7 @@ export class Pinball {
       this.ball.setTranslation({x:this.scoop.x+.15,y:this.scoop.y-.6,z:RADIUS+.04},true);
       this.ball.setLinvel({x:2.4,y:-13,z:0},true);this.emit({type:'eject'});
     }
+    this.prepareContacts([{body:this.ball,collider:this.ballCollider,held:this.inLane}]);
     this.world.step(this.events);
     this.readFlippers();
     this.events.drainCollisionEvents((a,b,started)=>{

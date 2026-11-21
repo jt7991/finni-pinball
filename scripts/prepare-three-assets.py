@@ -37,18 +37,22 @@ image.save(OUT / 'playfield.webp', quality=88, method=6)
 shutil.copyfile(ROOT / 'assets/fonts/chewy/Chewy-Regular.ttf', OUT / 'chewy.ttf')
 
 source = SOURCE_ROOT / '.work/finni-live-extracted/gameitems'
+materials={m['name']:m for m in json.loads((source.parent/'materials.json').read_text())}
 items = []
 for path in sorted(source.glob('*.json')):
     data = json.loads(path.read_text())
     kind, item = next(iter(data.items()))
     if kind == 'Wall' and item.get('is_collidable') and item['height_bottom'] < 50 and item['height_top'] > 0:
-        items.append({'kind': kind, **{k: item[k] for k in ('name', 'height_bottom', 'height_top', 'elasticity', 'drag_points')}})
+        items.append({'kind': kind, **{k: item[k] for k in ('name', 'height_bottom', 'height_top', 'elasticity', 'friction', 'elasticity_falloff', 'scatter', 'physics_material', 'overwrite_physics', 'drag_points')}})
     elif kind in ('Bumper', 'Flipper') or kind == 'Kicker' and item['name'] == 'HellHouse':
         items.append({'kind': kind, **item})
     elif kind == 'Ramp' and item.get('is_collidable') and item['name'] not in ('Ramp001', 'Ramp064'):
         items.append({'kind': kind, **item})
 
 for item in items:
+    if item['kind'] in ('Wall','Ramp'):
+        material=materials.get(item.get('physics_material'))
+        item['contact_physics']={k:(material[k if k!='scatter' else 'scatter_angle'] if material and not item.get('overwrite_physics') else item.get(k,0)) for k in ('elasticity','elasticity_falloff','friction','scatter')}
     if 'drag_points' in item:
         item['drag_points'] = [{k: round(p[k], 4) if type(p[k]) is float else p[k]
                                 for k in ('x', 'y', 'smooth', 'is_slingshot', *(['z'] if item['kind']=='Ramp' else []))} for p in item['drag_points']]

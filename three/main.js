@@ -3,8 +3,9 @@ import {createFullGame} from './full-game.js';
 import {createView} from './scene.js';
 import {createAudio,createDisplay} from './media.js';
 import {createLeaderboard} from '../browser/leaderboard.js';
+import {prepareUI} from './ui.js';
 
-const $=id=>document.getElementById(id);
+const $=prepareUI();
 let game,view,audio,display,leaderboard,paused=false,previous,accumulator=0,last=0,frames=0,sampleStart=0;
 const sources=new Map(),buttons=[...document.querySelectorAll('[data-input]')];
 const defaultKeys={ShiftLeft:'left',ShiftRight:'right',Enter:'launch',Digit1:'start',Space:'action',KeyZ:'nudgeLeft',KeyX:'nudgeForward',Slash:'nudgeRight'},keys={...defaultKeys};
@@ -28,6 +29,7 @@ function bindings(){
 }
 bindings();
 $('reset-bindings').onclick=()=>{release();for(const code of Object.keys(keys))delete keys[code];Object.assign(keys,defaultKeys);save('bindings','null');$('latch').checked=false;save('latch','false');bindings();};
+$('release').onclick=release;
 function rotateScreen(enabled){release();document.body.classList.toggle('portrait-rotated',enabled);$('portrait').setAttribute('aria-pressed',String(enabled));save('portrait',String(enabled));}
 $('portrait').onclick=()=>rotateScreen(!document.body.classList.contains('portrait-rotated'));
 rotateScreen(read('portrait','false')==='true');
@@ -87,12 +89,16 @@ window.addEventListener('blur',()=>{release();paused=true;});
 window.addEventListener('focus',()=>{paused=$('controls-panel').open||document.hidden;last=0;});
 document.addEventListener('visibilitychange',()=>{release();paused=document.hidden||$('controls-panel').open;last=0;});
 window.addEventListener('orientationchange',()=>{release();last=0;});
-$('settings').onclick=()=>{release();paused=true;$('controls-panel').showModal();};
+$('settings').onclick=()=>{release();paused=true;};
 $('controls-panel').addEventListener('close',()=>{paused=document.hidden;last=0;$('table').focus({preventScroll:true});});
+$('controls-panel').addEventListener('toggle',()=>{release();paused=$('controls-panel').open||document.hidden;last=0;});
 $('initials-dialog').addEventListener('close',()=>$('table').focus({preventScroll:true}));
 $('play').onclick=()=>{release();audio?.unlock();game?.start();};
-$('camera').value=read('camera','balanced');$('quality').value=read('quality','performance');
-for(const name of ['camera','quality'])$(name).onchange=()=>{save(name,$(name).value);name==='camera'?view?.setCamera($(name).value):view?.setQuality($(name).value);};
+$('camera').value=read('camera','balanced');$('quality').value=read('quality','auto');
+if($('camera').value==='')$('camera').value='balanced';
+const cameraMode=()=>$('camera').value==='topdown'?'overhead':$('camera').value;
+for(const name of ['camera','quality'])$(name).onchange=()=>{save(name,$(name).value);if(name==='camera')view?.setCamera(cameraMode());};
+$('apply-graphics').onclick=()=>{release();save('quality',$('quality').value);location.reload();};
 $('sound').onclick=async()=>{
   try{
     await audio?.unlock();audio?.setMuted(!audio.muted);
@@ -103,7 +109,7 @@ $('fullscreen').onclick=async()=>{
   try{if(document.fullscreenElement)await document.exitFullscreen();else if(document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();else throw Error('unsupported');}
   catch{message('Full screen unavailable. You can use Add to Home Screen.');$('screen-note').textContent='This browser cannot enter full screen here. On iPhone, use Safari’s Add to Home Screen for a standalone view.';}
 };
-document.addEventListener('fullscreenchange',()=>{release();$('fullscreen').textContent=document.fullscreenElement?'Exit full screen':'Full screen';});
+document.addEventListener('fullscreenchange',()=>{release();document.body.classList.toggle('fullscreen-play',!!document.fullscreenElement);$('fullscreen').setAttribute('aria-pressed',String(!!document.fullscreenElement));$('fullscreen').setAttribute('aria-label',document.fullscreenElement?'Exit full screen':'Enter full screen');});
 
 function frame(now){
   try{drawFrame(now);}catch(error){
@@ -125,6 +131,8 @@ function drawFrame(now){
   const power=Math.round(game.charge/1.2*100);
   $('charge').classList.toggle('active',power>0);$('charge').setAttribute('aria-valuenow',String(power));$('charge').firstElementChild.style.height=`${power}%`;
   $('launch').disabled=game.state!=='playing'||!game.inLane;
+  document.body.classList.toggle('game-in-play',game.state==='playing');
+  document.body.classList.toggle('ball-in-plunger',game.inLane);
   if(game.state==='playing'&&game.time>messageUntil)message(game.tilted?'Tilt · flippers disabled':game.inLane?'Hold Launch, then release.':game.rules.value('bChooseBattle')?'Flippers choose · Action confirms':`Player ${game.player}`,30);
   frames++;
   if(now-sampleStart>1500){
@@ -143,11 +151,11 @@ async function boot(){
     leaderboard=createLeaderboard(statement=>game.rules.execute(statement),release);
     display=await createDisplay($('dmd'),game.rules.objects,base);
     $('load-status').textContent='Loading artwork and table model…';
-    view=await createView($('table'),game);view.setCamera($('camera').value);view.setQuality($('quality').value);
+    view=await createView($('table'),game);view.setCamera(cameraMode());view.setQuality($('quality').value==='auto'?(matchMedia('(max-width:650px)').matches?'performance':'detailed'):$('quality').value);
     previous={...game.ball.translation()};
     const seconds=((performance.now()-startTime)/1000).toFixed(1);
     $('load-status').textContent=`Ready in ${seconds}s. Hold Launch, then release to shoot.`;
-    $('play').disabled=false;$('play').textContent='Start game';message('Ready to play');
+    $('play').disabled=false;$('play').textContent='Start game';$('progress').hidden=true;message('Ready to play');
     sampleStart=performance.now();
     if(import.meta.env.DEV)window.finniThree={game,view,release};
     $('table').addEventListener('webglcontextlost',e=>{e.preventDefault();paused=true;release();$('load-status').textContent='Graphics were interrupted. Reload to restart.';$('overlay').hidden=false;$('play').textContent='Reload game';$('play').onclick=()=>location.reload();});

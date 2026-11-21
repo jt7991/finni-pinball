@@ -23,15 +23,29 @@ try{
   await new Promise(r=>setTimeout(r,500));
   const samples=[];
   for(const pressed of [true,false]){
-    await script(`SolLFlipper ${pressed?1:0}:SolRFlipper ${pressed?1:0}`);
+    await script(`Debug.Print "REFSTART|" & GameTime:SolLFlipper ${pressed?1:0}:SolRFlipper ${pressed?1:0}`);
+    const origin=await evaluate('parseFloat(document.getElementById("log").textContent.split("REFSTART|").at(-1))');
     const start=performance.now();
-    for(let i=0;i<12;i++){
-      await script('Debug.Print "REFPHYSICS|" & LeftFlipper.CurrentAngle & ":" & RightFlipper.CurrentAngle');
+    for(let i=0;i<24;i++){
+      await script('Debug.Print "REFPHYSICS|" & GameTime & ":" & LeftFlipper.CurrentAngle & ":" & RightFlipper.CurrentAngle');
       const text=await evaluate('document.getElementById("log").textContent.split("REFPHYSICS|").at(-1).split("\\n")[0]');
-      samples.push([pressed,Math.round(performance.now()-start),...text.split(':').map(parseFloat)]);
+      const [time,left,right]=text.split(':').map(parseFloat);
+      samples.push([pressed,time-origin,left,right]);
       await new Promise(r=>setTimeout(r,4));
     }
   }
+  const ballSamples=[];
+  await script('Dim RefBalls, RefBall:RefBalls=GetBalls:Set RefBall=RefBalls(UBound(RefBalls))');
+  for(const speed of [0,10]){
+    await script('SolLFlipper 0:SolRFlipper 0');
+    await script(`RefBall.X=430:RefBall.Y=1500:RefBall.Z=25:RefBall.VelX=${speed}:RefBall.VelY=0:RefBall.VelZ=0`);
+    for(let i=0;i<16;i++){
+      await script('Debug.Print "REFBALL|" & GameTime & ":" & RefBall.X & ":" & RefBall.Y & ":" & RefBall.Z & ":" & RefBall.VelX & ":" & RefBall.VelY & ":" & RefBall.VelZ');
+      const row=await evaluate('document.getElementById("log").textContent.split("REFBALL|").at(-1).split("\\n")[0]');
+      ballSamples.push({speed,values:row.split(':').map(parseFloat)});
+      await new Promise(r=>setTimeout(r,10));
+    }
+  }
   console.log(JSON.stringify({flipperSamples:samples}));
-  await writeFile(`${output}/vpx-physics-reference.json`,JSON.stringify({samples},null,2));
+  await writeFile(`${output}/vpx-physics-reference.json`,JSON.stringify({samples,ballSamples},null,2));
 }finally{socket.close();}
