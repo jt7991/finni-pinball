@@ -1,6 +1,6 @@
 // Integration check: actual VPX/WASM, shipped shaders, animated meshes and input.
 import assert from 'node:assert/strict';
-import {writeFile} from 'node:fs/promises';
+import {readFile,writeFile} from 'node:fs/promises';
 const [debug,base,output]=process.argv.slice(2);
 const tabs=await (await fetch(`${debug}/json/list`)).json();
 const socket=new WebSocket(tabs.find(tab=>tab.type==='page').webSocketDebuggerUrl);
@@ -65,6 +65,8 @@ try{
   for(const [index,expected] of [.3,.5,.7,1].entries())assert.ok(Number.isFinite(blended.pixel[index])&&Math.abs(blended.pixel[index]-expected)<.003,'HDR bulb RGB stays unchanged and alpha stays finite');
   assert.deepEqual(blended.normalAlpha,[770,771],'Ordinary transparency retains native blending');
   assert.equal(blended.error,0,'HDR blending is valid WebGL');
+  const copyTest=(await readFile(new URL('./check-framebuffer-copy.js',import.meta.url),'utf8')).replace('export async function','async function');
+  assert.equal(await evaluate(`(async()=>{${copyTest};return checkFramebufferCopy()})()`),true,'Real GPU copies HDR color and depth and restores engine state');
   const prepared=await evaluate(`finni.engine.FS.readFile('/shaders-10.8.1/Helpers.fxh',{encoding:'utf8'})`);
   for(const sampler of ['sampler2D','samplerCube','sampler2DArray'])assert.ok(prepared.includes(`precision highp ${sampler};`));
   await capture('ready');

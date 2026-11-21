@@ -90,7 +90,7 @@ body{overscroll-behavior:none}
   .touch button{pointer-events:auto;min-height:48px}
   .touch button[data-action=action]{min-width:88px;background:#101b18e6}
   .stage{grid-row:2/-1}
-  .flip-zones{inset:42% 0 0}
+  .flip-zones{inset:0}
   .flip-zones button{padding-bottom:68px}
   .flip-zones button::after{content:"Flip";font-size:12px;padding:5px 18px}
   .nudge-zone{z-index:2}

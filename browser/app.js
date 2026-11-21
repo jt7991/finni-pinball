@@ -24,7 +24,7 @@ try {
   if(saved && actions.every(([id])=>typeof saved.keys?.[id]==='string') && new Set(Object.values(saved.keys)).size===actions.length) settings={...settings,...saved};
 } catch {}
 let listening=null, connected=false, engine=null, hasPlayed=false, replayVisible=false, enginePhase='Loading game';
-const held=new Map(), physical=new Set();
+const held=new Map(), physical=new Set(), pointers=new Map();
 const message=text=>$('message').textContent=text;
 function save(){try{localStorage.setItem('finni-controls-v1',JSON.stringify(settings));}catch{message('Browser storage is unavailable. Settings apply for this session.');}}
 function label(code){return code.replace(/^Key|^Digit/,'').replace('ShiftLeft','Left Shift').replace('ShiftRight','Right Shift').replace('Arrow','');}
@@ -43,9 +43,10 @@ function render(){
   $('nudge-zone').hidden=!settings.showTouch;
   $('control-hint').textContent=`${label(settings.keys.start)} start · ${label(settings.keys.action)} action · Hold ${label(settings.keys.launch)}, then release to launch`;
 }
-function release(){held.clear();physical.clear();paint();send();}
+function release(){held.clear();physical.clear();pointers.clear();paint();send();}
 function setAction(id,down,source){
   if(!connected)return;
+  if(down&&(!$('waiting').hidden||$('initials-dialog').open||document.querySelector('.panel:popover-open')))return;
   const sources=held.get(id)||new Set();
   if(settings.latch && ['left','right'].includes(id)){
     if(!down)return;
@@ -55,14 +56,27 @@ function setAction(id,down,source){
   paint();send();
 }
 function paint(){document.querySelectorAll('[data-action]').forEach(b=>{const pressed=held.has(b.dataset.action);b.classList.toggle('pressed',pressed);b.setAttribute('aria-pressed',String(pressed));b.disabled=!connected;});}
+function finishPointer(event,cancelled=false){
+  const id=pointers.get(event.pointerId);
+  if(!id)return;
+  pointers.delete(event.pointerId);
+  if(cancelled&&settings.latch&&['left','right'].includes(id)){
+    held.delete(id);paint();send();
+  }else setAction(id,false,`pointer:${event.pointerId}`);
+}
+window.addEventListener('pointerup',event=>finishPointer(event));
+window.addEventListener('pointercancel',event=>finishPointer(event,true));
 for(const [id,name] of actions){
   const button=document.createElement('button');button.textContent=name;button.dataset.action=id;button.disabled=true;
   button.addEventListener('contextmenu',e=>e.preventDefault());
   button.addEventListener('pointerdown',e=>{
     if(e.pointerType==='mouse'&&e.button!==0)return;
-    e.preventDefault();button.setPointerCapture(e.pointerId);setAction(id,true,`pointer:${e.pointerId}`);
+    e.preventDefault();
+    try{button.setPointerCapture(e.pointerId);}catch{}
+    pointers.set(e.pointerId,id);setAction(id,true,`pointer:${e.pointerId}`);
   });
-  for(const type of ['pointerup','pointercancel','lostpointercapture'])button.addEventListener(type,e=>setAction(id,false,`pointer:${e.pointerId}`));
+  button.addEventListener('pointerup',event=>finishPointer(event));
+  for(const type of ['pointercancel','lostpointercapture'])button.addEventListener(type,event=>finishPointer(event,true));
   button.addEventListener('keydown',e=>{if(['Enter','Space'].includes(e.code)){e.preventDefault();if(!e.repeat)setAction(id,true,'button');}});
   button.addEventListener('keyup',e=>{if(['Enter','Space'].includes(e.code)){e.preventDefault();setAction(id,false,'button');}});
   (id.startsWith('nudge')?$('nudges'):$('touch')).append(button);
@@ -108,7 +122,7 @@ $('latch').onchange=e=>{release();settings.latch=e.target.checked;save();};
 $('showTouch').onchange=e=>{release();settings.showTouch=e.target.checked;save();render();$('flip-zones').hidden=!settings.showTouch;$('nudge-zone').hidden=!settings.showTouch;};
 $('reset').onclick=()=>{release();listening=null;settings={keys:{...defaults},latch:false,showTouch:true};save();render();message('Default controls restored.');};
 $('release').onclick=release;
-let toolbarTimer, screenMessageTimer;
+let toolbarTimer, screenMessageTimer, fullscreenPending=false;
 function screenMessage(text){
   $('screen-message').textContent=text;$('screen-message').hidden=false;
   clearTimeout(screenMessageTimer);
@@ -126,10 +140,13 @@ function syncFullscreen(){
   $('fullscreen').setAttribute('aria-pressed',String(fullscreen));
   $('fullscreen').setAttribute('aria-label',fullscreen?'Exit full screen':'Enter full screen');
   $('fullscreen').title=fullscreen?'Exit full screen':'Full screen';
+  if(fullscreen)$('screen-message').hidden=true;
   if(connected)$('canvas').focus({preventScroll:true});
   showToolbar();
 }
 $('fullscreen').onclick=async()=>{
+  if(fullscreenPending)return;
+  fullscreenPending=true;
   release();
   const fullscreen=!!(document.fullscreenElement||document.webkitFullscreenElement);
   const target=document.documentElement;
@@ -140,15 +157,20 @@ $('fullscreen').onclick=async()=>{
     }else{
       const enter=target.requestFullscreen||target.webkitRequestFullscreen;
       if(!enter){screenMessage('This browser does not support full screen for games.');return;}
-      await enter.call(target,{navigationUI:'hide'});
+      if(target.requestFullscreen)await enter.call(target,{navigationUI:'hide'});
+      else await enter.call(target);
     }
     syncFullscreen();
   }catch{
-    screenMessage('Could not enter full screen. Tap the full screen button to try again.');
-  }
+    screenMessage(`Could not ${fullscreen?'exit':'enter'} full screen. Tap the full screen button to try again.`);
+  }finally{fullscreenPending=false;}
 };
 document.addEventListener('fullscreenchange',syncFullscreen);
 document.addEventListener('webkitfullscreenchange',syncFullscreen);
+for(const type of ['fullscreenerror','webkitfullscreenerror'])document.addEventListener(type,()=>{
+  fullscreenPending=false;
+  screenMessage('Could not change full screen. Tap the full screen button to try again.');
+});
 window.addEventListener('pointermove',e=>{
   const atTop=document.body.classList.contains('portrait-rotated')?e.clientX>innerWidth-24:e.clientY<24;
   if(document.fullscreenElement&&atTop)showToolbar();
@@ -157,13 +179,17 @@ document.querySelector('.toolbar').addEventListener('pointerenter',showToolbar);
 document.querySelector('.toolbar').addEventListener('focusin',showToolbar);
 const nativeKeys=['LeftFlipperKey','RightFlipperKey','PlungerKey','StartGameKey','LeftTiltKey','CenterTiltKey','RightTiltKey','LockBarKey'];
 const applied=new Set();
-function evaluate(script){return engine?.ccall('vpinball_wasm_eval_script','number',['string'],[script]);}
+function evaluate(script){
+  try{return engine?.ccall('vpinball_wasm_eval_script','number',['string'],[script]);}
+  catch(error){if(!connected)throw error;fail(error);}
+}
 function send(){
   if(!connected)return;
   for(let i=0;i<actions.length;i++){
     const id=actions[i][0], down=held.has(id);
     if(down!==applied.has(id)){
       evaluate(`${id==='start'&&down?'bFreePlay=True:':''}Table1_Key${down?'Down':'Up'} ${nativeKeys[i]}`);
+      if(!connected)return;
       if(down)applied.add(id);else applied.delete(id);
     }
   }
@@ -194,10 +220,12 @@ function updateReplay(playing,entering){
 $('initials-dialog').addEventListener('close',focusGame);
 for(const panel of document.querySelectorAll('.panel'))panel.addEventListener('toggle',e=>{if(e.newState==='closed')focusGame();});
 $('touch-help').onclick=()=>{
+  release();
   const showing=document.body.classList.toggle('show-touch-guide');
   $('touch-help').setAttribute('aria-pressed',String(showing));$('touch-guide').hidden=!showing;
+  if(!showing)focusGame();
 };
-$('dismiss-touch-guide').onclick=()=>{document.body.classList.remove('show-touch-guide');$('touch-guide').hidden=true;$('touch-help').setAttribute('aria-pressed','false');};
+$('dismiss-touch-guide').onclick=()=>{document.body.classList.remove('show-touch-guide');$('touch-guide').hidden=true;$('touch-help').setAttribute('aria-pressed','false');focusGame();};
 function log(line){
   const display=String(line).match(/FINNI_DMD\|([^']*)/);
   if(display){dmd.draw(display[1]);return;}
@@ -235,7 +263,7 @@ function fail(error){
     }));}catch{}
     if(typeof error.stack==='string')log(error.stack);
   }
-  connected=false;held.clear();physical.clear();applied.clear();paint();
+  connected=false;held.clear();physical.clear();pointers.clear();applied.clear();paint();
   $('waiting').hidden=false;$('progress').hidden=true;
   $('loading').textContent=`${enginePhase}: ${detail}`;$('status').textContent='Game unavailable';
   $('play').disabled=false;$('play').textContent='Reload and retry';$('play').onclick=()=>location.reload();

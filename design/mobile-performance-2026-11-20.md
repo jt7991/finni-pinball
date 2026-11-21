@@ -12,11 +12,19 @@ The 166,285,312-byte packed table is handed to MEMFS with `canOwn:true`, avoidin
 
 Ball material: the source table has `BallPlayfieldReflectionScale=3`, clamped by the engine to a full-strength playfield reflection. Reducing it alone did not resolve the washed-out ball in Android diagnostics. All browser profiles now use `DisableLightingForBalls=1`, retaining the ball's chrome/environment texture while bypassing table lighting and the previous-frame playfield-reflection path. `Table1.BallFrontDecal=""` removes the noisy scratch overlay before game balls are created. An actual Android ball-draw probe confirmed alpha 1 and blending disabled; bypassing lighting gave it a darker metallic edge. The real-engine regression checks the resulting ball shader uniforms and native decal setting.
 
-The Android hardware-GPU emulator showed large solid white bulb-light polygons over the playfield. Bypassing bulb draws and invalidating the static prepass removed them; ordinary geometry and classic lamp meshes rendered correctly.
+The Android hardware-GPU emulator showed large solid white bulb-light polygons over the playfield. Disabling the static prepass rendered correctly but increased geometry draws from roughly 188 to 680 per frame, reducing the measured rate to about 26 FPS. The final fix keeps static prerendering enabled.
 
-VPX's bulb/flashers encode additive strength using source alpha as high as 9999. The upstream reverse-subtract blend applies that strength to alpha too. A one-pixel RGBA16F reproduction returned finite RGB and non-finite alpha: squaring 9999 exceeds the half-float range. Preserving destination alpha for the specific `SRC_ALPHA, ONE_MINUS_SRC_COLOR` blend removed the white polygons in the live Android diagnostic. The RGB blend factors and shader calculations remain unchanged; ordinary transparency keeps its native factors.
+VPX's bulb/flashers encode additive strength using source alpha as high as 9999. The upstream reverse-subtract blend applies that strength to alpha too. A one-pixel RGBA16F reproduction returned finite RGB and non-finite alpha: squaring 9999 exceeds the half-float range. Preserving destination alpha for the specific `SRC_ALPHA, ONE_MINUS_SRC_COLOR` blend prevents this overflow. The RGB blend factors and shader calculations remain unchanged; ordinary transparency keeps its native factors. This alpha correction alone did not resolve the visible Android artifacts after a fresh startup.
 
-`startTable` installs the correction on the context the engine creates, without creating an early context or changing its attributes. The real-engine integration check confirms VPX light passes use the corrected blend. A GPU regression verifies expected RGB, finite alpha, ordinary transparency and idempotent installation. The existing high-precision depth/HDR sampler patch also remains in place. A subsequent fresh Android session still showed white light polygons with static prerendering enabled, despite the corrected alpha factors reaching the GPU. Disabling the static prepass removed them for the ball appearance comparison. **The lighting correction is incomplete; do not treat the diagnostic images as confirmation of a startup fix.** The static-prepass workaround is not enabled in shipped code.
+On mobile contexts, `startTable` also installs a shader copy for the full-size, nearest-filtered color-and-depth framebuffer restore used by the static cache. It samples the cached HDR color and depth textures and writes both to the destination, then restores the engine's graphics state. Other framebuffer copies retain their native path. Replacing that combined blit removed the white polygons in Android; the exact driver-level cause has not been established. Depth-only replacement, scissor-state changes and higher-precision depth storage did not resolve them.
+
+Both corrections are installed on the context the engine creates, without creating an early context or changing its attributes. The existing high-precision depth/HDR sampler patch remains in place. Real GPU regressions verify HDR color, finite alpha, depth occlusion, complete-target copying, ordinary transparency, repeated installation and restoration of engine graphics state. The final code was visually checked after a fresh Android reload, during actual launched-ball play and in native fullscreen. Static prerendering remained enabled and the playfield/lamp glows rendered without the previous white polygons.
+
+## Mobile input and recovery
+
+Flipper zones now cover the full left/right stage sides, including the previously inactive upper side space. Pointer tracking releases controls if pointer capture fails or a touch ends outside its original button. Cancelled toggle-mode touches release the flipper; ordinary tap-to-toggle still works. Help, settings, focus loss and engine failure clear input. Native input exceptions offer the existing Reload and retry recovery with readable error details.
+
+Fullscreen ignores duplicate pending requests, handles asynchronous error events and clears earlier messages on success. The prefixed Safari API receives no standard fullscreen options argument. Unsupported browsers keep an explicit message. These Safari paths have browser-fixture coverage; they have not been tested on physical iPhone hardware. The existing compact help button and player layout remain.
 
 ## Android measurements and limits
 
@@ -26,12 +34,18 @@ Device: Android 15 / API 35 emulator, Pixel 7 configuration, Chrome 124, 412 by 
 |---|---|---|---:|---:|---:|
 | Original baseline | SwiftShader software GPU | 1081 by 1837 | about 8 | 116.7 ms | 166.7 ms |
 | Capped render buffer, before lighting correction | Android Emulator GLES translator / host RTX 4080 | 618 by 1050 | 56.65 | 16.7 ms | 33.3 ms |
+| Final cache-copy fix, native fullscreen | Android Emulator GLES translator / host RTX 4080 | 618 by 1050 | 48.63 | 16.7 ms | 33.4 ms |
+| Final fix, after launching the ball | Android Emulator GLES translator / host RTX 4080 | 618 by 1050 | 43.46 | 16.7 ms | 49.9 ms |
 
 The second sample counted 680 frames containing native WebGL draws over 12.004 seconds, with no long tasks. DMD/state polling consumed about 77 ms total over the sample. The table was visible but its lights were overexposed; this sample does not certify usable presentation.
 
-These samples use different GPU backends and **do not establish a comparable Android speedup or physical-phone performance**. The host-GPU setting eventually took effect without restarting T3. The lighting correction was then visually confirmed in that Android session. During a fresh application reload, device screenshots failed twice and the read-only debugger timed out. No complete post-correction Android gameplay/performance sample was obtained. The reason for the emulator failures has not been established.
+The final fullscreen sample counted 584 frames with native draws over 12.008 seconds, with no long tasks. DMD/state polling consumed about 83 ms total. Its lighting was visually checked separately in device screenshots. This is a short sample with a ball waiting in the plunger, not a full-game benchmark.
 
-Remaining validation: a fresh Android run with the final code, simultaneous input/fullscreen during actual play, a comparison on the same GPU backend, and physical Android/iPhone testing.
+The launched-ball sample counted 522 native draw frames over 12.011 seconds, with no long tasks and a maximum frame interval of 100 ms. DMD/state polling consumed about 125 ms total. These measurements include diagnostics overhead and do not demonstrate a sustained 60 FPS game.
+
+These samples **do not establish physical-phone performance**. The original baseline used a different GPU backend. On the same host-GPU backend, the correct cache-copy rendering costs some frames relative to the corrupted native-copy path, while remaining substantially faster than redrawing all static geometry.
+
+Actual Android device checks confirmed both simultaneous flippers reached their native held angles (68 and 292 degrees), returned to rest (120 and 240 degrees), native fullscreen entered, and a held/released Launch sent the ball into play and registered scores. Remaining validation: physical Android and iPhone testing, extended play, and real device orientation changes. Desktop integration tests exercise portrait/landscape and camera switching; that does not certify OS rotation behavior on phones.
 
 ## Real-engine desktop comparison with final code
 
@@ -40,14 +54,14 @@ Desktop Edge/Chromium on an NVIDIA RTX 4080, with a 412 by 783 phone viewport at
 | Measurement | Detailed | Performance |
 |---|---:|---:|
 | Final canvas | 1081 by 1837 | 618 by 1050 |
-| Allocated texture/render-target texels | 91,487,921 | 27,962,109 |
+| Allocated texture/render-target texels | 91,684,529 | 27,962,109 |
 | Largest allocated texture dimension | 4550 | 2048 |
 | Shader compile/link errors | 0 | 0 |
 | Packed table retained after loading | No | No |
 | Sampled FPS | 59.82 | 59.82 |
-| p95 animation-frame interval | 17.7 ms | 17.5 ms |
+| p95 animation-frame interval | 16.8 ms | 16.8 ms |
 
-Performance uses 67.32% fewer final-buffer pixels and allocates 69.44% fewer texels than Detailed. Allocation totals cover startup, not live VRAM bytes. Both profiles reach the desktop display's refresh rate; these numbers do not establish an Android speedup.
+Performance uses 67.32% fewer final-buffer pixels and allocates 69.50% fewer texels than Detailed. Allocation totals cover startup, not live VRAM bytes. Both profiles reach the desktop display's refresh rate; these numbers do not establish an Android speedup.
 
 ## Reproduction
 

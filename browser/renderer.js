@@ -1,3 +1,5 @@
+import {installFramebufferCopy} from './framebuffer-copy.js';
+
 // vpinball-wasm 0.3.4 ships GLSL ES shaders with highp floats but implicit lowp
 // texture samplers. Float/depth texture reads retain the SAMPLER's precision,
 // so assigning their results to highp floats cannot recover the lost bits.
@@ -20,7 +22,7 @@ export function preserveLightAlpha(gl){
     if(source===this.SRC_ALPHA&&destination===this.ONE_MINUS_SRC_COLOR){
       // VPX bulb/flashers encode additive strength as alpha up to 9999.
       // Applying that blend to alpha as well as RGB overflows an RGBA16F
-      // target (9999 squared), producing white light polygons on Android.
+      // target (9999 squared), contaminating the cached HDR buffer.
       // Preserve destination alpha under reverse-subtract; RGB is unchanged.
       return this.blendFuncSeparate(source,destination,this.ZERO,this.ONE);
     }
@@ -31,6 +33,7 @@ export function preserveLightAlpha(gl){
 // Install before native main() reads its settings, not after the table starts.
 // Retina phone screens otherwise get desktop-sized render targets and passes.
 export function configureRenderer(engine,{mobile=false,quality='auto'}={}){
+  engine.finniMobile=mobile;
   const performance=quality==='performance'||quality==='auto'&&mobile;
   const viewport=engine.canvas?.parentElement;
   const width=viewport?.clientWidth,height=viewport?.clientHeight;
@@ -71,7 +74,10 @@ export function startTable(engine,path){
   const getContext=canvas?.getContext;
   if(getContext)canvas.getContext=function(type,...args){
     const gl=getContext.call(this,type,...args);
-    if(type==='webgl2')preserveLightAlpha(gl);
+    if(type==='webgl2'){
+      preserveLightAlpha(gl);
+      if(engine.finniMobile)installFramebufferCopy(gl);
+    }
     return gl;
   };
   let capped=false;

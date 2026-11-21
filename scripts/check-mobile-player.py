@@ -26,7 +26,7 @@ class Handler(module.Handler):
             source = source.replace('placeFlippers();boot();', 'placeFlippers();')
             source += """
 window.playerTest={scripts:[]};
-engine={ccall:(name,type,args,[script])=>{playerTest.scripts.push(script);return 1;}};
+engine={ccall:(name,type,args,[script])=>{if(playerTest.failNext){const error=playerTest.failNext;delete playerTest.failNext;throw error;}playerTest.scripts.push(script);return 1;}};
 connected=true;paint();views.apply();
 document.body.classList.add('playing','game-in-play');
 document.getElementById('waiting').hidden=true;
