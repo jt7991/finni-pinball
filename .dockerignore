@@ -1,6 +1,8 @@
 .git
 .tools
 .work
+node_modules
+browser/three
 output
 source-tables
 references

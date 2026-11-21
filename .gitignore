@@ -1,4 +1,6 @@
 .tools/
+node_modules/
+/browser/three/
 .work/
 .env
 .env.*

@@ -1,5 +1,9 @@
 # fin-ball
 
+## Three.js branch
+
+`experiment/threejs-pinball` contains the independent Three.js/Rapier port with the complete authored game rules, DMD, on-demand audio and existing wire ramp appearance. Run `npm.cmd ci` and `npm.cmd run play`, then open **http://127.0.0.1:5174/three/**. No VPX download is needed. See [the port setup, architecture and validation notes](three/README.md). This branch's Docker image opens the port by default and keeps the VPX player at `/vpx`. Physical phone performance and exact VPX shot feel still need device/playtesting validation.
+
 Finni's Big Day is a party-themed visual reskin of JP Salas's Deadpool VPX table. The approved direction is the bright comic **party preparation** playfield, revision 13: Finni and friends wrap presents, send invitations, pump balloons, hang decorations, bake cookies and prepare for Party Time. It uses registered insert windows, detailed illustrated task objects, navy plastics, a bright pink cake, saturated pink/blue/yellow balloon bumpers, and the existing stainless four-wire ramp and fox sculpture. The four bonus items are Kitchen Timer, Party Lights, The Checklist and Party Favors. General lighting includes neutral ambient fill so the navy playfield remains readable.
 
 The design choices, preserved gameplay and remaining work are recorded in [design/decisions.md](design/decisions.md). [design/current-assets.json](design/current-assets.json) selects the current playfield and its hardware/lighting appearance, revision 13.

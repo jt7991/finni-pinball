@@ -1,0 +1,82 @@
+"""Create the small, versioned Three.js assets from the accepted table sources.
+
+Run with the bundled Blender Python, which has Pillow available via .tools/pydeps.
+The extracted VPX is needed to rebuild geometry, never to play the experiment.
+"""
+import json
+import shutil
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / '.tools/pydeps'))
+from PIL import Image
+
+OUT = ROOT / 'three/public'
+OUT.mkdir(parents=True, exist_ok=True)
+(OUT/'draco').mkdir(exist_ok=True)
+for filename in ('draco_wasm_wrapper.js','draco_decoder.wasm'):
+    shutil.copyfile(ROOT/'node_modules/three/examples/jsm/libs/draco/gltf'/filename,OUT/'draco'/filename)
+(OUT/'licenses').mkdir(exist_ok=True)
+for source_file,filename in (
+    ('node_modules/three/LICENSE','Three.txt'),
+    ('node_modules/@dimforge/rapier3d-compat/LICENSE','Rapier.txt'),
+    ('node_modules/@devscholar/vbs-engine-js/LICENSE.md','VBScriptEngine.md'),
+    ('assets/fonts/chewy/LICENSE.txt','Chewy.txt'),
+    ('node_modules/three/examples/jsm/libs/draco/README.md','Draco-README.md'),
+):
+    shutil.copyfile(ROOT/source_file,OUT/'licenses'/filename)
+art = ROOT / json.loads((ROOT / 'design/current-assets.json').read_text())['playfield_directory']
+image = Image.open(art / 'finni-playfield-base.png').convert('RGB')
+image.thumbnail((1024, 2048), Image.Resampling.LANCZOS)
+image.save(OUT / 'playfield.webp', quality=88, method=6)
+shutil.copyfile(ROOT / 'assets/fonts/chewy/Chewy-Regular.ttf', OUT / 'chewy.ttf')
+
+source = ROOT / '.work/finni-live-extracted/gameitems'
+items = []
+for path in sorted(source.glob('*.json')):
+    data = json.loads(path.read_text())
+    kind, item = next(iter(data.items()))
+    if kind == 'Wall' and item.get('is_collidable') and item['height_bottom'] < 50 and item['height_top'] > 0:
+        items.append({'kind': kind, **{k: item[k] for k in ('name', 'height_bottom', 'height_top', 'elasticity', 'drag_points')}})
+    elif kind in ('Bumper', 'Flipper') or kind == 'Kicker' and item['name'] == 'HellHouse':
+        items.append({'kind': kind, **item})
+    elif kind == 'Ramp' and item.get('is_collidable') and item['name'] not in ('Ramp001', 'Ramp064'):
+        items.append({'kind': kind, **item})
+
+for item in items:
+    if 'drag_points' in item:
+        item['drag_points'] = [{k: round(p[k], 4) if type(p[k]) is float else p[k]
+                                for k in ('x', 'y', 'smooth', 'is_slingshot', *(['z'] if item['kind']=='Ramp' else []))} for p in item['drag_points']]
+data = {'width': 952, 'height': 2115, 'scale': 0.01, 'items': items}
+(OUT / 'layout.json').write_text(json.dumps(data, separators=(',', ':')))
+specs=[]
+for path in sorted(source.glob('*.json')):
+    kind,item=next(iter(json.loads(path.read_text()).items()))
+    specs.append({'kind':kind,**{k:v for k,v in item.items() if k in (
+        'name','center','position','rot_z','rotation','radius','shape','drag_points',
+        'height','height_bottom','height_top','is_collidable','is_enabled','is_visible','size','target_type','collection','update_interval',
+        'is_dropped','state','state_u32','color','color2','intensity','blink_interval',
+        'is_timer_enabled','timer_interval','surface','hit_height','width','length')}})
+    if 'drag_points' in specs[-1]:specs[-1]['drag_points']=[{'x':p['x'],'y':p['y']} for p in specs[-1]['drag_points']]
+(OUT/'objects.json').write_text(json.dumps({'objects':specs,'collections':json.loads((source.parent/'collections.json').read_text())},separators=(',',':')))
+script=(source.parent/'script.vbs').read_text()
+# The game script is retained in full; only its native-host bootstrap is adapted.
+import re
+script=re.sub(r'Sub LoadCoreFiles\b.*?End Sub', 'Sub LoadCoreFiles\nEnd Sub',script,flags=re.S|re.I)
+script=script.replace('Set plungerIM = New cvpmImpulseP','Set plungerIM = HostPlunger')
+script=script.replace('ReDim rolling(tnob)','Dim rolling()\nReDim rolling(tnob)')
+script=script.replace('Len(TempStr)> Space(dCharsPerLine(id) )','Len(TempStr)> dCharsPerLine(id)')
+script=script.replace('Left(TempStr, Space(dCharsPerLine(id) ) )','Left(TempStr, dCharsPerLine(id) )')
+script=script.replace('set RainbowLights = n','RainbowLights = n')
+script=re.sub(r'Sub LilDPInit\b.*?End Sub','Sub LilDPInit\nEnd Sub',script,flags=re.S|re.I)
+# Physical toy bobble is animated by Three.js rather than three invisible VPX balls.
+script=re.sub(r'Sub LilDPShake\(strength\).*?End Sub','Sub LilDPShake(strength)\n HostShake strength\nEnd Sub',script,flags=re.S|re.I)
+script=re.sub(r'Sub lilShakeTimer_Timer\b.*?End Sub','Sub lilShakeTimer_Timer\nEnd Sub',script,flags=re.S|re.I)
+script=re.sub(r'Sub InitRolling\b.*?End Sub','Sub InitRolling\nEnd Sub',script,flags=re.S|re.I)
+script=re.sub(r'^Sub FlashForMs\(MyLight, TotalPeriod, BlinkPeriod, FinalState\).*?^End Sub',
+              'Sub FlashForMs(MyLight, TotalPeriod, BlinkPeriod, FinalState)\n HostFlash MyLight, TotalPeriod, BlinkPeriod, FinalState\nEnd Sub',script,flags=re.S|re.I|re.M)
+(OUT/'rules.vbs').write_text(script)
+shutil.copyfile(ROOT/'runtime/dmd-atlas.json',OUT/'dmd-atlas.json')
+shutil.copyfile(ROOT/'runtime/dmd-atlas.png',OUT/'dmd-atlas.png')
+print('Prepared playfield and layout:', image.size, len(items), 'objects')

@@ -1,0 +1,21 @@
+{
+  "name": "finni-three-experiment",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "play": "node scripts/serve-three.mjs --build",
+    "start": "node scripts/serve-three.mjs",
+    "test": "node --test three/tests/*.test.js",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@devscholar/vbs-engine-js": "^1.4.0",
+    "@dimforge/rapier3d-compat": "0.21.0",
+    "three": "0.187.0"
+  },
+  "devDependencies": {
+    "vite": "^6.4.1"
+  }
+}
