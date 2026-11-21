@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "postinstall": "node scripts/patch-vbs-engine.mjs",
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
     "play": "node scripts/serve-three.mjs --build",
@@ -11,7 +12,7 @@
     "preview": "vite preview --host 127.0.0.1"
   },
   "dependencies": {
-    "@devscholar/vbs-engine-js": "^1.4.0",
+    "@devscholar/vbs-engine-js": "1.4.0",
     "@dimforge/rapier3d-compat": "0.21.0",
     "three": "0.187.0"
   },
