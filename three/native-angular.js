@@ -10,6 +10,7 @@ export class NativeAngular {
   }
   publish(){this.speed=f(this.momentum/this.inertia);this.rapier.setAngvel({x:0,y:0,z:this.speed*100},true);}
   impulse(worldImpulse){this.momentum=f(this.momentum+f(worldImpulse*100));this.publish();}
+  nativeImpulse(value){this.momentum=f(this.momentum-f(value));this.publish();}
   torque(value){this.momentum=f(this.momentum+f(value*f(.1)));this.publish();}
   stop(){this.momentum=0;this.publish();}
   bounce(){this.momentum=f(this.momentum*f(-.3));this.publish();}

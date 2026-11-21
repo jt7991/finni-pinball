@@ -2,6 +2,8 @@
 // Native triangle/line/point collision and static response adapted from Visual
 // Pinball contributors, 195f214dd4849b8ef6113fd377258b78d0dec3bf, collide.cpp,
 // collideex.cpp and hitball.cpp. See public/licenses/VPX-Physics-NOTICE.txt.
+import {collideNativeSurface,supportNativeSurface} from './native-ball-response.js';
+import {nativeMeshHit,nativeMeshQuery} from './native-mesh-contact.js';
 const add=(a,b)=>({x:a.x+b.x,y:a.y+b.y,z:a.z+b.z});
 const sub=(a,b)=>({x:a.x-b.x,y:a.y-b.y,z:a.z-b.z});
 const mul=(a,s)=>({x:a.x*s,y:a.y*s,z:a.z*s});
@@ -27,7 +29,10 @@ export class ContactMesh{
       const n=dot(raw,raw)>=1e-10?unit(raw):null;
       if(n){if(options.invertNormals||(!options.preserveNormals&&n.z<0))Object.assign(n,mul(n,-1));insert({kind:'triangle',points:[a,b,c],a,ab,ac,n});if(options.twoSided)insert({kind:'triangle',points:[a,b,c],a,ab,ac,n:mul(n,-1)});}
       for(let j=0;j<3;j++){
-        const k=ids[j],l=ids[(j+1)%3],key=[Math.min(k,l),Math.max(k,l)].join(':');
+        // Native triangles reverse their render winding, but their edge
+        // cylinders keep the original index order and endpoint orientation.
+        const edgeIds=mesh.native_edges?[ids[0],ids[2],ids[1]]:ids;
+        const k=edgeIds[j],l=edgeIds[(j+1)%3],key=[Math.min(k,l),Math.max(k,l)].join(':');
         if(edges.has(key)){edges.get(key).normals.push(n);continue;}
         if(this.edgeKeys?.has(key))continue;
         this.edgeKeys?.add(key);
@@ -48,14 +53,15 @@ export class ContactMesh{
   hits(body,radius,duration){
     return this.hitsAt(body.translation(),body.linvel(),radius,duration);
   }
-  hitsAt(p,v,radius,duration){
+  hitsAt(p,v,radius,duration,native=false){
     const q=add(p,mul(v,duration)),seen=new Set(),hits=[];
-    for(const plane of this.planes){const hit=planeHit(p,v,radius,duration,plane);if(hit)hits.push({...hit,id:plane.id});}
+    const query=native?native===true?nativeMeshQuery(p,v,radius,duration):native:null;
+    for(const plane of this.planes){const hit=native?nativeMeshHit(plane,p,v,radius,duration,query):planeHit(p,v,radius,duration,plane);if(hit)hits.push({...hit,id:plane.id});}
     if(Math.min(p.z,q.z)-radius>this.bounds.maxZ+.0005||Math.max(p.z,q.z)+radius<this.bounds.minZ-.0005)return hits;
     for(let x=Math.floor(Math.min(p.x,q.x)-radius);x<=Math.floor(Math.max(p.x,q.x)+radius);x++)for(let y=Math.floor(Math.min(p.y,q.y)-radius);y<=Math.floor(Math.max(p.y,q.y)+radius);y++){
       for(const shape of this.grid.get(`${x},${y}`)??[]){
         if(seen.has(shape.id))continue;seen.add(shape.id);
-        const hit=shape.kind==='triangle'?triangleHit(p,v,radius,duration,shape):shape.kind==='polygon'?polygonHit(p,v,radius,duration,shape):shape.kind==='wall'?wallHit(p,v,radius,duration,shape):roundHit(p,v,radius,duration,shape);
+        const hit=native?nativeMeshHit(shape,p,v,radius,duration,query):shape.kind==='triangle'?triangleHit(p,v,radius,duration,shape):shape.kind==='polygon'?polygonHit(p,v,radius,duration,shape):shape.kind==='wall'?wallHit(p,v,radius,duration,shape):roundHit(p,v,radius,duration,shape);
         if(hit)hits.push({...hit,id:shape.id});
       }
     }
@@ -154,6 +160,7 @@ export function roundHit(p,v,radius,duration,s){
   return {time,contact,gap,vn,normal:unit(add(d,mul(dv,time)))};
 }
 export function collideSurface(body,hit,material,radius,random=Math.random){
+  if(body.native)return collideNativeSurface(body,hit,material,radius,random);
   const n=hit.normal;let v=body.linvel(),vn=dot(v,n);
   if(vn>=-.0001){if(vn>.0001||hit.gap>=0)return;vn=-.05;}
   const correction=Math.min(.05,-hit.gap*.9875);if(correction>.000001)body.setTranslation(add(body.translation(),mul(n,correction)),true);
@@ -171,6 +178,7 @@ export function collideSurface(body,hit,material,radius,random=Math.random){
   }
 }
 export function supportSurface(body,hit,gravity,material,radius,duration){
+  if(body.native)return supportNativeSurface(body,hit,gravity,material,radius,duration);
   const n=hit.normal,vn=dot(body.linvel(),n);if(vn>.099)return;
   const force=Math.max(0,-(dot(gravity,n)*duration+hit.vn));body.applyImpulse(mul(n,force*body.mass()),true);
   const r=mul(n,-radius),w=body.angvel(),surfVel=add(body.linvel(),cross(w,r)),slip=sub(surfVel,mul(n,dot(surfVel,n))),speed=Math.hypot(slip.x,slip.y,slip.z);

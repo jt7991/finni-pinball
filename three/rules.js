@@ -67,7 +67,7 @@ export function createRules(source,specs,host={}) {
           if(enabled)timers.set(timerKey,{object:proxy,handler:`${name}_Timer`,at:time+Math.max(.001,Number(k==='enabled'?target.interval:target.timerinterval)/1000),property:k});
           else timers.delete(timerKey);
         }
-        if(k==='isdropped'||k==='collidable'||k==='open')host.mechanism?.(name,k,v);
+        if(k==='isdropped'||k==='collidable'||k==='open'||k==='enabled'&&spec.kind==='Trigger')host.mechanism?.(name,k,v);
         return true;},
       has(target,key){return typeof key==='string'&&(key.toLowerCase() in target||key.toLowerCase() in actions);},
       ownKeys(target){return [...new Set([...Reflect.ownKeys(target),...Object.keys(actions)])];},

@@ -11,6 +11,7 @@ import {Plunger} from './plunger.js';
 import {BallSpin} from './ball-spin.js';
 import {NativeBall} from './native-ball.js';
 import {NativeAngular,nativeFlipperInertia} from './native-angular.js';
+import {nativeMeshQuery} from './native-mesh-contact.js';
 
 export const STEP = 1 / 1000;
 export const RADIUS = 0.25;
@@ -86,7 +87,9 @@ export class Pinball {
     // Acceleration therefore converts by .01 / .01^2 = 100.
     const gravity=physics.gravity*100,incline=physics.slope*Math.PI/180;
     this.incline=incline;
-    this.world = new RAPIER.World({x:0,y:-gravity*Math.sin(incline),z:-gravity*Math.cos(incline)});
+    const round=Math.fround,nativeIncline=round(round(physics.slope)*round(Math.PI/180)),nativeStrength=round(physics.gravity);
+    this.nativeGravity={x:0,y:round(round(Math.sin(nativeIncline))*nativeStrength),z:round(-round(Math.cos(nativeIncline))*nativeStrength)};
+    this.world = new RAPIER.World(physics.native_position_units===false?{x:0,y:-gravity*Math.sin(incline),z:-gravity*Math.cos(incline)}:{x:0,y:-this.nativeGravity.y*100,z:this.nativeGravity.z*100});
     this.world.timestep = STEP;
     this.world.numSolverIterations = 8;
     this.events = new RAPIER.EventQueue(!this.nativeFlipperContacts);
@@ -101,6 +104,7 @@ export class Pinball {
     this.flippers = [];
     this.spinners = [];
     this.gates = [];
+    this.triggers = [];
     this.cooldowns = new Map();
     this.time = 0;
     this.score = 0;
@@ -337,14 +341,16 @@ export class Pinball {
       if(r.held)continue;
       r.body.setGravityScale(0,true);
       const v=r.body.linvel(),g=this.world.gravity;
-      r.body.setLinvel({x:v.x+(g.x+nudge.x)*STEP,y:v.y+(g.y+nudge.y)*STEP,z:v.z+(g.z+nudge.z)*STEP},true);
+      if(this.nativePositionUnits){const f=Math.fround,dt=f(.1),force=(old,acceleration,nudge)=>f(f(old+f(acceleration*dt))+f(f(nudge)*dt));
+        r.body.setLinvel({x:force(v.x,this.nativeGravity.x,nudge.x*.01),y:-force(-v.y,this.nativeGravity.y,-nudge.y*.01),z:force(v.z,this.nativeGravity.z,nudge.z*.01)},true);
+      }else r.body.setLinvel({x:v.x+(g.x+nudge.x)*STEP,y:v.y+(g.y+nudge.y)*STEP,z:v.z+(g.z+nudge.z)*STEP},true);
     }
     const pose=f=>{if(f.nativeAngle!==undefined){f.angle=Math.PI/2-f.nativeAngle;return;}const q=f.body.rotation();f.angle=f.rest+2*Math.atan2(q.z,q.w);};
     const nativeTime=value=>Math.fround(value*100)*.01,staticTime=this.nativePositionUnits?nativeTime(.0002):.0002;
     let remaining=this.nativePositionUnits?nativeTime(STEP):STEP,count=0,staticCount=10;
     while(remaining>(this.nativePositionUnits?0:1e-9)&&count++<32){
       let event=null,time=remaining;const contacts=[];
-      for(const r of records)if(!r.held){r.queryPosition=body(r).translation();r.queryVelocity=r.body.linvel();}
+      for(const r of records)if(!r.held){r.queryPosition=body(r).translation();r.queryVelocity=r.body.linvel();r.nativeQuery=this.nativePositionUnits?nativeMeshQuery(r.queryPosition,r.queryVelocity,RADIUS,remaining):false;}
       if(this.plunger)for(const r of records){
         if(r.held)continue;
         const hit=this.plunger.hit(r.queryPosition,r.queryVelocity,r.body.mass(),RADIUS,remaining),key=`${r.body.handle}:plunger`;
@@ -377,7 +383,7 @@ export class Pinball {
         // Keep the same component order across spatial cells.
         for(const mesh of [...candidates].sort((a,b)=>a.order-b.order)){
           if(!mesh.collider.isEnabled())continue;
-          for(const hit of mesh.mesh.hitsAt(p,v,RADIUS,remaining)){
+          for(const hit of mesh.mesh.hitsAt(p,v,RADIUS,remaining,r.nativeQuery)){
             const key=`${r.body.handle}:mesh:${mesh.collider.handle}:${hit.id}`;
             if(hit.contact)contacts.push({r,hit,mesh});
             else if(hit.time<=time){event={r,hit,key,mesh};time=hit.time;}
@@ -394,7 +400,7 @@ export class Pinball {
           if(r.held)continue;
           const hit=flipperHit(body(r),f,f.angle,omega,RADIUS,remaining),key=`${r.body.handle}:${f.side}`;
           if(hit?.contact)contacts.push({r,hit,f});
-          else if(hit&&hit.time<=time){event={f,r,key};time=hit.time;}
+          else if(hit&&hit.time<=time){event={f,r,key,hit};time=hit.time;}
         }
       }
       for(const spinner of this.spinners)if(spinner.collider.isEnabled())for(const r of records){
@@ -402,6 +408,13 @@ export class Pinball {
         const hit=spinner.hit(r.queryPosition,r.queryVelocity,RADIUS,remaining);
         if(hit?.contact)contacts.push({r,hit,spinner});
         else if(hit&&hit.time<=time){event={r,hit,spinner};time=hit.time;}
+      }
+      for(const trigger of this.triggers)for(const r of records){
+        if(r.held)continue;
+        for(const hit of trigger.hits(r.queryPosition,r.queryVelocity,RADIUS,remaining,body(r))){
+          if(hit.contact)contacts.push({r,hit,trigger});
+          else if(hit.time<=time){event={r,hit,trigger};time=hit.time;}
+        }
       }
       // Native allows repeated zero-time impacts. After ten very short impacts,
       // advance by its legacy .02 VPT (0.2ms), rather than ignoring a collider.
@@ -435,8 +448,9 @@ export class Pinball {
         }
       }
       if(event&&!event.f){
-        const impactBody=body(event.r);this.ballSpin.impact(impactBody,event.hit.gap);
-        if(event.gate){if(event.blocked)collideSurface(impactBody,event.hit,event.gate.material,RADIUS,this.random);else event.gate.collide(impactBody,event.hit,event.r.proxy);}
+        const impactBody=body(event.r);if(!event.trigger)this.ballSpin.impact(impactBody,event.hit.gap);
+        if(event.trigger)event.trigger.collide(impactBody,event.hit,event.r);
+        else if(event.gate){if(event.blocked)collideSurface(impactBody,event.hit,event.gate.material,RADIUS,this.random);else event.gate.collide(impactBody,event.hit,event.r.proxy);}
         else if(event.spinner)event.spinner.collide(impactBody,event.hit);
         else if(event.plunger)this.plunger.collide(impactBody,event.hit);
         else if(event.mesh){
@@ -459,7 +473,7 @@ export class Pinball {
       }else if(event){
       const f=event.f;pose(f);
       if(event.r){
-        const contact=flipperContact(body(event.r).translation(),f,f.angle,RADIUS);
+        const contact=f.nativeMotion?event.hit.profile:flipperContact(body(event.r).translation(),f,f.angle,RADIUS);
         if(contact&&contact.gap<=.0005){
           this.ballSpin.impact(body(event.r),contact.gap);
           const state=this.rules?.objects.get(`${f.side}flipper`);
@@ -472,10 +486,11 @@ export class Pinball {
       // VPX alternates the traversal direction randomly to avoid giving one
       // persistent contact priority on every pass through an embedded pocket.
       if(this.random()<.5)contacts.reverse();
-      for(const {r,hit,f,mesh,plunger,spinner,gate,blocked}of contacts){
+      for(const {r,hit,f,mesh,plunger,spinner,gate,blocked,trigger}of contacts){
         if(f)supportFlipper(body(r),f,hit,this.world.gravity,f.friction,RADIUS,time);
         else if(plunger)supportSurface(body(r),hit,this.world.gravity,{friction:.3},RADIUS,time);
         else if(spinner)supportSurface(body(r),hit,this.world.gravity,{friction:.3},RADIUS,time);
+        else if(trigger)supportSurface(body(r),hit,this.world.gravity,{friction:.3},RADIUS,time);
         else if(gate)supportSurface(body(r),hit,this.world.gravity,blocked?gate.material:{friction:.3},RADIUS,time);
         else if(mesh)supportSurface(body(r),hit,this.world.gravity,mesh.material,RADIUS,time);
         else if(this.playfieldMesh)supportSurface(body(r),hit,this.world.gravity,this.playfieldMaterial,RADIUS,time);

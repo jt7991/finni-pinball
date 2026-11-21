@@ -9,6 +9,22 @@ The unmodified target mesh headers are retained here so the generated collision
 geometry can be reproduced without fetching upstream files. See
 `three/public/licenses/VPX-Physics-NOTICE.txt` and `GPL-3.0.txt`.
 
+The current native contact work additionally adapts TriggerLineSeg,
+TriggerHitCircle, Hit3DPoly, flipper face/end searches, Float32 vector response
+and the HitLine3D cylinder transform. Binary primitive collision meshes can be
+regenerated with `prepare-three-assets.py --vpx-source TABLE.vpx` and the
+`olefile` Python package; the original VPX stays read-only. Visible GLB geometry
+is independent of these collision assets.
+
+`vpx-triggers.json` contains four independently started native circle/wire/overhead
+recordings. Their sampled BallCntOver memberships must match exactly, with strict
+early-position and velocity checks. Full floor-supported paths retain contact
+phase variation. `vpx-shooter-feed.json` retains a complete native shot and 1ms
+timer observations; its test checks the initial 184ms at .001 VPU/.00001 speed.
+The subsequent curved-guide path is retained diagnostically and still diverges.
+Existing raw-contact, primitive/camera reference checks remain failing during
+this work; their gates are unchanged. Native quadtree traversal is not ported.
+
 Native measurement fixtures include their source-table hash, controlled-table
 hash and the exact comparison overrides. `scripts/prepare-vpx-contact-reference.py`
 builds a separate table-scatter-zero table under this worktree's ignored `.work/`;

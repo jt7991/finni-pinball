@@ -4,6 +4,7 @@
 // See public/licenses/VPX-Physics-NOTICE.txt for source and license details.
 // Analytic side contacts for the native tapered flipper profile. The ball is
 // tested against the two tangent faces and the exposed base/tip circle arcs.
+import {nativeFlipperHit,collideNativeFlipper,supportNativeFlipper} from './native-flipper-contact.js';
 const cross=(a,b)=>({x:a.y*b.z-a.z*b.y,y:a.z*b.x-a.x*b.z,z:a.x*b.y-a.y*b.x});
 const dot=(a,b)=>a.x*b.x+a.y*b.y+a.z*b.z;
 const plus=(a,b)=>({x:a.x+b.x,y:a.y+b.y,z:a.z+b.z});
@@ -34,6 +35,7 @@ export function flipperHit(body,f,angle,omega,radius,duration){
   const p=body.translation(),v=body.linvel();
   const reach=f.length+f.endRadius+radius,x2=p.x+v.x*duration,y2=p.y+v.y*duration,z2=p.z+v.z*duration;
   if(Math.min(p.x,x2)>f.p.x+reach||Math.max(p.x,x2)<f.p.x-reach||Math.min(p.y,y2)>f.p.y+reach||Math.max(p.y,y2)<f.p.y-reach||Math.min(p.z,z2)-radius*.5>f.height||Math.max(p.z,z2)+radius*.5<0)return null;
+  if(f.nativeMotion)return nativeFlipperHit(body,f,radius,duration);
   const at=t=>flipperContact({x:p.x+v.x*t,y:p.y+v.y*t,z:p.z+v.z*t},f,angle+omega*t,radius);
   // Native classifies the solved contact, including a future TOI. Slow
   // approaches use the persistent-contact response rather than a bounce.
@@ -62,6 +64,7 @@ export function flipperHit(body,f,angle,omega,radius,duration){
   return classify(time,at(time));
 }
 export function resolveFlipperContact(body,f,contact,material,radius){
+  if(body.native&&f.nativeMotion)return collideNativeFlipper(body,f,contact,material,radius);
   const flipperBody=f.nativeMotion?.body??f.body;
   const n=contact.normal,p=body.translation(),mass=body.mass(),ballI=.4*mass*radius*radius;
   const rB=scale(n,-radius),hit=plus(p,rB),rF=minus(hit,{...f.p,z:p.z}),lever=cross(rF,n).z;
@@ -90,6 +93,7 @@ export function resolveFlipperContact(body,f,contact,material,radius){
   return true;
 }
 export function supportFlipper(body,f,hit,gravity,friction,radius,duration){
+  if(body.native&&f.nativeMotion)return supportNativeFlipper(body,f,hit,gravity,friction,radius,duration);
   const flipperBody=f.nativeMotion?.body??f.body;
   const n=hit.profile.normal,p=body.translation(),mass=body.mass(),ballI=.4*mass*radius*radius;
   if(hit.profile.gap<0)body.applyImpulse(scale(n,.1*mass),true);

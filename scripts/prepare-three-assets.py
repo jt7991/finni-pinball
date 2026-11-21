@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--source-root',type=Path,default=ROOT,help='Read local extracted sources/tools here; outputs always stay in this worktree.')
 parser.add_argument('--extracted-root',type=Path,help='Read an explicitly selected unmodified extraction, rather than a shared checkout cache.')
+parser.add_argument('--vpx-source',type=Path,help='Use original binary Float32 primitive meshes instead of rounded OBJ coordinates (requires olefile).')
 args=parser.parse_args()
 SOURCE_ROOT=args.source_root.resolve()
 sys.path.insert(0, str(SOURCE_ROOT / '.tools/pydeps'))
@@ -45,8 +46,13 @@ materials={m['name']:m for m in json.loads((source.parent/'materials.json').read
 source_order={item['file_name']:index for index,item in enumerate(json.loads((source.parent/'gameitems.json').read_text()))}
 source_files=sorted(source/name for name in source_order)
 object_order={}
+native_meshes=None
+if args.vpx_source:
+    from native_vpx_mesh import read_meshes,transformed
+    native_meshes=read_meshes(args.vpx_source)
 def primitive_collision(path,item):
     """VPX Primitive::RecalculateMatrices, with vpxtool's OBJ Z reflection."""
+    if native_meshes is not None:return transformed(native_meshes[item['name']],item)
     vertices=[];indices=[];rot=item['rot_and_tra'];size=item['size'];position=item['position']
     for line in path.with_suffix('.obj').read_text().splitlines():
         if line.startswith('v '):
@@ -87,7 +93,7 @@ for item in items:
         material=materials.get(item.get('physics_material'))
         item['contact_physics']={k:(material[k if k!='scatter' else 'scatter_angle'] if material and not item.get('overwrite_physics') else item.get(k,0)) for k in ('elasticity','elasticity_falloff','friction','scatter')}
     if 'drag_points' in item:
-        item['drag_points'] = [{k: round(p[k], 4) if type(p[k]) is float else p[k]
+        item['drag_points'] = [{k: p[k]
                                 for k in ('x', 'y', 'smooth', 'is_slingshot', *(['z'] if item['kind']=='Ramp' else []))} for p in item['drag_points']]
 gamedata=json.loads((source.parent/'gamedata.json').read_text())
 # Retain the stable grid query order. Native collider insertion order alone is
@@ -103,6 +109,9 @@ for line in (source/'Primitive.playfield_mesh.obj').read_text().splitlines():
     elif line.startswith('f '):
         face=[int(p.split('/')[0])-1 for p in line.split()[1:]]
         for i in range(1,len(face)-1):playfield['indices'].extend([face[0],face[i],face[i+1]])
+if native_meshes is not None:
+    item=json.loads((source/'Primitive.playfield_mesh.json').read_text())['Primitive']
+    playfield.update(transformed(native_meshes['playfield_mesh'],item))
 data = {'width': 952, 'height': 2115, 'scale': 0.01,
         'cabinet':{k:gamedata[k] for k in ('left','right','top','bottom','glass_top_height','glass_bottom_height')},
         'physics':{'gravity':gamedata['gravity'],'slope':gamedata['angle_tilt_min'],
@@ -134,7 +143,7 @@ for path in source_files:
         specs[-1]['contact_physics']={k:(material[k if k!='scatter' else 'scatter_angle'] if material and not item.get('overwrite_physics') else item.get(k,0)) for k in ('elasticity','elasticity_falloff','friction','scatter')}
         shape=target_shapes[item['target_type']]
         specs[-1]['collision_mesh']=shape
-    if 'drag_points' in specs[-1]:specs[-1]['drag_points']=[{'x':p['x'],'y':p['y']} for p in specs[-1]['drag_points']]
+    if 'drag_points' in specs[-1]:specs[-1]['drag_points']=[{k:p[k] for k in ('x','y',*(['smooth'] if kind=='Trigger' else []))} for p in specs[-1]['drag_points']]
 appearance=json.loads((ROOT/'three/appearance-overrides.json').read_text())
 for spec in specs:
     override=appearance['objects'].get(spec['name'])

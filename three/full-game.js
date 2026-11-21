@@ -10,6 +10,7 @@ import {CabinetNudge} from './cabinet-nudge.js';
 import {Spinner} from './spinner.js';
 import {Gate} from './gate.js';
 import {TargetMotion} from './target-motion.js';
+import {Trigger} from './trigger.js';
 
 export async function createFullGame(layout,specs,source,emit,media) {
   await RAPIER.init();
@@ -60,7 +61,7 @@ class FullGame extends Pinball {
   addMechanism(spec) {
     const p=point(spec.center??spec.position??{x:0,y:0}),z=this.surface(spec);
     const name=spec.name,key=name.toLowerCase();let collider;
-    if(spec.kind==='Trigger'&&spec.is_enabled){
+    if(spec.kind==='Trigger'){
       const points=spec.drag_points??[];
       if(points.length>=3){
         const verts=[];
@@ -68,6 +69,15 @@ class FullGame extends Pinball {
         const hull=RAPIER.ColliderDesc.convexHull(new Float32Array(verts));
         if(hull)collider=this.world.createCollider(hull.setSensor(true));
       }else collider=this.world.createCollider(RAPIER.ColliderDesc.ball((spec.radius||25)*.01).setTranslation(p.x,p.y,z+RADIUS).setSensor(true));
+      if(collider){
+        collider.setEnabled(spec.is_enabled);
+        if(this.nativeFlipperContacts){
+          const trigger=new Trigger(spec,z,(event,rec)=>{
+            if(key==='swplungerrest')rec.inLane=event==='Hit';
+            this.rules?.hit(name,event,rec.proxy);
+          });trigger.collider=collider;this.triggers.push(trigger);
+        }
+      }
     }
     if(spec.kind==='HitTarget'){
       const size=spec.size,a=-(spec.rot_z??0)*Math.PI/180,rotation={x:0,y:0,z:Math.sin(a/2),w:Math.cos(a/2)},base=(spec.position?.z??0)*.01;
@@ -124,7 +134,7 @@ class FullGame extends Pinball {
       collider.setCollisionGroups(STATIC_GROUP);collider.setRestitution(surfaceRestitution(collider.restitution()));collider.setRestitutionCombineRule(RAPIER.CoefficientCombineRule.Multiply);
       this.colliderLabels.set(collider.handle,name);
       collider.setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS);
-      this.tags.set(collider.handle,{kind:spec.kind==='Spinner'?'spinner-body':spec.kind==='Gate'&&this.nativeFlipperContacts?'gate-body':this.targetFronts.has(key)?'target-body':'mechanism',name,spec});this.mechanisms.set(key,collider);
+      this.tags.set(collider.handle,{kind:spec.kind==='Trigger'&&this.nativeFlipperContacts?'trigger-body':spec.kind==='Spinner'?'spinner-body':spec.kind==='Gate'&&this.nativeFlipperContacts?'gate-body':this.targetFronts.has(key)?'target-body':'mechanism',name,spec});this.mechanisms.set(key,collider);
     }
   }
 
@@ -136,6 +146,7 @@ class FullGame extends Pinball {
     if(gate){if(key==='open')gate.setOpen(v);if(key==='collidable')gate.setCollidable(v);return;}
     if(key==='isdropped'){collider.setEnabled(!v);this.targetFronts.get(name.toLowerCase())?.setEnabled(!v);}
     if(key==='collidable')collider.setEnabled(!!v);
+    if(key==='enabled')collider.setEnabled(!!v);
     // Gates stay sensors: per-ball direction decides whether their flap blocks.
   }
 
@@ -152,13 +163,14 @@ class FullGame extends Pinball {
         if(typeof key!=='string')return target[key];key=key.toLowerCase();
         if(/^ang(mom|vel)[xyz]$/.test(key)){
           const axis=key.at(-1),sign=axis==='y'?1:-1;
+          if(this.nativePositionUnits){const native=this.nativeBall(body);native.syncAngular();return key.startsWith('angmom')?native.angularMomentum[axis]:Math.fround(native.angularMomentum[axis]/native.inertia);}
           return body.angvel()[axis]*sign*(key.startsWith('angmom')?2.5*body.mass():.01);
         }
         const q=(this.nativePositionUnits?this.nativeBall(body).body:body).translation(),v=body.linvel();
         return ({x:q.x*100,y:2115-q.y*100,z:q.z*100,velx:v.x,vely:-v.y,velz:v.z})[key]??target[key]??0;
       },
       set:(_target,key,v)=>{key=String(key).toLowerCase();
-        if(/^angmom[xyz]$/.test(key)){const axis=key.at(-1),w={...body.angvel()};w[axis]=v*(axis==='y'?1:-1)/(2.5*body.mass());body.setAngvel(w,true);return true;}
+        if(/^angmom[xyz]$/.test(key)){const axis=key.at(-1);if(this.nativePositionUnits){this.nativeBall(body).setAngularMomentum(axis,v);return true;}const w={...body.angvel()};w[axis]=v*(axis==='y'?1:-1)/(2.5*body.mass());body.setAngvel(w,true);return true;}
         if(/^angvel[xyz]$/.test(key))return true; // Deprecated read-only native properties.
         const positionBody=this.nativePositionUnits?this.nativeBall(body).body:body;
         const p={...positionBody.translation()},vel={...body.linvel()};
@@ -248,7 +260,7 @@ class FullGame extends Pinball {
       const other=this.byCollider.get(a)===rec?this.byCollider.get(b):this.byCollider.get(a);
       if(other){if(started){const u=rec.body.linvel(),v=other.body.linvel();this.rules.run('OnBallBallCollision',rec.proxy,other.proxy,Math.hypot(u.x-v.x,u.y-v.y,u.z-v.z));}return;}
       const tag=this.tags.get(this.byCollider.has(a)?b:a);if(!tag)return;
-      if(tag.kind==='target-body'||tag.kind==='spinner-body'||tag.kind==='gate-body')return;
+      if(tag.kind==='target-body'||tag.kind==='spinner-body'||tag.kind==='gate-body'||tag.kind==='trigger-body')return;
       if(!started){if(tag.spec?.kind==='Trigger'){if(tag.name.toLowerCase()==='swplungerrest')rec.inLane=false;this.rules.hit(tag.name,'UnHit',rec.proxy);}return;}
       if(tag.spec?.kind==='Trigger'){
         if(tag.name.toLowerCase()==='swplungerrest')rec.inLane=true;

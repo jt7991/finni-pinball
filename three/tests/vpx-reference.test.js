@@ -40,6 +40,22 @@ test('twenty native gate recordings verify blocking, pass-through, open/close mo
   assert.equal(reports.filter(r=>r.name.endsWith('-open-close')).length,4);
 });
 
+test('four independent native switch recordings retain circle, wire and overhead volume transitions',()=>{
+  const reports=JSON.parse(execFileSync(process.execPath,['scripts/compare-vpx-triggers.mjs','--check','--json'],{cwd:root,encoding:'utf8',maxBuffer:1024*1024}));
+  assert.equal(reports.length,4);assert.equal(reports.reduce((n,r)=>n+r.samples.length,0),160);
+  for(const report of reports)assert.equal(report.membershipMismatches,0);
+  assert.deepEqual(reports.find(r=>r.name==='wire-crossing').events.map(e=>e.event),['Hit','UnHit','Hit','UnHit']);
+});
+
+test('native shooter switch exits preserve the first 184ms of the independently recorded feed',()=>{
+  const reports=JSON.parse(execFileSync(process.execPath,['scripts/compare-vpx-contact.mjs','three/tests/fixtures/vpx-shooter-feed.json','--report=.work/three-review/vpx-shooter-feed-comparison.json','--json'],{cwd:root,encoding:'utf8',maxBuffer:1024*1024}));
+  assert.equal(reports.length,1);const initial=reports[0].samples.filter(s=>s.expected[0]<=184);assert.ok(initial.length>=10);
+  for(const s of initial){assert.ok(s.positionError<.001,'native switch exit displacement at '+s.expected[0]);assert.ok(s.velocityError<.00001,'native initial feed velocity at '+s.expected[0]);}
+  assert.equal(reports[0].physicsStats.substepBudgetExceeded,0);
+  // Preserve the entire later path in the diagnostic report. This initial-feed
+  // check does not certify the subsequent curved-guide trajectory.
+});
+
 test('native target recordings preserve corner misses, completion scores and the full timed hold/release',()=>{
   const reports=JSON.parse(execFileSync(process.execPath,['scripts/compare-vpx-targets.mjs','--check','--json'],{cwd:root,encoding:'utf8',maxBuffer:1024*1024}));
   assert.equal(reports.length,3);
