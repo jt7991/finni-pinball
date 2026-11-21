@@ -98,14 +98,19 @@ export function restoreReferenceBalls(game,fixture,scenario,fallback){
     }
     const initial=scenario.initialNativeRandom,frames=new Map(scenario.nativeRandomFrames.map(([ms,low,high])=>[ms,[low,high]])),bodyFrames=new Map(scenario.nativeRandomFrames.filter(row=>row[3]).map(row=>[row[0],row[3]])),first=frames.get(1)??[initial.low,initial.high],random=nativeRandom(...first);
     game.random=random;game.nativeRandomAudit=[];game.nativeBodyAudit=[];const step=game.step.bind(game),origin=Math.round(game.time*1000);
-    if(scenario.initialNativeInternals?.plunger){
-      game.nativePlungerAudit=[];const update=game.plunger.updateVelocity.bind(game.plunger);
+    let randomObservation;
+    if(game.plunger){
+      if(scenario.initialNativeInternals?.plunger)game.nativePlungerAudit=[];
+      const update=game.plunger.updateVelocity.bind(game.plunger);
       if(scenario.initialScriptRandom!==undefined)game.nativeScriptRandomAudit=[];
       game.plunger.updateVelocity=()=>{
         // RNG_FRAME is emitted after native script timers, before mover
         // velocity updates. Sample at that same phase, including Fire input.
         const ms=Math.round(game.time*1000)-origin,expected=bodyFrames.get(ms)?.plunger;
-        if(expected){
+        const expectedRandom=frames.get(ms),actualRandom=random.getState(),agrees=!expectedRandom||actualRandom.every((word,i)=>word===expectedRandom[i]);
+        randomObservation={agrees,actual:actualRandom};
+        if(fixture.nativeRandom.requireContinuity&&ms<=(fixture.nativeRandom.continuityThroughMilliseconds??Infinity)&&!agrees)throw Error(`Native random-state progression differs before physics frame ${ms}`);
+        if(expected&&game.nativePlungerAudit){
           const actual=Object.fromEntries(['pos','speed','travelLimit','pullForce','reverseImpulse','fireTimer','fireSpeed','fireBounce'].map(key=>[key,game.plunger[key]])),errors={};
           for(const [key,value]of Object.entries(actual))if(Number.isFinite(expected[key]))errors[key]=Math.abs(value-expected[key]);
           game.nativePlungerAudit.push({ms,actual,expected,errors});
@@ -122,8 +127,7 @@ export function restoreReferenceBalls(game,fixture,scenario,fallback){
       };
     }
     game.step=()=>{
-      const ms=Math.round(game.time*1000)-origin+1,expected=frames.get(ms),actual=random.getState();
-      const agrees=!expected||actual.every((word,i)=>word===expected[i]);
+      const ms=Math.round(game.time*1000)-origin+1;
       const observed=bodyFrames.get(ms);
       if(observed){
         const bodies=records.map((record,index)=>{
@@ -132,8 +136,9 @@ export function restoreReferenceBalls(game,fixture,scenario,fallback){
         });
         game.nativeBodyAudit.push({ms,swap:game.ballCollisionSwap,expectedSwap:observed.swapBallCollisions,bodies});
       }
-      if(fixture.nativeRandom.requireContinuity&&ms<=(fixture.nativeRandom.continuityThroughMilliseconds??Infinity)&&!agrees)throw Error(`Native random-state progression differs before physics frame ${ms}`);
-      const before=random.calls;step();game.nativeRandomAudit.push({ms,agrees,draws:random.calls-before,state:random.getState(),nextNativeState:frames.get(ms+1)});
+      const before=random.calls;randomObservation=undefined;step();
+      if(!randomObservation)throw Error('Native RNG observation did not reach the mover boundary');
+      game.nativeRandomAudit.push({ms,...randomObservation,draws:random.calls-before,state:random.getState(),nextNativeState:frames.get(ms+1)});
     };
   }
   return measured;
