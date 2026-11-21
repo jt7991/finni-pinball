@@ -4,15 +4,17 @@ import hashlib
 import json
 from pathlib import Path
 import subprocess
+import re
 
 ROOT=Path(__file__).resolve().parents[1]
 parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--source-root',type=Path,required=True)
+parser.add_argument('--instrument-timers',action='store_true',help='Build a separate diagnostic table that records actual timer callbacks.')
 args=parser.parse_args()
 source=args.source_root.resolve()
 tool=source/'.tools/vpxtool/vpxtool.exe'
 table=source/'runtime/Finni-Big-Day.vpx'
-out=ROOT/'.work/vpx-contact-reference'
+out=ROOT/('.work/vpx-timing-reference' if args.instrument_timers else '.work/vpx-contact-reference')
 out.mkdir(parents=True,exist_ok=True)
 extracted=out/'extracted'
 subprocess.run([str(tool),'extract',str(table),'-o',str(extracted),'-f'],check=True)
@@ -22,6 +24,37 @@ overrides={'scatter':0,'default_scatter':0}
 original={k:data[k] for k in overrides}
 data.update(overrides)
 data_path.write_text(json.dumps(data,indent=2)+'\n')
+if args.instrument_timers:
+    script_path=extracted/'script.vbs'
+    script=script_path.read_text()
+    script+='\nDim RefTraceOn,RefTrace\nRefTraceOn=False:RefTrace=""\n'
+    script+='Dim RefDriveAt,RefDriveSide,RefDrivePress,RefDriveMarker,RefTraceBall,RefTraceUntil\nRefDriveAt=0\n'
+    for name,marker in [('RollingTimer_Timer','ROLL'),('LeftFlipper_Timer','FLIP')]:
+        pattern=r'(Sub '+name+r'\b[^\r\n]*[\r\n]+)'
+        extra=f'    If RefTraceOn Then RefTrace=RefTrace & "{marker}|" & GameTime & ";"\n'
+        if name=='LeftFlipper_Timer':
+            extra+='''    If RefDriveAt>0 And GameTime>=RefDriveAt Then
+        RefDriveAt=0
+        Debug.Print RefDriveMarker & "|" & GameTime
+        If RefDriveSide=1 Then
+            SolLFlipper RefDrivePress
+        Else
+            SolRFlipper RefDrivePress
+        End If
+    End If
+'''
+        script,count=re.subn(pattern,lambda m:m[1]+extra,script,count=1,flags=re.I)
+        if count!=1:raise RuntimeError(f'Missing native timer handler {name}')
+    # Ball state at the end of the existing flipper timer is observed before
+    # that millisecond's velocity/displacement update. Integer encoding avoids
+    # the native Single formatter dropping scientific exponents.
+    state_fields=['GameTime','RefTraceBall.X','RefTraceBall.Y','RefTraceBall.Z']
+    state_fields+=['CLng(RefTraceBall.'+p+'*1000000)' for p in ['VelX','VelY','VelZ','AngVelX','AngVelY','AngVelZ']]
+    state_fields+=['RightFlipper.CurrentAngle','RightFlipper.Strength','RightFlipper.Elasticity','RightFlipper.EOSTorque']
+    state='    If RefTraceOn And GameTime<=RefTraceUntil Then RefTrace=RefTrace & "STATE|" & '+' & "|" & '.join(state_fields)+' & ";"\n'
+    script,count=re.subn(r'(Sub LeftFlipper_Timer\b.*?)(End Sub)',lambda m:m[1]+state+m[2],script,count=1,flags=re.I|re.S)
+    if count!=1:raise RuntimeError('Missing flipper state instrumentation point')
+    script_path.write_text(script)
 copy=out/'zero-scatter.vpx'
 subprocess.run([str(tool),'assemble','-f',str(extracted),str(copy)],check=True)
 verify=json.loads(subprocess.check_output([str(tool),'verify','--json',str(copy)],text=True))[0]
@@ -33,6 +66,11 @@ metadata={'engine':'@valknar/vpinball-wasm 0.3.4','upstreamCommit':'195f214dd484
           'sourceSha256':hashlib.sha256(table.read_bytes()).hexdigest(),
           'controlledSha256':hashlib.sha256(copy.read_bytes()).hexdigest(),
           'controlledOverrides':overrides,'originalValues':original,'diff':diff,'verification':verify}
+if args.instrument_timers:
+    metadata['instrumentation']={
+        'timerTrace':['RollingTimer_Timer','LeftFlipper_Timer'],
+        'stateColumns':['ms','x','y','z','vx_micro','vy_micro','vz_micro','wx_micro','wy_micro','wz_micro','right_angle','right_strength','right_elasticity','right_eos_torque'],
+        'changes':'Record native timer clocks and ball state before each physics update while RefTraceOn is true. Optional exact-clock input at RefDriveAt is delivered at the start of LeftFlipper_Timer. Authored timer bodies and rules are retained.'}
 (out/'metadata.json').write_text(json.dumps(metadata,indent=2)+'\n')
 print(diff)
 print(f'Controlled native reference: {copy}')

@@ -79,10 +79,18 @@ test('the native floor beneath the drop-target slot prevents the wire-entry jam'
   const g=await createFullGame(json('layout'),json('objects'),source,()=>{});
   try{
     g.start();ticks(g,1.7);g.launch();const r=g.records[0];
+    g.random=()=>.5;
     r.body.setTranslation({x:6.105,y:12.825,z:.207},true);r.body.setLinvel({x:0,y:0,z:0},true);r.body.setAngvel({x:0,y:0,z:0},true);
-    ticks(g,4);const p=r.body.translation();
-    assert.ok(p.z>.24,'slot has its authored floor');
-    assert.ok(Math.hypot(p.x-6.105,p.y-12.825)>.5,`slot releases ball: ${JSON.stringify(p)}`);
+    let onFloor=false,escaped=false;
+    for(let i=0;i<4/STEP&&g.records.includes(r);i++){
+      const p=r.body.translation();onFloor||=p.z>.24;
+      escaped||=p.z>.24&&Math.hypot(p.x-6.105,p.y-12.825)>.5;
+      g.step();
+    }
+    // A freed ball can drain and be replaced by the authored ball saver within
+    // this interval. Never read the old Rapier body after its legitimate removal.
+    assert.ok(onFloor,'slot has its authored floor');
+    assert.ok(escaped,'slot releases ball onto the playfield');
     assert.equal(g.physicsStats.substepBudgetExceeded,0);
   }finally{g.dispose();}
 });

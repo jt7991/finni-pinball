@@ -351,7 +351,9 @@ export class Pinball {
         f.angle=event.bound;f.body.setRotation(quaternion(f.angle-f.rest),true);f.body.setAngvel({x:0,y:0,z:Math.abs(omega)<.05?0:-.3*omega},true);
       }
       }
-      if(time>1e-9)for(const {r,hit,f,mesh,plunger}of contacts){
+      // Even a zero-time impact must cancel the contact's original normal
+      // velocity. Skipping it changes coupled floor/flipper impacts near EOS.
+      for(const {r,hit,f,mesh,plunger}of contacts){
         if(f)supportFlipper(r.body,f,hit,this.world.gravity,f.friction,RADIUS,time);
         else if(plunger)supportSurface(r.body,hit,this.world.gravity,{friction:.3},RADIUS,time);
         else if(mesh)supportSurface(r.body,hit,this.world.gravity,mesh.material,RADIUS,time);

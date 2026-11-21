@@ -35,26 +35,31 @@ export function flipperHit(body,f,angle,omega,radius,duration){
   const reach=f.length+f.endRadius+radius,x2=p.x+v.x*duration,y2=p.y+v.y*duration,z2=p.z+v.z*duration;
   if(Math.min(p.x,x2)>f.p.x+reach||Math.max(p.x,x2)<f.p.x-reach||Math.min(p.y,y2)>f.p.y+reach||Math.max(p.y,y2)<f.p.y-reach||Math.min(p.z,z2)-radius*.5>f.height||Math.max(p.z,z2)+radius*.5<0)return null;
   const at=t=>flipperContact({x:p.x+v.x*t,y:p.y+v.y*t,z:p.z+v.z*t},f,angle+omega*t,radius);
+  // Native classifies the solved contact, including a future TOI. Slow
+  // approaches use the persistent-contact response rather than a bounce.
+  const classify=(time,profile)=>{
+    if(!profile)return null;
+    const position={x:p.x+v.x*time,y:p.y+v.y*time,z:p.z+v.z*time};
+    const r=minus(minus(position,scale(profile.normal,radius)),{...f.p,z:position.z}),fv={x:-omega*r.y,y:omega*r.x,z:0};
+    const vn=dot(minus(v,fv),profile.normal);
+    if(Math.abs(vn)<=.099&&profile.gap<=.0005)return {time,contact:true,profile,vn};
+    return vn<-.0001?{time}:null;
+  };
   const start=at(0);if(!start)return null;
-  if(start.gap<=.0005){
-    const r=minus(start.point,{...f.p,z:p.z}),fv={x:-omega*r.y,y:omega*r.x,z:0};
-    const vn=dot(minus(v,fv),start.normal);
-    if(Math.abs(vn)<=.099)return {contact:true,profile:start,vn};
-    return vn<-.0001?{time:0}:null;
-  }
+  if(start.gap<=.0005)return classify(0,start);
   const end=at(duration);if(!end||end.gap>0)return null;
   // VPX accepts the modified false-position solution within .01 VPU. Using
   // a different root tolerance changes the contact angle and later impacts.
   let low=0,high=duration,d0=start.gap,d1=end.gap,previous=d1,time=duration;
   for(let i=0;i<20;i++){
     time=low-d0*(high-low)/(d1-d0);
-    const gap=at(time)?.gap;if(gap===undefined)return null;
-    if(Math.abs(gap)<=.0001)return {time};
+    const profile=at(time);if(!profile)return null;const gap=profile.gap;
+    if(Math.abs(gap)<=.0001)return classify(time,profile);
     if(gap*d0<=0){high=time;d1=gap;if(previous*gap>0)d0*=.5;}
     else{low=time;d0=gap;if(previous*gap>0)d1*=.5;}
     previous=gap;
   }
-  return {time};
+  return classify(time,at(time));
 }
 export function resolveFlipperContact(body,f,contact,material,radius){
   const n=contact.normal,p=body.translation(),mass=body.mass(),ballI=.4*mass*radius*radius;

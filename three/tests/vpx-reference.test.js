@@ -23,6 +23,13 @@ test('physical plunger follows six native pull/release recordings and initial la
   assert.equal(reports.length,6);assert.ok(reports[0].maxModelSpeed<.1);assert.ok(reports.at(-1).maxModelSpeed>65);
 });
 
+test('millisecond native trace verifies timer phase and the coupled floor/flipper heel impacts',()=>{
+  const report=JSON.parse(execFileSync(process.execPath,['scripts/compare-vpx-heel.mjs','--check','--json'],{cwd:root,encoding:'utf8'}));
+  assert.equal(report.samples.length,70);assert.equal(report.firstDivergence,undefined);
+  const full=JSON.parse(execFileSync(process.execPath,['scripts/compare-vpx-contact.mjs','three/tests/fixtures/vpx-heel-milliseconds.json','--check','--json'],{cwd:root,encoding:'utf8'}));
+  assert.equal(full.length,1);
+});
+
 test('raw engine heel/tip, sliding and cradle contacts retain their independently measured baseline',()=>{
   const reports=JSON.parse(execFileSync(process.execPath,['scripts/compare-vpx-contact.mjs','--check','--json'],{cwd:root,encoding:'utf8'}));
   assert.equal(reports.length,11);assert.equal(reports.filter(r=>r.name.includes('cradle')).length,2);

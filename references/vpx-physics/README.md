@@ -22,6 +22,20 @@ remain explicitly scoped as a raw-engine baseline; the authored ball controller
 does not apply to that ball. The separate playable-ball fixture includes the
 authored 10ms spin/speed controller and records unresolved contact divergences.
 
+The separate `vpx-heel-milliseconds.json` fixture also records native timer
+callbacks and ball state every millisecond. Build its diagnostic table with
+`prepare-vpx-contact-reference.py --source-root PATH --instrument-timers`, serve
+`.work/vpx-timing-reference/zero-scatter.vpx` with its matching metadata, then run
+`check-three.py URL --native-contact --case=right-35-40 --exact-input-delay=23`.
+The normal source and regular zero-scatter reference are untouched. The source
+diff and table hash record the added observation/input code. STATE rows observe
+the ball after the preceding millisecond's physics, before the current update;
+linear/angular velocity fields are encoded as integers at 1e6 scale.
+
+The trace identified skipped contact handling at zero-time impacts. Native
+contacts still cancel their recorded incoming normal velocity at dtime=0. The
+port now preserves this behavior through the coupled floor/flipper heel shot.
+
 The `slot-back` fixture records a target/wire pocket that also holds the ball in
 native VPX. Keep this separate from port regressions. The randomized gameplay
 probe still reports it as a stall; it has no blanket exception or automatic rescue.
