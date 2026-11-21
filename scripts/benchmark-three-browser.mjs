@@ -44,7 +44,9 @@ try{
     })()`);
     await new Promise(resolve=>setTimeout(resolve,seconds*1000));
     const report=await evaluate(`(()=>{const s=window.playTiming,wallMs=performance.now()-s.started,game=window.finniThree.game,sorted=s.frameIntervals.slice().sort((a,b)=>a-b);return {wallMs,simulatedMs:(game.time-s.initialTime)*1000,simulationRatio:(game.time-s.initialTime)*1000/wallMs,frames:s.frames,fps:s.frames*1000/wallMs,steps:s.steps,physicsMs:s.stepMs,renderMs:s.renderMs,p95FrameMs:sorted[Math.floor(sorted.length*.95)],maxFrameMs:s.maxFrameMs,maxBalls:s.maxBalls,physicsStats:game.physicsStats};})()`);
-    reports.push({cpuRate,cached,withoutRapier,...report});console.log(JSON.stringify(reports.at(-1)));
+    const candidates=await evaluate('window.finniThree.game.physicalRecords.map(r=>({broad:r.nativeStaticQueryCache?.broad?.length,exact:r.nativeStaticQueryCache?.entries?.length,position:r.body.translation()}))');
+    const nativeDisplacements=await evaluate('!!window.finniThree.game.nativeDisplacements');
+    reports.push({cpuRate,cached,withoutRapier,nativeDisplacements,candidates,...report});console.log(JSON.stringify(reports.at(-1)));
     if(profile){const result=await call('Profiler.stop');await writeFile(`${output}/physics-cpu-${cpuRate}-${cached?'cached':'uncached'}-${withoutRapier?'no-rapier':'normal'}.json`,JSON.stringify(result.profile));const counts=new Map();for(const id of result.profile.samples??[])counts.set(id,(counts.get(id)??0)+1);console.log(JSON.stringify({selfSamples:result.profile.nodes.map(n=>({name:n.callFrame.functionName,url:n.callFrame.url,line:n.callFrame.lineNumber,count:counts.get(n.id)??0})).sort((a,b)=>b.count-a.count).slice(0,25)}));}
   }
   assert.deepEqual(errors,[]);await writeFile(`${output}/sustained-browser-timing.json`,JSON.stringify(reports,null,2));

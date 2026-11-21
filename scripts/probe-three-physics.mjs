@@ -18,8 +18,16 @@ const results=[];
 const multiball=process.argv.includes('--multiball');
 const nudged=process.argv.includes('--nudges');
 const runtimeRandom=process.argv.includes('--runtime-random');
+const observeAfterStall=Number(process.argv.find(a=>a.startsWith('--observe-after-stall='))?.split('=')[1]??0);
+if(!Number.isFinite(observeAfterStall)||observeAfterStall<0||observeAfterStall>300)throw Error('Stall observation must be 0..300 seconds');
+const ruleContext=g=>({
+  rules:Object.fromEntries(['bLilDPMB','bMultiBallMode','LilDPHits','LilDPHitsNeeded(CurrentPlayer)','LilDPJackpot(CurrentPlayer)','bChooseBattle','Tilted'].map(name=>[name,g.rules.value(name)])),
+  targets:[...g.targetMotions].map(([name,target])=>({name,dropped:target.dropped,offset:target.offset,moving:target.moving,down:target.down,collidable:target.collidable})),
+  pendingTimers:[...g.rules.timers.values()].filter(t=>/LilDP|DropTarget/i.test(t.handler)).map(t=>({handler:t.handler,at:t.at,interval:t.object.interval})),
+  pendingStatements:g.rules.delays.map(d=>({...d})),
+});
 const seedArgument=process.argv.find(a=>a.startsWith('--seed-start=')),firstSeed=Number(seedArgument?.split('=')[1]??0);
-const reportName=(process.argv.includes('--flippers')?'flippers':process.argv.includes('--full')?`full${multiball?'-multiball':''}`:'launches')+(nudged?'-nudges':'')+(runtimeRandom?'-runtime-random':'')+(seedArgument?`-seed${firstSeed}`:'');
+const reportName=(process.argv.includes('--flippers')?'flippers':process.argv.includes('--full')?`full${multiball?'-multiball':''}`:'launches')+(nudged?'-nudges':'')+(runtimeRandom?'-runtime-random':'')+(observeAfterStall?`-observe${observeAfterStall}`:'')+(seedArgument?`-seed${firstSeed}`:'');
 if(process.argv.includes('--flippers')){
   for(const side of ['left','right'])for(const offset of [.35,.6,.85,1.05])for(const delay of [0,.02,.04,.06]){
     const g=await createGame(layout);g.start();g.launch();const f=g.flippers.find(f=>f.side===side),sign=side==='left'?1:-1;
@@ -45,6 +53,7 @@ if(process.argv.includes('--flippers')){
     g.start();if(full)g.rules.execute(`Randomize ${seed+1}`);
     const initialScriptRandom=runtimeRandom&&full?g.rules.scriptRandom.getState():undefined;
     let stuck=null,error=null,completedGames=0,flips=0,maximumBalls=0,launched=0,maximumSpeed=0,qualified=false;
+    let firstStallTime,firstStallContext,stallRecovery;
     let nudgeCount=0,nextNudge=5;
     const motion=new Map(),captures=new Map(),flipUntil={left:0,right:0},nextFlip={left:0,right:0};
     let charge=seed<3?.4+seed*.3:.6+random()*.6;
@@ -78,7 +87,7 @@ if(process.argv.includes('--flippers')){
         if(rec.held){
           const captured=captures.get(rec.body.handle);
           if(!captured||captured.held!==rec.held)captures.set(rec.body.handle,{held:rec.held,time:g.time});
-          else if(g.time-captured.time>30)stuck={held:rec.held,position:round(rec.body.translation()),at:Number(g.time.toFixed(2))};
+          else if(g.time-captured.time>30)stuck??={bodyHandle:rec.body.handle,held:rec.held,position:round(rec.body.translation()),at:Number(g.time.toFixed(2))};
           continue;
         }
         captures.delete(rec.body.handle);
@@ -92,18 +101,21 @@ if(process.argv.includes('--flippers')){
             const dx=p.x-f.p.x,dy=p.y-f.p.y,x=dx*Math.cos(f.angle)+dy*Math.sin(f.angle),y=-dx*Math.sin(f.angle)+dy*Math.cos(f.angle);
             return g.held[f.side]&&x>-.25&&x<f.length+.4&&Math.abs(y)<.55;
           });
-          if(!cradle)stuck={position:round(p),velocity:round(rec.body.linvel()),contacts:contactNames(g,rec.collider),at:Number(g.time.toFixed(2))};
+          if(!cradle)stuck??={bodyHandle:rec.body.handle,position:round(p),velocity:round(rec.body.linvel()),contacts:contactNames(g,rec.collider),at:Number(g.time.toFixed(2))};
         }
       }
-      if(stuck)break;
+      if(stuck){
+        if(firstStallTime===undefined){firstStallTime=g.time;firstStallContext=full?ruleContext(g):{};if(nudged)firstStallContext.nextNudge=nextNudge;}
+        if(!observeAfterStall||g.time-firstStallTime>=observeAfterStall)break;
+        const observed=records.find(r=>r.body.handle===stuck.bodyHandle),p=observed?.body.translation();
+        if(!stallRecovery&&(!p||Math.hypot(p.x-stuck.position.x,p.y-stuck.position.y,p.z-stuck.position.z)>.5))stallRecovery={at:Number(g.time.toFixed(3)),position:p?round(p):null,removed:!p,...(full?ruleContext(g):{})};
+      }
       g.step();
       }catch(cause){error={message:cause.message,at:g.time};break;}
     }
     if(full&&stuck){
-      stuck.rules=Object.fromEntries(['bLilDPMB','bMultiBallMode','LilDPHits','LilDPHitsNeeded(CurrentPlayer)','LilDPJackpot(CurrentPlayer)','bChooseBattle','Tilted'].map(name=>[name,g.rules.value(name)]));
-      stuck.targets=[...g.targetMotions].map(([name,target])=>({name,dropped:target.dropped,offset:target.offset,moving:target.moving,down:target.down,collidable:target.collidable}));
-      stuck.pendingTimers=[...g.rules.timers.values()].filter(t=>/LilDP|DropTarget/i.test(t.handler)).map(t=>({handler:t.handler,at:t.at,interval:t.object.interval}));
-      stuck.pendingStatements=g.rules.delays.map(d=>({...d}));if(nudged)stuck.nextNudge=nextNudge;
+      Object.assign(stuck,firstStallContext??ruleContext(g));
+      if(observeAfterStall)stuck.observation={seconds:g.time-firstStallTime,recovery:stallRecovery??null,finalContext:ruleContext(g)};
     }
     const result={seed,seconds,simulatedSeconds:Number(g.time.toFixed(2)),stuck,error,state:g.state,score:g.score,launched,flips,maximumBalls,maximumSpeed:Number(maximumSpeed.toFixed(2)),completedGames,...(nudged?{nudgeCount}:{}),...(runtimeRandom?{random:{algorithm:'MWC64X',initialPhysicsRandom,finalPhysicsRandom:g.random.getState(),physicsDraws:g.random.calls,initialScriptRandom,finalScriptRandom:g.rules?.scriptRandom.getState()}}:{}),physicsStats:g.physicsStats};results.push(result);console.log(JSON.stringify(result));g.dispose();
     fs.mkdirSync('.work/three-physics',{recursive:true});fs.writeFileSync(`.work/three-physics/${seedArgument?`progress-${reportName}`:multiball?'progress-multiball':'progress'}.json`,JSON.stringify(results,null,2));

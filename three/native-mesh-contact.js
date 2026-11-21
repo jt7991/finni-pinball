@@ -66,6 +66,11 @@ export function nativeMeshShapeData(s){
 }
 export function nativeMeshHit(shape,worldP,worldV,radius,duration,query){
   query??=nativeMeshQuery(worldP,worldV,radius,duration);const bounds=nativeMeshBounds(shape);if(bounds&&!nativeBoundsOverlap(bounds,query))return null;
+  return nativeMeshNarrowHit(shape,query);
+}
+// The scalar tree already performed the exact native AABB and sphere tests.
+// Retest bounds only for callers that bypass that tree.
+export function nativeMeshNarrowHit(shape,query){
   const s=nativeMeshShapeData(shape);if(s.degenerate)return null;
   return nativeShapeHit(s,query);
 }

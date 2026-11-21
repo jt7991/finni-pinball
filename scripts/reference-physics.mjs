@@ -56,6 +56,7 @@ export function restoreReferenceBalls(game,fixture,scenario,fallback){
       }
       const native=game.nativeBall(record.body);native.order=body.address;native.collisionGap=body.collisionGap;
       native.eventPosition=Object.fromEntries(['x','y','z'].map((key,index)=>[key,body.eventPosition[index]]));native.eventDistance=body.eventDistance;
+      if(body.orientation)native.orientation.set(body.orientation);
       game.ballSpin.state(native.body).gap=body.collisionGap*.01;
     }
   }
@@ -83,7 +84,7 @@ export function restoreReferenceBalls(game,fixture,scenario,fallback){
       if(observed){
         const bodies=records.map((record,index)=>{
           const native=game.nativeBall(record.body),state=native.snapshot(),reference=observed.balls[index],error=(a,b)=>Math.hypot(...['x','y','z'].map((key,i)=>a[key]-b[i]));
-          return {id:reference.id,positionError:error(state.p,reference.position),velocityError:error(state.v,reference.velocity),momentumError:error(state.m,reference.momentum),actual:state,expected:reference};
+          return {id:reference.id,positionError:error(state.p,reference.position),velocityError:error(state.v,reference.velocity),momentumError:error(state.m,reference.momentum),...(reference.orientation?{orientationError:Math.max(...Array.from(native.orientation.matrix,(value,index)=>Math.abs(value-reference.orientation[index]))),orientation:Array.from(native.orientation.matrix)}:{}),actual:state,expected:reference};
         });
         game.nativeBodyAudit.push({ms,swap:game.ballCollisionSwap,expectedSwap:observed.swapBallCollisions,bodies});
       }

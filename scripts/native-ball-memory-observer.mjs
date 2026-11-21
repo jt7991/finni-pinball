@@ -32,7 +32,7 @@ export function nativeBallMemoryObserver(memory,gravity,expectedMaxLoops){
     if(matches.some(found=>found.length!==1))throw Error('Native HitBall layout validation failed: '+JSON.stringify(matches));
     if(gravities.length!==1)throw Error('Native physics gravity/contacts layout validation failed: '+JSON.stringify({gravities,gravityCandidates,bodyLayouts:matches}));
     const first=matches[0][0],offset=first.ballState;
-    layout={ballState:offset,collisionBall:first.collisionBall,collisionGap:first.collisionBall+12,moverSelf:offset-4,locked:offset+36,lastEventPosition:offset+52,eventDistance:offset+64,momentum:offset+68};
+    layout={ballState:offset,collisionBall:first.collisionBall,collisionGap:first.collisionBall+12,moverSelf:offset-4,locked:offset+36,lastEventPosition:offset+52,eventDistance:offset+64,momentum:offset+68,orientation:offset+80};
     if(matches.some(([body])=>body.ballState!==layout.ballState||body.collisionBall!==layout.collisionBall))throw Error('Native HitBall ABI differs between bodies');
     bodies=matches.map(([body],index)=>({id:rows[index][11],address:body.address}));gravityAddress=gravities[0];
     return {layout,bodies,gravityAddress,swapAddress:gravityAddress+16};
@@ -44,7 +44,12 @@ export function nativeBallMemoryObserver(memory,gravity,expectedMaxLoops){
       const row=rows[index],body=bodies[index];
       if(body.id!==row[11]||![0,1,2].every(axis=>view.getUint32(body.address+layout.ballState+axis*4,true)===word(row[axis])))throw Error('Native body identity/position changed during snapshot');
     }
-    return {gravityAddress,gravity:vector(gravityAddress),swapBallCollisions:!!view.getUint8(gravityAddress+16),balls:bodies.map(({id,address})=>({id,address,position:vector(address+layout.ballState),velocity:vector(address+layout.ballState+12),momentum:vector(address+layout.momentum),collisionGap:view.getFloat32(address+layout.collisionGap,true),eventPosition:vector(address+layout.lastEventPosition),eventDistance:view.getFloat32(address+layout.eventDistance,true),locked:!!view.getUint8(address+layout.locked)}))};
+    return {gravityAddress,gravity:vector(gravityAddress),swapBallCollisions:!!view.getUint8(gravityAddress+16),balls:bodies.map(({id,address})=>{
+      const orientation=Array.from({length:9},(_,index)=>view.getFloat32(address+layout.orientation+index*4,true));
+      const [a,b,c,d,e,f,g,h,i]=orientation,determinant=a*(e*i-f*h)-b*(d*i-f*g)+c*(d*h-e*g);
+      if(!orientation.every(Number.isFinite)||Math.abs(determinant-1)>.00001)throw Error('Native orientation ABI validation failed');
+      return {id,address,orientation,position:vector(address+layout.ballState),velocity:vector(address+layout.ballState+12),momentum:vector(address+layout.momentum),collisionGap:view.getFloat32(address+layout.collisionGap,true),eventPosition:vector(address+layout.lastEventPosition),eventDistance:view.getFloat32(address+layout.eventDistance,true),locked:!!view.getUint8(address+layout.locked)};
+    })};
   }
   return {scan,read};
 }

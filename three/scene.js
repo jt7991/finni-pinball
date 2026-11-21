@@ -105,7 +105,7 @@ export async function createView(canvas, game) {
       const mesh=balls[i],contact=shadows[i],rec=records[i];mesh.visible=!!rec&&(!rec.held||rec.held==='lane');contact.visible=mesh.visible;
       if(!rec)continue;const p=rec.body.translation(),before=rec.previous??p;
       mesh.position.set(before.x+(p.x-before.x)*alpha,before.y+(p.y-before.y)*alpha,before.z+(p.z-before.z)*alpha);
-      mesh.quaternion.copy(rec.body.rotation());contact.position.set(mesh.position.x,mesh.position.y,.015);contact.material.opacity=Math.max(.15,1-mesh.position.z/4);
+      mesh.quaternion.copy(game.nativeDisplacements?game.nativeBall(rec.body).orientation.rotation():rec.body.rotation());contact.position.set(mesh.position.x,mesh.position.y,.015);contact.material.opacity=Math.max(.15,1-mesh.position.z/4);
     }
     for(const m of moving){
       m.obj.position.copy(m.position);if(m.target)m.obj.position.y+=m.target.offset*.00053975;else if(m.state.isdropped)m.obj.position.y-=.04;

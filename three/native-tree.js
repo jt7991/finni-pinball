@@ -49,7 +49,7 @@ export class NativeTree {
           // Broad candidates may survive several frames. The enlarged box only
           // selects a superset: every new frame still applies its exact native
           // AABB, and every collision query still applies its exact sphere.
-          const margin=32,bounds=frameCache.region={left:box.left-margin,right:box.right+margin,top:box.top-margin,bottom:box.bottom+margin,low:box.low-margin,high:box.high+margin};
+          const margin=Number.isFinite(frameCache.margin)&&frameCache.margin>=0?frameCache.margin:8,bounds=frameCache.region={left:box.left-margin,right:box.right+margin,top:box.top-margin,bottom:box.bottom+margin,low:box.low-margin,high:box.high+margin};
           const broad=frameCache.broad??=[];broad.length=0;
           const collect=node=>{
             for(let i=node.start;i<node.start+node.count;i++){

@@ -25,6 +25,7 @@ export async function createFullGame(layout,specs,source,emit,media) {
 class FullGame extends Pinball {
   constructor(layout,specs,source,emit,media) {
     super(layout,emit);
+    this.nativeDisplacements=this.nativeBallContacts&&this.nativePlayfieldContacts&&this.nativePositionUnits&&layout.physics?.native_displacements!==false;
     this.cabinetNudge=new CabinetNudge();
     this.placeholder=this.ball;this.ballCollider.setEnabled(false);
     this.records=[];this.toyRecords=[];this.physicalRecords=[];this.byCollider=new Map();this.captures=new Map();this.mechanisms=new Map(this.nativeMeshes.map(m=>[this.colliderLabels.get(m.collider.handle)?.toLowerCase(),m.collider]));
