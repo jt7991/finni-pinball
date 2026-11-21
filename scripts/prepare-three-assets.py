@@ -139,7 +139,7 @@ for path in source_files:
     kind,item=next(iter(json.loads(path.read_text()).items()))
     specs.append({'kind':kind,**{k:v for k,v in item.items() if k in (
         'name','center','position','rot_z','rot_and_tra','rotation','radius','shape','drag_points',
-        'height','height_bottom','height_top','is_collidable','is_enabled','is_visible','size','target_type','collection','update_interval',
+        'height','height_bottom','height_top','is_collidable','is_enabled','is_visible','size','target_type','collection','update_interval','pos_x','pos_y','backglass','is_backglass',
         'is_dropped','state','state_u32','color','color2','intensity','blink_interval','hit_event','threshold',
         'is_timer_enabled','timer_interval','surface','hit_height','width','length')}})
     specs[-1]['native_source_order']=source_order[path.name]
@@ -152,7 +152,7 @@ for path in source_files:
         specs[-1]['contact_physics']=contact_physics(item)
         shape=target_shapes[item['target_type']]
         specs[-1]['collision_mesh']=shape
-    if 'drag_points' in specs[-1]:specs[-1]['drag_points']=[{k:p[k] for k in ('x','y',*(['smooth'] if kind=='Trigger' else []))} for p in specs[-1]['drag_points']]
+    if 'drag_points' in specs[-1]:specs[-1]['drag_points']=[{k:p[k] for k in ('x','y',*(['smooth'] if kind in ('Trigger','Flasher') else []))} for p in specs[-1]['drag_points']]
 appearance=json.loads((ROOT/'three/appearance-overrides.json').read_text())
 for spec in specs:
     override=appearance['objects'].get(spec['name'])

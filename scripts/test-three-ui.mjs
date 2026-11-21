@@ -113,9 +113,23 @@ try{
         if(name==='Target001'){const score=game.score;await place(25,0);await advance(17);view.render(1);point={offset:target.offset,angle:rest.angleTo(node.quaternion),scoreDelta:game.score-score};}
         standups.push({name,drop:target.drop,rotZ:target.rotZ,hidden,first,peak,settled,point,pivotMovement:pivot.distanceTo(node.position),sameGeometry:geometry===node.geometry.uuid});
       }
-      return {parts,target:{middle,end},standups};
+      await set(specs.filter(s=>s.kind==='LightSequencer').map(s=>s.name+'.StopPlay').join(':'));
+      const lamp=game.rules.objects.get('li044');
+      await set('li044.State=2:LightSeqInserts.Play SeqAllOff');if(game.workerSimulation)await game.flush();view.render(1);
+      const sequenceOff={script:lamp.state,locked:lamp.sequenceactive,display:lamp.sequencestate};
+      await set('li044.State=1:LightSeqInserts.StopPlay');if(game.workerSimulation)await game.flush();view.render(1);
+      const sequenceRestored={script:lamp.state,locked:lamp.sequenceactive};
+      await set('LightSeqInserts.UpdateInterval=20:LightSeqInserts.Play SeqBlinking,,2,10');
+      await advance(17);await advance(17);await advance(17);view.render(1);
+      const sequenceBlink={script:lamp.state,locked:lamp.sequenceactive,display:lamp.sequencestate};
+      await set('LightSeqInserts.StopPlay');
+      return {parts,target:{middle,end},standups,sequences:{off:sequenceOff,restored:sequenceRestored,blink:sequenceBlink}};
     })()`);
     const plates=animation.parts;
+    assert.deepEqual(animation.sequences.off,{script:2,locked:true,display:0});
+    assert.deepEqual(animation.sequences.restored,{script:1,locked:false});
+    assert.deepEqual(animation.sequences.blink,{script:1,locked:true,display:1});
+    await writeFile(`${output}/light-sequence-animation.json`,JSON.stringify(animation.sequences,null,2));console.log('PASS native light sequence overrides, saved script state and worker render-frame blinking');
     assert.equal(plates.length,4);
     for(const plate of plates){assert.equal(plate.missing,undefined);assert.ok(Math.abs(plate.rotation-Math.PI/2)<1e-6);assert.equal(plate.axleMovement,0);}
     await writeFile(`${output}/mechanism-animation.json`,JSON.stringify(plates,null,2));console.log('PASS original spinner plates and gate wires rotate around fixed axles');

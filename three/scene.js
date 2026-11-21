@@ -112,7 +112,8 @@ export async function createView(canvas, game) {
     for(const m of moving){
       if(m.target)applyTargetAnimation(m.obj,m.target,m,m.axis);
       else{m.obj.position.copy(m.position);if(m.state.isdropped)m.obj.position.y-=.04;}
-      if(m.target&&m.state.visible!==undefined)m.obj.visible=!!m.state.visible;
+      if(m.state.sequenceactive){m.obj.visible=!!m.state.sequencestate;m.sequenceOverride=true;}
+      else if((m.target||m.sequenceOverride)&&m.state.visible!==undefined){m.obj.visible=!!m.state.visible;m.sequenceOverride=false;}
       if(m.mechanism)m.obj.quaternion.setFromAxisAngle(m.axis,m.mechanism.angle).multiply(m.quaternion);
       if(/discoball/i.test(m.obj.name))m.obj.rotation.y=m.rotation.y+Number(m.state.rotz)*Math.PI/180;
       if(/LilHead|LilLeftArm|LilRightArm/.test(m.obj.name)){

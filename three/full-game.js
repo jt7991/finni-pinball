@@ -52,8 +52,9 @@ class FullGame extends Pinball {
       shake:strength=>emit({type:'shake',strength}),
       message:text=>emit({type:'message',text}),mechanism:(name,k,v)=>this.mechanism(name,k,v),
       mechanismValue:(name,key)=>{const lower=name.toLowerCase(),hit=this.nativeHitObjects.get(lower);if(hit&&key==='hitthreshold')return hit.currentHitThreshold;const target=this.targetMotions.get(lower);if(target)return ({isdropped:target.dropped?1:0,currentanimoffset:target.offset})[key];const gate=this.gates.find(g=>g.spec.name.toLowerCase()===lower);if(gate)return ({currentangle:gate.currentAngle,collidable:gate.enabled,open:gate.open})[key];const sling=this.nativeSlingshots.get(lower);if(sling){const value=({disabled:sling.disabled,slingshotthreshold:sling.threshold})[key];if(value!==undefined)return value;}const bumper=this.nativeBumpers.get(lower);if(bumper)return ({threshold:bumper.bumper.threshold,force:bumper.bumper.force,scatter:bumper.bumper.scatter,hashitevent:bumper.bumper.hit_event,collidable:bumper.collider.isEnabled()})[key];},
-      balls:()=>this.physicalRecords.map(r=>r.proxy),...storage,
+      balls:()=>this.physicalRecords.map(r=>r.proxy),random:()=>this.random(),tableSize:{width:layout.width,height:layout.height},...storage,
     });
+    this.frameMechanisms=[...this.targetMotions.values(),...this.rules.sequences.values()].sort((a,b)=>(a.spec.native_source_order??0)-(b.spec.native_source_order??0));
     this.rules.init();
     this.rules.execute('bFreePlay=True:BallsPerGame=3');
     this.sync();
@@ -269,8 +270,11 @@ class FullGame extends Pinball {
     if(!playing&&old==='playing')this.emit({type:'over'});
   }
 
-  updateAnimations(milliseconds){
-    for(const [name,target]of this.targetMotions){target.update(milliseconds);this.targetFronts.get(name)?.setEnabled(target.collider.isEnabled());}
+  updateAnimations(milliseconds,sequences=true){
+    for(const mechanism of this.frameMechanisms){
+      if(!mechanism.collider){if(sequences)mechanism.update(Math.round(this.time*1000));}
+      else{mechanism.update(milliseconds);this.targetFronts.get(mechanism.spec.name.toLowerCase())?.setEnabled(mechanism.collider.isEnabled());}
+    }
   }
 
   prepareFrame(){
@@ -281,7 +285,7 @@ class FullGame extends Pinball {
   step(){
     this.time+=STEP;
     this.rules.tick(STEP);
-    if(!this.frameAnimations)this.updateAnimations(STEP*1000);
+    if(!this.frameAnimations)this.updateAnimations(STEP*1000,false);
     const physicalRecords=this.physicalRecords;
     for(const rec of physicalRecords){rec.previous={...rec.body.translation()};rec.previousVelocity={...rec.body.linvel()};}
     this.driveFlippers();

@@ -4,6 +4,8 @@
 import {VbsEngine} from '@devscholar/vbs-engine-js';
 import {createImpulsePlunger} from './impulse-plunger.js';
 import {createScriptRandom,registerScriptRandom} from './script-random.js';
+import {LightSequence,SEQ,clampLightState} from './light-sequence.js';
+import {runtimeNativeRandom} from './native-random.js';
 
 export const KEY={left:42,right:54,launch:28,start:2,action:57,nudgeLeft:44,nudgeForward:45,nudgeRight:53};
 const empty=()=>{};
@@ -14,6 +16,7 @@ export function createRules(source,specs,host={}) {
   const engine=new VbsEngine({hostIntegration:false,maxExecutionTime:2000});
   const scriptRandom=createScriptRandom();registerScriptRandom(engine,scriptRandom);
   const objects=new Map(),timers=new Map(),delays=[],flashes=new Map(),sequences=new Map(),generatedEvents=new Map();
+  const sequenceRandom=host.random??runtimeNativeRandom();
   const methods=new Set([...source.matchAll(/^\s*(?:Sub|Function)[ \t]+(\w+)/gmi)].map(m=>m[1].toLowerCase()));
   const functions=new Set([...source.matchAll(/^\s*Function[ \t]+(\w+)/gmi)].map(m=>m[1].toLowerCase()));
   let time=0,activeBall=null;
@@ -37,13 +40,14 @@ export function createRules(source,specs,host={}) {
 
   function object(spec){
     const name=spec.name,lower=name.toLowerCase();
-    const state={name,x:spec.center?.x??spec.position?.x??0,y:spec.center?.y??spec.position?.y??0,z:spec.position?.z??0,radius:spec.radius??0,
+    const state={name,x:spec.center?.x??spec.position?.x??spec.pos_x??0,y:spec.center?.y??spec.position?.y??spec.pos_y??0,z:spec.position?.z??0,radius:spec.radius??0,
       state:spec.state_u32??spec.state??0,visible:spec.is_visible??true,collidable:spec.is_collidable??true,
       enabled:spec.is_enabled??false,timerenabled:false,timerinterval:spec.timer_interval??100,
       interval:spec.timer_interval??100,blinkinterval:spec.blink_interval??125,intensity:spec.intensity??1,
+      updateinterval:spec.update_interval??25,centerx:spec.pos_x??0,centery:spec.pos_y??0,
       color:spec.color??0xffffff,colorfull:spec.color2??0xffffff,imagea:'d_empty',userValue:0,
       isdropped:spec.is_dropped??false,open:false,rotx:spec.rot_and_tra?.[0]??0,roty:spec.rot_and_tra?.[1]??0,rotz:spec.rot_z??spec.rot_and_tra?.[2]??0,
-      currentangle:0,startangle:0,endangle:0,transz:0,height:spec.height??50,sequenceactive:false,sequencestate:0,
+      currentangle:0,startangle:0,endangle:0,transz:0,height:spec.height??50,sequenceactive:false,sequencestate:['Flasher','Primitive'].includes(spec.kind)?Number(spec.is_visible??true):spec.state??0,
       threshold:spec.threshold??0,force:spec.force??0,scatter:spec.scatter??0,hashitevent:spec.use_hit_event??spec.hit_event??false,hitthreshold:0,disabled:false,slingshotthreshold:spec.slingshot_threshold??0};
     const actions={
       createball:()=>host.createBall?.(name)??{x:state.x,y:state.y,z:25,velx:0,vely:0,velz:0},
@@ -53,12 +57,8 @@ export function createRules(source,specs,host={}) {
       rotatetoend:()=>host.flipper?.(lower.startsWith('left')?'left':'right',true),
       rotatetostart:()=>host.flipper?.(lower.startsWith('left')?'left':'right',false),
       pullback:()=>host.plunger?.(true),fire:()=>host.plunger?.(false),
-      play:(code,speed=25,repeat=1,pause=0)=>{
-        if(spec.kind!=='LightSequencer')return;
-        const seq=sequences.get(lower)??{queue:[],lights:(specs.collections.find(c=>c.name.toLowerCase()===spec.collection?.toLowerCase())?.items??[]).map(n=>objects.get(n.toLowerCase())).filter(Boolean),name};
-        seq.queue.push({code,speed:Number(speed)||25,repeat:Number(repeat)||1,pause:Number(pause)||0});sequences.set(lower,seq);
-      },
-      stopplay:()=>{const seq=sequences.get(lower);if(seq)for(const light of seq.lights)light.sequenceactive=false;sequences.delete(lower);},
+      play:(code,tail=0,repeat=1,pause=0)=>sequences.get(lower)?.play(code,Number(tail),Number(repeat),Number(pause)),
+      stopplay:()=>sequences.get(lower)?.stop(),
       stop:empty,initimpulsep:empty,random:empty,initexitsnd:empty,createevents:empty,
       autofire:()=>host.autofire?.(),
       option:(_name,_min,_max,_step,def)=>def,
@@ -67,6 +67,12 @@ export function createRules(source,specs,host={}) {
     const proxy=new Proxy(state,{
       get(target,key){if(typeof key==='symbol')return target[key];const k=key.toLowerCase();if(spec.kind==='Plunger'&&k==='position')return host.plungerPosition?.()??0;if(spec.kind==='Gate'||spec.kind==='HitTarget'||spec.kind==='Bumper'||spec.kind==='Wall'||spec.kind==='Primitive'&&k==='hitthreshold'){const value=host.mechanismValue?.(name,k);if(value!==undefined)return value;}return k in actions?actions[k]:target[k]??0;},
       set(target,key,v){const k=String(key).toLowerCase();target[k]=v;
+        if(k==='state'&&spec.kind==='Light')target[k]=clampLightState(v);
+        if(spec.kind==='LightSequencer'){
+          const seq=sequences.get(lower);
+          if(k==='updateinterval'){target[k]=Math.max(1,Math.trunc(v));if(seq)seq.updateInterval=target[k];}
+          if(seq&&(k==='centerx'||k==='centery')){seq.setCenter(k==='centerx'?'x':'y',v);target[k]=k==='centerx'?seq.centerX:seq.centerY;}
+        }
         if(k==='enabled'&&spec.kind==='Timer'||k==='timerenabled'){
           const enabled=!!v,timerKey=k==='enabled'?lower:`${lower}:timer`;
           if(enabled)timers.set(timerKey,{object:proxy,handler:`${name}_Timer`,at:time+Math.max(.001,Number(k==='enabled'?target.interval:target.timerinterval)/1000),property:k});
@@ -84,6 +90,11 @@ export function createRules(source,specs,host={}) {
     objects.set(lower,proxy);engine.addObject(name,proxy);return proxy;
   }
   for(const spec of specs.objects)object(spec);
+  const byName=new Map(specs.objects.map(s=>[s.name.toLowerCase(),s]));
+  for(const spec of specs.objects.filter(s=>s.kind==='LightSequencer')){
+    const collection=specs.collections.find(c=>c.name.toLowerCase()===spec.collection?.toLowerCase());
+    sequences.set(spec.name.toLowerCase(),new LightSequence(spec,(collection?.items??[]).map(n=>({spec:byName.get(n.toLowerCase()),state:objects.get(n.toLowerCase())})).filter(x=>x.spec&&x.state),{...host.tableSize,available:!!collection,random:sequenceRandom,onDone:()=>run(`${spec.name}_PlayDone`)}));
+  }
   for(let i=1;i<=41;i++)if(!objects.has(`digit${String(i).padStart(3,'0')}`))object({name:`digit${String(i).padStart(3,'0')}`});
   const extras=['Table1','digitgrid','HostPlunger'];
   for(const name of extras)if(!objects.has(name.toLowerCase()))object({name});
@@ -114,9 +125,7 @@ export function createRules(source,specs,host={}) {
     LeftTiltKey:KEY.nudgeLeft,RightTiltKey:KEY.nudgeRight,CenterTiltKey:KEY.nudgeForward,
     LockBarKey:KEY.action,RightMagnaSave:KEY.action,LeftMagnaSave:29,
     MechanicalTilt:46,AddCreditKey:6,AddCreditKey2:7,DOFPulse:2,DOFOn:1,DOFOff:0,DOFContactors:0,
-    SeqRandom:1,SeqAllOff:2,SeqAllOn:3,SeqBlinking:4,SeqUpOn:5,SeqDownOn:6,SeqCircleOutOn:7,
-    SeqCircleInOn:8,SeqLeftOn:9,SeqRightOn:10,SeqDiagUpRightOn:11,SeqDiagUpLeftOn:12,
-    SeqRadarRightOn:13,SeqRadarLeftOn:14,SeqClockRightOn:15,SeqClockLeftOn:16,
+    ...SEQ,
     vpmtimer:{addtimer:schedule},ActiveBall:{},
     HostShake:strength=>host.shake?.(strength),
     HostFlash:(light,total,period,final)=>{
@@ -144,9 +153,6 @@ export function createRules(source,specs,host={}) {
     GetBalls=balls
   End Function`);
   for(const [name,v]of Object.entries(natives))if(typeof v!=='function')engine.addObject(name,v);
-  // Visual Pinball sequence constants affect only decorative lamp choreography.
-  const sequenceNames=[...new Set((source.match(/\bSeq\w+/g)||[]).map(n=>n.toLowerCase()))];
-  for(const [i,name]of sequenceNames.entries())engine.addObject(name,i+1);
   for(const name of new Set(source.match(/\bDOF[A-Za-z]+\b/g)||[]))if(!(name in natives))engine.addObject(name,0);
   // The source enables Option Explicit. Reserve the object-call slots before it
   // runs, so a later ramp assist or ball/ball event can bind its arguments.
@@ -178,18 +184,8 @@ export function createRules(source,specs,host={}) {
       if(time>=f.end){f.light[f.property]=f.finish;flashes.delete(name);}
       else f.light[f.property]=Math.floor(time/f.period)%2;
     }
-    for(const [key,seq]of [...sequences]){
-      if(!seq.current){seq.current=seq.queue.shift();if(!seq.current){for(const light of seq.lights)light.sequenceactive=false;sequences.delete(key);run(`${seq.name}_PlayDone`);continue;}seq.started=time;}
-      const current=seq.current,type=sequenceNames[current.code-1]??'seqrandom',age=time-seq.started;
-      const duration=type.includes('random')?(current.pause/1000||1):Math.max(.15,current.speed/1000*Math.max(1,seq.lights.length)*current.repeat);
-      for(let i=0;i<seq.lights.length;i++){
-        const light=seq.lights[i];light.sequenceactive=true;
-        light.sequencestate=type.includes('alloff')?0:type.includes('allon')?1:type.includes('blink')?Math.floor(age/.15)%2:type.includes('random')?(Math.sin(i*127.1+Math.floor(age*1000/current.speed)*311.7)>0?1:0):Math.abs(i/seq.lights.length-(age/duration)%1)<.15?1:0;
-      }
-      if(age>=duration)seq.current=null;
-    }
   }
-  return {engine,objects,run,execute,value,tick,hit,schedule,scriptRandom,
+  return {engine,objects,run,execute,value,tick,hit,schedule,scriptRandom,sequences,
     init(){run('Table1_Init');execute('bFreePlay=True:BallsPerGame=3:SongVolume=0.2');},
     key(action,down){run(down?'Table1_KeyDown':'Table1_KeyUp',KEY[action]);},
     get time(){return time;},get timers(){return timers;},get delays(){return delays;},

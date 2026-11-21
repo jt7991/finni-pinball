@@ -5,7 +5,8 @@ const f=Math.fround;
 export function runtimeNativeRandom(){
   const words=new Uint32Array(2);
   // Independent entropy, once per engine lifetime. Never derive physical
-  // randomness from script Rnd, decorative effects or a trajectory seed.
+  // randomness from script Rnd or a trajectory seed. Native light sequencers
+  // consume this same stream when their render-frame updates run.
   do{globalThis.crypto.getRandomValues(words);}while((words[0]===0&&words[1]===0)||(words[0]===0xffffffff&&words[1]===4294883354));
   return nativeRandom(words[0],words[1]);
 }

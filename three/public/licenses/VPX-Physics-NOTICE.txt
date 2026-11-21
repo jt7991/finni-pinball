@@ -1,5 +1,5 @@
 Native physics behavior in physics.js, full-game.js, rules.js, drag-curve.js, cabinet-nudge.js, ball-spin.js,
-flipper-contact.js, mesh-contact.js, target-contact.js, target-motion.js, target-render.js, plunger.js, spinner.js, gate.js, trigger.js,
+flipper-contact.js, mesh-contact.js, target-contact.js, target-motion.js, target-render.js, light-sequence.js, light-sequence-patterns.js, plunger.js, spinner.js, gate.js, trigger.js,
 native-ball.js, native-ball-response.js, native-orientation.js, native-angular.js, native-flipper-contact.js,
 native-mesh-contact.js, native-vector.js, native-curve.js, native-ramp.js,
 native-tree.js, native-dynamic-tree.js, native-ball-collision.js, native-random.js, native-hit-event.js,
@@ -46,6 +46,10 @@ https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3
 target-render.js maps HitTarget::UpdateTarget stand-up rotation into the GLB
 axes while preserving the authored object pivot and baked collision geometry:
 https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/parts/hittarget.cpp
+light-sequence.js and light-sequence-patterns.js adapt LightSeq's grid, all
+84 directional effects, blink/random effects, queue, overrides and frame timing:
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/parts/lightseq.cpp
+The native compiled sequence/light/RNG functions verify the lamp-state traces.
 native-flipper-contact.js includes HitFlipper::Collide event timing and speed
 arguments. full-game.js also preserves Flipper::get_CurrentAngle conversion:
 https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/parts/flipper.cpp

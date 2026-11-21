@@ -64,6 +64,15 @@ test('real worker preserves every body, native RNG, authored rules, DMD, audio a
     await remote.debug({action:'place',ballHandle:remote.records[0].body.handle,position,velocity});await advance(17);
     assert.equal(remote.targetMotions.get('target001'),standup,'stand-up render reference stays stable');assert.ok(standup.offset>0&&standup.offset<=13,'physical face contact reaches the worker animation');
     await advance(17);assert.equal(standup.offset,13);await advance(40);assert.equal(standup.offset,0,'native stand-up returns to rest');
+    const lamp=remote.rules.objects.get('li044');await remote.flush();
+    const sequenceStatement=fixture.specs.objects.filter(s=>s.kind==='LightSequencer').map(s=>s.name+'.StopPlay').join(':')+':li044.State=2:LightSeqGi.UpdateInterval=20:LightSeqGi.Play SeqRandom,7,,200:LightSeqInserts.UpdateInterval=8:LightSeqInserts.Play SeqDownOn,25,1';
+    local.rules.execute(sequenceStatement);await remote.rules.execute(sequenceStatement);
+    for(let frame=0;frame<30;frame++){
+      await advance(17);
+      const expected=local.rules.objects.get('li044');
+      for(const field of ['state','sequenceactive','sequencestate'])assert.equal(lamp[field],expected[field],`worker lamp ${field}`);
+    }
+    assert.equal(remote.rules.objects.get('li044'),lamp,'sequence snapshots retain the subscribed render object');
     const description=snapshotGame(local,new Set(digits),new Set(['bChooseBattle']));assert.doesNotThrow(()=>structuredClone(description));
   }finally{local.dispose();if(remote)await remote.dispose();else worker.terminate();}
 });
