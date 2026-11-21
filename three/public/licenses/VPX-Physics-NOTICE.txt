@@ -24,6 +24,10 @@ collide.cpp, collideex.cpp and parts/hittarget.cpp.
 native-orientation.js adapts HitBall::UpdateDisplacements and Matrix3's scalar
 SkewSymmetric, MulMatricesAndMulScalar and OrthoNormalize from hitball.cpp
 and math/matrix.h. It retains native Float32 row-major matrix integration.
+ball-spin.js and gate.js retain the reference wasm32 engine's compiled Float32
+operation order for spin damping and gate rebounds, respectively. Complete
+native gate memory recordings verify those scalar operations without changing
+authored damping parameters, collision bounds or input timing.
 native-flipper-contact.js includes HitFlipper::Collide event timing and speed
 arguments. full-game.js also preserves Flipper::get_CurrentAngle conversion:
 https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/parts/flipper.cpp

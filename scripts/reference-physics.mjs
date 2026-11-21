@@ -1,4 +1,12 @@
 import {nativeRandom} from '../three/native-random.js';
+import fs from 'node:fs';
+import {gunzipSync} from 'node:zlib';
+// Dense native memory recordings are stored losslessly compressed. Older
+// plain JSON recordings keep the same parser and replay behavior.
+export function readReferenceFixture(path){
+  const data=fs.readFileSync(path),decoded=data[0]===31&&data[1]===139?gunzipSync(data):data;
+  return JSON.parse(decoded.toString('utf8'));
+}
 // Measurement overrides are applied only by comparison tools, never gameplay.
 export function applyReferencePhysics(layout,objects,fixture){
   Object.assign(layout.physics,fixture.controlledOverrides);

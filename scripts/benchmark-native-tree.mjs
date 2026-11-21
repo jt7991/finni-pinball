@@ -1,5 +1,7 @@
 import fs from 'node:fs';
 import {performance} from 'node:perf_hooks';
+import {pathToFileURL} from 'node:url';
+import path from 'node:path';
 import {createFullGame} from '../three/full-game.js';
 const json=name=>JSON.parse(fs.readFileSync('three/public/'+name+'.json'));
 const g=await createFullGame(json('layout'),json('objects'),fs.readFileSync('three/public/rules.vbs','utf8'),()=>{});
@@ -17,11 +19,13 @@ try{
     if(ms%140===0){g.input('left',!g.held.left);g.input('right',!g.held.right);}
     g.step();
   }
+  const baselinePath=process.argv.find(a=>a.startsWith('--baseline-query='))?.slice(17),baselineClass=baselinePath?(await import(pathToFileURL(path.resolve(baselinePath)))).NativeTree:null,baselineCaches=[];
+  const baselineQuery=baselineClass?(q,visit)=>baselineClass.prototype.query.call(tree,q,visit,baselineCaches[q.owner]??={}):original;
   const ids=new Map(tree.entries.map((entry,i)=>[entry,i])),caches=new Map();
   const cached=(q,visit,margin=32)=>{let owners=caches.get(margin);if(!owners)caches.set(margin,owners=[]);return original(q,visit,owners[q.owner]??={margin});};
   const run=fn=>{let count=0,hash=0;const visit=e=>{count++;hash=(Math.imul(hash,33)+ids.get(e))|0;};const start=performance.now();for(const q of queries)fn(q,visit);return {ms:performance.now()-start,count,hash};};
   for(let round=0;round<5;round++){
-    const baseline=run(original);
+    const baseline=run(baselineQuery);
     for(const margin of [0,4,8,16,32,64]){
       const candidate=run((q,visit)=>cached(q,visit,margin));
       if(baseline.count!==candidate.count||baseline.hash!==candidate.hash)throw Error('Contact order mismatch');

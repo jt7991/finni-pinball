@@ -46,8 +46,9 @@ export class Gate extends Spinner {
   }
   displace(duration){
     const direction=this.spec.two_way?(this.angle<0?-1:1):this.hitDirection?-1:1;
-    if(direction*this.angle>this.max){this.angle=f(direction*this.max);this.emit('EOS',f(Math.abs(this.speed*degrees)));if(!this.forced)this.speed=f(f(-this.speed*this.damping)*f(.8));else if(this.speed>0)this.speed=0;}
-    if(direction*this.angle<this.min){this.angle=f(direction*this.min);if(!this.spec.two_way)this.emit('BOS',f(Math.abs(this.speed*degrees)));if(!this.forced)this.speed=f(f(-this.speed*this.damping)*f(.8));else if(this.speed<0)this.speed=0;}
+    // The native mover rounds the damping factor before multiplying speed.
+    if(direction*this.angle>this.max){this.angle=f(direction*this.max);this.emit('EOS',f(Math.abs(this.speed*degrees)));if(!this.forced)this.speed=f(f(this.damping*f(-.8))*this.speed);else if(this.speed>0)this.speed=0;}
+    if(direction*this.angle<this.min){this.angle=f(direction*this.min);if(!this.spec.two_way)this.emit('BOS',f(Math.abs(this.speed*degrees)));if(!this.forced)this.speed=f(f(this.damping*f(-.8))*this.speed);else if(this.speed<0)this.speed=0;}
     if(this.speed===0)this.forced=false;
     this.angle=f(this.angle+f(this.speed*f(duration*100)));
   }

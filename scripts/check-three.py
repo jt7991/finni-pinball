@@ -31,4 +31,7 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         subprocess.run(['node',str(ROOT/'scripts'/runner),f'http://127.0.0.1:{port}',
                         sys.argv[1] if len(sys.argv)>1 else 'http://127.0.0.1:5173/three/',str(OUT),*sys.argv[2:]],check=True,timeout=150)
     finally:
-        process.terminate();process.wait(timeout=10)
+        process.terminate()
+        try:process.wait(timeout=10)
+        except subprocess.TimeoutExpired:
+            process.kill();process.wait(timeout=10)

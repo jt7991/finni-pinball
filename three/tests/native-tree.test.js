@@ -63,6 +63,15 @@ test('temporal broad candidates preserve exact AABB and sphere visits across slo
   assert.ok(reused>390,'nearby frames reuse broad candidates');assert.ok(rebuilt>=8,'all-axis escapes rebuild before narrowing');
 });
 
+test('packed static candidates retain double-precision AABB boundaries before the native float sphere test',()=>{
+  const entries=[{id:0,bounds:{left:25+2**-35,right:26,top:-1,bottom:1,low:-0,high:1}},{id:1,bounds:{left:25,right:26,top:-1,bottom:1,low:-0,high:1}}];
+  const tree=new NativeTree(entries,{left:-100,right:100,top:-100,bottom:100});
+  assert.deepEqual([...tree.boundsData],tree.entries.flatMap(({bounds:b})=>[b.left,b.right,b.top,b.bottom,b.low,b.high]));
+  const query={p:{x:0,y:0,z:0},box:{left:-25,right:25,top:-25,bottom:25,low:-25,high:25},radiusSquared:625},cached=[],original=[];
+  tree.query(query,e=>original.push(e.id));tree.query(query,e=>cached.push(e.id),{});
+  assert.deepEqual(original,[1]);assert.deepEqual(cached,original,'rounding the packed AABB to Single would admit the other shape');
+});
+
 test('fractional-height vertical posts retain an exactly horizontal collision normal',()=>{
   const mesh=new ContactMesh({vertices:[],indices:[]});
   // A generic normalized 3D edge can acquire a slight tilt when this height

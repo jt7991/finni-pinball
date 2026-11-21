@@ -10,6 +10,13 @@ export class NativeTree {
   constructor(entries,bounds){
     this.entries=[...entries];this.nodesUsed=0;this.nodeCapacity=(entries.length*2+1)&~3;this.levels=0;
     this.root=this.build(0,entries.length,bounds,0,0);
+    // Static bounds are immutable after tree construction. Preserve their
+    // original double values while keeping the hot candidate loops contiguous.
+    this.boundsData=new Float64Array(this.entries.length*6);
+    for(let index=0;index<this.entries.length;index++){
+      const b=this.entries[index].bounds,at=index*6;
+      const data=this.boundsData;data[at]=b.left;data[at+1]=b.right;data[at+2]=b.top;data[at+3]=b.bottom;data[at+4]=b.low;data[at+5]=b.high;
+    }
   }
   build(start,count,bounds,level,emptyLevels){
     const node={start,count,children:null};this.levels=Math.max(this.levels,level);
@@ -43,6 +50,7 @@ export class NativeTree {
     // changes at impacts. Reuse only the ordered AABB candidates; run the native
     // sphere test again at every query, including zero-time collisions.
     if(frameCache){
+      const data=this.boundsData;
       if(frameCache.tree!==this||frameCache.box!==query.box){
         const box=query.box,region=frameCache.region;
         if(frameCache.tree!==this||!region||box.left<region.left||box.right>region.right||box.top<region.top||box.bottom>region.bottom||box.low<region.low||box.high>region.high){
@@ -53,8 +61,8 @@ export class NativeTree {
           const broad=frameCache.broad??=[];broad.length=0;
           const collect=node=>{
             for(let i=node.start;i<node.start+node.count;i++){
-              const entry=this.entries[i],b=entry.bounds;
-              if(!(bounds.right<b.left||bounds.left>b.right||bounds.bottom<b.top||bounds.top>b.bottom||bounds.high<b.low||bounds.low>b.high))broad.push(entry);
+              const at=i*6;
+              if(!(bounds.right<data[at]||bounds.left>data[at+1]||bounds.bottom<data[at+2]||bounds.top>data[at+3]||bounds.high<data[at+4]||bounds.low>data[at+5]))broad.push(at);
             }
             if(!node.children)return;
             const left=bounds.left<=node.x,right=bounds.right>=node.x;
@@ -64,9 +72,15 @@ export class NativeTree {
         }
         frameCache.tree=this;frameCache.box=box;
         const candidates=frameCache.entries??=[];candidates.length=0;
-        for(const entry of frameCache.broad){const b=entry.bounds;if(!(box.right<b.left||box.left>b.right||box.bottom<b.top||box.top>b.bottom||box.high<b.low||box.low>b.high))candidates.push(entry);}
+        for(const at of frameCache.broad)if(!(box.right<data[at]||box.left>data[at+1]||box.bottom<data[at+2]||box.top>data[at+3]||box.high<data[at+4]||box.low>data[at+5]))candidates.push(at);
       }
-      for(const entry of frameCache.entries)if(nativeBoundsOverlap(entry.bounds,query,true))visit(entry);
+      const p=query.p;
+      for(const at of frameCache.entries){
+        // Keep the native scalar float operation order. In particular the two
+        // positive distances are added, including degenerate/inverted bounds.
+        const dx=f(Math.max(f(data[at]-p.x),0)+Math.max(f(p.x-data[at+1]),0)),dy=f(Math.max(f(data[at+2]-p.y),0)+Math.max(f(p.y-data[at+3]),0)),dz=f(Math.max(f(data[at+4]-p.z),0)+Math.max(f(p.z-data[at+5]),0));
+        if(f(f(f(dx*dx)+f(dy*dy))+f(dz*dz))<=query.radiusSquared)visit(this.entries[at/6]);
+      }
       return;
     }
     const box=query.box,walk=node=>{
