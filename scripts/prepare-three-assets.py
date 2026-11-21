@@ -8,6 +8,7 @@ import shutil
 import sys
 import argparse
 import re
+import math
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -39,6 +40,26 @@ shutil.copyfile(ROOT / 'assets/fonts/chewy/Chewy-Regular.ttf', OUT / 'chewy.ttf'
 
 source = SOURCE_ROOT / '.work/finni-live-extracted/gameitems'
 materials={m['name']:m for m in json.loads((source.parent/'materials.json').read_text())}
+source_order={item['file_name']:index for index,item in enumerate(json.loads((source.parent/'gameitems.json').read_text()))}
+def primitive_collision(path,item):
+    """VPX Primitive::RecalculateMatrices, with vpxtool's OBJ Z reflection."""
+    vertices=[];indices=[];rot=item['rot_and_tra'];size=item['size'];position=item['position']
+    for line in path.with_suffix('.obj').read_text().splitlines():
+        if line.startswith('v '):
+            x,y,z=map(float,line.split()[1:4]);x*=size['x'];y*=size['y'];z*=-size['z']
+            x+=rot[3];y+=rot[4];z+=rot[5]
+            for axis,index in [('z',2),('y',1),('x',0),('z',8),('y',7),('x',6)]:
+                a=math.radians(rot[index]);c=math.cos(a);s=math.sin(a)
+                if axis=='z':x,y=x*c-y*s,x*s+y*c
+                elif axis=='y':x,z=x*c+z*s,-x*s+z*c
+                else:y,z=y*c-z*s,y*s+z*c
+            vertices.extend([round((x+position['x'])*.01,8),round((2115-y-position['y'])*.01,8),round((z+position['z'])*.01,8)])
+        elif line.startswith('f '):
+            face=[int(v.split('/')[0])-1 for v in line.split()[1:]]
+            for i in range(1,len(face)-1):indices.extend([face[0],face[i],face[i+1]])
+    # OBJ reverses Z and its winding; reversing Y into world space restores
+    # outward normals. Keep the OBJ triangle order, including native seams.
+    return {'vertices':vertices,'indices':indices}
 items = []
 for path in sorted(source.glob('*.json')):
     data = json.loads(path.read_text())
@@ -49,18 +70,25 @@ for path in sorted(source.glob('*.json')):
         items.append({'kind': kind, **item})
     elif kind == 'Ramp' and item.get('is_collidable'):
         items.append({'kind': kind, **item})
+    elif kind=='Primitive' and item.get('is_collidable') and not item.get('is_toy') and item['name']!='playfield_mesh':
+        if not item['use_3d_mesh'] or item['collision_reduction_factor']!=0:
+            raise ValueError(f"Unported native primitive collision variant: {item['name']}")
+        fields=('name','position','size','rot_and_tra','elasticity','elasticity_falloff','friction','scatter','physics_material','overwrite_physics')
+        items.append({'kind':kind,**{k:item[k] for k in fields},'collision_mesh':primitive_collision(path,item)})
 
 for item in items:
-    if item['kind'] in ('Wall','Ramp'):
+    item['source_order']=source_order[f"{item['kind']}.{item['name']}.json"]
+    if item['kind'] in ('Wall','Ramp','Primitive'):
         material=materials.get(item.get('physics_material'))
         item['contact_physics']={k:(material[k if k!='scatter' else 'scatter_angle'] if material and not item.get('overwrite_physics') else item.get(k,0)) for k in ('elasticity','elasticity_falloff','friction','scatter')}
     if 'drag_points' in item:
         item['drag_points'] = [{k: round(p[k], 4) if type(p[k]) is float else p[k]
                                 for k in ('x', 'y', 'smooth', 'is_slingshot', *(['z'] if item['kind']=='Ramp' else []))} for p in item['drag_points']]
 gamedata=json.loads((source.parent/'gamedata.json').read_text())
+items.sort(key=lambda item:item['source_order'])
 # vpxtool OBJ coordinates already include the primitive's 1/100 mesh scale;
 # OBJ reverses Z. This table's playfield primitive has identity transforms.
-playfield={'vertices':[],'indices':[]}
+playfield={'vertices':[],'indices':[],'source_order':source_order['Primitive.playfield_mesh.json']}
 for line in (source/'Primitive.playfield_mesh.obj').read_text().splitlines():
     if line.startswith('v '):
         x,y,z=map(float,line.split()[1:4])
@@ -69,6 +97,7 @@ for line in (source/'Primitive.playfield_mesh.obj').read_text().splitlines():
         face=[int(p.split('/')[0])-1 for p in line.split()[1:]]
         for i in range(1,len(face)-1):playfield['indices'].extend([face[0],face[i],face[i+1]])
 data = {'width': 952, 'height': 2115, 'scale': 0.01,
+        'cabinet':{k:gamedata[k] for k in ('left','right','top','bottom','glass_top_height','glass_bottom_height')},
         'physics':{'gravity':gamedata['gravity'],'slope':gamedata['angle_tilt_min'],
                    'friction':gamedata['friction'],'elasticity':gamedata['elasticity'],
                    'elasticity_falloff':gamedata['elastic_falloff'],'scatter':gamedata['scatter'],
@@ -85,10 +114,11 @@ for target_type,file,prefix in [('drop_target_simple','dropTargetT3Mesh.h','hitT
 for path in sorted(source.glob('*.json')):
     kind,item=next(iter(json.loads(path.read_text()).items()))
     specs.append({'kind':kind,**{k:v for k,v in item.items() if k in (
-        'name','center','position','rot_z','rotation','radius','shape','drag_points',
+        'name','center','position','rot_z','rot_and_tra','rotation','radius','shape','drag_points',
         'height','height_bottom','height_top','is_collidable','is_enabled','is_visible','size','target_type','collection','update_interval',
         'is_dropped','state','state_u32','color','color2','intensity','blink_interval',
         'is_timer_enabled','timer_interval','surface','hit_height','width','length')}})
+    specs[-1]['source_order']=source_order[path.name]
     if kind=='HitTarget':
         specs[-1].update({k:item[k] for k in ('is_legacy','use_hit_event','threshold','drop_speed','raise_delay')})
         material=materials.get(item.get('physics_material'))

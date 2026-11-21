@@ -4,8 +4,8 @@ const [debug,base,output]=process.argv.slice(2);
 const tabs=await(await fetch(`${debug}/json/list`)).json();
 const socket=new WebSocket(tabs.find(t=>t.type==='page').webSocketDebuggerUrl);
 await new Promise(r=>socket.addEventListener('open',r,{once:true}));
-let seq=0;const pending=new Map(),errors=[],requests=[];
-socket.addEventListener('message',event=>{const d=JSON.parse(event.data);if(d.id){const p=pending.get(d.id);pending.delete(d.id);d.error?p.reject(Error(d.error.message)):p.resolve(d.result);}if(d.method==='Runtime.exceptionThrown')errors.push(d.params);if(d.method==='Network.requestWillBeSent')requests.push(d.params.request.url);});
+let seq=0,transferred=0;const pending=new Map(),errors=[],requests=[],measurements=[];
+socket.addEventListener('message',event=>{const d=JSON.parse(event.data);if(d.id){const p=pending.get(d.id);pending.delete(d.id);d.error?p.reject(Error(d.error.message)):p.resolve(d.result);}if(d.method==='Runtime.exceptionThrown')errors.push(d.params);if(d.method==='Network.requestWillBeSent')requests.push(d.params.request.url);if(d.method==='Network.loadingFinished')transferred+=d.params.encodedDataLength;});
 const call=(method,params={})=>new Promise((resolve,reject)=>{const id=++seq;pending.set(id,{resolve,reject});socket.send(JSON.stringify({id,method,params}));});
 const evaluate=async expression=>{const r=await call('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true,userGesture:true});if(r.exceptionDetails)throw Error(JSON.stringify(r.exceptionDetails));return r.result.value;};
 const wait=async expression=>{for(let i=0;i<400;i++){if(await evaluate(expression))return;await new Promise(r=>setTimeout(r,50));}throw Error(`Timed out: ${expression}`);};
@@ -13,10 +13,15 @@ const center=selector=>evaluate(`(()=>{const r=document.querySelector(${JSON.str
 const touch=points=>call('Input.dispatchTouchEvent',{type:points.length?'touchStart':'touchEnd',touchPoints:points.map((p,i)=>({...p,id:i+1,radiusX:4,radiusY:4,force:1}))});
 try{
   await call('Page.enable');await call('Runtime.enable');await call('Network.enable');await call('Emulation.setFocusEmulationEnabled',{enabled:true});
+  await call('Network.setCacheDisabled',{cacheDisabled:true});
+  await call('Page.addScriptToEvaluateOnNewDocument',{source:`window.testDraws=0;for(const Context of [WebGLRenderingContext,WebGL2RenderingContext]){const draw=Context.prototype.drawElements;Context.prototype.drawElements=function(...args){window.testDraws++;return draw.apply(this,args);};}`});
   for(const [width,height,name]of [[390,844,'phone'],[320,568,'small-phone'],[844,390,'landscape'],[1440,900,'desktop']]){
     await call('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:2,mobile:name!=='desktop'});
     await call('Emulation.setTouchEmulationEnabled',{enabled:name!=='desktop',maxTouchPoints:5});
+    transferred=0;const started=Date.now();
     await call('Page.navigate',{url:base});await wait('document.getElementById("play")?.textContent==="Start game"');
+    await wait('window.testDraws>0');
+    const measurement={viewport:name,coldStartupMs:Date.now()-started,transferredBytes:transferred,jsHeapBytes:await evaluate('performance.memory?.usedJSHeapSize??null')};measurements.push(measurement);console.log('STARTUP',JSON.stringify(measurement));
     await evaluate('document.getElementById("play").click()');
     await wait('document.body.classList.contains("ball-in-plunger")');
     assert.equal(await evaluate('document.documentElement.scrollWidth<=innerWidth&&document.documentElement.scrollHeight<=innerHeight'),true,`${name} no overflow`);
@@ -42,4 +47,5 @@ try{
     console.log('PASS',name,'main UI, real controls, launch and settings');
   }
   assert.deepEqual(errors,[]);assert.equal(requests.some(url=>/table\.vpx|vpinball\.(wasm|js)/.test(url)),false);
+  await writeFile(`${output}/main-ui-startup.json`,JSON.stringify(measurements,null,2));
 }finally{socket.close();}

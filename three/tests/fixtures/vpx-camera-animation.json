@@ -1,0 +1,2096 @@
+{
+  "engine": "@valknar/vpinball-wasm 0.3.4",
+  "upstreamCommit": "195f214dd4849b8ef6113fd377258b78d0dec3bf",
+  "sourceSha256": "6300d64767894aebcf82f378985cb63e8a540fa373365c7a82c189f78dadfd5a",
+  "controlledSha256": "fcf3779c3e7331ebec716be6ab6041a349600b5574465f930b65266b94e096cf",
+  "controlledOverrides": {
+    "scatter": 0,
+    "default_scatter": 0
+  },
+  "originalValues": {
+    "scatter": 5,
+    "default_scatter": 10
+  },
+  "diff": "table settings:\n    scatter 5 -> 0\n    default scatter 10 -> 0\nmaterial \"Toys Dynamic\":\n    scatter angle 5 -> 0\nmaterial \"_Ball Guides\":\n    scatter angle 5 -> 0\nmaterial \"_Droptargets\":\n    scatter angle 10 -> 0\nmaterial \"_Metals\":\n    scatter angle 5 -> 0\nmaterial \"_Plastics\":\n    scatter angle 5 -> 0\nmaterial \"_Playfield\":\n    scatter angle 5 -> 0\nmaterial \"_Ramps\":\n    scatter angle 5 -> 0\nmaterial \"_Ramps Down\":\n    scatter angle 5 -> 0\nmaterial \"_Rubber Dampener\":\n    scatter angle 5 -> 0\nmaterial \"_Rubber EM Wheel\":\n    scatter angle 10 -> 0\nmaterial \"_Rubber Long Bands\":\n    scatter angle 15 -> 0\nmaterial \"_Rubber Medium Bands\":\n    scatter angle 15 -> 0\nmaterial \"_Rubber Pegs\":\n    scatter angle 5 -> 0\nmaterial \"_Rubber Pins\":\n    scatter angle 5 -> 0\nmaterial \"_Rubber Posts\":\n    scatter angle 5 -> 0\nmaterial \"_Rubber Short Bands\":\n    scatter angle 5 -> 0\nmaterial \"_Slingshots\":\n    scatter angle 15 -> 0\nmaterial \"_Targets\":\n    scatter angle 10 -> 0\nmaterial \"_Woods\":\n    scatter angle 5 -> 0\nWall \"Wall317\":\n    scatter 5 -> 0\nWall \"Leftslingshot\":\n    scatter 5 -> 0\nWall \"Wall348\":\n    scatter 5 -> 0\nWall \"Wall85\":\n    scatter 5 -> 0\nWall \"Wall86\":\n    scatter 5 -> 0\nWall \"wallxxx2\":\n    scatter 5 -> 0\nWall \"Wall138\":\n    scatter 5 -> 0\nWall \"120h\":\n    scatter 5 -> 0\nWall \"60h\":\n    scatter 5 -> 0\nWall \"10m\":\n    scatter 5 -> 0\nRamp \"Ramp7\":\n    scatter 5 -> 0\nWall \"Wall5\":\n    scatter 5 -> 0\nWall \"Wall1\":\n    scatter 5 -> 0\nWall \"Wall17\":\n    scatter 5 -> 0\nFlipper \"RightFlipper\":\n    scatter 15 -> 0\nFlipper \"LeftFlipper\":\n    scatter 15 -> 0\nWall \"Wall001\":\n    scatter 5 -> 0\nWall \"Wall002\":\n    scatter 5 -> 0\nWall \"Wall003\":\n    scatter 5 -> 0\nWall \"Wall004\":\n    scatter 5 -> 0\nWall \"Wall005\":\n    scatter 5 -> 0\nWall \"Wall006\":\n    scatter 5 -> 0\nWall \"Wall007\":\n    scatter 5 -> 0\nWall \"Wall008\":\n    scatter 5 -> 0\nWall \"Wall009\":\n    scatter 5 -> 0\nWall \"Wall010\":\n    scatter 5 -> 0\nWall \"rpost018\":\n    scatter 5 -> 0\nWall \"peg-plastics001\":\n    scatter 5 -> 0\nWall \"rpost001\":\n    scatter 5 -> 0\nRubber \"Rubber001\":\n    scatter 5 -> 0\nWall \"peg-plastics002\":\n    scatter 5 -> 0\nWall \"rpost002\":\n    scatter 5 -> 0\nWall \"peg-plastics003\":\n    scatter 5 -> 0\nWall \"rpost003\":\n    scatter 5 -> 0\nWall \"peg-plastics004\":\n    scatter 5 -> 0\nWall \"Rightslingshot\":\n    scatter 5 -> 0\nRubber \"RightSling001\":\n    scatter 5 -> 0\nRubber \"LeftSling001\":\n    scatter 5 -> 0\nWall \"rlband001\":\n    scatter 5 -> 0\nWall \"rsband002\":\n    scatter 5 -> 0\nRubber \"Rubber007\":\n    scatter 5 -> 0\nWall \"rpin001\":\n    scatter 5 -> 0\nRubber \"Rubber002\":\n    scatter 5 -> 0\nWall \"rpin002\":\n    scatter 5 -> 0\nWall \"Wall011\":\n    scatter 5 -> 0\nWall \"Wall012\":\n    scatter 5 -> 0\nWall \"Wall013\":\n    scatter 5 -> 0\nWall \"Wall014\":\n    scatter 5 -> 0\nWall \"rpost004\":\n    scatter 5 -> 0\nWall \"peg-plastics005\":\n    scatter 5 -> 0\nWall \"rpost005\":\n    scatter 5 -> 0\nWall \"peg-plastics006\":\n    scatter 5 -> 0\nWall \"rpost006\":\n    scatter 5 -> 0\nWall \"peg-plastics007\":\n    scatter 5 -> 0\nWall \"rsband001\":\n    scatter 5 -> 0\nWall \"rlband002\":\n    scatter 5 -> 0\nRubber \"RightSling002\":\n    scatter 5 -> 0\nRubber \"RightSling003\":\n    scatter 5 -> 0\nRubber \"RightSling004\":\n    scatter 5 -> 0\nRubber \"LeftSling002\":\n    scatter 5 -> 0\nRubber \"LeftSling003\":\n    scatter 5 -> 0\nRubber \"LeftSling004\":\n    scatter 5 -> 0\nWall \"Wall016\":\n    scatter 5 -> 0\nWall \"Wall015\":\n    scatter 5 -> 0\nWall \"rpeg001\":\n    scatter 5 -> 0\nWall \"Wall018\":\n    scatter 5 -> 0\nWall \"Wall019\":\n    scatter 5 -> 0\nWall \"rpeg002\":\n    scatter 5 -> 0\nWall \"rpost007\":\n    scatter 5 -> 0\nRubber \"Rubber003\":\n    scatter 5 -> 0\nWall \"peg-plastics008\":\n    scatter 5 -> 0\nWall \"rpost009\":\n    scatter 5 -> 0\nRubber \"Rubber008\":\n    scatter 5 -> 0\nWall \"peg-plastics010\":\n    scatter 5 -> 0\nWall \"rpost010\":\n    scatter 5 -> 0\nRubber \"Rubber005\":\n    scatter 5 -> 0\nWall \"peg-plastics011\":\n    scatter 5 -> 0\nWall \"rpost011\":\n    scatter 5 -> 0\nRubber \"Rubber006\":\n    scatter 5 -> 0\nWall \"peg-plastics012\":\n    scatter 5 -> 0\nWall \"Wall017\":\n    scatter 5 -> 0\nWall \"Wall020\":\n    scatter 5 -> 0\nWall \"rpeg003\":\n    scatter 5 -> 0\nWall \"Wall021\":\n    scatter 5 -> 0\nWall \"Wall022\":\n    scatter 5 -> 0\nWall \"rpeg004\":\n    scatter 5 -> 0\nHitTarget \"Target001\":\n    scatter 5 -> 0\nHitTarget \"Target002\":\n    scatter 5 -> 0\nHitTarget \"Target003\":\n    scatter 5 -> 0\nHitTarget \"Target004\":\n    scatter 5 -> 0\nHitTarget \"Target005\":\n    scatter 5 -> 0\nHitTarget \"Target006\":\n    scatter 5 -> 0\nHitTarget \"Target007\":\n    scatter 5 -> 0\nHitTarget \"Target008\":\n    scatter 5 -> 0\nWall \"wallxxx002\":\n    scatter 5 -> 0\nWall \"wallxxx001\":\n    scatter 5 -> 0\nWall \"wallxxx003\":\n    scatter 5 -> 0\nHitTarget \"Target009\":\n    scatter 5 -> 0\nHitTarget \"Target010\":\n    scatter 5 -> 0\nHitTarget \"Target011\":\n    scatter 5 -> 0\nRubber \"Rubber004\":\n    scatter 5 -> 0\nWall \"rpin004\":\n    scatter 5 -> 0\nRubber \"Rubber009\":\n    scatter 5 -> 0\nWall \"rpin005\":\n    scatter 5 -> 0\nRubber \"Rubber010\":\n    scatter 5 -> 0\nWall \"rpin003\":\n    scatter 5 -> 0\nRubber \"Rubber011\":\n    scatter 5 -> 0\nWall \"rpin006\":\n    scatter 5 -> 0\nRubber \"Rubber012\":\n    scatter 5 -> 0\nWall \"rpin007\":\n    scatter 5 -> 0\nRubber \"Rubber013\":\n    scatter 5 -> 0\nWall \"rpin008\":\n    scatter 5 -> 0\nRubber \"Rubber014\":\n    scatter 5 -> 0\nWall \"rpin009\":\n    scatter 5 -> 0\nRubber \"Rubber015\":\n    scatter 5 -> 0\nWall \"rpin010\":\n    scatter 5 -> 0\nRubber \"Rubber016\":\n    scatter 5 -> 0\nWall \"rpin011\":\n    scatter 5 -> 0\nRubber \"Rubber017\":\n    scatter 5 -> 0\nWall \"rpin012\":\n    scatter 5 -> 0\nHitTarget \"Target012\":\n    scatter 5 -> 0\nHitTarget \"Target013\":\n    scatter 5 -> 0\nRamp \"Ramp002\":\n    scatter 5 -> 0\nHitTarget \"Target014\":\n    scatter 5 -> 0\nBumper \"Bumper1\":\n    scatter 10 -> 0\nBumper \"Bumper2\":\n    scatter 10 -> 0\nBumper \"Bumper3\":\n    scatter 10 -> 0\nWall \"Wall031\":\n    scatter 5 -> 0\nWall \"Wall036\":\n    scatter 5 -> 0\nWall \"bumpertop001\":\n    scatter 5 -> 0\nWall \"bumpertop002\":\n    scatter 5 -> 0\nWall \"bumpertop003\":\n    scatter 5 -> 0\nWall \"Wall037\":\n    scatter 5 -> 0\nWall \"Wall039\":\n    scatter 5 -> 0\nWall \"wallxxx004\":\n    scatter 5 -> 0\nWall \"wallxxx005\":\n    scatter 5 -> 0\nWall \"wallxxx006\":\n    scatter 5 -> 0\nWall \"wallxxx008\":\n    scatter 5 -> 0\nWall \"wallxxx009\":\n    scatter 5 -> 0\nWall \"wallxxx010\":\n    scatter 5 -> 0\nWall \"wallxxx011\":\n    scatter 5 -> 0\nWall \"wallxxx012\":\n    scatter 5 -> 0\nWall \"wallxxx013\":\n    scatter 5 -> 0\nWall \"wallxxx016\":\n    scatter 5 -> 0\nWall \"Wall038\":\n    scatter 5 -> 0\nWall \"Wall040\":\n    scatter 5 -> 0\nWall \"rpeg005\":\n    scatter 5 -> 0\nWall \"Wall041\":\n    scatter 5 -> 0\nWall \"Wall042\":\n    scatter 5 -> 0\nWall \"rpeg006\":\n    scatter 5 -> 0\nWall \"Wall043\":\n    scatter 5 -> 0\nWall \"Wall044\":\n    scatter 5 -> 0\nWall \"rpeg007\":\n    scatter 5 -> 0\nWall \"Wall048\":\n    scatter 5 -> 0\nWall \"Wall049\":\n    scatter 5 -> 0\nWall \"rpeg008\":\n    scatter 5 -> 0\nWall \"Wall050\":\n    scatter 5 -> 0\nWall \"Wall051\":\n    scatter 5 -> 0\nWall \"rpeg009\":\n    scatter 5 -> 0\nWall \"Wall052\":\n    scatter 5 -> 0\nWall \"Wall053\":\n    scatter 5 -> 0\nWall \"rpeg010\":\n    scatter 5 -> 0\nWall \"Wall055\":\n    scatter 5 -> 0\nWall \"Wall056\":\n    scatter 5 -> 0\nWall \"rpeg011\":\n    scatter 5 -> 0\nWall \"rpost008\":\n    scatter 5 -> 0\nWall \"peg-plastics009\":\n    scatter 5 -> 0\nWall \"rpost012\":\n    scatter 5 -> 0\nWall \"peg-plastics013\":\n    scatter 5 -> 0\nRubber \"Rubber018\":\n    scatter 5 -> 0\nWall \"rlband007\":\n    scatter 5 -> 0\nWall \"Wall059\":\n    scatter 5 -> 0\nWall \"rpost017\":\n    scatter 5 -> 0\nWall \"peg-plastics014\":\n    scatter 5 -> 0\nWall \"rpost019\":\n    scatter 5 -> 0\nWall \"peg-plastics015\":\n    scatter 5 -> 0\nWall \"rlband003\":\n    scatter 5 -> 0\nRubber \"Rubber019\":\n    scatter 5 -> 0\nWall \"rpost021\":\n    scatter 5 -> 0\nWall \"peg-plastics016\":\n    scatter 5 -> 0\nWall \"rpost022\":\n    scatter 5 -> 0\nWall \"peg-plastics017\":\n    scatter 5 -> 0\nWall \"rlband004\":\n    scatter 5 -> 0\nRubber \"Rubber020\":\n    scatter 5 -> 0\nWall \"rpost023\":\n    scatter 5 -> 0\nWall \"peg-plastics018\":\n    scatter 5 -> 0\nWall \"rpost024\":\n    scatter 5 -> 0\nWall \"peg-plastics019\":\n    scatter 5 -> 0\nRubber \"Rubber021\":\n    scatter 5 -> 0\nWall \"rsband005\":\n    scatter 5 -> 0\nWall \"bumpertop004\":\n    scatter 5 -> 0\nWall \"bumpertop005\":\n    scatter 5 -> 0\nWall \"bumpertop006\":\n    scatter 5 -> 0\nRubber \"Rubber022\":\n    scatter 5 -> 0\nRubber \"Rubber023\":\n    scatter 5 -> 0\nWall \"Wall057\":\n    scatter 5 -> 0\nWall \"Wall058\":\n    scatter 5 -> 0\nWall \"Wall060\":\n    scatter 5 -> 0\nWall \"Wall062\":\n    scatter 5 -> 0\nWall \"Wall063\":\n    scatter 5 -> 0\nWall \"Wall064\":\n    scatter 5 -> 0\nWall \"wallxxx014\":\n    scatter 5 -> 0\nRamp \"Ramp019\":\n    scatter 5 -> 0\nRamp \"Ramp020\":\n    scatter 5 -> 0\nWall \"Wall065\":\n    scatter 5 -> 0\nWall \"Wall066\":\n    scatter 5 -> 0\nWall \"Wall067\":\n    scatter 5 -> 0\nWall \"Wall068\":\n    scatter 5 -> 0\nWall \"Wall069\":\n    scatter 5 -> 0\nWall \"Wall070\":\n    scatter 5 -> 0\nWall \"Wall071\":\n    scatter 5 -> 0\nWall \"wallxxx007\":\n    scatter 5 -> 0\nWall \"Wall074\":\n    scatter 5 -> 0\nWall \"Wall075\":\n    scatter 5 -> 0\nWall \"rpeg012\":\n    scatter 5 -> 0\nWall \"Wall076\":\n    scatter 5 -> 0\nWall \"Wall077\":\n    scatter 5 -> 0\nWall \"rpeg013\":\n    scatter 5 -> 0\nWall \"83h\":\n    scatter 5 -> 0\nWall \"180h\":\n    scatter 5 -> 0\nWall \"56h\":\n    scatter 5 -> 0\nWall \"wall074001\":\n    scatter 5 -> 0\nWall \"wall073\":\n    scatter 5 -> 0\nWall \"wall078\":\n    scatter 5 -> 0\nWall \"hole004\":\n    scatter 5 -> 0\nWall \"hole006\":\n    scatter 5 -> 0\nWall \"hole001\":\n    scatter 5 -> 0\nWall \"hole002\":\n    scatter 5 -> 0\nWall \"hole003\":\n    scatter 5 -> 0\nWall \"hole005\":\n    scatter 5 -> 0\nWall \"hole007\":\n    scatter 5 -> 0\nWall \"hole008\":\n    scatter 5 -> 0\nWall \"hole009\":\n    scatter 5 -> 0\nWall \"hole010\":\n    scatter 5 -> 0\nWall \"hole011\":\n    scatter 5 -> 0\nWall \"hole012\":\n    scatter 5 -> 0\nWall \"hole013\":\n    scatter 5 -> 0\nWall \"hole015\":\n    scatter 5 -> 0\nWall \"hole014\":\n    scatter 5 -> 0\nWall \"hole016\":\n    scatter 5 -> 0\nWall \"hole017\":\n    scatter 5 -> 0\nWall \"hole018\":\n    scatter 5 -> 0\nWall \"hole019\":\n    scatter 5 -> 0\nWall \"hole020\":\n    scatter 5 -> 0\nWall \"hole021\":\n    scatter 5 -> 0\nWall \"hole022\":\n    scatter 5 -> 0\nWall \"hole023\":\n    scatter 5 -> 0\nWall \"hole024\":\n    scatter 5 -> 0\nWall \"hole025\":\n    scatter 5 -> 0\nWall \"hole026\":\n    scatter 5 -> 0\nWall \"hole027\":\n    scatter 5 -> 0\nWall \"hole028\":\n    scatter 5 -> 0\nWall \"hole029\":\n    scatter 5 -> 0\nWall \"hole030\":\n    scatter 5 -> 0\nWall \"hole031\":\n    scatter 5 -> 0\nWall \"hole032\":\n    scatter 5 -> 0\n0 added, 0 removed, 276 changed\n",
+  "verification": {
+    "path": "C:\\Users\\Jacob\\.t3\\worktrees\\fin-ball\\experiment-threejs-phys-17e4e4836d7b0c6e\\.work\\vpx-all-scatter-reference\\zero-scatter.vpx",
+    "mac": "544e0a67a9e3fce378ab8b2d85895fe9",
+    "computed_mac": "544e0a67a9e3fce378ab8b2d85895fe9",
+    "sha256": "fcf3779c3e7331ebec716be6ab6041a349600b5574465f930b65266b94e096cf",
+    "valid": true
+  },
+  "allScatterZero": true,
+  "scatterOverrides": [
+    {
+      "kind": "material",
+      "name": "Toys Dynamic",
+      "field": "scatter_angle",
+      "original": 5
+    },
+    {
+      "kind": "material",
+      "name": "_Ball Guides",
+      "field": "scatter_angle",
+      "original": 5
+    },
+    {
+      "kind": "material",
+      "name": "_Droptargets",
+      "field": "scatter_angle",
+      "original": 10
+    },
+    {
+      "kind": "material",
+      "name": "_Metals",
+      "field": "scatter_angle",
+      "original": 5
+    },
+    {
+      "kind": "material",
+      "name": "_Plastics",
+      "field": "scatter_angle",
+      "original": 5
+    },
+    {
+      "kind": "material",
+      "name": "_Playfield",
+      "field": "scatter_angle",
+      "original": 5
+    },
+    {
+      "kind": "material",
+      "name": "_Ramps",
+      "field": "scatter_angle",
+      "original": 5
+    },
+    {
+      "kind": "material",
+      "name": "_Ramps Down",
+      "field": "scatter_angle",
+      "original": 5
+    },
+    {
+      "kind": "material",
+      "name": "_Rubber Dampener",
+      "field": "scatter_angle",
+      "original": 5
+    },
+    {
+      "kind": "material",
+      "name": "_Rubber EM Wheel",
+      "field": "scatter_angle",
+      "original": 10
+    },
+    {
+      "kind": "material",
+      "name": "_Rubber Long Bands",
+      "field": "scatter_angle",
+      "original": 15
+    },
+    {
+      "kind": "material",
+      "name": "_Rubber Medium Bands",
+      "field": "scatter_angle",
+      "original": 15
+    },
+    {
+      "kind": "material",
+      "name": "_Rubber Pegs",
+      "field": "scatter_angle",
+      "original": 5
+    },
+    {
+      "kind": "material",
+      "name": "_Rubber Pins",
+      "field": "scatter_angle",
+      "original": 5
+    },
+    {
+      "kind": "material",
+      "name": "_Rubber Posts",
+      "field": "scatter_angle",
+      "original": 5
+    },
+    {
+      "kind": "material",
+      "name": "_Rubber Short Bands",
+      "field": "scatter_angle",
+      "original": 5
+    },
+    {
+      "kind": "material",
+      "name": "_Slingshots",
+      "field": "scatter_angle",
+      "original": 15
+    },
+    {
+      "kind": "material",
+      "name": "_Targets",
+      "field": "scatter_angle",
+      "original": 10
+    },
+    {
+      "kind": "material",
+      "name": "_Woods",
+      "field": "scatter_angle",
+      "original": 5
+    },
+    {
+      "kind": "Bumper",
+      "name": "Bumper1",
+      "field": "scatter",
+      "original": 10
+    },
+    {
+      "kind": "Bumper",
+      "name": "Bumper2",
+      "field": "scatter",
+      "original": 10
+    },
+    {
+      "kind": "Bumper",
+      "name": "Bumper3",
+      "field": "scatter",
+      "original": 10
+    },
+    {
+      "kind": "Flipper",
+      "name": "LeftFlipper",
+      "field": "scatter",
+      "original": 15
+    },
+    {
+      "kind": "Flipper",
+      "name": "RightFlipper",
+      "field": "scatter",
+      "original": 15
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target003",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target004",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target005",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target006",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target007",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target008",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target009",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target010",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target011",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target012",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target013",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target014",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Ramp",
+      "name": "Ramp002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Ramp",
+      "name": "Ramp019",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Ramp",
+      "name": "Ramp020",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Ramp",
+      "name": "Ramp7",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "LeftSling001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "LeftSling002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "LeftSling003",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "LeftSling004",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "RightSling001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "RightSling002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "RightSling003",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "RightSling004",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber003",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber004",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber005",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber006",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber007",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber008",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber009",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber010",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber011",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber012",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber013",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber014",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber015",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber016",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber017",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber018",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber019",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber020",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber021",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber022",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber023",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "10m",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "120h",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "180h",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "56h",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "60h",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "83h",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "bumpertop001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "bumpertop002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "bumpertop003",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "bumpertop004",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "bumpertop005",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "bumpertop006",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole003",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole004",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole005",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole006",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole007",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole008",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole009",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole010",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole011",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole012",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole013",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole014",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole015",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole016",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole017",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole018",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole019",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole020",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole021",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole022",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole023",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole024",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole025",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole026",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole027",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole028",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole029",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole030",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole031",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole032",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Leftslingshot",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics003",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics004",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics005",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics006",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics007",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics008",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics009",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics010",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics011",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics012",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics013",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics014",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics015",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics016",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics017",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics018",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics019",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Rightslingshot",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rlband001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rlband002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rlband003",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rlband004",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rlband007",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpeg001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpeg002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpeg003",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpeg004",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpeg005",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpeg006",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpeg007",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpeg008",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpeg009",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpeg010",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpeg011",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpeg012",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpeg013",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpin001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpin002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpin003",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpin004",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpin005",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpin006",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpin007",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpin008",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpin009",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpin010",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpin011",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpin012",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost003",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost004",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost005",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost006",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost007",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost008",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost009",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost010",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost011",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost012",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost017",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost018",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost019",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost021",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost022",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost023",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost024",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rsband001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rsband002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rsband005",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall003",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall004",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall005",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall006",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall007",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall008",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall009",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall010",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall011",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall012",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall013",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall014",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall015",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall016",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall017",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall018",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall019",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall020",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall021",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall022",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall031",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall036",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall037",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall038",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall039",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall040",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall041",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall042",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall043",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall044",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall048",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall049",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall050",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall051",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall052",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall053",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall055",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall056",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall057",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall058",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall059",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall060",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall062",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall063",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall064",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall065",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall066",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall067",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall068",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall069",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall070",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall071",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wall073",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall074",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wall074001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall075",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall076",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall077",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wall078",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall1",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall138",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall17",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall317",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall348",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall5",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall85",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall86",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx003",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx004",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx005",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx006",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx007",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx008",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx009",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx010",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx011",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx012",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx013",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx014",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx016",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx2",
+      "field": "scatter",
+      "original": 5
+    }
+  ],
+  "timerTraceCaptured": false,
+  "timerSynchronization": "RollingTimer disabled/enabled immediately before each initial state, resetting its 10ms phase.",
+  "geometryProbe": true,
+  "inputScheduling": {
+    "kind": "vpmtimer"
+  },
+  "nativeRuleState": {
+    "ballCount": 4,
+    "measuredBallIndex": 3,
+    "measuredBallRole": "playable",
+    "rollingTimerEnabled": true,
+    "maxvel": 52,
+    "lockedBallOffset": 3
+  },
+  "comparisonScope": "playable ball including authored spin and speed controls",
+  "probeKind": "contacts",
+  "runtimeOverrides": {
+    "LeftFlipper.Scatter": 0,
+    "RightFlipper.Scatter": 0,
+    "Camera1.RotY": 90
+  },
+  "columns": [
+    "ms",
+    "x",
+    "y",
+    "z",
+    "vx",
+    "vy",
+    "vz",
+    "wx",
+    "wy",
+    "wz",
+    "left",
+    "right"
+  ],
+  "cases": [
+    {
+      "name": "camera-drop",
+      "x": 113.558655,
+      "y": 1671.6152,
+      "z": 180,
+      "vx": 0,
+      "vy": 0,
+      "vz": -4,
+      "sampleCount": 24,
+      "initial": [
+        2890,
+        0,
+        0,
+        0,
+        113.5587,
+        1671.615,
+        180
+      ],
+      "actualDelay": 0,
+      "samples": [
+        [
+          18,
+          113.5587,
+          1671.907,
+          170.0182,
+          0,
+          0.30777,
+          -6.928234,
+          0,
+          0,
+          0,
+          120,
+          240
+        ],
+        [
+          35,
+          113.5587,
+          1672.692,
+          155.7512,
+          0,
+          0.598442,
+          -9.693789,
+          0,
+          0,
+          0,
+          120,
+          240
+        ],
+        [
+          35,
+          113.5587,
+          1672.692,
+          155.7512,
+          0,
+          0.598442,
+          -9.693789,
+          0,
+          0,
+          0,
+          120,
+          240
+        ],
+        [
+          51,
+          111.6161,
+          1677.479,
+          146.1258,
+          -2.329521,
+          5.133888,
+          0.673865,
+          -0.203988,
+          -0.093181,
+          -0.006127,
+          120,
+          240
+        ],
+        [
+          85,
+          103.6471,
+          1696.122,
+          139.4647,
+          -2.396682,
+          5.949106,
+          -3.856253,
+          -0.225722,
+          -0.099578,
+          -0.005217,
+          120,
+          240
+        ],
+        [
+          85,
+          103.6471,
+          1696.122,
+          139.4647,
+          -2.396682,
+          5.949106,
+          -3.856253,
+          -0.225722,
+          -0.099578,
+          -0.005217,
+          120,
+          240
+        ],
+        [
+          102,
+          99.30122,
+          1706.97,
+          133.3037,
+          -2.587135,
+          6.571598,
+          -4.599335,
+          -0.265875,
+          -0.111666,
+          -0.006331,
+          120,
+          240
+        ],
+        [
+          119,
+          94.90311,
+          1718.403,
+          122.9958,
+          -2.587135,
+          6.862271,
+          -7.364889,
+          -0.265875,
+          -0.111666,
+          -0.006014,
+          120,
+          240
+        ],
+        [
+          135,
+          90.7637,
+          1729.616,
+          108.9996,
+          -2.587135,
+          7.135846,
+          -9.967764,
+          -0.265875,
+          -0.111666,
+          -0.005428,
+          120,
+          240
+        ],
+        [
+          151,
+          86.6243,
+          1741.267,
+          90.83871,
+          -2.587135,
+          7.409421,
+          -12.570639,
+          -0.265875,
+          -0.111666,
+          -0.004899,
+          120,
+          240
+        ],
+        [
+          168,
+          83.33652,
+          1752.132,
+          89.69848,
+          -1.691146,
+          6.092694,
+          2.997012,
+          -0.253331,
+          -0.079189,
+          -0.002531,
+          120,
+          240
+        ],
+        [
+          184,
+          80.63071,
+          1762.113,
+          92.28125,
+          -1.691146,
+          6.366269,
+          0.394134,
+          -0.253331,
+          -0.079189,
+          -0.002284,
+          120,
+          240
+        ],
+        [
+          201,
+          77.78216,
+          1773.011,
+          92.34551,
+          -1.656385,
+          6.412587,
+          0.10709,
+          -0.255331,
+          -0.067923,
+          -0.00098,
+          120,
+          240
+        ],
+        [
+          235,
+          72.1178,
+          1795.534,
+          92.03782,
+          -1.668294,
+          6.819456,
+          0.075084,
+          -0.272778,
+          -0.066732,
+          -0.00084,
+          120,
+          240
+        ],
+        [
+          235,
+          72.1178,
+          1795.534,
+          92.03782,
+          -1.668294,
+          6.819456,
+          0.075084,
+          -0.272778,
+          -0.066732,
+          -0.00084,
+          120,
+          240
+        ],
+        [
+          251,
+          69.44849,
+          1806.616,
+          92.02781,
+          -1.668294,
+          7.014867,
+          0.075083,
+          -0.280595,
+          -0.066732,
+          -0.000758,
+          120,
+          240
+        ],
+        [
+          267,
+          66.77917,
+          1818.011,
+          92.0178,
+          -1.668294,
+          7.210278,
+          0.075083,
+          -0.288411,
+          -0.066732,
+          -0.00072,
+          120,
+          240
+        ],
+        [
+          284,
+          63.94304,
+          1830.46,
+          91.99903,
+          -1.668294,
+          7.422787,
+          -0.087597,
+          -0.296228,
+          -0.066732,
+          -0.00065,
+          120,
+          240
+        ],
+        [
+          301,
+          61.10696,
+          1843.262,
+          92.00749,
+          -1.668294,
+          7.625525,
+          0.075083,
+          -0.305021,
+          -0.066732,
+          -0.000587,
+          120,
+          240
+        ],
+        [
+          317,
+          58.43771,
+          1855.633,
+          92.00749,
+          -1.668294,
+          7.820935,
+          0.075083,
+          -0.312837,
+          -0.066732,
+          -0.000557,
+          120,
+          240
+        ],
+        [
+          335,
+          55.4348,
+          1869.924,
+          92.00749,
+          -1.668294,
+          8.040772,
+          0.075083,
+          -0.321631,
+          -0.066732,
+          -0.000503,
+          120,
+          240
+        ],
+        [
+          351,
+          52.76555,
+          1882.959,
+          92.00749,
+          -1.668294,
+          8.236184,
+          0.075083,
+          -0.329447,
+          -0.066732,
+          -0.000454,
+          120,
+          240
+        ],
+        [
+          368,
+          49.92947,
+          1897.152,
+          91.99873,
+          -1.668294,
+          8.448694,
+          -0.087597,
+          -0.337264,
+          -0.066732,
+          -0.000431,
+          120,
+          240
+        ],
+        [
+          401,
+          44.42414,
+          1925.708,
+          92.00749,
+          -1.668294,
+          8.846846,
+          0.075083,
+          -0.353874,
+          -0.066732,
+          -0.000351,
+          120,
+          240
+        ]
+      ],
+      "rawSamples": [
+        "2908:113.5587:1671.907:170.0182:0:307770:-6928234:0:0:0:120:240'",
+        "2925:113.5587:1672.692:155.7512:0:598442:-9693789:0:0:0:120:240'",
+        "2925:113.5587:1672.692:155.7512:0:598442:-9693789:0:0:0:120:240'",
+        "2941:111.6161:1677.479:146.1258:-2329521:5133888:673865:-203988:-93181:-6127:120:240'",
+        "2975:103.6471:1696.122:139.4647:-2396682:5949106:-3856253:-225722:-99578:-5217:120:240'",
+        "2975:103.6471:1696.122:139.4647:-2396682:5949106:-3856253:-225722:-99578:-5217:120:240'",
+        "2992:99.30122:1706.97:133.3037:-2587135:6571598:-4599335:-265875:-111666:-6331:120:240'",
+        "3009:94.90311:1718.403:122.9958:-2587135:6862271:-7364889:-265875:-111666:-6014:120:240'",
+        "3025:90.7637:1729.616:108.9996:-2587135:7135846:-9967764:-265875:-111666:-5428:120:240'",
+        "3041:86.6243:1741.267:90.83871:-2587135:7409421:-12570639:-265875:-111666:-4899:120:240'",
+        "3058:83.33652:1752.132:89.69848:-1691146:6092694:2997012:-253331:-79189:-2531:120:240'",
+        "3074:80.63071:1762.113:92.28125:-1691146:6366269:394134:-253331:-79189:-2284:120:240'",
+        "3091:77.78216:1773.011:92.34551:-1656385:6412587:107090:-255331:-67923:-980:120:240'",
+        "3125:72.1178:1795.534:92.03782:-1668294:6819456:75084:-272778:-66732:-840:120:240'",
+        "3125:72.1178:1795.534:92.03782:-1668294:6819456:75084:-272778:-66732:-840:120:240'",
+        "3141:69.44849:1806.616:92.02781:-1668294:7014867:75083:-280595:-66732:-758:120:240'",
+        "3157:66.77917:1818.011:92.0178:-1668294:7210278:75083:-288411:-66732:-720:120:240'",
+        "3174:63.94304:1830.46:91.99903:-1668294:7422787:-87597:-296228:-66732:-650:120:240'",
+        "3191:61.10696:1843.262:92.00749:-1668294:7625525:75083:-305021:-66732:-587:120:240'",
+        "3207:58.43771:1855.633:92.00749:-1668294:7820935:75083:-312837:-66732:-557:120:240'",
+        "3225:55.4348:1869.924:92.00749:-1668294:8040772:75083:-321631:-66732:-503:120:240'",
+        "3241:52.76555:1882.959:92.00749:-1668294:8236184:75083:-329447:-66732:-454:120:240'",
+        "3258:49.92947:1897.152:91.99873:-1668294:8448694:-87597:-337264:-66732:-431:120:240'",
+        "3291:44.42414:1925.708:92.00749:-1668294:8846846:75083:-353874:-66732:-351:120:240'"
+      ]
+    }
+  ]
+}

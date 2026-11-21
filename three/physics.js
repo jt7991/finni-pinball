@@ -8,6 +8,7 @@ import {flipperContact,flipperHit,resolveFlipperContact,supportFlipper} from './
 import {playfieldHit,supportPlayfield,collidePlayfield} from './playfield-contact.js';
 import {ContactMesh,collideSurface,supportSurface} from './mesh-contact.js';
 import {Plunger} from './plunger.js';
+import {BallSpin} from './ball-spin.js';
 
 export const STEP = 1 / 1000;
 export const RADIUS = 0.25;
@@ -88,10 +89,11 @@ export class Pinball {
     this.world.numSolverIterations = 8;
     this.events = new RAPIER.EventQueue(!this.nativeFlipperContacts);
     this.physicsStats={maxSubsteps:0,substepBudgetExceeded:0};
+    this.ballSpin=new BallSpin();
     this.tags = new Map();
     this.colliderLabels = new Map();
     this.contactMaterials=new Map();this.changedMaterials=new Set();this.queryBall=new RAPIER.Ball(RADIUS);
-    this.nativeMeshes=[];this.nativeMeshGrid=new Map();
+    this.nativeMeshes=[];this.nativeMeshGrid=new Map();this.nativeGlobalMeshes=[];
     this.random=Math.random;
     this.flippers = [];
     this.cooldowns = new Map();
@@ -104,8 +106,10 @@ export class Pinball {
     this.segments = [];
     this.playfield=this.box({x: 4.76, y: 10.575, z: -.12}, [5, 11.5, .12], physics.elasticity,physics.friction);
     this.playfield.setSensor(this.nativePlayfieldContacts);
-    for (const [a, b] of [[[.08, .4], [.08, 21.05]], [[.08, 21.05], [9.44, 21.05]], [[9.44, 21.05], [9.44, .4]]]) {
-      this.segment({...{x:a[0], y:a[1]}, z:.5}, {x:b[0], y:b[1], z:.5}, .06, 1, .5);
+    if(layout.cabinet)this.cabinet(layout.cabinet);
+    if(this.nativePlayfieldContacts&&this.playfieldMesh){
+      this.colliderLabels.set(this.playfield.handle,'playfield_mesh');
+      this.registerMesh({collider:this.playfield,mesh:this.playfieldMesh,material:this.playfieldMaterial,name:'playfield_mesh',source_order:layout.playfield.source_order??100000});
     }
     for (const item of layout.items) {
       if (item.kind === 'Wall') this.wall(item);
@@ -114,14 +118,8 @@ export class Pinball {
       if (item.kind === 'Kicker') this.scoop = point(item.center);
       if (item.kind === 'Ramp') this.ramp(item);
       if (item.kind === 'Plunger') this.plunger = new Plunger(item);
+      if (item.kind === 'Primitive') this.primitive(item);
     }
-    // Close the inaccessible sub-ball-width pocket behind the right return post.
-    // The diagonal lies under the existing plastic and feeds balls back infield.
-    const guidePoints=[[8.035,10.775],[8.68,11.15],[8.68,10.6993],[8.0921,10.6993]];
-    const guideVertices=[0,.6].flatMap(z=>guidePoints.flatMap(([x,y])=>[x,y,z]));
-    const guide=this.world.createCollider(RAPIER.ColliderDesc.convexHull(new Float32Array(guideVertices))
-      .setCollisionGroups(STATIC_GROUP).setRestitutionCombineRule(RAPIER.CoefficientCombineRule.Multiply).setRestitution(surfaceRestitution(.3)).setFriction(.06));
-    this.colliderLabels.set(guide.handle,'right-return-post-guide');
     // The exported walls contain the shooter lane and curved upper feed.
     const ball = RAPIER.RigidBodyDesc.dynamic().setTranslation(9.03, 1.4, RADIUS)
       .setCcdEnabled(true).setCanSleep(false);
@@ -139,6 +137,40 @@ export class Pinball {
     this.colliderLabels.set(collider.handle,tag?.name??label);
     if (tag) this.tags.set(collider.handle, tag);
     return collider;
+  }
+
+  primitive(item){
+    // Native Primitive collision vertices are baked during PhysicSetup. Script
+    // RotX/Y/Z changes animate rendering without rebuilding those hit shapes.
+    const mesh=new ContactMesh(item.collision_mesh,{preserveNormals:true}),material=item.contact_physics;
+    const collider=this.world.createCollider(RAPIER.ColliderDesc.trimesh(new Float32Array(item.collision_mesh.vertices),new Uint32Array(item.collision_mesh.indices),RAPIER.TriMeshFlags.FIX_INTERNAL_EDGES)
+      .setSensor(this.nativeFlipperContacts).setCollisionGroups(STATIC_GROUP)
+      .setRestitution(surfaceRestitution(material.elasticity)).setRestitutionCombineRule(RAPIER.CoefficientCombineRule.Multiply).setFriction(material.friction));
+    this.colliderLabels.set(collider.handle,item.name);
+    if(this.nativeFlipperContacts)this.registerMesh({collider,mesh,name:item.name,source_order:item.source_order,material:{...this.playfieldMaterial,...material}});
+  }
+
+  cabinet(spec){
+    const left=spec.left*.01,right=spec.right*.01,top=(2115-spec.top)*.01,bottom=(2115-spec.bottom)*.01,high=spec.glass_top_height*.01,low=spec.glass_bottom_height*.01;
+    const material={...this.playfieldMaterial,elasticity:.3,elasticity_falloff:0,friction:.3,scatter:0};
+    const mesh=new ContactMesh({vertices:[],indices:[]}),vertices=[],indices=[];
+    const segments=[[[right,top],[right,bottom],high],[[left,bottom],[left,top],low],[[right,bottom],[left,bottom],low],[[left,top],[right,top],high]];
+    for(const [a,b,height]of segments){
+      mesh.addWall({x:a[0],y:a[1],z:0},{x:b[0],y:b[1],z:0},0,height);
+      const i=vertices.length/3;vertices.push(a[0],a[1],0,b[0],b[1],0,a[0],a[1],height,b[0],b[1],height);indices.push(i,i+1,i+2,i+1,i+3,i+2);
+    }
+    const collider=this.world.createCollider(RAPIER.ColliderDesc.trimesh(new Float32Array(vertices),new Uint32Array(indices)).setSensor(this.nativeFlipperContacts).setCollisionGroups(STATIC_GROUP).setRestitution(surfaceRestitution(.3)).setRestitutionCombineRule(RAPIER.CoefficientCombineRule.Multiply).setFriction(.3));
+    this.colliderLabels.set(collider.handle,'cabinet-boundary');
+    if(this.nativeFlipperContacts)this.registerMesh({collider,mesh,material,name:'cabinet-boundary'});
+    const corners=[{x:left,y:top,z:high},{x:right,y:top,z:high},{x:right,y:bottom,z:low},{x:left,y:bottom,z:low}],glass=new ContactMesh({vertices:[],indices:[]});glass.addPolygon(corners);
+    const glassCollider=this.world.createCollider(RAPIER.ColliderDesc.trimesh(new Float32Array(corners.flatMap(p=>[p.x,p.y,p.z])),new Uint32Array([0,1,2,0,2,3])).setSensor(this.nativeFlipperContacts).setCollisionGroups(STATIC_GROUP).setRestitution(surfaceRestitution(.3)).setRestitutionCombineRule(RAPIER.CoefficientCombineRule.Multiply).setFriction(.3));
+    this.colliderLabels.set(glassCollider.handle,'cabinet-glass');
+    if(this.nativeFlipperContacts){
+      this.registerMesh({collider:glassCollider,mesh:glass,material,name:'cabinet-glass'});
+      const plane=new ContactMesh({vertices:[],indices:[]}),rise=high-low,length=Math.hypot(top-bottom,rise),normal={x:0,y:rise/length,z:-(top-bottom)/length};
+      plane.addPlane(normal,-high+normal.y*top);
+      this.registerMesh({collider:glassCollider,mesh:plane,material:{...material,elasticity:.2},name:'cabinet-glass-plane'});
+    }
   }
 
   segment(a, b, radius, height, bounce, tag, label='boundary') {
@@ -159,15 +191,20 @@ export class Pinball {
       this.contactMaterials.set(collider.handle,{collider,...material});
       if(this.nativeFlipperContacts){
         const points=dragCurve(item.drag_points.map(p=>({...point(p),smooth:p.smooth,slingshot:p.is_slingshot})),true,4),count=points.length;
-        const caps=[];for(let i=0;i<surface.indices.length-count*6;i+=6){if(item.is_bottom_solid)caps.push(...surface.indices.slice(i,i+3));caps.push(...surface.indices.slice(i+3,i+6));}
-        const mesh=new ContactMesh({vertices:surface.vertices,indices:caps},{preserveNormals:true,coplanarJoints:false,points:false});
+        const mesh=new ContactMesh({vertices:[],indices:[]});
         const clockwise=ShapeUtils.isClockWise(points.map(p=>new Vector2(p.x,p.y)));
         for(let i=0;i<count;i++){
-          const a=points[i],b=points[(i+1)%count],low=item.height_bottom*.01,high=item.height_top*.01;
-          mesh.addWall(clockwise?b:a,clockwise?a:b,low,high,0,a.slingshot?{force:item.slingshot_force,threshold:item.slingshot_threshold}:null);
+          const a=points[(i+1)%count],b=points[(i+2)%count],low=item.height_bottom*.01,high=item.height_top*.01;
+          mesh.addWall(clockwise?b:a,clockwise?a:b,low,high,a.slingshot?{force:item.slingshot_force,threshold:item.slingshot_threshold}:null);
+          if(low!==0)mesh.addEdge({...a,z:low},{...b,z:low});
+          mesh.addEdge({...a,z:high},{...b,z:high});
           mesh.addVertical(a,low,high);
+          if(low!==0)mesh.addPoint({...a,z:low});
+          mesh.addPoint({...a,z:high});
         }
-        this.registerMesh({collider,mesh,material:{...this.playfieldMaterial,...material},name:item.name});
+        mesh.addPolygon(points.map(p=>({...p,z:item.height_top*.01})));
+        if(item.is_bottom_solid)mesh.addPolygon([...points].reverse().map(p=>({...p,z:item.height_bottom*.01})));
+        this.registerMesh({collider,mesh,material:{...this.playfieldMaterial,...material},name:item.name,source_order:item.source_order});
       }
     }
     const points = item.drag_points.map(point), bottom = item.height_bottom * .01;
@@ -187,8 +224,9 @@ export class Pinball {
       if(height<=0)continue;
       for(let i=0;i<edge.length-1;i++){
         const a=edge[i],b=edge[i+1];
-        nativeMesh.addWall(a,b,a.z,b.z,height);nativeMesh.addWall(b,a,a.z,b.z,height);
-        nativeMesh.addVertical(a,a.z,b.z+height);
+        nativeMesh.addRampWall(a,b,a.z,b.z,height,i>0);
+        nativeMesh.addRampWall(b,a,a.z,b.z,height,i<edge.length-2);
+        if(i===0)nativeMesh.addVertical(a,a.z,a.z+height);
       }
       const end=edge.at(-1);nativeMesh.addVertical(end,end.z,end.z+height);
       const start=surface.vertices.length/3;
@@ -200,7 +238,7 @@ export class Pinball {
     }
     const collider=this.world.createCollider(RAPIER.ColliderDesc.trimesh(new Float32Array(surface.vertices),new Uint32Array(surface.indices),RAPIER.TriMeshFlags.FIX_INTERNAL_EDGES_TWO_SIDED)
       .setSensor(this.nativeFlipperContacts).setCollisionGroups(STATIC_GROUP).setRestitutionCombineRule(RAPIER.CoefficientCombineRule.Multiply).setFriction(material.friction).setRestitution(surfaceRestitution(material.elasticity)));
-    if(this.nativeFlipperContacts)this.registerMesh({collider,mesh:nativeMesh,material:{...this.playfieldMaterial,...material,elasticity_falloff:0}});
+    if(this.nativeFlipperContacts)this.registerMesh({collider,mesh:nativeMesh,material:{...this.playfieldMaterial,...material,elasticity_falloff:0},source_order:item.source_order});
     this.contactMaterials.set(collider.handle,{collider,...material});
     this.colliderLabels.set(collider.handle,item.name);
     this.ramps.push({name:item.name,collider,...surface});
@@ -258,9 +296,10 @@ export class Pinball {
   }
 
   registerMesh(record){
-    record.order=this.nativeMeshes.length;
+    record.order=record.source_order??(-100000+this.nativeMeshes.length);
     this.nativeMeshes.push(record);
-    for(const key of record.mesh.grid.keys()){
+    if(record.mesh.planes.length)this.nativeGlobalMeshes.push(record);
+    for(const key of record.mesh.registrationKeys??record.mesh.grid.keys()){
       if(!this.nativeMeshGrid.has(key))this.nativeMeshGrid.set(key,new Set());this.nativeMeshGrid.get(key).add(record);
     }
   }
@@ -279,7 +318,7 @@ export class Pinball {
       r.body.setLinvel({x:v.x+(g.x+nudge.x)*STEP,y:v.y+(g.y+nudge.y)*STEP,z:v.z+(g.z+nudge.z)*STEP},true);
     }
     const pose=f=>{const q=f.body.rotation();f.angle=f.rest+2*Math.atan2(q.z,q.w);};
-    let remaining=STEP,count=0;const handled=new Set();
+    let remaining=STEP,count=0,staticCount=10;
     while(remaining>1e-9&&count++<32){
       let event=null,time=remaining;const contacts=[];
       for(const r of records)if(!r.held){r.queryPosition=r.body.translation();r.queryVelocity=r.body.linvel();}
@@ -287,19 +326,19 @@ export class Pinball {
         if(r.held)continue;
         const hit=this.plunger.hit(r.queryPosition,r.queryVelocity,r.body.mass(),RADIUS,remaining),key=`${r.body.handle}:plunger`;
         if(hit?.contact)contacts.push({r,hit,plunger:true});
-        else if(hit&&hit.time<=time&&!(hit.time<1e-9&&handled.has(key))){event={r,hit,key,plunger:true};time=hit.time;}
+        else if(hit&&hit.time<=time){event={r,hit,key,plunger:true};time=hit.time;}
       }
-      if(this.nativePlayfieldContacts)for(const r of records){
+      if(this.nativePlayfieldContacts&&!this.playfieldMesh)for(const r of records){
         if(r.held)continue;
         const hits=this.playfieldMesh?this.playfieldMesh.hitsAt(r.queryPosition,r.queryVelocity,RADIUS,remaining):[playfieldHit(r.body,RADIUS,remaining)];
         for(const hit of hits){
           const key=`${r.body.handle}:playfield:${hit?.id??0}`;
           if(hit?.contact)contacts.push({r,hit});
-          else if(hit&&hit.time<=time&&!(hit.time<1e-9&&handled.has(key))){event={r,hit,key};time=hit.time;}
+          else if(hit&&hit.time<=time){event={r,hit,key};time=hit.time;}
         }
       }
       for(const r of records){if(r.held)continue;
-        const p=r.queryPosition,v=r.queryVelocity,x2=p.x+v.x*remaining,y2=p.y+v.y*remaining,candidates=new Set();
+        const p=r.queryPosition,v=r.queryVelocity,x2=p.x+v.x*remaining,y2=p.y+v.y*remaining,candidates=new Set(this.nativeGlobalMeshes);
         for(let x=Math.floor(Math.min(p.x,x2)-RADIUS);x<=Math.floor(Math.max(p.x,x2)+RADIUS);x++)for(let y=Math.floor(Math.min(p.y,y2)-RADIUS);y<=Math.floor(Math.max(p.y,y2)+RADIUS);y++){
           for(const mesh of this.nativeMeshGrid.get(`${x},${y}`)??[])candidates.add(mesh);
         }
@@ -309,7 +348,7 @@ export class Pinball {
           for(const hit of mesh.mesh.hitsAt(p,v,RADIUS,remaining)){
             const key=`${r.body.handle}:mesh:${mesh.collider.handle}:${hit.id}`;
             if(hit.contact)contacts.push({r,hit,mesh});
-            else if(hit.time<=time&&!(hit.time<1e-9&&handled.has(key))){event={r,hit,key,mesh};time=hit.time;}
+            else if(hit.time<=time){event={r,hit,key,mesh};time=hit.time;}
           }
         }
       }
@@ -317,16 +356,30 @@ export class Pinball {
         pose(f);const omega=f.body.angvel().z;
         const bound=omega>0?Math.max(f.rest,f.raised):Math.min(f.rest,f.raised);
         const stop=omega?(bound-f.angle)/omega:Infinity;
-        if(stop>=-1e-9&&stop<=time){event={f,bound};time=Math.max(0,stop);}
+        if(stop>0&&stop<=time){event={f,bound};time=stop;}
         for(const r of records){
           if(r.held)continue;
           const hit=flipperHit(r.body,f,f.angle,omega,RADIUS,remaining),key=`${r.body.handle}:${f.side}`;
           if(hit?.contact)contacts.push({r,hit,f});
-          else if(hit&&hit.time<=time&&!(hit.time<1e-9&&handled.has(key))){event={f,r,key};time=hit.time;}
+          else if(hit&&hit.time<=time){event={f,r,key};time=hit.time;}
         }
       }
-      if(time>1e-9){this.world.timestep=time;this.world.step(this.events);this.plunger?.displace(time);remaining-=time;handled.clear();}
+      // Native allows repeated zero-time impacts. After ten very short impacts,
+      // advance by its legacy .02 VPT (0.2ms), rather than ignoring a collider.
+      if(event?.r&&time<.0002&&--staticCount<0){staticCount=0;time=.0002;}
+      if(time>.0002)staticCount=10;
+      if(time>1e-9){this.world.timestep=time;this.world.step(this.events);remaining-=time;}
+      this.plunger?.displace(time);
+      for(const f of this.flippers){
+        pose(f);const low=Math.min(f.rest,f.raised),high=Math.max(f.rest,f.raised),omega=f.body.angvel().z;
+        const bound=event?.f===f&&!event.r?event.bound:f.angle>=high?high:f.angle<=low?low:null;
+        if(bound!==null){
+          f.angle=bound;f.body.setRotation(quaternion(f.angle-f.rest),true);
+          if(Math.abs(omega)>=.05&&(bound===high&&omega>0||bound===low&&omega<0))f.body.setAngvel({x:0,y:0,z:-.3*omega},true);
+        }
+      }
       if(event&&!event.f){
+        this.ballSpin.impact(event.r.body,event.hit.gap);
         if(event.plunger)this.plunger.collide(event.r.body,event.hit);
         else if(event.mesh){
           const shape=event.mesh.mesh.shapes[event.hit.id],sling=shape.slingshot;
@@ -336,28 +389,31 @@ export class Pinball {
             event.r.body.applyImpulse({x:-n.x*force,y:-n.y*force,z:0},true);
           }
           collideSurface(event.r.body,event.hit,event.mesh.material,RADIUS,this.random);
+          if(shape.kind==='plane'){
+            const p=event.r.body.translation(),n=shape.normal,gap=p.x*n.x+p.y*n.y+p.z*n.z-RADIUS-shape.d;
+            if(gap<0)event.r.body.setTranslation({x:p.x-gap*n.x,y:p.y-gap*n.y,z:p.z-gap*n.z},true);
+          }
           if(event.mesh.bumper&&!this.tilted&&event.hit.vn<=-event.mesh.bumper.threshold){
             const n=event.hit.normal;event.r.body.applyImpulse({x:n.x*event.mesh.bumper.force,y:n.y*event.mesh.bumper.force,z:0},true);
           }
         }else if(this.playfieldMesh)collideSurface(event.r.body,event.hit,this.playfieldMaterial,RADIUS,this.random);
         else collidePlayfield(event.r.body,event.hit,this.playfieldMaterial,RADIUS,this.random);
-        handled.add(event.key);
       }else if(event){
       const f=event.f;pose(f);
       if(event.r){
         const contact=flipperContact(event.r.body.translation(),f,f.angle,RADIUS);
         if(contact&&contact.gap<=.0005){
+          this.ballSpin.impact(event.r.body,contact.gap);
           const state=this.rules?.objects.get(`${f.side}flipper`);
           resolveFlipperContact(event.r.body,f,contact,{elasticity:state?Number(state.elasticity):f.elasticity,elasticity_falloff:f.falloff??0,friction:f.friction},RADIUS);
         }
-        handled.add(event.key);
-      }else{
-        const omega=f.body.angvel().z;
-        f.angle=event.bound;f.body.setRotation(quaternion(f.angle-f.rest),true);f.body.setAngvel({x:0,y:0,z:Math.abs(omega)<.05?0:-.3*omega},true);
       }
       }
       // Even a zero-time impact must cancel the contact's original normal
       // velocity. Skipping it changes coupled floor/flipper impacts near EOS.
+      // VPX alternates the traversal direction randomly to avoid giving one
+      // persistent contact priority on every pass through an embedded pocket.
+      if(this.random()<.5)contacts.reverse();
       for(const {r,hit,f,mesh,plunger}of contacts){
         if(f)supportFlipper(r.body,f,hit,this.world.gravity,f.friction,RADIUS,time);
         else if(plunger)supportSurface(r.body,hit,this.world.gravity,{friction:.3},RADIUS,time);
@@ -365,10 +421,12 @@ export class Pinball {
         else if(this.playfieldMesh)supportSurface(r.body,hit,this.world.gravity,this.playfieldMaterial,RADIUS,time);
         else supportPlayfield(r.body,hit,this.world.gravity,this.playfieldMaterial,time);
       }
+      for(const r of records)this.ballSpin.apply(r.body,Math.round(this.time*1000));
       if(!event)break;
     }
     if(remaining>1e-9){this.physicsStats.substepBudgetExceeded++;this.world.timestep=remaining;this.world.step(this.events);this.plunger?.displace(remaining);}
     this.physicsStats.maxSubsteps=Math.max(this.physicsStats.maxSubsteps,count);this.world.timestep=STEP;
+    for(const r of records)this.ballSpin.record(r.body,Math.round(this.time*1000));
   }
 
   prepareContacts(records){
@@ -410,7 +468,7 @@ export class Pinball {
     const collider=this.world.createCollider(RAPIER.ColliderDesc.cylinder(height/2,item.radius*.01)
       .setTranslation(p.x,p.y,height/2).setRotation({x:Math.SQRT1_2,y:0,z:0,w:Math.SQRT1_2}).setSensor(this.nativeFlipperContacts)
       .setCollisionGroups(STATIC_GROUP).setRestitutionCombineRule(RAPIER.CoefficientCombineRule.Multiply).setRestitution(surfaceRestitution(.3)).setFriction(.3).setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS));
-    if(this.nativeFlipperContacts){const mesh=new ContactMesh({vertices:[],indices:[]});mesh.addCircle(p,item.radius*.01,0,height);this.registerMesh({collider,mesh,bumper:item,material:{...this.playfieldMaterial,elasticity:.3,elasticity_falloff:0,friction:.3,scatter:item.scatter}});}
+    if(this.nativeFlipperContacts){const mesh=new ContactMesh({vertices:[],indices:[]});mesh.addCircle(p,item.radius*.01,0,height);this.registerMesh({collider,mesh,bumper:item,source_order:item.source_order,material:{...this.playfieldMaterial,elasticity:.3,elasticity_falloff:0,friction:.3,scatter:item.scatter}});}
     this.tags.set(collider.handle,{kind:'bumper',name:item.name,p,threshold:item.threshold});this.colliderLabels.set(collider.handle,item.name);
   }
 

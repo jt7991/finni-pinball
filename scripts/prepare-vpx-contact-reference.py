@@ -1,4 +1,4 @@
-"""Build a zero-scatter native measurement copy without changing the source table."""
+"""Build a native measurement copy with explicit scatter overrides; keep the source table untouched."""
 import argparse
 import hashlib
 import json
@@ -10,11 +10,12 @@ ROOT=Path(__file__).resolve().parents[1]
 parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--source-root',type=Path,required=True)
 parser.add_argument('--instrument-timers',action='store_true',help='Build a separate diagnostic table that records actual timer callbacks.')
+parser.add_argument('--all-scatter-zero',action='store_true',help='Also zero every material/object scatter field in a separate reference copy.')
 args=parser.parse_args()
 source=args.source_root.resolve()
 tool=source/'.tools/vpxtool/vpxtool.exe'
 table=source/'runtime/Finni-Big-Day.vpx'
-out=ROOT/('.work/vpx-timing-reference' if args.instrument_timers else '.work/vpx-contact-reference')
+out=ROOT/('.work/vpx-all-scatter'+('-timing' if args.instrument_timers else '')+'-reference' if args.all_scatter_zero else '.work/vpx-timing-reference' if args.instrument_timers else '.work/vpx-contact-reference')
 out.mkdir(parents=True,exist_ok=True)
 extracted=out/'extracted'
 subprocess.run([str(tool),'extract',str(table),'-o',str(extracted),'-f'],check=True)
@@ -24,6 +25,19 @@ overrides={'scatter':0,'default_scatter':0}
 original={k:data[k] for k in overrides}
 data.update(overrides)
 data_path.write_text(json.dumps(data,indent=2)+'\n')
+scatter_overrides=[]
+if args.all_scatter_zero:
+    material_path=extracted/'materials.json';materials=json.loads(material_path.read_text())
+    for material in materials:
+        if material.get('scatter_angle',0)!=0:
+            scatter_overrides.append({'kind':'material','name':material['name'],'field':'scatter_angle','original':material['scatter_angle']})
+            material['scatter_angle']=0
+    material_path.write_text(json.dumps(materials,indent=2)+'\n')
+    for path in sorted((extracted/'gameitems').glob('*.json')):
+        value=json.loads(path.read_text());kind,item=next(iter(value.items()))
+        if item.get('scatter',0)!=0:
+            scatter_overrides.append({'kind':kind,'name':item['name'],'field':'scatter','original':item['scatter']})
+            item['scatter']=0;path.write_text(json.dumps(value,indent=2)+'\n')
 if args.instrument_timers:
     script_path=extracted/'script.vbs'
     script=script_path.read_text()
@@ -66,6 +80,7 @@ metadata={'engine':'@valknar/vpinball-wasm 0.3.4','upstreamCommit':'195f214dd484
           'sourceSha256':hashlib.sha256(table.read_bytes()).hexdigest(),
           'controlledSha256':hashlib.sha256(copy.read_bytes()).hexdigest(),
           'controlledOverrides':overrides,'originalValues':original,'diff':diff,'verification':verify}
+if args.all_scatter_zero:metadata.update({'allScatterZero':True,'scatterOverrides':scatter_overrides})
 if args.instrument_timers:
     metadata['instrumentation']={
         'timerTrace':['RollingTimer_Timer','LeftFlipper_Timer'],

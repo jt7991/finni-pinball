@@ -11,9 +11,22 @@ geometry can be reproduced without fetching upstream files. See
 
 Native measurement fixtures include their source-table hash, controlled-table
 hash and the exact comparison overrides. `scripts/prepare-vpx-contact-reference.py`
-builds a separate zero-scatter table under this worktree's ignored `.work/`;
+builds a separate table-scatter-zero table under this worktree's ignored `.work/`;
 `scripts/serve-vpx-reference.py --metadata ... --port 0` serves that copy with
 matching metadata. The original table is never changed.
+
+The default flag leaves material and object scatter intact. Use
+`--all-scatter-zero` for a separate reference with every material/object scatter
+field disabled as well; its metadata records each original value. Geometry
+recordings in `vpx-geometry.json` use this stronger control. The physics response
+still randomizes persistent-contact traversal, so embedded pocket rebounds can
+vary between independent native starts. Strict tests cover the measured top
+boundary, glass, camera and upper-post shots; full diagnostic traces retain the
+remaining left-boundary and return-pocket differences.
+
+`vpx-camera-animation.json` adds `--geometry --case=camera-drop --rotate-camera`
+to the native probe. The script sets Camera1.RotY=90 before releasing the ball.
+Its physics still follows the baked startup collider, which the port preserves.
 
 The corrected contact probe waits for the real plunger switch and verifies four
 balls at selection time: three animation balls followed by the playable ball.

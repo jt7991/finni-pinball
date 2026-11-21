@@ -35,7 +35,7 @@ export function createRules(source,specs,host={}) {
       enabled:spec.is_enabled??false,timerenabled:false,timerinterval:spec.timer_interval??100,
       interval:spec.timer_interval??100,blinkinterval:spec.blink_interval??125,intensity:spec.intensity??1,
       color:spec.color??0xffffff,colorfull:spec.color2??0xffffff,imagea:'d_empty',userValue:0,
-      isdropped:spec.is_dropped??false,open:false,rotx:0,roty:0,rotz:spec.rot_z??0,
+      isdropped:spec.is_dropped??false,open:false,rotx:spec.rot_and_tra?.[0]??0,roty:spec.rot_and_tra?.[1]??0,rotz:spec.rot_z??spec.rot_and_tra?.[2]??0,
       currentangle:0,startangle:0,endangle:0,transz:0,height:spec.height??50,sequenceactive:false,sequencestate:0};
     const actions={
       createball:()=>host.createBall?.(name),

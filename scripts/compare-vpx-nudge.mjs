@@ -2,11 +2,13 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {createFullGame} from '../three/full-game.js';
 import {STEP} from '../three/physics.js';
+import {applyReferencePhysics,referenceRandom} from './reference-physics.mjs';
 const fixture=JSON.parse(fs.readFileSync(process.argv.slice(2).find(a=>!a.startsWith('--'))??'three/tests/fixtures/vpx-nudge.json'));
-const layout=JSON.parse(fs.readFileSync('three/public/layout.json')),objects=JSON.parse(fs.readFileSync('three/public/objects.json')),source=fs.readFileSync('three/public/rules.vbs','utf8');Object.assign(layout.physics,fixture.controlledOverrides);
+const layout=JSON.parse(fs.readFileSync('three/public/layout.json')),objects=JSON.parse(fs.readFileSync('three/public/objects.json')),source=fs.readFileSync('three/public/rules.vbs','utf8');applyReferencePhysics(layout,objects,fixture);
 const reports=[];
 for(const c of fixture.cases){
   const g=await createFullGame(layout,objects,source,()=>{});
+  g.random=referenceRandom();
   try{
     g.start();for(let i=0;i<2/STEP;i++)g.step();const r=g.records[0];
     const timer=g.rules.objects.get('rollingtimer');timer.enabled=false;timer.enabled=true;

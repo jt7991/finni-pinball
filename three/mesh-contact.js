@@ -12,7 +12,7 @@ const clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
 export class ContactMesh{
   constructor(mesh,options={}){
     const points=[];for(let i=0;i<mesh.vertices.length;i+=3)points.push({x:mesh.vertices[i],y:mesh.vertices[i+1],z:mesh.vertices[i+2]});
-    this.grid=new Map();const edges=new Map();this.shapes=[];
+    this.grid=new Map();const edges=new Map();this.shapes=[];this.planes=[];
     this.bounds={minZ:Infinity,maxZ:-Infinity};
     const insert=shape=>{
       shape.id=this.shapes.length;this.shapes.push(shape);
@@ -29,10 +29,15 @@ export class ContactMesh{
       for(let j=0;j<3;j++){
         const k=ids[j],l=ids[(j+1)%3],key=[Math.min(k,l),Math.max(k,l)].join(':');
         if(edges.has(key)){edges.get(key).normals.push(n);continue;}
-        const a=points[k],b=points[l];edges.set(key,{a,b,normals:[n]});
+        const a=points[k],b=points[l],edge={a,b,normals:[n]};edges.set(key,edge);
+        if(options.coplanarJoints!==false){
+          const delta=sub(b,a),length=Math.hypot(delta.x,delta.y,delta.z);
+          if(length>1e-9)insert({kind:'edge',points:[a,b],a,axis:mul(delta,1/length),length});
+        }
       }
     }
     for(const {a,b,normals}of edges.values()){
+      if(options.coplanarJoints!==false)continue;
       if(options.coplanarJoints===false&&normals.length>1&&normals.every(n=>!n||!normals[0]||dot(cross(n,normals[0]),cross(n,normals[0]))<1e-8))continue;
       const delta=sub(b,a),length=Math.hypot(delta.x,delta.y,delta.z);if(length>1e-9)insert({kind:'edge',points:[a,b],a,axis:mul(delta,1/length),length});
     }
@@ -43,24 +48,66 @@ export class ContactMesh{
   }
   hitsAt(p,v,radius,duration){
     const q=add(p,mul(v,duration)),seen=new Set(),hits=[];
+    for(const plane of this.planes){const hit=planeHit(p,v,radius,duration,plane);if(hit)hits.push({...hit,id:plane.id});}
     if(Math.min(p.z,q.z)-radius>this.bounds.maxZ+.0005||Math.max(p.z,q.z)+radius<this.bounds.minZ-.0005)return hits;
     for(let x=Math.floor(Math.min(p.x,q.x)-radius);x<=Math.floor(Math.max(p.x,q.x)+radius);x++)for(let y=Math.floor(Math.min(p.y,q.y)-radius);y<=Math.floor(Math.max(p.y,q.y)+radius);y++){
       for(const shape of this.grid.get(`${x},${y}`)??[]){
         if(seen.has(shape.id))continue;seen.add(shape.id);
-        const hit=shape.kind==='triangle'?triangleHit(p,v,radius,duration,shape):shape.kind==='wall'?wallHit(p,v,radius,duration,shape):roundHit(p,v,radius,duration,shape);
+        const hit=shape.kind==='triangle'?triangleHit(p,v,radius,duration,shape):shape.kind==='polygon'?polygonHit(p,v,radius,duration,shape):shape.kind==='wall'?wallHit(p,v,radius,duration,shape):roundHit(p,v,radius,duration,shape);
         if(hit)hits.push({...hit,id:shape.id});
       }
     }
     return hits;
   }
-  addWall(a,b,low,high,height,slingshot){
-    if(high-low>.5){const m=mul(add(a,b),.5),h=(low+high)*.5;this.addWall(a,m,low,h,height);this.addWall(m,b,h,high,height);return;}
+  addWall(a,b,low,high,slingshot){
     const d=sub(b,a),length=Math.hypot(d.x,d.y);if(length<1e-9)return;
     const normal={x:d.y/length,y:-d.x/length,z:0};
-    this.insert({kind:'wall',points:[a,b],a,axis:{x:d.x/length,y:d.y/length,z:0},length,normal,low,high:high+height,slingshot});
+    this.insert({kind:'wall',points:[{...a,z:low},{...b,z:high}],a,axis:{x:d.x/length,y:d.y/length,z:0},length,normal,low,high,slingshot});
   }
+  addRampWall(a,b,height1,height2,height,joint){
+    // VPX subdivides sloping ramp walls, never an ordinary vertical wall.
+    if(height2-height1>.5){const m=mul(add(a,b),.5),h=(height1+height2)*.5;this.addRampWall(a,m,height1,h,height,joint);this.addRampWall(m,b,h,height2,height,true);return;}
+    this.addWall(a,b,height1,height2+height);
+    if(joint)this.addVertical(a,height1,height2+height);
+  }
+  addEdge(a,b){
+    const delta=sub(b,a),length=Math.hypot(delta.x,delta.y,delta.z);if(length<1e-9)return;
+    this.insert({kind:'edge',points:[a,b],a,axis:mul(delta,1/length),length});
+  }
+  addPoint(a){this.insert({kind:'point',points:[a],a});}
+  addPolygon(points){
+    const normal={x:0,y:0,z:0};
+    for(let i=0;i<points.length;i++){const a=points[i],b=points[(i+1)%points.length];normal.x+=(a.y-b.y)*(a.z+b.z);normal.y+=(a.z-b.z)*(a.x+b.x);normal.z+=(a.x-b.x)*(a.y+b.y);}
+    if(dot(normal,normal)<1e-16)return;
+    this.insert({kind:'polygon',points,a:points[0],n:unit(normal)});
+  }
+  addPlane(normal,d){const plane={kind:'plane',normal,d,id:this.shapes.length};this.shapes.push(plane);this.planes.push(plane);}
   addVertical(a,low,high){if(high<=low)return;this.insert({kind:'edge',points:[{...a,z:low},{...a,z:high}],a:{...a,z:low},axis:{x:0,y:0,z:1},length:high-low});}
   addCircle(center,radius,low,high){this.insert({kind:'circle',points:[{x:center.x-radius,y:center.y-radius,z:low},{x:center.x+radius,y:center.y+radius,z:high}],a:{...center,z:low},axis:{x:0,y:0,z:1},length:high-low,radius});}
+}
+function planeHit(p,v,radius,duration,s){
+  const vn=dot(s.normal,v),gap=dot(s.normal,p)-radius-s.d;
+  if(vn>.099||gap< -2*radius)return null;
+  if(Math.abs(vn)<=.099)return Math.abs(gap)<=.0005?{time:0,contact:true,gap,vn,normal:s.normal}:null;
+  const time=Math.max(0,gap/-vn);
+  return Number.isFinite(time)&&time<=duration?{time,contact:false,gap,vn,normal:s.normal}:null;
+}
+function polygonHit(p,v,radius,duration,s){
+  const vn=dot(s.n,v);if(vn>.0001)return null;
+  const nearest=sub(p,mul(s.n,radius)),gap=dot(s.n,sub(nearest,s.a));if(gap< -radius)return null;
+  let time;
+  if(gap<=.0005)time=gap<=0||Math.abs(vn)>.099?0:(gap/.001+.5)*.01;
+  else if(Math.abs(vn)>.0001)time=gap/-vn;else return null;
+  if(!Number.isFinite(time)||time<0||time>duration)return null;
+  const at=add(nearest,mul(v,time));let crossings=0;
+  for(let i=0;i<s.points.length;i++){
+    const a=s.points[i],b=s.points[(i+1)%s.points.length],hx1=at.x>=a.x,hx2=at.x>=b.x,hy1=at.y>=a.y,hy2=at.y>=b.y;
+    if(a.y===b.y||hy1===hy2||hx1&&hx2)continue;
+    if(!hx1&&!hx2){crossings^=1;continue;}
+    if(b.x===a.x){if(!hx2)crossings^=1;continue;}
+    if(b.x-(b.y-at.y)*(a.x-b.x)/(a.y-b.y)>at.x)crossings^=1;
+  }
+  return crossings?{time,gap,vn,normal:s.n,contact:false}:null;
 }
 export function wallHit(p,v,radius,duration,s){
   const vn=dot(v,s.normal);if(vn>.0001)return null;

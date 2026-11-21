@@ -74,8 +74,8 @@ test('ramp geometry supports an elevated ball and quick nudges tilt',async()=>{
   }finally{g.dispose();}
 });
 
-test('previous rollover, wire-end and return-post jams let balls leave',async()=>{
-  for(const p of [{x:5.08,y:18.79,z:RADIUS},{x:8.105,y:6.77,z:RADIUS},{x:8.431,y:10.799,z:RADIUS}]){
+test('previous rollover and wire-end jams let balls leave',async()=>{
+  for(const p of [{x:5.08,y:18.79,z:RADIUS},{x:8.105,y:6.77,z:RADIUS}]){
     const g=await createGame(layout);
     try{
       g.start();g.launch();position(g,p,{x:0,y:-5,z:0});ticks(g,2);

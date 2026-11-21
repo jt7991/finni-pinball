@@ -21,7 +21,7 @@ const evaluate=async expression=>{const r=await call('Runtime.evaluate',{express
 const wait=async expression=>{for(let i=0;i<1200;i++){if(await evaluate(expression))return;await new Promise(r=>setTimeout(r,50));}throw Error(`Timed out: ${expression}`);};
 const script=code=>evaluate(`finni.evaluate(${JSON.stringify(code)})`);
 const marker=async label=>evaluate(`document.getElementById('log').textContent.split(${JSON.stringify(label+'|')}).at(-1).split(String.fromCharCode(10))[0]`);
-const reset=(x,y,vx,vy,z=25)=>`RefBall.X=${x}:RefBall.Y=${y}:RefBall.Z=${z}:RefBall.VelX=${vx}:RefBall.VelY=${vy}:RefBall.VelZ=0:RefBall.AngMomX=0:RefBall.AngMomY=0:RefBall.AngMomZ=0`;
+const reset=(x,y,vx,vy,z=25,vz=0)=>`RefBall.X=${x}:RefBall.Y=${y}:RefBall.Z=${z}:RefBall.VelX=${vx}:RefBall.VelY=${vy}:RefBall.VelZ=${vz}:RefBall.AngMomX=0:RefBall.AngMomY=0:RefBall.AngMomZ=0`;
 const cases=[{name:'slide',x:430,y:1500,vx:10,vy:0}];
 for(const side of ['left','right'])for(const offset of [35,105])for(const delay of [0,40])cases.push({name:`${side}-${offset}-${delay}`,side,delay,x:(side==='left'?274.4583:592.20245)+(side==='left'?offset:-offset),y:1736.8932,vx:0,vy:6});
 for(const side of ['left','right']){
@@ -32,6 +32,16 @@ for(const side of ['left','right']){
 }
 cases.push({name:'wire-entry',x:610.5,y:832.5,z:20.7,vx:0,vy:0,sampleCount:96});
 cases.push({name:'slot-back',x:612.3,y:803.1,z:25,vx:0,vy:0,sampleCount:96});
+if(process.argv.includes('--geometry')){
+  reference.geometryProbe=true;cases.length=0;
+  cases.push(
+    {name:'cabinet-top',x:430,y:40,z:150,vx:0,vy:-12},
+    {name:'cabinet-left',x:40,y:1100,z:150,vx:-12,vy:0},
+    {name:'cabinet-glass',x:430,y:1100,z:245,vx:0,vy:0,vz:12,sampleCount:24},
+    {name:'camera-drop',x:113.558655,y:1671.6152,z:180,vx:0,vy:0,vz:-4,sampleCount:24},
+    {name:'upper-post-drop',x:547.42035,y:206.22552,z:160,vx:0,vy:0,vz:-2,sampleCount:24},
+    {name:'return-pocket',x:843.1,y:1035.1,z:25,vx:0,vy:5,sampleCount:96});
+}
 const selected=process.argv.find(a=>a.startsWith('--case='))?.slice(7);
 const exactDelay=process.argv.find(a=>a.startsWith('--exact-input-delay='))?.split('=')[1];
 if(exactDelay!==undefined)assert.ok(reference.instrumentation&&Number.isFinite(Number(exactDelay))&&Number(exactDelay)>0,'exact clock input requires the separate instrumented table');
@@ -64,6 +74,14 @@ try{
   reference.comparisonScope='playable ball including authored spin and speed controls';
   assert.ok(state[0]>state[3],'playable ball exists after the animation balls');
   await script('LeftFlipper.Scatter=0:RightFlipper.Scatter=0');
+  const disabled=process.argv.find(a=>a.startsWith('--disable='))?.slice(10).split(',')??[];
+  for(const name of disabled){
+    assert.match(name,/^[A-Za-z][A-Za-z0-9_]*$/);
+    await script(`${name}.Collidable=False`);runtimeOverrides[`${name}.Collidable`]=false;
+  }
+  if(process.argv.includes('--rotate-camera')){
+    await script('Camera1.RotY=90');runtimeOverrides['Camera1.RotY']=90;
+  }
   if(probeKind==='plunger'){
     const properties=['ParkPosition','Stroke','PullSpeed','FireSpeed','MomentumXfer','MechStrength'];
     await script('Debug.Print "PLUNGER_SETTINGS|" & '+properties.map(p=>`Plunger.${p}`).join(' & ":" & '));
@@ -88,7 +106,7 @@ try{
     if(exactDelay!==undefined&&scenario.side)drive=`RefDriveMarker="${inputMarker}":RefDriveSide=${scenario.side==='left'?1:2}:RefDrivePress=${scenario.press===false?0:1}:RefDriveAt=GameTime+${Number(exactDelay)}`;
     if(scenario.plunger)drive='Plunger.PullBack:'+drive;
     const trace=recordTimers?'RefTrace="":Set RefTraceBall=RefBall:RefTraceUntil=GameTime+70:RefTraceOn=True:':'';
-    await script(`${trace}RollingTimer.Enabled=False:RollingTimer.Enabled=True:${reset(scenario.x,scenario.y,scenario.vx,scenario.vy,scenario.z)}:${drive?drive+':':''}Debug.Print "CONTACT_INIT|" & GameTime & ":" & RefBall.AngMomX & ":" & RefBall.AngMomY & ":" & RefBall.AngMomZ & ":" & RefBall.X & ":" & RefBall.Y & ":" & RefBall.Z`);
+    await script(`${trace}RollingTimer.Enabled=False:RollingTimer.Enabled=True:${reset(scenario.x,scenario.y,scenario.vx,scenario.vy,scenario.z,scenario.vz)}:${drive?drive+':':''}Debug.Print "CONTACT_INIT|" & GameTime & ":" & RefBall.AngMomX & ":" & RefBall.AngMomY & ":" & RefBall.AngMomZ & ":" & RefBall.X & ":" & RefBall.Y & ":" & RefBall.Z`);
     const initial=(await marker('CONTACT_INIT')).split(':').map(parseFloat);assert.equal(initial.length,7);assert.deepEqual(initial.slice(1,4),[0,0,0],'native spin reset');
     for(const [actual,expected]of [[initial[4],scenario.x],[initial[5],scenario.y],[initial[6],scenario.z??25]])assert.ok(Math.abs(actual-expected)<.001,`native initial position ${actual} vs ${expected}`);
     const origin=initial[0],samples=[],rawSamples=[];
@@ -110,6 +128,6 @@ try{
       assert.ok(timerTrace[0][1]<=10,'full trace must include the first timer callbacks');
     }
     results.push({...scenario,initial,actualDelay,samples,rawSamples,...(timerTrace?{timerTrace}:{})});console.log(scenario.name,'input at',actualDelay,JSON.stringify(samples.at(-1)));
-    await writeFile(`${output}/vpx-${probeKind==='contacts'?'contact':probeKind}-reference.json`,JSON.stringify({...reference,probeKind,runtimeOverrides,columns,cases:results},null,2));
+    await writeFile(`${output}/vpx-${reference.geometryProbe?'geometry':probeKind==='contacts'?'contact':probeKind}-reference.json`,JSON.stringify({...reference,probeKind,runtimeOverrides,columns,cases:results},null,2));
   }
 }finally{socket.close();}
