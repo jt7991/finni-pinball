@@ -15,9 +15,10 @@ parser.add_argument('--instrument-spinners',action='store_true',help='Build a se
 parser.add_argument('--instrument-ball-trails',action='store_true',help='Record the source ten-slot old-position history before controlled resets.')
 parser.add_argument('--instrument-rng',action='store_true',help='Emit physics-frame markers for read-only native random-state capture.')
 parser.add_argument('--instrument-bumpers',action='store_true',help='Observe bumper callback clocks and physics-affecting script random outputs.')
+parser.add_argument('--instrument-slingshots',action='store_true',help='Observe native slingshot callback clocks and post-response velocities.')
 parser.add_argument('--all-scatter-zero',action='store_true',help='Also zero every material/object scatter field in a separate reference copy.')
 args=parser.parse_args()
-if args.instrument_spinners or args.instrument_ball_trails or args.instrument_rng or args.instrument_bumpers:args.instrument_timers=True
+if args.instrument_spinners or args.instrument_ball_trails or args.instrument_rng or args.instrument_bumpers or args.instrument_slingshots:args.instrument_timers=True
 source=args.source_root.resolve()
 tool=source/'.tools/vpxtool/vpxtool.exe'
 table=source/'runtime/Finni-Big-Day.vpx'
@@ -59,6 +60,13 @@ if args.instrument_timers:
             observer=f'    If RefTraceOn Then RefTrace=RefTrace & "BUMPER|" & GameTime & "|{index}|" & CStr(CDbl(ActiveBall.VelX)) & "|" & CStr(CDbl(ActiveBall.VelY)) & "|" & CStr(CDbl(ActiveBall.VelZ)) & ";"\n'
             script,count=re.subn(pattern,lambda m:m[1]+observer,script,count=1,flags=re.I)
             if count!=1:raise RuntimeError(f'Missing native bumper handler {index}')
+    if args.instrument_slingshots:
+        for index,side in enumerate(['Left','Right'],1):
+            pattern=rf'(Sub {side}SlingShot_Slingshot\b[^\r\n]*[\r\n]+)'
+            observer=f'    If RefTraceOn Then RefTrace=RefTrace & "SLING|" & GameTime & "|{index}|" & CStr(CDbl(ActiveBall.VelX)) & "|" & CStr(CDbl(ActiveBall.VelY)) & "|" & CStr(CDbl(ActiveBall.VelZ)) & ";"\n'
+            script,count=re.subn(pattern,lambda m:m[1]+observer,script,count=1,flags=re.I)
+            if count!=1:raise RuntimeError(f'Missing native slingshot handler {side}')
+    if args.instrument_bumpers or args.instrument_slingshots:
         # Observe the original Rnd return values. The wrapper preserves the
         # Single variant and advances the native script RNG exactly once.
         script,count=re.subn(r'(Sub LilDPShake\b.*?)(End Sub)',lambda m:re.sub(r'\bRND\(1\)', 'RefShakeRnd(1)',m[1],flags=re.I)+m[2],script,count=1,flags=re.I|re.S)
@@ -144,6 +152,7 @@ if args.instrument_timers:
         metadata['instrumentation']['ballTrails']={'slots':10,'bucketMilliseconds':10,'columns':['ball_id','x','y','z'],'positionPhase':'Timer observes the preceding physics step; the final completed-step position is captured before each controlled reset.'}
     if args.instrument_rng:metadata['instrumentation']['nativeRngMarkers']='RNG_FRAME emitted before each physics step; the browser probe reads the unmodified engine state synchronously when this debug message is written.'
     if args.instrument_bumpers:metadata['instrumentation']['bumperTrace']={'callbacks':'BUMPER records handler entry clock, index and incoming scripted ball velocity after the native kick.','scriptRandom':'SCRIPT_RND records original Single outputs in LilDPShake through a wrapper that preserves value type and one native RNG advance per call.'}
+    if args.instrument_slingshots:metadata['instrumentation']['slingshotTrace']={'callbacks':'SLING records handler entry clock, side and post-response velocity.','scriptRandom':'SCRIPT_RND preserves original LilDPShake inputs and one native RNG call per output.'}
 (out/'metadata.json').write_text(json.dumps(metadata,indent=2)+'\n')
 print(diff)
 print(f'Controlled native reference: {copy}')

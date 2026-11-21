@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {nativeBallMemoryObserver} from './native-ball-memory-observer.mjs';
 const [debug,base,output]=process.argv.slice(2);
-const probeKind=process.argv.includes('--bumpers')?'bumpers':process.argv.includes('--autofire')?'autofire':process.argv.includes('--ball-pairs')?'ball-pairs':process.argv.includes('--triggers')?'triggers':process.argv.includes('--targets')?'targets':process.argv.includes('--gates')?'gates':process.argv.includes('--spinners')?'spinners':process.argv.includes('--plunger')?'plunger':process.argv.includes('--nudge')?'nudge':'contacts';
+const probeKind=process.argv.includes('--slingshots')?'slingshots':process.argv.includes('--bumpers')?'bumpers':process.argv.includes('--autofire')?'autofire':process.argv.includes('--ball-pairs')?'ball-pairs':process.argv.includes('--triggers')?'triggers':process.argv.includes('--targets')?'targets':process.argv.includes('--gates')?'gates':process.argv.includes('--spinners')?'spinners':process.argv.includes('--plunger')?'plunger':process.argv.includes('--nudge')?'nudge':'contacts';
 const reference=await(await fetch(new URL('/reference-metadata.json',base))).json();
 const recordTimers=!!reference.instrumentation&&!process.argv.includes('--no-timer-trace');
 const recordAllBalls=process.argv.includes('--all-ball-state');
@@ -49,6 +49,7 @@ const runtimeOverrides={'LeftFlipper.Scatter':0,'RightFlipper.Scatter':0};
 const columns=['ms','x','y','z','vx','vy','vz','wx','wy','wz','left','right',...(probeKind==='triggers'?['balls_over']:probeKind==='plunger'?['plunger_position']:probeKind==='targets'?['target009_dropped','target010_dropped','target011_dropped','target009_offset','target010_offset','target011_offset','score']:['spinners','gates'].includes(probeKind)?[probeKind==='gates'?'gate_angle':'spinner_angle','score','left_spinner_count']:[])];
 if(probeKind==='autofire')columns.push('plunger_position','coil_balls');
 if(probeKind==='bumpers')columns.push('score','bumper_hits');
+if(probeKind==='slingshots')columns.push('score');
 if(recordKickers)columns.push('ball_count','score','balls_in_hole');
 if(probeKind==='ball-pairs')columns.push('other_x','other_y','other_z','other_vx','other_vy','other_vz','other_wx','other_wy','other_wz');
 reference.timerSynchronization='RollingTimer disabled/enabled immediately before each initial state, resetting its 10ms phase.';
@@ -120,6 +121,17 @@ if(probeKind==='bumpers'){
   const initial=cases.find(c=>c.name==='Bumper1-2');
   for(const [suffix,overrides]of [['threshold',{Threshold:100}],['force',{Force:4}],['no-event',{HasHitEvent:false}],['disabled',{Collidable:false}]])cases.push({...initial,name:'Bumper1-'+suffix,bumperOverrides:overrides});
   cases.push({...initial,name:'Bumper1-repeat',repeatBumperReset:true,delay:40});
+}
+if(probeKind==='slingshots'){
+  assert.ok(reference.instrumentation?.slingshotTrace,'slingshot capture requires its instrumented table');
+  reference.ruleControls='Score(CurrentPlayer)=0:Tilted=False';cases.length=0;
+  const specs=JSON.parse(await readFile(new URL('../three/public/layout.json',import.meta.url),'utf8')).items.filter(s=>/slingshot/i.test(s.name));
+  for(const spec of specs){
+    const index=spec.drag_points.findIndex(p=>p.is_slingshot),a=spec.drag_points[index],b=spec.drag_points[(index+1)%spec.drag_points.length],dx=b.x-a.x,dy=b.y-a.y,length=Math.hypot(dx,dy),nx=-dy/length,ny=dx/length;
+    for(const fraction of [.2,.5,.8])for(const speed of [1,6])cases.push({name:`${spec.name}-${fraction}-${speed}`,slingshot:spec.name,x:a.x+dx*fraction+nx*25.01,y:a.y+dy*fraction+ny*25.01,z:25,vx:-nx*speed,vy:-ny*speed,sampleCount:12,maximumMilliseconds:100});
+    const initial=cases.find(c=>c.slingshot===spec.name&&c.name.endsWith('0.5-6'));
+    for(const [suffix,overrides]of [['disabled',{Disabled:true}],['threshold',{SlingshotThreshold:100}],['noncollidable',{Collidable:false}]])cases.push({...initial,name:spec.name+'-'+suffix,slingshotOverrides:overrides});
+  }
 }
 const selected=process.argv.find(a=>a.startsWith('--case='))?.slice(7);
 const exactDelay=process.argv.find(a=>a.startsWith('--exact-input-delay='))?.split('=')[1];
@@ -225,7 +237,7 @@ try{
   if(process.argv.includes('--rotate-camera')){
     await script('Camera1.RotY=90');runtimeOverrides['Camera1.RotY']=90;
   }
-  if(['spinners','gates','triggers','ball-pairs','bumpers'].includes(probeKind)){
+  if(['spinners','gates','triggers','ball-pairs','bumpers','slingshots'].includes(probeKind)){
     const specs=JSON.parse(await readFile(new URL('../three/public/objects.json',import.meta.url),'utf8')).objects;
     const overrides=[];
     for(const s of specs){
@@ -243,8 +255,8 @@ try{
       const flags=(await marker(label)).split(':').map(parseFloat);assert.equal(flags.length,batch.length);assert.ok(flags.every(n=>n===0),'native mechanism isolation setters took effect');
     }
     reference.isolation='Other authored solid geometry and switches disabled; cabinet bounds and the playfield retained. From parkFromSample onward, reset the measured ball to a remote flat spot immediately before each observation so the plate coasts without further strikes.';
-    const settingsKey=probeKind==='gates'?'nativeGateProperties':'nativeSpinnerProperties';if(!['triggers','ball-pairs','bumpers'].includes(probeKind))reference[settingsKey]={};
-    for(const name of ['triggers','ball-pairs','bumpers'].includes(probeKind)?[]:probeKind==='gates'?['Gate001','Gate002','Gate3','Gate4']:['Spinner001','Spinner002']){
+    const settingsKey=probeKind==='gates'?'nativeGateProperties':'nativeSpinnerProperties';if(!['triggers','ball-pairs','bumpers','slingshots'].includes(probeKind))reference[settingsKey]={};
+    for(const name of ['triggers','ball-pairs','bumpers','slingshots'].includes(probeKind)?[]:probeKind==='gates'?['Gate001','Gate002','Gate3','Gate4']:['Spinner001','Spinner002']){
       const properties=['Height','Length','Rotation','Damping',...(probeKind==='gates'?['OpenAngle','CloseAngle']:['AngleMin','AngleMax']),'Elasticity'];
       await script('Debug.Print "SPINNER_SETTINGS|" & '+properties.map(p=>`${name}.${p}`).join(' & ":" & '));
       const values=(await marker('SPINNER_SETTINGS')).split(':').map(parseFloat);assert.ok(values.every(Number.isFinite));
@@ -298,6 +310,14 @@ try{
       await script('Debug.Print "BUMPER_SETTINGS|" & '+keys.map(key=>(key==='Collidable'||key==='HasHitEvent'?'CLng('+scenario.bumper+'.'+key+')':scenario.bumper+'.'+key)).join(' & ":" & '));
       const actual=(await marker('BUMPER_SETTINGS')).split(':').map(parseFloat),expected=keys.map(key=>{const value=scenario.runtimeOverrides[scenario.bumper+'.'+key];return typeof value==='boolean'?value?-1:0:value;});assert.deepEqual(actual,expected,'native bumper runtime setters took effect');
     }
+    if(scenario.slingshot){
+      await script(reference.ruleControls);
+      await script('Leftslingshot.Collidable=False:Rightslingshot.Collidable=False');
+      scenario.runtimeOverrides=Object.fromEntries(Object.entries({Collidable:true,Disabled:false,SlingshotThreshold:3,...scenario.slingshotOverrides}).map(([key,value])=>[`${scenario.slingshot}.${key}`,value]));
+      for(const [path,value]of Object.entries(scenario.runtimeOverrides))await script(path+'='+(typeof value==='boolean'?value?'True':'False':value));
+      const keys=['Collidable','Disabled','SlingshotThreshold'];await script('Debug.Print "SLING_SETTINGS|" & '+keys.map(key=>key==='SlingshotThreshold'?scenario.slingshot+'.'+key:'CLng('+scenario.slingshot+'.'+key+')').join(' & ":" & '));
+      assert.deepEqual((await marker('SLING_SETTINGS')).split(':').map(parseFloat),keys.map(key=>{const value=scenario.runtimeOverrides[scenario.slingshot+'.'+key];return typeof value==='boolean'?value?-1:0:value;}),'native slingshot runtime setters took effect');
+    }
     const command=scenario.setupCode??(scenario.repeatBumperReset?reset(scenario.x,scenario.y,scenario.vx,scenario.vy,scenario.z,scenario.vz):scenario.autofire?'PlungerIM.AutoFire':scenario.gate?`${scenario.gate}.Open=${scenario.open?'True':'False'}`:scenario.plunger?'Plunger.Fire':scenario.nudgeAngle!==undefined?`Nudge ${scenario.nudgeAngle},${scenario.force}`:scenario.side?`Sol${scenario.side==='left'?'L':'R'}Flipper ${scenario.press===false?0:1}`:'');
     const inputMarker=`CONTACT_INPUT_${scenario.name}`;
     const input=`Debug.Print "${inputMarker}|" & GameTime:${command}`;
@@ -345,7 +365,7 @@ try{
       const mechanism=scenario.spinner??scenario.gate;
       const targetFields=scenario.target?['Target009','Target010','Target011'].map(n=>`CLng(${n}.IsDropped)`).concat(['Target009','Target010','Target011'].map(n=>`CLng(${n}.CurrentAnimOffset*1000000)`),'Score(CurrentPlayer)'):null;
       const pairFields=scenario.otherBall?['X','Y','Z',...['VelX','VelY','VelZ','AngVelX','AngVelY','AngVelZ']].map((p,i)=>i<3?`RefOtherBall.${p}`:`CLng(RefOtherBall.${p}*1000000)`):null;
-      const extra=pairFields?' & ":" & '+pairFields.join(' & ":" & '):scenario.bumper?' & ":" & Score(CurrentPlayer) & ":" & BumperHits(CurrentPlayer)':scenario.autofire?' & ":" & Plunger.Position & ":" & (UBound(PlungerIM.Balls)+1)':scenario.kicker?' & ":" & (UBound(GetBalls)+1) & ":" & Score(CurrentPlayer) & ":" & BallsInHole':scenario.trigger?` & ":" & ${scenario.trigger}.BallCntOver`:mechanism?` & ":" & CLng(${mechanism}.CurrentAngle*1000000) & ":" & Score(CurrentPlayer) & ":" & LeftSpinnerCount(CurrentPlayer)`:targetFields?' & ":" & '+targetFields.join(' & ":" & '):scenario.plunger?' & ":" & Plunger.Position':'';
+      const extra=pairFields?' & ":" & '+pairFields.join(' & ":" & '):scenario.slingshot?" & \":\" & Score(CurrentPlayer)":scenario.bumper?' & ":" & Score(CurrentPlayer) & ":" & BumperHits(CurrentPlayer)':scenario.autofire?' & ":" & Plunger.Position & ":" & (UBound(PlungerIM.Balls)+1)':scenario.kicker?' & ":" & (UBound(GetBalls)+1) & ":" & Score(CurrentPlayer) & ":" & BallsInHole':scenario.trigger?` & ":" & ${scenario.trigger}.BallCntOver`:mechanism?` & ":" & CLng(${mechanism}.CurrentAngle*1000000) & ":" & Score(CurrentPlayer) & ":" & LeftSpinnerCount(CurrentPlayer)`:targetFields?' & ":" & '+targetFields.join(' & ":" & '):scenario.plunger?' & ":" & Plunger.Position':'';
       await script(park+'Debug.Print "CONTACT_SAMPLE|" & GameTime & ":" & RefBall.X & ":" & RefBall.Y & ":" & RefBall.Z & ":" & CLng(RefBall.VelX*1000000) & ":" & CLng(RefBall.VelY*1000000) & ":" & CLng(RefBall.VelZ*1000000) & ":" & CLng(RefBall.AngVelX*1000000) & ":" & CLng(RefBall.AngVelY*1000000) & ":" & CLng(RefBall.AngVelZ*1000000) & ":" & LeftFlipper.CurrentAngle & ":" & RightFlipper.CurrentAngle'+extra);
       const raw=await marker('CONTACT_SAMPLE');rawSamples.push(raw);
       const values=raw.split(':').map(parseFloat);assert.equal(values.length,columns.length);assert.ok(values.every(Number.isFinite));for(let k=4;k<10;k++)values[k]/=1000000;values[0]-=origin;samples.push(values);
@@ -365,7 +385,7 @@ try{
       let raw='';
       for(let offset=1;offset<=length;offset+=200){await script(`Debug.Print "TIMER_TRACE_CHUNK|" & Mid(RefTrace,${offset},200)`);raw+=(await marker('TIMER_TRACE_CHUNK')).replace(/'$/,'');}
       timerTrace=raw.trim().split(';').filter(Boolean).map(line=>{const [handler,ms,...fields]=line.split('|');return [handler,Number(ms)-origin,...fields.map(Number)];});
-      assert.ok(timerTrace.every(([name,ms,...fields])=>['ROLL','FLIP','STATE','SPIN','BUMPER','SCRIPT_RND'].includes(name)&&[ms,...fields].every(Number.isFinite)));
+      assert.ok(timerTrace.every(([name,ms,...fields])=>['ROLL','FLIP','STATE','SPIN','BUMPER','SLING','SCRIPT_RND'].includes(name)&&[ms,...fields].every(Number.isFinite)));
       assert.ok(timerTrace[0][1]<=10,'full trace must include the first timer callbacks');
     }
     const closing=scenario.closeDelay?{actualCloseDelay:closeAt-origin}:{};if(scenario.closeDelay)assert.ok(Number.isFinite(closing.actualCloseDelay)&&closing.actualCloseDelay>0,'observed native gate-close clock');

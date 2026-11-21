@@ -48,7 +48,7 @@ class FullGame extends Pinball {
       },stopSound:name=>media?.stop(name),
       shake:strength=>emit({type:'shake',strength}),
       message:text=>emit({type:'message',text}),mechanism:(name,k,v)=>this.mechanism(name,k,v),
-      mechanismValue:(name,key)=>{const lower=name.toLowerCase(),target=this.targetMotions.get(lower);if(target)return ({isdropped:target.dropped?1:0,currentanimoffset:target.offset})[key];const gate=this.gates.find(g=>g.spec.name.toLowerCase()===lower);if(gate)return ({currentangle:gate.currentAngle,collidable:gate.enabled,open:gate.open})[key];const bumper=this.nativeBumpers.get(lower);if(bumper)return ({threshold:bumper.bumper.threshold,force:bumper.bumper.force,scatter:bumper.bumper.scatter,hashitevent:bumper.bumper.hit_event,collidable:bumper.collider.isEnabled()})[key];},
+      mechanismValue:(name,key)=>{const lower=name.toLowerCase(),target=this.targetMotions.get(lower);if(target)return ({isdropped:target.dropped?1:0,currentanimoffset:target.offset})[key];const gate=this.gates.find(g=>g.spec.name.toLowerCase()===lower);if(gate)return ({currentangle:gate.currentAngle,collidable:gate.enabled,open:gate.open})[key];const sling=this.nativeSlingshots.get(lower);if(sling){const value=({disabled:sling.disabled,slingshotthreshold:sling.threshold})[key];if(value!==undefined)return value;}const bumper=this.nativeBumpers.get(lower);if(bumper)return ({threshold:bumper.bumper.threshold,force:bumper.bumper.force,scatter:bumper.bumper.scatter,hashitevent:bumper.bumper.hit_event,collidable:bumper.collider.isEnabled()})[key];},
       balls:()=>this.physicalRecords.map(r=>r.proxy),...storage,
     });
     this.rules.init();
@@ -144,6 +144,9 @@ class FullGame extends Pinball {
 
   mechanism(name,key,v) {
     const collider=this.mechanisms.get(name.toLowerCase());if(!collider)return;
+    const sling=this.nativeSlingshots.get(name.toLowerCase());
+    if(sling&&key==='disabled'){sling.disabled=!!v;return;}
+    if(sling&&key==='slingshotthreshold'){sling.threshold=Math.fround(Number(v));return;}
     const bumper=this.nativeBumpers.get(name.toLowerCase());
     if(bumper){
       if(key==='collidable')collider.setEnabled(!!v);
@@ -283,6 +286,7 @@ class FullGame extends Pinball {
       const tag=this.tags.get(this.byCollider.has(a)?b:a);if(!tag)return;
       if(tag.kind==='target-body'||tag.kind==='spinner-body'||tag.kind==='gate-body'||tag.kind==='trigger-body'||tag.kind==='kicker-body')return;
       if(this.nativeFlipperContacts&&tag.kind==='bumper')return;
+      if(this.nativePositionUnits&&tag.kind==='sling')return;
       if(!started){if(tag.spec?.kind==='Trigger'){if(tag.name.toLowerCase()==='swplungerrest')rec.inLane=false;this.rules.hit(tag.name,'UnHit',rec.proxy);}return;}
       if(tag.spec?.kind==='Trigger'){
         if(tag.name.toLowerCase()==='swplungerrest')rec.inLane=true;

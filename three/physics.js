@@ -18,6 +18,7 @@ import {NativeTree} from './native-tree.js';
 import {NativeDynamicTree} from './native-dynamic-tree.js';
 import {nativeBallHit,collideNativeBalls} from './native-ball-collision.js';
 import {collideNativeBumper} from './native-bumper.js';
+import {collideNativeSlingshot} from './native-slingshot.js';
 
 export const STEP = 1 / 1000;
 export const RADIUS = 0.25;
@@ -83,7 +84,7 @@ export class Pinball {
     this.tags = new Map();
     this.colliderLabels = new Map();
     this.contactMaterials=new Map();this.changedMaterials=new Set();this.queryBall=new RAPIER.Ball(RADIUS);
-    this.nativeMeshes=[];this.nativeMeshGrid=new Map();this.nativeGlobalMeshes=[];this.nativeBumpers=new Map();
+    this.nativeMeshes=[];this.nativeMeshGrid=new Map();this.nativeGlobalMeshes=[];this.nativeBumpers=new Map();this.nativeSlingshots=new Map();
     this.nativeParts=new Map([...layout.items,...(layout.rubbers??[])].map(item=>[item.name.toLowerCase(),item]));
     this.nativeParts.set('playfield_mesh',layout.playfield);this.nativeTreeEnabled=this.nativePositionUnits&&this.nativeFlipperContacts&&physics.native_tree!==false;
     this.nativeBallContacts=this.nativeTreeEnabled&&physics.native_ball_contacts!==false;this.ballCollisionSwap=false;this.dynamicBallTree=new NativeDynamicTree();
@@ -194,11 +195,11 @@ export class Pinball {
       this.contactMaterials.set(collider.handle,{collider,...material});
       if(this.nativeFlipperContacts){
         const points=nativeDragCurve(item.drag_points,true,4,2).map(p=>({...p,...point(p)})),count=points.length;
-        const mesh=new ContactMesh({vertices:[],indices:[]});
+        const mesh=new ContactMesh({vertices:[],indices:[]}),sling={name:item.name,force:item.slingshot_force,threshold:item.slingshot_threshold,disabled:false};
         const clockwise=ShapeUtils.isClockWise(points.map(p=>new Vector2(p.x,p.y)));
         for(let i=0;i<count;i++){
           const a=points[(i+1)%count],b=points[(i+2)%count],low=item.height_bottom*.01,high=item.height_top*.01;
-          mesh.addWall(clockwise?b:a,clockwise?a:b,low,high,a.slingshot?{force:item.slingshot_force,threshold:item.slingshot_threshold}:null);
+          mesh.addWall(clockwise?b:a,clockwise?a:b,low,high,a.slingshot?sling:null);
           if(low!==0)mesh.addEdge({...a,z:low},{...b,z:low});
           mesh.addEdge({...a,z:high},{...b,z:high});
           mesh.addVertical(a,low,high);
@@ -207,6 +208,7 @@ export class Pinball {
         }
         mesh.addPolygon(points.map(p=>({...p,z:item.height_top*.01})));
         if(item.is_bottom_solid)mesh.addPolygon([...points].reverse().map(p=>({...p,z:item.height_bottom*.01})));
+        if(mesh.shapes.some(shape=>shape.slingshot))this.nativeSlingshots.set(item.name.toLowerCase(),sling);
         this.registerMesh({collider,mesh,material:{...this.playfieldMaterial,...material},name:item.name,source_order:item.source_order});
       }
     }
@@ -531,6 +533,13 @@ export class Pinball {
             continue;
           }
           const shape=event.mesh.mesh.shapes[event.hit.id],sling=shape.slingshot;
+          if(sling&&impactBody.native){
+            collideNativeSlingshot(impactBody,event.hit,shape,sling,event.mesh.material,RADIUS,this.random,()=>{
+              if(this.rules)this.rules.hit(sling.name,'Slingshot',event.r.proxy);
+              else if(this.state==='playing'&&!this.tilted)this.award(10,'sling');
+            });
+            continue;
+          }
           if(sling&&!this.tilted&&event.hit.vn<=-sling.threshold){
             const p=impactBody.translation(),n=event.hit.normal,t=((p.x-n.x*RADIUS-shape.a.x)*shape.axis.x+(p.y-n.y*RADIUS-shape.a.y)*shape.axis.y)/shape.length;
             const force=.5*(1-(2*t-1)**2)*sling.force;
@@ -691,6 +700,7 @@ export class Pinball {
       const handle=a===this.ballCollider.handle?b:b===this.ballCollider.handle?a:null;
       const tag=this.tags.get(handle);if(!tag||(this.cooldowns.get(tag.name)||0)>this.time)return;
       if(this.nativeFlipperContacts&&tag.kind==='bumper')return;
+      if(this.nativePositionUnits&&tag.kind==='sling')return;
       this.cooldowns.set(tag.name,this.time+.12);
       const p=this.ball.translation();
       if(tag.kind==='bumper') {

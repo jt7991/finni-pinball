@@ -160,3 +160,28 @@ and replayed only within that callback. The fourteen cases reproduce 1,454
 observed physics frames, exact callback clocks/scores, and sampled trajectory
 errors below .0001 VPU / .000001 velocity / .000001 angular velocity. This does
 not establish parity for other mechanisms or complete gameplay.
+
+`vpx-slingshots-native-state.json` adds eighteen slingshot recordings across
+both sides, three positions on the active segment, two approach speeds, live
+Disabled/SlingshotThreshold settings, and Collidable=False. Add
+`--instrument-slingshots` to a fresh diagnostic table and capture with
+`--slingshots --all-ball-state --ball-trails --rng-state --native-internals
+--no-state-trace`. The script RNG observer preserves the authored shake calls.
+Run `node scripts/compare-vpx-slingshots.mjs --check` for the committed replay.
+
+The native response boosts velocity inward before wall reflection; Disabled
+and the threshold suppress this boost and event while preserving the wall.
+Callbacks run during collision, with native position-based repeat suppression,
+and start the original animation timer and scoring handler. Disabled is wired
+to the authored DisableTable routine. Rapier no longer emits an additional
+slingshot scoring callback in native mode. The native source's SlingshotStrength
+setter updates its stored setting without replacing the already-built segment
+force; this change does not invent live strength behavior.
+
+These eighteen runs retain all 1,821 observed physics RNG states. Dense
+read-only memory comparisons found zero position difference for all four balls
+at every observed frame, velocity difference below 2e-9, and momentum difference
+below 4.8e-7. Committed public position samples use a .001-VPU bound because
+native CStr rounds positions around Y=1500 to that precision; callback velocity,
+sampled velocity and angular velocity keep .000001 bounds. Other parity failures
+remain independently enforced.
