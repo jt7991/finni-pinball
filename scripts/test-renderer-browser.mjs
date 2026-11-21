@@ -130,6 +130,8 @@ try{
   // native subroutine. This checks replay, not a full three-ball physics run.
   await evaluate(`window.replayEngine=finni.engine;finni.evaluate('BallsOnPlayfield=0:EndOfGame')`);
   await wait('!document.getElementById("waiting").hidden && document.getElementById("play").textContent==="Play again"');
+  await wait(`(()=>{finni.evaluate('Debug.Print "REPLAY_BACKGROUND|" & Digits(40).ImageA');return document.getElementById('log').textContent.includes('REPLAY_BACKGROUND|d_gameover')})()`);
+  await wait(`document.getElementById('dmd').getContext('2d').getImageData(0,0,1024,256).data.some((value,index)=>index%4!==3&&value>96)`);
   await capture('replay');
   const replayButton=await evaluate(`(()=>{const r=document.getElementById('play').getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2}})()`);
   const replayFullscreen=await evaluate('({active:!!document.fullscreenElement,requests:playFullscreenRequests.length})');

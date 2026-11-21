@@ -33,6 +33,18 @@ try{
     await call('Page.navigate',{url:base});
     await wait('!!window.playerTest');
     await evaluate('document.fonts.ready.then(()=>true)');
+    await evaluate(`playerTest.playingClass=document.body.className;document.body.classList.remove('playing','game-in-play');document.getElementById('waiting').hidden=false;document.getElementById('play').disabled=false;document.getElementById('play').textContent='Start game';document.getElementById('progress').hidden=true;document.getElementById('loading').textContent='Table loaded.';Promise.all([...document.querySelectorAll('.start-content img')].map(i=>i.decode()))`);
+    const titleScreen=await evaluate(`(()=>{const inside=e=>{const r=e.getBoundingClientRect();return r.width>0&&r.height>0&&r.left>=0&&r.top>=0&&r.right<=innerWidth+1&&r.bottom<=innerHeight+1};return{fit:[...document.querySelectorAll('.start-content h2,.start-dmd,.preview-frame,#play,#loading')].every(inside),pixel:document.fonts.check('24px Pixel'),help:inside(document.getElementById('touch-help'))}})()`);
+    assert.equal(titleScreen.fit,true,`${name} selected title screen fits every viewport`);
+    assert.equal(titleScreen.pixel,true,`${name} bundled pixel face loads`);
+    assert.equal(titleScreen.help,true,`${name} title screen help stays reachable`);
+    await capture(`${name}-start`);
+    if(name==='android-portrait'){
+      await evaluate(`document.body.classList.add('engine-error');document.getElementById('loading').textContent='The graphics context was lost. Reload to restart the game.';document.getElementById('play').textContent='Reload and retry'`);
+      await capture('mobile-error');
+      await evaluate(`document.body.classList.remove('engine-error')`);
+    }
+    await evaluate(`document.body.className=playerTest.playingClass;document.getElementById('waiting').hidden=true`);
     assert.equal(await evaluate('document.getElementById("camera-view").value'),'balanced',`${name} default camera`);
     assert.equal(await evaluate('document.documentElement.scrollWidth<=innerWidth'),true,`${name} horizontal overflow`);
     assert.equal(await evaluate('document.documentElement.scrollHeight<=innerHeight'),true,`${name} vertical overflow`);
@@ -94,6 +106,14 @@ try{
     assert.equal(await evaluate('document.querySelectorAll(".flip-zones .pressed").length'),0,`${name} cancelled toggle cannot stick`);
     await evaluate('document.getElementById("latch").checked=false;document.getElementById("latch").dispatchEvent(new Event("change"));document.getElementById("controls-panel").showPopover()');
     await wait('!!document.querySelector(".panel:popover-open")');
+    if(name==='android-portrait'){
+      await capture('mobile-settings');
+      await evaluate(`document.getElementById('controls-panel').hidePopover();document.getElementById('leaderboard-panel').showPopover()`);
+      await capture('mobile-scores');
+      await evaluate(`document.getElementById('leaderboard-panel').hidePopover();document.getElementById('initials-dialog').showModal()`);
+      await capture('mobile-initials');
+      await evaluate(`document.getElementById('initials-dialog').close();document.getElementById('controls-panel').showPopover()`);
+    }
     await evaluate('playerTest.scripts.length=0;document.querySelector("[data-action=left]").dispatchEvent(new PointerEvent("pointerdown",{pointerId:88,bubbles:true}))');
     assert.equal(await evaluate('playerTest.scripts.some(s=>s.includes("KeyDown"))'),false,`${name} settings cannot send gameplay input through the sheet`);
     await evaluate('document.getElementById("controls-panel").hidePopover()');

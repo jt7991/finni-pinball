@@ -120,7 +120,9 @@ The browser applies a sampler-precision compatibility patch to vpinball-wasm 0.3
 
 Run `scripts/check-mobile-player.py --renderer` to exercise the real VPX engine, verify that the precision declarations reach the compiled shaders, check all 80 shader programs for compile/link errors, and exercise flipper/cap animation, release, the rotating disco ball, both phone orientations, and camera changes. Captures stay local in `.work/renderer-review/`. These are desktop Chromium checks, not a physical Android GPU test.
 
-The player retains its previous table-first layout and touch controls. A small help button is available on both mobile and desktop; settings and camera options remain behind help. Interface copy uses functional labels and messages.
+The player uses the selected Pixel Cabinet interface: filled 1980s pixel lettering, a navy shell, pink/cyan accents and yellow primary actions. Its loading/start screen, settings, scores and replay share the same system. Press Start 2P and DM Sans are bundled with their OFL licenses under `browser/fonts/`; the title DMD and table-preview PNGs are also bundled and carry embedded source provenance. The actual table and live DMD artwork remain unchanged.
+
+The table-first layout and touch controls retain the small help button on mobile and desktop. Start game and Play again request fullscreen where supported; the fullscreen button can exit or re-enter. Flipper holds stay silent and show no floating Flip tabs. Settings and camera options remain behind help, and all copy uses functional labels and messages.
 
 **Settings → Graphics** offers Automatic, Performance and Detailed. Automatic uses Performance on phones: half-resolution internal rendering, textures capped at 2048 pixels, ambient occlusion/reflection passes disabled, and bloom disabled. These settings are installed before native engine initialization. Detailed keeps the engine defaults. Applying a change restarts the game. The packed table download is transferred into the virtual filesystem without copying, then removed after the native table loads; replay uses the existing player.
 

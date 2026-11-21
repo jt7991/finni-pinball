@@ -34,7 +34,7 @@ The voice studio supports recording or uploading takes, previewing sound process
 ## Brand Commitments
 Finni’s Big Day uses a bright comic party-preparation world with the existing fox, detailed illustrated chores, navy hardware panels, a bright pink cake, saturated pink/blue/yellow balloon bumpers, and Chewy lettering. Keep its added playful energy. The seven task lamps and shared shot arrows must match the actual gameplay. The four bonus supplies are Kitchen Timer, Party Lights, The Checklist and Party Favors.
 
-The overall interface should have a retro vibe. The user requested Asteroids-style angular stroke lettering, but rejected the implemented button-grid redesign and asked to restore the previous layout and small help button. Do not infer approval for another control-layout redesign. Preserve the accepted Finni table and full-color DMD artwork. Current work prioritizes mobile performance.
+The player interface should feel like a 1980s arcade. The user explicitly moved away from Asteroids-style vector lettering toward a later arcade era. Keep the compact player layout and small help button; the rejected permanent button grid remains outside scope. Preserve the accepted Finni table and full-color DMD artwork, and keep mobile rendering performance a priority.
 
 Phone graphics default to a lighter Performance profile through Automatic. Offer Detailed as an explicit choice, explaining that applying graphics settings restarts the game. Rendering changes must preserve the actual engine, physics and rules.
 

@@ -21,6 +21,12 @@ spec.loader.exec_module(module)
 
 class Handler(module.Handler):
     def do_GET(self):
+        if self.path == '/api/leaderboard':
+            self.send_response(503)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(b'{"message":"Scores unavailable in the isolated UI fixture"}')
+            return
         if self.path == '/app.js':
             source = (ROOT/'browser/app.js').read_text(encoding='utf-8')
             source = source.replace('placeFlippers();boot();', 'placeFlippers();')

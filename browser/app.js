@@ -260,6 +260,7 @@ function describeEngineError(error,depth=0){
   return [message||name,code&&`(${code})`].filter(Boolean).join(' ');
 }
 function fail(error){
+  document.body.classList.add('engine-error');
   const detail=describeEngineError(error)||'The game stopped without an error message.';
   log(`${enginePhase}: ${detail}`);
   if(error&&typeof error==='object'){

@@ -1,0 +1,303 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-21T11:49:40.864Z",
+  "title": "Design System: Finni's Big Day",
+  "extensions": {
+    "colorMeta": {
+      "navy": {
+        "role": "neutral",
+        "displayName": "Midnight Navy",
+        "tonalRamp": [
+          "oklch(15% 0.0197 273.62)",
+          "oklch(26% 0.0342 273.62)",
+          "oklch(37% 0.0487 273.62)",
+          "oklch(49% 0.0526 273.62)",
+          "oklch(61% 0.0526 273.62)",
+          "oklch(73% 0.0526 273.62)",
+          "oklch(85% 0.0316 273.62)",
+          "oklch(95% 0.0105 273.62)"
+        ]
+      },
+      "surface": {
+        "role": "neutral",
+        "displayName": "Raised Navy",
+        "tonalRamp": [
+          "oklch(15% 0.0204 270.04)",
+          "oklch(26% 0.0354 270.04)",
+          "oklch(37% 0.0504 270.04)",
+          "oklch(49% 0.0545 270.04)",
+          "oklch(61% 0.0545 270.04)",
+          "oklch(73% 0.0545 270.04)",
+          "oklch(85% 0.0327 270.04)",
+          "oklch(95% 0.0109 270.04)"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Cabinet Line",
+        "tonalRamp": [
+          "oklch(15% 0.0219 263.22)",
+          "oklch(26% 0.0379 263.22)",
+          "oklch(37% 0.0539 263.22)",
+          "oklch(49% 0.0583 263.22)",
+          "oklch(61% 0.0583 263.22)",
+          "oklch(73% 0.0583 263.22)",
+          "oklch(85% 0.0350 263.22)",
+          "oklch(95% 0.0117 263.22)"
+        ]
+      },
+      "ivory": {
+        "role": "neutral",
+        "displayName": "Warm Ivory",
+        "tonalRamp": [
+          "oklch(15% 0.0122 91.67)",
+          "oklch(26% 0.0212 91.67)",
+          "oklch(37% 0.0302 91.67)",
+          "oklch(49% 0.0326 91.67)",
+          "oklch(61% 0.0326 91.67)",
+          "oklch(73% 0.0326 91.67)",
+          "oklch(85% 0.0196 91.67)",
+          "oklch(95% 0.0065 91.67)"
+        ]
+      },
+      "muted": {
+        "role": "neutral",
+        "displayName": "Cool Mist",
+        "tonalRamp": [
+          "oklch(15% 0.0111 244.94)",
+          "oklch(26% 0.0192 244.94)",
+          "oklch(37% 0.0273 244.94)",
+          "oklch(49% 0.0295 244.94)",
+          "oklch(61% 0.0295 244.94)",
+          "oklch(73% 0.0295 244.94)",
+          "oklch(85% 0.0177 244.94)",
+          "oklch(95% 0.0059 244.94)"
+        ]
+      },
+      "yellow": {
+        "role": "primary",
+        "displayName": "Arcade Yellow",
+        "tonalRamp": [
+          "oklch(15% 0.0598 94.60)",
+          "oklch(26% 0.1036 94.60)",
+          "oklch(37% 0.1475 94.60)",
+          "oklch(49% 0.1594 94.60)",
+          "oklch(61% 0.1594 94.60)",
+          "oklch(73% 0.1594 94.60)",
+          "oklch(85% 0.0957 94.60)",
+          "oklch(95% 0.0319 94.60)"
+        ]
+      },
+      "pink": {
+        "role": "secondary",
+        "displayName": "Cabinet Pink",
+        "tonalRamp": [
+          "oklch(15% 0.0837 358.82)",
+          "oklch(26% 0.1452 358.82)",
+          "oklch(37% 0.2066 358.82)",
+          "oklch(49% 0.2233 358.82)",
+          "oklch(61% 0.2233 358.82)",
+          "oklch(73% 0.2233 358.82)",
+          "oklch(85% 0.1340 358.82)",
+          "oklch(95% 0.0447 358.82)"
+        ]
+      },
+      "cyan": {
+        "role": "secondary",
+        "displayName": "Electric Cyan",
+        "tonalRamp": [
+          "oklch(15% 0.0437 209.90)",
+          "oklch(26% 0.0757 209.90)",
+          "oklch(37% 0.1077 209.90)",
+          "oklch(49% 0.1165 209.90)",
+          "oklch(61% 0.1165 209.90)",
+          "oklch(73% 0.1165 209.90)",
+          "oklch(85% 0.0699 209.90)",
+          "oklch(95% 0.0233 209.90)"
+        ]
+      },
+      "hover": {
+        "role": "neutral",
+        "displayName": "Hover Navy",
+        "tonalRamp": [
+          "oklch(15% 0.0234 268.16)",
+          "oklch(26% 0.0406 268.16)",
+          "oklch(37% 0.0578 268.16)",
+          "oklch(49% 0.0625 268.16)",
+          "oklch(61% 0.0625 268.16)",
+          "oklch(73% 0.0625 268.16)",
+          "oklch(85% 0.0375 268.16)",
+          "oklch(95% 0.0125 268.16)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Cabinet title",
+        "purpose": "Two-line filled pixel title with responsive source sizes."
+      },
+      "headline": {
+        "displayName": "Panel heading",
+        "purpose": "Pink pixel headings for compact settings and scores."
+      },
+      "title": {
+        "displayName": "Toolbar title",
+        "purpose": "Desktop player identity."
+      },
+      "body": {
+        "displayName": "Readable controls",
+        "purpose": "DM Sans instructions, errors, settings and score data."
+      },
+      "label": {
+        "displayName": "Tool label",
+        "purpose": "Compact readable action labels."
+      }
+    },
+    "shadows": [
+      {
+        "name": "panel",
+        "value": "0 16px 48px #0008",
+        "purpose": "Floating settings and score panels."
+      },
+      {
+        "name": "help",
+        "value": "0 8px 24px #0008",
+        "purpose": "Dismissible player help."
+      }
+    ],
+    "motion": [
+      {
+        "name": "progress",
+        "value": "width .18s steps(5,end)",
+        "purpose": "Download fill only under prefers-reduced-motion:no-preference."
+      },
+      {
+        "name": "fullscreen-tools",
+        "value": "transform .18s ease-out",
+        "purpose": "Toolbar reveal only under prefers-reduced-motion:no-preference; no game resize."
+      },
+      {
+        "name": "dmd-scene",
+        "value": "12 frames x 160ms",
+        "purpose": "Existing illustration-only native scene loops; browser reduced motion uses static scene sprites."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "touch",
+        "value": "(max-width:650px), (pointer:coarse) and (max-width:1024px)"
+      },
+      {
+        "name": "wide-title-screen",
+        "value": "(min-width:700px), (orientation:landscape) and (max-height:500px)"
+      },
+      {
+        "name": "wide-game",
+        "value": "(min-width:1000px) and (min-aspect-ratio:6/5)"
+      },
+      {
+        "name": "short-portrait",
+        "value": "(max-height:650px) and (orientation:portrait)"
+      },
+      {
+        "name": "short-landscape",
+        "value": "(orientation:landscape) and (max-height:500px)"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary action",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Yellow actions such as Save score.",
+      "html": "<button class=\"ds-primary\">Save score</button>",
+      "css": "@font-face{font-family:Pixel;src:url('/fonts/PressStart2P-Regular.ttf') format('truetype');font-display:swap}@font-face{font-family:'DM Sans';src:url('/fonts/DMSans.ttf') format('truetype');font-weight:100 1000;font-display:swap}.ds-primary{font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;min-height:44px;padding:10px 15px;border-radius:3px;border:1px solid var(--line,#465778);cursor:pointer;background:var(--accent,#ffdb4c);color:var(--ink,#0c102a);border-color:transparent}.ds-primary:hover{background:var(--text,#faf2da)}.ds-primary:active{background:var(--cyan,#55d8ed)}.ds-primary:focus-visible{outline:3px solid var(--focus,#55d8ed);outline-offset:3px;}.ds-primary:disabled{opacity:.5;cursor:default}"
+    },
+    {
+      "name": "Start game",
+      "kind": "button",
+      "refersTo": "button-start",
+      "description": "Entry action with the shipped stepped arrow.",
+      "html": "<button class=\"ds-start\">Start game</button>",
+      "css": "@font-face{font-family:Pixel;src:url('/fonts/PressStart2P-Regular.ttf') format('truetype');font-display:swap}@font-face{font-family:'DM Sans';src:url('/fonts/DMSans.ttf') format('truetype');font-weight:100 1000;font-display:swap}.ds-start{font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;min-height:44px;padding:10px 15px;border-radius:3px;border:1px solid var(--line,#465778);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:16px;min-height:58px;padding:14px 24px;font-size:18px;font-weight:700;background:var(--accent,#ffdb4c);color:var(--ink,#0c102a);border-color:transparent}.ds-start:after{content:\"\";width:14px;height:16px;flex-shrink:0;background:currentColor;clip-path:polygon(0 0,4px 0,4px 3px,8px 3px,8px 6px,12px 6px,12px 7px,14px 7px,14px 9px,12px 9px,12px 10px,8px 10px,8px 13px,4px 13px,4px 16px,0 16px)}.ds-start:hover{background:var(--text,#faf2da)}.ds-start:active{background:var(--cyan,#55d8ed)}.ds-start:focus-visible{outline:3px solid var(--focus,#55d8ed);outline-offset:3px;}.ds-start:disabled{opacity:.5;cursor:default}"
+    },
+    {
+      "name": "Secondary action",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Compact settings and help actions.",
+      "html": "<button class=\"ds-secondary\">Close help</button>",
+      "css": "@font-face{font-family:Pixel;src:url('/fonts/PressStart2P-Regular.ttf') format('truetype');font-display:swap}@font-face{font-family:'DM Sans';src:url('/fonts/DMSans.ttf') format('truetype');font-weight:100 1000;font-display:swap}.ds-secondary{font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;min-height:44px;padding:10px 15px;border-radius:3px;border:1px solid var(--line,#465778);cursor:pointer;background:transparent;color:var(--text,#faf2da)}.ds-secondary:hover{background:var(--hover,#283456);border-color:var(--cyan,#55d8ed)}.ds-secondary:focus-visible{outline:3px solid var(--focus,#55d8ed);outline-offset:3px;}.ds-secondary:disabled{opacity:.5;cursor:default}"
+    },
+    {
+      "name": "Corner utilities",
+      "kind": "nav",
+      "description": "Small help and fullscreen controls used on the entry screen.",
+      "html": "<nav class=\"ds-tools\" aria-label=\"Player tools\"><button aria-label=\"Show player help\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M9.5 8.5a2.5 2.5 0 1 1 4.2 1.8c-1.2.7-1.7 1.2-1.7 2.7m0 3v.1\"/></svg></button><button aria-label=\"Enter full screen\"><svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5\"/></svg></button></nav>",
+      "css": ".ds-tools{display:flex;justify-content:space-between;gap:24px}.ds-tools button{display:flex;align-items:center;justify-content:center;width:44px;height:44px;padding:10px;border:1px solid transparent;border-radius:3px;background:#202944;color:var(--text,#faf2da);cursor:pointer}.ds-tools svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}.ds-tools button:hover{background:var(--hover,#283456);border-color:var(--cyan,#55d8ed)}.ds-tools button:focus-visible{outline:3px solid var(--focus,#55d8ed);outline-offset:3px;}@media(max-width:650px), (pointer:coarse) and (max-width:1024px){.ds-tools{background:transparent}.ds-tools button{background:var(--surface,#171f3b)}}"
+    },
+    {
+      "name": "Initials field",
+      "kind": "input",
+      "refersTo": "field-initials",
+      "description": "Uppercase pixel initials in the score dialog.",
+      "html": "<label class=\"ds-initials-label\">Your initials<input class=\"ds-initials\" maxlength=\"3\" placeholder=\"ABC\" aria-label=\"Your initials\"></label>",
+      "css": "@font-face{font-family:Pixel;src:url('/fonts/PressStart2P-Regular.ttf') format('truetype');font-display:swap}@font-face{font-family:'DM Sans';src:url('/fonts/DMSans.ttf') format('truetype');font-weight:100 1000;font-display:swap}.ds-initials-label{display:block;font:14px/1.5 \"DM Sans\",sans-serif;color:var(--text,#faf2da)}.ds-initials{display:block;width:100%;box-sizing:border-box;margin-top:6px;padding:10px 14px;background:var(--bg,#0c102a);color:var(--accent,#ffdb4c);border:1px solid var(--line,#465778);border-radius:3px;font:24px/1.6 Pixel,monospace;letter-spacing:.25em;text-transform:uppercase;caret-color:var(--accent,#ffdb4c)}.ds-initials:focus-visible{outline:3px solid var(--focus,#55d8ed);outline-offset:3px;}"
+    },
+    {
+      "name": "Settings panel",
+      "kind": "card",
+      "refersTo": "panel",
+      "description": "Raised compact tool surface with a pink pixel heading.",
+      "html": "<section class=\"ds-panel\"><h2>Controls</h2><p>Choose a control, then press a key.</p></section>",
+      "css": "@font-face{font-family:Pixel;src:url('/fonts/PressStart2P-Regular.ttf') format('truetype');font-display:swap}@font-face{font-family:'DM Sans';src:url('/fonts/DMSans.ttf') format('truetype');font-weight:100 1000;font-display:swap}.ds-panel{width:400px;max-width:100%;box-sizing:border-box;padding:24px;color:var(--text,#faf2da);background:var(--surface,#171f3b);border:1px solid var(--line,#465778);border-radius:4px;box-shadow:0 16px 48px #0008}.ds-panel h2{font:400 19px/1.7 Pixel,monospace;letter-spacing:0;color:var(--pink,#ff4b98);margin:0;padding-top:6px}.ds-panel p{font:14px/1.5 \"DM Sans\",sans-serif;color:var(--muted,#c6d8e8);margin:8px 0 22px}"
+    },
+    {
+      "name": "Download progress",
+      "kind": "custom",
+      "refersTo": "progress",
+      "description": "One cyan progress fill; width transitions step only when motion is allowed.",
+      "html": "<progress class=\"ds-progress\" value=\"65\" max=\"100\" aria-label=\"Download progress\"></progress>",
+      "css": ".ds-progress{display:block;width:100%;height:4px;border:0;margin:0 0 10px;background:var(--line,#465778);accent-color:var(--cyan,#55d8ed)}.ds-progress::-webkit-progress-bar{background:var(--line,#465778)}.ds-progress::-webkit-progress-value{background:var(--cyan,#55d8ed)}.ds-progress::-moz-progress-bar{background:var(--cyan,#55d8ed)}@media(prefers-reduced-motion:no-preference){.ds-progress::-webkit-progress-value{transition:width .18s steps(5,end)}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "Pixel Cabinet",
+    "overview": "The browser player uses filled 1980s raster lettering, midnight navy, saturated arcade accents and crisp framing. Its controls stay compact and functional so the illuminated table and full-color DMD remain the visual focus. The user selected Pixel Cabinet (pixel80), replacing the earlier Asteroids lettering exploration.\n\nThe accepted revision-13 comic party-preparation world remains authoritative inside the game: Finni and friends, detailed illustrated chores, navy hardware, a bright pink cake and saturated balloon bumpers. Browser chrome uses the newer pixel display face; Chewy remains part of the native table artwork. This system documents the browser player only. It does not restyle the native table or voice studio.",
+    "keyCharacteristics": [
+      "Filled pixel titles with readable sans-serif controls.",
+      "Navy ground, yellow actions, pink headings and cyan focus or framing.",
+      "A table-first viewport with small help and fullscreen utilities.",
+      "Original game artwork, fixed DMD text and restrained scene-specific motion.",
+      "Direct action, loading, error and recovery copy."
+    ],
+    "rules": [
+      {
+        "name": "The Game Art Rule",
+        "body": "Shell accents frame the accepted table and DMD; they do not recolor or simplify those assets.",
+        "section": "colors"
+      },
+      {
+        "name": "The Functional Copy Rule",
+        "body": "Interface text explains an action or state; personality belongs in the art and authored game callouts, without slogans or decorative quips.",
+        "section": "typography"
+      }
+    ],
+    "dos": [
+      "**Do** keep the Pixel Cabinet shell palette, self-hosted pixel titles and DM Sans controls consistent.",
+      "**Do** preserve accepted revision-13 table artwork, registered inserts, original DMD sprites and event timing.",
+      "**Do** keep the table prominent, utilities compact, help discoverable and controls at least 44px.",
+      "**Do** retain invisible flipper holds, simultaneous touch input, release cleanup, Balanced default and saved camera choices.",
+      "**Do** keep fixed DMD text, static reduced-motion scenes and honest loading, error, score and fullscreen messages.",
+      "**Do** preserve embedded raster provenance and bundled font licenses."
+    ],
+    "donts": [
+      "**Don't** restore Asteroids-style vector titles or the superseded green/peach browser shell and Chewy shell headings.",
+      "**Don't** add a permanent eight-button grid, surround the table with tools, or show pressed Flip tabs during normal play.",
+      "**Don't** add DMD dot masks, extra sampling, blur, screen flashes, moving text or invented progress.",
+      "**Don't** replace functional interface copy with slogans, decorative quips or fabricated scores.",
+      "**Don't** treat emulated captures as proof of physical iPhone or Android performance or fullscreen behavior."
+    ]
+  }
+}

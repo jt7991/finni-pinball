@@ -86,12 +86,17 @@ class Handler(SimpleHTTPRequestHandler):
                   '/app.js': ROOT / 'browser/app.js', '/leaderboard.js': ROOT / 'browser/leaderboard.js', '/views.js': ROOT / 'browser/views.js', '/style.css': ROOT / 'browser/style.css',
                   '/renderer.js': ROOT / 'browser/renderer.js',
                   '/framebuffer-copy.js': ROOT / 'browser/framebuffer-copy.js',
+                  '/arcade.css': ROOT / 'browser/arcade.css',
+                  '/start-dmd.png': ROOT / 'browser/start-dmd.png',
+                  '/player-preview.png': ROOT / 'browser/player-preview.png',
                   '/dmd-atlas.png': ROOT / '.work/browser-assets/dmd-atlas.png',
                   '/dmd-atlas.json': ROOT / '.work/browser-assets/dmd-atlas.json',
                   '/table.vpx': self.table_path,
                   '/chewy.ttf': ROOT / 'assets/fonts/chewy/Chewy-Regular.ttf'}
         for name in ('voice.html', 'voice.css', 'voice.js', 'voice-audio.js', 'voice-lines.json'):
             routes['/' + name] = ROOT / 'browser' / name
+        for name in ('PressStart2P-Regular.ttf', 'DMSans.ttf'):
+            routes['/fonts/' + name] = ROOT / 'browser/fonts' / name
         routes['/voice'] = ROOT / 'browser/voice.html'
         for name in ('vpinball.js', 'vpinball.wasm', 'vpinball.data'):
             routes['/engine/' + name] = ENGINE / name
