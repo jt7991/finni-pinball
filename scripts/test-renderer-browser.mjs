@@ -120,7 +120,16 @@ try{
   await evaluate(`finni.evaluate('Table1_KeyUp LeftFlipperKey:Table1_KeyUp RightFlipperKey')`);await delay(300);
   const released=await geometry();
   assert.ok(Math.abs(released[0]-resting[0])<.1&&Math.abs(released[1]-resting[1])<.1,'Both flippers return');
-  await evaluate(`document.getElementById('camera-view').value='topdown';document.getElementById('camera-view').dispatchEvent(new Event('change'))`);await delay(400);
+  const transition=await evaluate(`new Promise(resolve=>{
+    const gl=document.getElementById('canvas').getContext('webgl2'),pixels=[];
+    function sample(){
+      const previous=gl.getParameter(gl.READ_FRAMEBUFFER_BINDING),pixel=new Uint8Array(4);
+      gl.bindFramebuffer(gl.READ_FRAMEBUFFER,null);gl.readPixels(1,Math.floor(gl.drawingBufferHeight*.5),1,1,gl.RGBA,gl.UNSIGNED_BYTE,pixel);gl.bindFramebuffer(gl.READ_FRAMEBUFFER,previous);
+      pixels.push(Array.from(pixel));if(pixels.length<8)requestAnimationFrame(sample);else resolve(pixels);
+    }
+    document.getElementById('camera-view').value='topdown';document.getElementById('camera-view').dispatchEvent(new Event('change'));requestAnimationFrame(sample);
+  })`);
+  assert.ok(transition.every(pixel=>pixel[3]===255&&pixel.slice(0,3).every(channel=>channel<48)),'Camera cache invalidation keeps the backdrop dark without blue flashes');await delay(400);
   await capture('topdown-motion');
   await evaluate(`document.getElementById('camera-view').value='balanced';document.getElementById('camera-view').dispatchEvent(new Event('change'))`);
   await call('Emulation.setDeviceMetricsOverride',{width:844,height:390,deviceScaleFactor:2,mobile:true});await delay(500);

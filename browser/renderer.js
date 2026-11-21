@@ -76,7 +76,9 @@ export function startTable(engine,path){
     const gl=getContext.call(this,type,...args);
     if(type==='webgl2'){
       preserveLightAlpha(gl);
-      if(engine.finniMobile)installFramebufferCopy(gl);
+      // Replace empty cache pixels with the arcade sky on every graphics path.
+      // Mobile also needs this copy to avoid the combined HDR/depth blit defect.
+      installFramebufferCopy(gl);
     }
     return gl;
   };

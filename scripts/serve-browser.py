@@ -87,6 +87,7 @@ class Handler(SimpleHTTPRequestHandler):
                   '/renderer.js': ROOT / 'browser/renderer.js',
                   '/framebuffer-copy.js': ROOT / 'browser/framebuffer-copy.js',
                   '/arcade.css': ROOT / 'browser/arcade.css',
+                  '/arcade-background.svg': ROOT / 'browser/arcade-background.svg',
                   '/start-dmd.png': ROOT / 'browser/start-dmd.png',
                   '/player-preview.png': ROOT / 'browser/player-preview.png',
                   '/dmd-atlas.png': ROOT / '.work/browser-assets/dmd-atlas.png',

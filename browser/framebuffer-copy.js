@@ -1,8 +1,8 @@
 const installed=new WeakSet();
 
-// Avoid combined HDR color/depth blit corruption observed in Android GLES.
-// A shader copy preserves VPX's cached scene without redrawing
-// hundreds of static meshes. Leave other blits on the native path.
+// Restore the cached scene, replacing only empty far-depth pixels with the
+// arcade backdrop. The shader copy also avoids Android's combined HDR/depth
+// blit corruption without redrawing static meshes. Other blits stay native.
 export function installFramebufferCopy(gl){
   if(!gl||installed.has(gl))return;
   const program=gl.createProgram(),shaders=[];
@@ -10,6 +10,7 @@ export function installFramebufferCopy(gl){
     for(const [type,source] of [
       [gl.VERTEX_SHADER,`#version 300 es
         precision highp float;
+        precision highp int;
         out vec2 uv;
         void main(){
           vec2 p=vec2((gl_VertexID<<1)&2,gl_VertexID&2);
@@ -17,14 +18,41 @@ export function installFramebufferCopy(gl){
         }`],
       [gl.FRAGMENT_SHADER,`#version 300 es
         precision highp float;
+        precision highp int;
         precision highp sampler2D;
         uniform sampler2D sourceColor;
         uniform sampler2D sourceDepth;
         in vec2 uv;
         out vec4 color;
+        uint starHash(uvec2 cell){
+          uint seed=cell.x*1597334677u^cell.y*3812015801u;
+          seed^=seed>>16;seed*=2246822519u;
+          return seed^(seed>>13);
+        }
+        vec3 arcadeBackdrop(){
+          vec2 pixel=floor(gl_FragCoord.xy/3.0);
+          uint seed=starHash(uvec2(floor(pixel/12.0)));
+          vec2 point=vec2(float(seed&7u),float((seed>>3)&7u))+2.0;
+          bool star=seed%5u==0u&&all(equal(mod(pixel,12.0),point));
+          float haze=max(0.0,1.0-length((uv-vec2(.82,.72))*vec2(1.25,1.4)));
+          vec3 sky=vec3(.0015,.002,.006)+haze*haze*haze*vec3(.003,.0005,.005);
+          // Static cabinet-art geometry: offset zigzags and broad orbital bands.
+          // The depth gate below keeps every mark behind the real table.
+          float zig=abs(fract(uv.y*2.4+.16)*2.0-1.0);
+          float ribbon=1.0-smoothstep(.018,.026,abs(uv.x-(.035+zig*.18)));
+          float orbit=length((uv-vec2(1.13,.48))*vec2(1.0,1.4));
+          float bands=1.0-smoothstep(.025,.033,abs(fract(orbit*4.5)-.5));
+          sky=mix(sky,vec3(.025,.003,.035),ribbon*.85);
+          sky=mix(sky,vec3(.003,.018,.032),bands*.75);
+          vec3 ink=seed%3u==0u?vec3(.12,.025,.075):vec3(.035,.105,.14);
+          return sky+(star?ink*(.5+float((seed>>6)&3u)*.2):vec3(0));
+        }
         void main(){
           color=texture(sourceColor,uv);
           gl_FragDepth=texture(sourceDepth,uv).r;
+          // Only untouched far-depth pixels are backdrop. Never key on color:
+          // the playfield, chrome, lights and ball may use the same blue tones.
+          if(gl_FragDepth>=1.0)color=vec4(arcadeBackdrop(),1.0);
         }`],
     ]){
       const shader=gl.createShader(type);shaders.push(shader);
@@ -34,7 +62,7 @@ export function installFramebufferCopy(gl){
     }
     gl.linkProgram(program);
     if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw Error(gl.getProgramInfoLog(program));
-  }catch(error){gl.deleteProgram(program);throw Error(`Could not prepare the mobile renderer: ${error.message}`);}
+  }catch(error){gl.deleteProgram(program);throw Error(`Could not prepare the renderer: ${error.message}`);}
   finally{for(const shader of shaders)gl.deleteShader(shader);}
 
   const vao=gl.createVertexArray(),sampler=gl.createSampler();

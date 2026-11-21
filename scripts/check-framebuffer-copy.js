@@ -49,6 +49,15 @@ export async function checkFramebufferCopy(){
     gl.drawArrays(gl.TRIANGLES,0,3);
     const pixels=new Float32Array(16);gl.readPixels(0,0,2,2,gl.RGBA,gl.FLOAT,pixels);
     if(pixels.some((value,index)=>Math.abs(value-[2,.5,.25,1][index%4])>.002))throw Error('HDR color or depth was not copied across the complete target');
+    // Empty far-depth pixels receive the backdrop, while the colored geometry
+    // above remains byte-equivalent within the HDR target's precision.
+    gl.bindFramebuffer(gl.FRAMEBUFFER,source);gl.clearDepth(1);gl.clearColor(.2,.3,.5,1);
+    gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+    gl.bindFramebuffer(gl.READ_FRAMEBUFFER,source);gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER,destination);
+    gl.blitFramebuffer(0,0,2,2,0,0,2,2,gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT,gl.NEAREST);
+    gl.bindFramebuffer(gl.READ_FRAMEBUFFER,destination);
+    gl.readPixels(0,0,2,2,gl.RGBA,gl.FLOAT,pixels);
+    if(pixels.some((value,index)=>!Number.isFinite(value)||(index%4===3?Math.abs(value-1)>.002:value<0||value>.05)))throw Error('Empty depth did not receive the finite dark arcade backdrop');
     if(gl.getError()!==gl.NO_ERROR)throw Error('Invalid WebGL copy');
     return true;
   }finally{gl.getExtension('WEBGL_lose_context').loseContext();}

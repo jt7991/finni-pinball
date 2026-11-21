@@ -27,3 +27,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 ## Validation
 
 Phone portrait/landscape, small phone, tablet and desktop; loading, failed loading, help, settings, high scores, initials and replay. Real engine integration and Android smoke test preserve fullscreen, two-thumb inputs and lighting fixes. Physical iPhone performance remains unverified. Merge documentation with existing table-art and DMD notes, as previously authorized by the user.
+
+## Gameplay background refinement
+
+The user requested a funky background around the table, replacing the empty blue corners in Balanced view. Extend Pixel Cabinet with static pink zigzags, cyan orbital bands, violet stepped fields and sparse pixel confetti. Spare page space uses a bundled SVG; empty far-depth canvas pixels receive matching procedural geometry during the existing cache restore. Preserve real table geometry, lighting, DMD, cameras and the small help/fullscreen controls. No animation, extra controls or slogans. This local decorative extension keeps the established DESIGN.md and its tokens.

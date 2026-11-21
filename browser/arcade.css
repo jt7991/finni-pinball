@@ -5,6 +5,8 @@ button,input,select{font-family:inherit}button{border-radius:3px;font-weight:600
 h1,h2{font-family:Pixel,monospace;font-weight:400;letter-spacing:0}h1{font-size:14px;line-height:1.5;white-space:normal}h2{font-size:22px;line-height:1.6}.title-dot{display:none}
 .toolbar{border-color:var(--line);background:var(--bg)}.toolbar .tool{border-radius:3px}.scoreboard strong{color:var(--accent)}.view-picker select{background:var(--surface);border-color:var(--line);border-radius:3px;color:var(--text)}
 .stage{background:#080d20}.dmd-strip{background:transparent}.dmd-strip canvas{border-color:var(--line)}
+/* Static cabinet-art shapes extend the native backdrop into spare desktop space. */
+body.playing #player,body.playing .stage{background:#080b22 url('/arcade-background.svg') center / cover no-repeat}
 .panel,dialog,.touch-guide:not([hidden]),.screen-message{background:var(--surface);border-color:var(--line);border-radius:4px}
 .panel{width:400px}.panel:popover-open{animation:none}.panel-heading{align-items:flex-start;gap:16px}.panel-heading h2{font-size:19px;line-height:1.7;color:var(--pink);padding-top:6px}.panel>p,dialog p{color:var(--muted)}.panel-heading .close{flex:0 0 44px}
 .binding{border-color:var(--line)}.binding button{background:var(--bg);border-color:var(--line)}.binding button:hover{background:var(--hover)}.binding button.listening{background:var(--accent);color:var(--ink)}
