@@ -147,14 +147,14 @@ function syncFullscreen(){
   if(connected)$('canvas').focus({preventScroll:true});
   showToolbar();
 }
-$('fullscreen').onclick=async()=>{
+async function setFullscreen(fullscreen){
+  if(fullscreen===!!(document.fullscreenElement||document.webkitFullscreenElement))return;
   if(fullscreenPending)return;
   fullscreenPending=true;
   release();
-  const fullscreen=!!(document.fullscreenElement||document.webkitFullscreenElement);
   const target=document.documentElement;
   try{
-    if(fullscreen){
+    if(!fullscreen){
       const exit=document.exitFullscreen||document.webkitExitFullscreen;
       if(exit)await exit.call(document);
     }else{
@@ -165,9 +165,10 @@ $('fullscreen').onclick=async()=>{
     }
     syncFullscreen();
   }catch{
-    screenMessage(`Could not ${fullscreen?'exit':'enter'} full screen. Tap the full screen button to try again.`);
+    screenMessage(`Could not ${fullscreen?'enter':'exit'} full screen. Tap the full screen button to try again.`);
   }finally{fullscreenPending=false;}
-};
+}
+$('fullscreen').onclick=()=>setFullscreen(!(document.fullscreenElement||document.webkitFullscreenElement));
 document.addEventListener('fullscreenchange',syncFullscreen);
 document.addEventListener('webkitfullscreenchange',syncFullscreen);
 for(const type of ['fullscreenerror','webkitfullscreenerror'])document.addEventListener(type,()=>{
@@ -206,9 +207,13 @@ const dmd=createDmd();
 // Dialogs and popovers restore focus to toolbar buttons. Return it to the
 // playfield so the next Start key reaches the game rather than a focused tool.
 function focusGame(){if(connected&&!$('initials-dialog').open&&!document.querySelector('.panel:popover-open'))$('canvas').focus({preventScroll:true});}
-function replay(){
+async function replay(){
+  if($('play').disabled)return;
+  $('play').disabled=true;
+  await setFullscreen(true);
   release();
   evaluate('bFreePlay=True:Table1_KeyDown StartGameKey:Table1_KeyUp StartGameKey');
+  if(!connected)return;
   $('waiting').hidden=true;replayVisible=false;focusGame();
 }
 function updateReplay(playing,entering){
@@ -287,8 +292,11 @@ async function boot(){
     // MEMFS can own the download buffer; avoid a second ~166 MB copy on phones.
     engine.FS.mkdirTree('/tables');engine.FS.writeFile('/tables/finni.vpx',new Uint8Array(table),{canOwn:true});table=null;
     $('progress').value=100;$('progress').hidden=true;$('loading').textContent='Table loaded.';$('play').disabled=false;$('play').textContent='Start game';$('status').textContent='Ready to play';
-    $('play').onclick=()=>{
+    $('play').onclick=async()=>{
       enginePhase='Starting table';$('play').disabled=true;$('loading').textContent='Starting the table…';
+      // Queue fullscreen from the click before SDL startup; SDL otherwise exits
+      // fullscreen if it has already settled while the native window is created.
+      void setFullscreen(true);
       try{
         const result=startTable(engine,'/tables/finni.vpx');
         if(result!==1)throw Error(`VPX could not start this table (code ${result}). See the engine log.`);

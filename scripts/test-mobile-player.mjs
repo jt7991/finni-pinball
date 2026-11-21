@@ -59,6 +59,7 @@ try{
     await evaluate('playerTest.scripts.length=0');
     await touch([left]);await touch([left,right]);
     assert.equal(await evaluate('document.querySelectorAll(".flip-zones .pressed").length'),2,`${name} simultaneous flippers`);
+    assert.equal(await evaluate('[...document.querySelectorAll(".flip-zones button")].every(b=>getComputedStyle(b,"::after").opacity==="0")'),true,`${name} held flippers do not show Flip tabs`);
     await touch([]);
     assert.equal(await evaluate('document.querySelectorAll(".flip-zones .pressed").length'),0,`${name} release`);
     assert.equal(await evaluate('playerTest.scripts.filter(s=>s.includes("KeyDown")&&s.includes("Flipper")).length'),2);
@@ -81,6 +82,7 @@ try{
     assert.equal(await evaluate('document.querySelector("[data-action=left]").getAttribute("aria-pressed")'),'true',`${name} side space above the lower controls flips`);
     await evaluate('document.getElementById("touch-help").click()');
     assert.equal(await evaluate('document.querySelectorAll(".flip-zones .pressed").length'),0,`${name} help releases held flippers`);
+    assert.equal(await evaluate('[...document.querySelectorAll(".flip-zones button")].every(b=>getComputedStyle(b,"::after").opacity==="1")'),true,`${name} help still labels flipper zones`);
     await touch([]);await evaluate('document.getElementById("dismiss-touch-guide").click()');
     assert.equal(await evaluate('document.activeElement.id'),'canvas',`${name} help restores keyboard/game focus`);
     await evaluate('document.getElementById("latch").checked=true;document.getElementById("latch").dispatchEvent(new Event("change"))');

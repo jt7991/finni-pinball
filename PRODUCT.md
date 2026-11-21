@@ -25,6 +25,8 @@ Browser play is free, with credits removed. Both DMD and full table must stay vi
 
 Mobile controls must support simultaneous left and right flippers, hold-and-release launching, Action, and nudge. Browser tap highlights, text selection, and long-press callouts must not obscure or interrupt the playing surface. Controls must release on cancellation, focus loss, and orientation changes. Provide a reachable fullscreen control where the browser supports it and an honest explanation where it does not. Browser fullscreen support varies; do not promise identical behavior on iPhone and Android.
 
+Start game and Play again request fullscreen from the player's click where supported, continuing normally if fullscreen is unavailable or denied. The fullscreen button remains available to exit or re-enter. Flipper holds must not show floating Flip tabs; the small help button reveals the labeled touch guide when needed.
+
 Mobile usability and rendering take priority over ornamental interface work. Take inspiration from established mobile pinball games such as Williams Pinball and Pinball Deluxe: Reloaded without copying their artwork. Desktop viewport emulation is useful for layout and input checks but does not establish physical iPhone or Android rendering quality, frame rate, or fullscreen behavior.
 
 The voice studio supports recording or uploading takes, previewing sound processing, downloading game-format WAVs, and submitting original and processed recordings for review. Team library access requires an administrator-provisioned account. Approved takes enter the game through a later build; submissions do not automatically replace live audio.

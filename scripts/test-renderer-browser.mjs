@@ -29,6 +29,12 @@ async function geometry(){
 await call('Page.enable');
 await call('Page.addScriptToEvaluateOnNewDocument',{source:`
   window.shaderTest={sources:[],errors:[],programs:0,lightBlends:0};
+  window.playFullscreenRequests=[];
+  const requestFullscreen=Element.prototype.requestFullscreen;
+  Element.prototype.requestFullscreen=function(...args){
+    playFullscreenRequests.push({active:navigator.userActivation.isActive,playing:document.body.classList.contains('playing')});
+    return requestFullscreen.apply(this,args);
+  };
   const proto=WebGL2RenderingContext.prototype;
   const source=proto.shaderSource,compile=proto.compileShader,link=proto.linkProgram,blend=proto.blendFuncSeparate;
   proto.blendFuncSeparate=function(s,d,a,b){if(this.canvas===document.getElementById('canvas')&&s===this.SRC_ALPHA&&d===this.ONE_MINUS_SRC_COLOR&&a===this.ZERO&&b===this.ONE)shaderTest.lightBlends++;return blend.call(this,s,d,a,b)};
@@ -75,6 +81,7 @@ try{
   const button=await evaluate(`(()=>{const r=document.getElementById('play').getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2}})()`);
   for(const type of ['mousePressed','mouseReleased'])await call('Input.dispatchMouseEvent',{type,...button,button:'left',clickCount:1});
   await wait('document.body.classList.contains("playing")');await delay(500);
+  assert.deepEqual(await evaluate('playFullscreenRequests'),[{active:true,playing:false}],'Play requests fullscreen from the trusted click before starting the engine');
   await evaluate(`finni.evaluate('Debug.Print "BALL_TRAIL_CHECK|" & Table1.BallTrail')`);
   assert.ok(await evaluate(`document.getElementById('log').textContent.includes('BALL_TRAIL_CHECK|0')`),'Native table ball trail is disabled after loading legacy preferences');
   const ballMaterial=await evaluate(`new Promise(resolve=>{
@@ -125,8 +132,10 @@ try{
   await wait('!document.getElementById("waiting").hidden && document.getElementById("play").textContent==="Play again"');
   await capture('replay');
   const replayButton=await evaluate(`(()=>{const r=document.getElementById('play').getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2}})()`);
+  const replayFullscreen=await evaluate('({active:!!document.fullscreenElement,requests:playFullscreenRequests.length})');
   for(const type of ['mousePressed','mouseReleased'])await call('Input.dispatchMouseEvent',{type,...replayButton,button:'left',clickCount:1});
   await wait('document.body.classList.contains("game-in-play") && document.getElementById("waiting").hidden');
+  assert.equal(await evaluate('playFullscreenRequests.length'),replayFullscreen.requests+(replayFullscreen.active?0:1),'Replay requests fullscreen only if it is not already active');
   assert.equal(await evaluate('replayEngine===finni.engine'),true,'Replay reuses the loaded native player');
   assert.equal(await evaluate(`finni.engine.FS.analyzePath('/tables/finni.vpx').exists`),false,'Replay does not need the packed table upload');
   console.log(`PASS: actual VPX engine; ${shaders.programs} shader programs; high-precision depth/HDR samplers; both flippers and caps animate/release; disco ball rotates; portrait, landscape and camera changes; native game-over/replay after upload cleanup. Desktop Chromium GPU, not physical Android certification.`);
