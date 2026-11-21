@@ -155,3 +155,11 @@ test('a held cradle releases downfield on either flipper',async()=>{
     }finally{g.dispose();}
   }
 });
+test('the return guide cannot wedge a ball against the post at its upper junction',async()=>{
+  const g=await createGame(layout);
+  try{
+    g.start();g.launch();position(g,{x:8.1,y:11.052,z:RADIUS});
+    ticks(g,2);const p=g.ball.translation();
+    assert.ok(p.y<10.5||p.x<7.7,`junction escapes toward the infield: ${JSON.stringify(p)}`);
+  }finally{g.dispose();}
+});

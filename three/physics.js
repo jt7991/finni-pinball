@@ -106,7 +106,11 @@ export class Pinball {
     }
     // Close the inaccessible sub-ball-width pocket behind the right return post.
     // The diagonal lies under the existing plastic and feeds balls back infield.
-    this.segment({x:8.149,y:10.781,z:.3},{x:8.68,y:11.15,z:.3},.001,.6,.3,null,'right-return-post-guide');
+    const guidePoints=[[8.035,10.775],[8.68,11.15],[8.68,10.6993],[8.0921,10.6993]];
+    const guideVertices=[0,.6].flatMap(z=>guidePoints.flatMap(([x,y])=>[x,y,z]));
+    const guide=this.world.createCollider(RAPIER.ColliderDesc.convexHull(new Float32Array(guideVertices))
+      .setCollisionGroups(STATIC_GROUP).setRestitutionCombineRule(RAPIER.CoefficientCombineRule.Min).setRestitution(.3).setFriction(.06));
+    this.colliderLabels.set(guide.handle,'right-return-post-guide');
     // The exported walls contain the shooter lane and curved upper feed.
     const ball = RAPIER.RigidBodyDesc.dynamic().setTranslation(9.03, 1.4, RADIUS)
       .setCcdEnabled(true).setLinearDamping(.025).setAngularDamping(.12).setCanSleep(false);
