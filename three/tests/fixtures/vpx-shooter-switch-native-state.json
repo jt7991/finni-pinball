@@ -1,0 +1,9403 @@
+{
+  "engine": "@valknar/vpinball-wasm 0.3.4",
+  "upstreamCommit": "195f214dd4849b8ef6113fd377258b78d0dec3bf",
+  "sourceSha256": "6300d64767894aebcf82f378985cb63e8a540fa373365c7a82c189f78dadfd5a",
+  "controlledSha256": "06962b8fe8aa653c03281dcf898f271401b288ae7ac998d4b2ae6263772fc5e7",
+  "controlledOverrides": {
+    "scatter": 0,
+    "default_scatter": 0
+  },
+  "originalValues": {
+    "scatter": 5,
+    "default_scatter": 10
+  },
+  "diff": "table settings:\n    scatter 5 -> 0\n    default scatter 10 -> 0\nscript changed (+30 -0 lines)\nmaterial \"Toys Dynamic\":\n    scatter angle 5 -> 0\nmaterial \"_Ball Guides\":\n    scatter angle 5 -> 0\nmaterial \"_Droptargets\":\n    scatter angle 10 -> 0\nmaterial \"_Metals\":\n    scatter angle 5 -> 0\nmaterial \"_Plastics\":\n    scatter angle 5 -> 0\nmaterial \"_Playfield\":\n    scatter angle 5 -> 0\nmaterial \"_Ramps\":\n    scatter angle 5 -> 0\nmaterial \"_Ramps Down\":\n    scatter angle 5 -> 0\nmaterial \"_Rubber Dampener\":\n    scatter angle 5 -> 0\nmaterial \"_Rubber EM Wheel\":\n    scatter angle 10 -> 0\nmaterial \"_Rubber Long Bands\":\n    scatter angle 15 -> 0\nmaterial \"_Rubber Medium Bands\":\n    scatter angle 15 -> 0\nmaterial \"_Rubber Pegs\":\n    scatter angle 5 -> 0\nmaterial \"_Rubber Pins\":\n    scatter angle 5 -> 0\nmaterial \"_Rubber Posts\":\n    scatter angle 5 -> 0\nmaterial \"_Rubber Short Bands\":\n    scatter angle 5 -> 0\nmaterial \"_Slingshots\":\n    scatter angle 15 -> 0\nmaterial \"_Targets\":\n    scatter angle 10 -> 0\nmaterial \"_Woods\":\n    scatter angle 5 -> 0\nWall \"Wall317\":\n    scatter 5 -> 0\nWall \"Leftslingshot\":\n    scatter 5 -> 0\nWall \"Wall348\":\n    scatter 5 -> 0\nWall \"Wall85\":\n    scatter 5 -> 0\nWall \"Wall86\":\n    scatter 5 -> 0\nWall \"wallxxx2\":\n    scatter 5 -> 0\nWall \"Wall138\":\n    scatter 5 -> 0\nWall \"120h\":\n    scatter 5 -> 0\nWall \"60h\":\n    scatter 5 -> 0\nWall \"10m\":\n    scatter 5 -> 0\nRamp \"Ramp7\":\n    scatter 5 -> 0\nWall \"Wall5\":\n    scatter 5 -> 0\nWall \"Wall1\":\n    scatter 5 -> 0\nWall \"Wall17\":\n    scatter 5 -> 0\nFlipper \"RightFlipper\":\n    scatter 15 -> 0\nFlipper \"LeftFlipper\":\n    scatter 15 -> 0\nWall \"Wall001\":\n    scatter 5 -> 0\nWall \"Wall002\":\n    scatter 5 -> 0\nWall \"Wall003\":\n    scatter 5 -> 0\nWall \"Wall004\":\n    scatter 5 -> 0\nWall \"Wall005\":\n    scatter 5 -> 0\nWall \"Wall006\":\n    scatter 5 -> 0\nWall \"Wall007\":\n    scatter 5 -> 0\nWall \"Wall008\":\n    scatter 5 -> 0\nWall \"Wall009\":\n    scatter 5 -> 0\nWall \"Wall010\":\n    scatter 5 -> 0\nWall \"rpost018\":\n    scatter 5 -> 0\nWall \"peg-plastics001\":\n    scatter 5 -> 0\nWall \"rpost001\":\n    scatter 5 -> 0\nRubber \"Rubber001\":\n    scatter 5 -> 0\nWall \"peg-plastics002\":\n    scatter 5 -> 0\nWall \"rpost002\":\n    scatter 5 -> 0\nWall \"peg-plastics003\":\n    scatter 5 -> 0\nWall \"rpost003\":\n    scatter 5 -> 0\nWall \"peg-plastics004\":\n    scatter 5 -> 0\nWall \"Rightslingshot\":\n    scatter 5 -> 0\nRubber \"RightSling001\":\n    scatter 5 -> 0\nRubber \"LeftSling001\":\n    scatter 5 -> 0\nWall \"rlband001\":\n    scatter 5 -> 0\nWall \"rsband002\":\n    scatter 5 -> 0\nRubber \"Rubber007\":\n    scatter 5 -> 0\nWall \"rpin001\":\n    scatter 5 -> 0\nRubber \"Rubber002\":\n    scatter 5 -> 0\nWall \"rpin002\":\n    scatter 5 -> 0\nWall \"Wall011\":\n    scatter 5 -> 0\nWall \"Wall012\":\n    scatter 5 -> 0\nWall \"Wall013\":\n    scatter 5 -> 0\nWall \"Wall014\":\n    scatter 5 -> 0\nWall \"rpost004\":\n    scatter 5 -> 0\nWall \"peg-plastics005\":\n    scatter 5 -> 0\nWall \"rpost005\":\n    scatter 5 -> 0\nWall \"peg-plastics006\":\n    scatter 5 -> 0\nWall \"rpost006\":\n    scatter 5 -> 0\nWall \"peg-plastics007\":\n    scatter 5 -> 0\nWall \"rsband001\":\n    scatter 5 -> 0\nWall \"rlband002\":\n    scatter 5 -> 0\nRubber \"RightSling002\":\n    scatter 5 -> 0\nRubber \"RightSling003\":\n    scatter 5 -> 0\nRubber \"RightSling004\":\n    scatter 5 -> 0\nRubber \"LeftSling002\":\n    scatter 5 -> 0\nRubber \"LeftSling003\":\n    scatter 5 -> 0\nRubber \"LeftSling004\":\n    scatter 5 -> 0\nWall \"Wall016\":\n    scatter 5 -> 0\nWall \"Wall015\":\n    scatter 5 -> 0\nWall \"rpeg001\":\n    scatter 5 -> 0\nWall \"Wall018\":\n    scatter 5 -> 0\nWall \"Wall019\":\n    scatter 5 -> 0\nWall \"rpeg002\":\n    scatter 5 -> 0\nWall \"rpost007\":\n    scatter 5 -> 0\nRubber \"Rubber003\":\n    scatter 5 -> 0\nWall \"peg-plastics008\":\n    scatter 5 -> 0\nWall \"rpost009\":\n    scatter 5 -> 0\nRubber \"Rubber008\":\n    scatter 5 -> 0\nWall \"peg-plastics010\":\n    scatter 5 -> 0\nWall \"rpost010\":\n    scatter 5 -> 0\nRubber \"Rubber005\":\n    scatter 5 -> 0\nWall \"peg-plastics011\":\n    scatter 5 -> 0\nWall \"rpost011\":\n    scatter 5 -> 0\nRubber \"Rubber006\":\n    scatter 5 -> 0\nWall \"peg-plastics012\":\n    scatter 5 -> 0\nWall \"Wall017\":\n    scatter 5 -> 0\nWall \"Wall020\":\n    scatter 5 -> 0\nWall \"rpeg003\":\n    scatter 5 -> 0\nWall \"Wall021\":\n    scatter 5 -> 0\nWall \"Wall022\":\n    scatter 5 -> 0\nWall \"rpeg004\":\n    scatter 5 -> 0\nHitTarget \"Target001\":\n    scatter 5 -> 0\nHitTarget \"Target002\":\n    scatter 5 -> 0\nHitTarget \"Target003\":\n    scatter 5 -> 0\nHitTarget \"Target004\":\n    scatter 5 -> 0\nHitTarget \"Target005\":\n    scatter 5 -> 0\nHitTarget \"Target006\":\n    scatter 5 -> 0\nHitTarget \"Target007\":\n    scatter 5 -> 0\nHitTarget \"Target008\":\n    scatter 5 -> 0\nWall \"wallxxx002\":\n    scatter 5 -> 0\nWall \"wallxxx001\":\n    scatter 5 -> 0\nWall \"wallxxx003\":\n    scatter 5 -> 0\nHitTarget \"Target009\":\n    scatter 5 -> 0\nHitTarget \"Target010\":\n    scatter 5 -> 0\nHitTarget \"Target011\":\n    scatter 5 -> 0\nRubber \"Rubber004\":\n    scatter 5 -> 0\nWall \"rpin004\":\n    scatter 5 -> 0\nRubber \"Rubber009\":\n    scatter 5 -> 0\nWall \"rpin005\":\n    scatter 5 -> 0\nRubber \"Rubber010\":\n    scatter 5 -> 0\nWall \"rpin003\":\n    scatter 5 -> 0\nRubber \"Rubber011\":\n    scatter 5 -> 0\nWall \"rpin006\":\n    scatter 5 -> 0\nRubber \"Rubber012\":\n    scatter 5 -> 0\nWall \"rpin007\":\n    scatter 5 -> 0\nRubber \"Rubber013\":\n    scatter 5 -> 0\nWall \"rpin008\":\n    scatter 5 -> 0\nRubber \"Rubber014\":\n    scatter 5 -> 0\nWall \"rpin009\":\n    scatter 5 -> 0\nRubber \"Rubber015\":\n    scatter 5 -> 0\nWall \"rpin010\":\n    scatter 5 -> 0\nRubber \"Rubber016\":\n    scatter 5 -> 0\nWall \"rpin011\":\n    scatter 5 -> 0\nRubber \"Rubber017\":\n    scatter 5 -> 0\nWall \"rpin012\":\n    scatter 5 -> 0\nHitTarget \"Target012\":\n    scatter 5 -> 0\nHitTarget \"Target013\":\n    scatter 5 -> 0\nRamp \"Ramp002\":\n    scatter 5 -> 0\nHitTarget \"Target014\":\n    scatter 5 -> 0\nBumper \"Bumper1\":\n    scatter 10 -> 0\nBumper \"Bumper2\":\n    scatter 10 -> 0\nBumper \"Bumper3\":\n    scatter 10 -> 0\nWall \"Wall031\":\n    scatter 5 -> 0\nWall \"Wall036\":\n    scatter 5 -> 0\nWall \"bumpertop001\":\n    scatter 5 -> 0\nWall \"bumpertop002\":\n    scatter 5 -> 0\nWall \"bumpertop003\":\n    scatter 5 -> 0\nWall \"Wall037\":\n    scatter 5 -> 0\nWall \"Wall039\":\n    scatter 5 -> 0\nWall \"wallxxx004\":\n    scatter 5 -> 0\nWall \"wallxxx005\":\n    scatter 5 -> 0\nWall \"wallxxx006\":\n    scatter 5 -> 0\nWall \"wallxxx008\":\n    scatter 5 -> 0\nWall \"wallxxx009\":\n    scatter 5 -> 0\nWall \"wallxxx010\":\n    scatter 5 -> 0\nWall \"wallxxx011\":\n    scatter 5 -> 0\nWall \"wallxxx012\":\n    scatter 5 -> 0\nWall \"wallxxx013\":\n    scatter 5 -> 0\nWall \"wallxxx016\":\n    scatter 5 -> 0\nWall \"Wall038\":\n    scatter 5 -> 0\nWall \"Wall040\":\n    scatter 5 -> 0\nWall \"rpeg005\":\n    scatter 5 -> 0\nWall \"Wall041\":\n    scatter 5 -> 0\nWall \"Wall042\":\n    scatter 5 -> 0\nWall \"rpeg006\":\n    scatter 5 -> 0\nWall \"Wall043\":\n    scatter 5 -> 0\nWall \"Wall044\":\n    scatter 5 -> 0\nWall \"rpeg007\":\n    scatter 5 -> 0\nWall \"Wall048\":\n    scatter 5 -> 0\nWall \"Wall049\":\n    scatter 5 -> 0\nWall \"rpeg008\":\n    scatter 5 -> 0\nWall \"Wall050\":\n    scatter 5 -> 0\nWall \"Wall051\":\n    scatter 5 -> 0\nWall \"rpeg009\":\n    scatter 5 -> 0\nWall \"Wall052\":\n    scatter 5 -> 0\nWall \"Wall053\":\n    scatter 5 -> 0\nWall \"rpeg010\":\n    scatter 5 -> 0\nWall \"Wall055\":\n    scatter 5 -> 0\nWall \"Wall056\":\n    scatter 5 -> 0\nWall \"rpeg011\":\n    scatter 5 -> 0\nWall \"rpost008\":\n    scatter 5 -> 0\nWall \"peg-plastics009\":\n    scatter 5 -> 0\nWall \"rpost012\":\n    scatter 5 -> 0\nWall \"peg-plastics013\":\n    scatter 5 -> 0\nRubber \"Rubber018\":\n    scatter 5 -> 0\nWall \"rlband007\":\n    scatter 5 -> 0\nWall \"Wall059\":\n    scatter 5 -> 0\nWall \"rpost017\":\n    scatter 5 -> 0\nWall \"peg-plastics014\":\n    scatter 5 -> 0\nWall \"rpost019\":\n    scatter 5 -> 0\nWall \"peg-plastics015\":\n    scatter 5 -> 0\nWall \"rlband003\":\n    scatter 5 -> 0\nRubber \"Rubber019\":\n    scatter 5 -> 0\nWall \"rpost021\":\n    scatter 5 -> 0\nWall \"peg-plastics016\":\n    scatter 5 -> 0\nWall \"rpost022\":\n    scatter 5 -> 0\nWall \"peg-plastics017\":\n    scatter 5 -> 0\nWall \"rlband004\":\n    scatter 5 -> 0\nRubber \"Rubber020\":\n    scatter 5 -> 0\nWall \"rpost023\":\n    scatter 5 -> 0\nWall \"peg-plastics018\":\n    scatter 5 -> 0\nWall \"rpost024\":\n    scatter 5 -> 0\nWall \"peg-plastics019\":\n    scatter 5 -> 0\nRubber \"Rubber021\":\n    scatter 5 -> 0\nWall \"rsband005\":\n    scatter 5 -> 0\nWall \"bumpertop004\":\n    scatter 5 -> 0\nWall \"bumpertop005\":\n    scatter 5 -> 0\nWall \"bumpertop006\":\n    scatter 5 -> 0\nRubber \"Rubber022\":\n    scatter 5 -> 0\nRubber \"Rubber023\":\n    scatter 5 -> 0\nWall \"Wall057\":\n    scatter 5 -> 0\nWall \"Wall058\":\n    scatter 5 -> 0\nWall \"Wall060\":\n    scatter 5 -> 0\nWall \"Wall062\":\n    scatter 5 -> 0\nWall \"Wall063\":\n    scatter 5 -> 0\nWall \"Wall064\":\n    scatter 5 -> 0\nWall \"wallxxx014\":\n    scatter 5 -> 0\nRamp \"Ramp019\":\n    scatter 5 -> 0\nRamp \"Ramp020\":\n    scatter 5 -> 0\nWall \"Wall065\":\n    scatter 5 -> 0\nWall \"Wall066\":\n    scatter 5 -> 0\nWall \"Wall067\":\n    scatter 5 -> 0\nWall \"Wall068\":\n    scatter 5 -> 0\nWall \"Wall069\":\n    scatter 5 -> 0\nWall \"Wall070\":\n    scatter 5 -> 0\nWall \"Wall071\":\n    scatter 5 -> 0\nWall \"wallxxx007\":\n    scatter 5 -> 0\nWall \"Wall074\":\n    scatter 5 -> 0\nWall \"Wall075\":\n    scatter 5 -> 0\nWall \"rpeg012\":\n    scatter 5 -> 0\nWall \"Wall076\":\n    scatter 5 -> 0\nWall \"Wall077\":\n    scatter 5 -> 0\nWall \"rpeg013\":\n    scatter 5 -> 0\nWall \"83h\":\n    scatter 5 -> 0\nWall \"180h\":\n    scatter 5 -> 0\nWall \"56h\":\n    scatter 5 -> 0\nWall \"wall074001\":\n    scatter 5 -> 0\nWall \"wall073\":\n    scatter 5 -> 0\nWall \"wall078\":\n    scatter 5 -> 0\nWall \"hole004\":\n    scatter 5 -> 0\nWall \"hole006\":\n    scatter 5 -> 0\nWall \"hole001\":\n    scatter 5 -> 0\nWall \"hole002\":\n    scatter 5 -> 0\nWall \"hole003\":\n    scatter 5 -> 0\nWall \"hole005\":\n    scatter 5 -> 0\nWall \"hole007\":\n    scatter 5 -> 0\nWall \"hole008\":\n    scatter 5 -> 0\nWall \"hole009\":\n    scatter 5 -> 0\nWall \"hole010\":\n    scatter 5 -> 0\nWall \"hole011\":\n    scatter 5 -> 0\nWall \"hole012\":\n    scatter 5 -> 0\nWall \"hole013\":\n    scatter 5 -> 0\nWall \"hole015\":\n    scatter 5 -> 0\nWall \"hole014\":\n    scatter 5 -> 0\nWall \"hole016\":\n    scatter 5 -> 0\nWall \"hole017\":\n    scatter 5 -> 0\nWall \"hole018\":\n    scatter 5 -> 0\nWall \"hole019\":\n    scatter 5 -> 0\nWall \"hole020\":\n    scatter 5 -> 0\nWall \"hole021\":\n    scatter 5 -> 0\nWall \"hole022\":\n    scatter 5 -> 0\nWall \"hole023\":\n    scatter 5 -> 0\nWall \"hole024\":\n    scatter 5 -> 0\nWall \"hole025\":\n    scatter 5 -> 0\nWall \"hole026\":\n    scatter 5 -> 0\nWall \"hole027\":\n    scatter 5 -> 0\nWall \"hole028\":\n    scatter 5 -> 0\nWall \"hole029\":\n    scatter 5 -> 0\nWall \"hole030\":\n    scatter 5 -> 0\nWall \"hole031\":\n    scatter 5 -> 0\nWall \"hole032\":\n    scatter 5 -> 0\n0 added, 0 removed, 277 changed\n",
+  "verification": {
+    "path": "C:\\Users\\Jacob\\.t3\\worktrees\\fin-ball\\experiment-threejs-phys-17e4e4836d7b0c6e\\.work\\vpx-rng-light-reference\\zero-scatter.vpx",
+    "mac": "81b337ddaf69cdb707f5205a67690294",
+    "computed_mac": "81b337ddaf69cdb707f5205a67690294",
+    "sha256": "06962b8fe8aa653c03281dcf898f271401b288ae7ac998d4b2ae6263772fc5e7",
+    "valid": true
+  },
+  "allScatterZero": true,
+  "scatterOverrides": [
+    {
+      "kind": "material",
+      "name": "Toys Dynamic",
+      "field": "scatter_angle",
+      "original": 5
+    },
+    {
+      "kind": "material",
+      "name": "_Ball Guides",
+      "field": "scatter_angle",
+      "original": 5
+    },
+    {
+      "kind": "material",
+      "name": "_Droptargets",
+      "field": "scatter_angle",
+      "original": 10
+    },
+    {
+      "kind": "material",
+      "name": "_Metals",
+      "field": "scatter_angle",
+      "original": 5
+    },
+    {
+      "kind": "material",
+      "name": "_Plastics",
+      "field": "scatter_angle",
+      "original": 5
+    },
+    {
+      "kind": "material",
+      "name": "_Playfield",
+      "field": "scatter_angle",
+      "original": 5
+    },
+    {
+      "kind": "material",
+      "name": "_Ramps",
+      "field": "scatter_angle",
+      "original": 5
+    },
+    {
+      "kind": "material",
+      "name": "_Ramps Down",
+      "field": "scatter_angle",
+      "original": 5
+    },
+    {
+      "kind": "material",
+      "name": "_Rubber Dampener",
+      "field": "scatter_angle",
+      "original": 5
+    },
+    {
+      "kind": "material",
+      "name": "_Rubber EM Wheel",
+      "field": "scatter_angle",
+      "original": 10
+    },
+    {
+      "kind": "material",
+      "name": "_Rubber Long Bands",
+      "field": "scatter_angle",
+      "original": 15
+    },
+    {
+      "kind": "material",
+      "name": "_Rubber Medium Bands",
+      "field": "scatter_angle",
+      "original": 15
+    },
+    {
+      "kind": "material",
+      "name": "_Rubber Pegs",
+      "field": "scatter_angle",
+      "original": 5
+    },
+    {
+      "kind": "material",
+      "name": "_Rubber Pins",
+      "field": "scatter_angle",
+      "original": 5
+    },
+    {
+      "kind": "material",
+      "name": "_Rubber Posts",
+      "field": "scatter_angle",
+      "original": 5
+    },
+    {
+      "kind": "material",
+      "name": "_Rubber Short Bands",
+      "field": "scatter_angle",
+      "original": 5
+    },
+    {
+      "kind": "material",
+      "name": "_Slingshots",
+      "field": "scatter_angle",
+      "original": 15
+    },
+    {
+      "kind": "material",
+      "name": "_Targets",
+      "field": "scatter_angle",
+      "original": 10
+    },
+    {
+      "kind": "material",
+      "name": "_Woods",
+      "field": "scatter_angle",
+      "original": 5
+    },
+    {
+      "kind": "Bumper",
+      "name": "Bumper1",
+      "field": "scatter",
+      "original": 10
+    },
+    {
+      "kind": "Bumper",
+      "name": "Bumper2",
+      "field": "scatter",
+      "original": 10
+    },
+    {
+      "kind": "Bumper",
+      "name": "Bumper3",
+      "field": "scatter",
+      "original": 10
+    },
+    {
+      "kind": "Flipper",
+      "name": "LeftFlipper",
+      "field": "scatter",
+      "original": 15
+    },
+    {
+      "kind": "Flipper",
+      "name": "RightFlipper",
+      "field": "scatter",
+      "original": 15
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target003",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target004",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target005",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target006",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target007",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target008",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target009",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target010",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target011",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target012",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target013",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target014",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Ramp",
+      "name": "Ramp002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Ramp",
+      "name": "Ramp019",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Ramp",
+      "name": "Ramp020",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Ramp",
+      "name": "Ramp7",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "LeftSling001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "LeftSling002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "LeftSling003",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "LeftSling004",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "RightSling001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "RightSling002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "RightSling003",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "RightSling004",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber003",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber004",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber005",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber006",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber007",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber008",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber009",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber010",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber011",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber012",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber013",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber014",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber015",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber016",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber017",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber018",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber019",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber020",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber021",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber022",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber023",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "10m",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "120h",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "180h",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "56h",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "60h",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "83h",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "bumpertop001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "bumpertop002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "bumpertop003",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "bumpertop004",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "bumpertop005",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "bumpertop006",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole003",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole004",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole005",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole006",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole007",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole008",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole009",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole010",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole011",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole012",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole013",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole014",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole015",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole016",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole017",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole018",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole019",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole020",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole021",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole022",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole023",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole024",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole025",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole026",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole027",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole028",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole029",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole030",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole031",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole032",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Leftslingshot",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics003",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics004",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics005",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics006",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics007",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics008",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics009",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics010",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics011",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics012",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics013",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics014",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics015",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics016",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics017",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics018",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics019",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Rightslingshot",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rlband001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rlband002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rlband003",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rlband004",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rlband007",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpeg001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpeg002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpeg003",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpeg004",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpeg005",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpeg006",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpeg007",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpeg008",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpeg009",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpeg010",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpeg011",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpeg012",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpeg013",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpin001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpin002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpin003",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpin004",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpin005",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpin006",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpin007",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpin008",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpin009",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpin010",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpin011",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpin012",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost003",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost004",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost005",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost006",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost007",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost008",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost009",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost010",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost011",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost012",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost017",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost018",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost019",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost021",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost022",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost023",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost024",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rsband001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rsband002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rsband005",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall003",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall004",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall005",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall006",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall007",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall008",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall009",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall010",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall011",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall012",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall013",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall014",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall015",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall016",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall017",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall018",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall019",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall020",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall021",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall022",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall031",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall036",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall037",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall038",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall039",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall040",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall041",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall042",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall043",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall044",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall048",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall049",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall050",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall051",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall052",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall053",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall055",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall056",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall057",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall058",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall059",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall060",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall062",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall063",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall064",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall065",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall066",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall067",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall068",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall069",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall070",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall071",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wall073",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall074",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wall074001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall075",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall076",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall077",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wall078",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall1",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall138",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall17",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall317",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall348",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall5",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall85",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall86",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx003",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx004",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx005",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx006",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx007",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx008",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx009",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx010",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx011",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx012",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx013",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx014",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx016",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx2",
+      "field": "scatter",
+      "original": 5
+    }
+  ],
+  "instrumentation": {
+    "timerTrace": [
+      "RollingTimer_Timer",
+      "LeftFlipper_Timer"
+    ],
+    "optionalStateTrace": true,
+    "stateColumns": [
+      "ms",
+      "x",
+      "y",
+      "z",
+      "vx_micro",
+      "vy_micro",
+      "vz_micro",
+      "wx_micro",
+      "wy_micro",
+      "wz_micro",
+      "right_angle",
+      "right_strength",
+      "right_elasticity",
+      "right_eos_torque"
+    ],
+    "changes": "Record native timer clocks and ball state before each physics update while RefTraceOn is true. Optional exact-clock input at RefDriveAt is delivered at the start of LeftFlipper_Timer. Authored timer bodies and rules are retained.",
+    "ballTrails": {
+      "slots": 10,
+      "bucketMilliseconds": 10,
+      "columns": [
+        "ball_id",
+        "x",
+        "y",
+        "z"
+      ],
+      "positionPhase": "Timer observes the preceding physics step; the final completed-step position is captured before each controlled reset."
+    },
+    "nativeRngMarkers": "RNG_FRAME emitted before each physics step; the browser probe reads the unmodified engine state synchronously when this debug message is written."
+  },
+  "nativeRandom": {
+    "algorithm": "MWC64X",
+    "engineSha256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+    "stateAddress": 7661264,
+    "wordOrder": [
+      "low",
+      "high"
+    ],
+    "capture": "Read-only WASM memory reads synchronized to native Debug.Print frame markers.",
+    "requireContinuity": true
+  },
+  "initialBallStateColumns": [
+    "X",
+    "Y",
+    "Z",
+    "VelX",
+    "VelY",
+    "VelZ",
+    "AngMomX",
+    "AngMomY",
+    "AngMomZ",
+    "Mass",
+    "Radius",
+    "ID"
+  ],
+  "timerTraceCaptured": true,
+  "traceMilliseconds": 1000,
+  "timerSynchronization": "RollingTimer disabled/enabled immediately before each initial state, resetting its 10ms phase.",
+  "inputScheduling": {
+    "kind": "vpmtimer"
+  },
+  "stateTraceCaptured": false,
+  "nativeRuleState": {
+    "ballCount": 4,
+    "measuredBallIndex": 3,
+    "measuredBallRole": "playable",
+    "rollingTimerEnabled": true,
+    "maxvel": 52,
+    "lockedBallOffset": 3
+  },
+  "comparisonScope": "playable ball including authored spin and speed controls",
+  "isolation": "Other authored solid geometry and switches disabled; cabinet bounds and the playfield retained. From parkFromSample onward, reset the measured ball to a remote flat spot immediately before each observation so the plate coasts without further strikes.",
+  "probeKind": "triggers",
+  "runtimeOverrides": {
+    "LeftFlipper.Scatter": 0,
+    "RightFlipper.Scatter": 0,
+    "Bumper1.Collidable": false,
+    "Bumper2.Collidable": false,
+    "Bumper3.Collidable": false,
+    "Gate001.Collidable": false,
+    "Gate002.Collidable": false,
+    "Gate3.Collidable": false,
+    "Gate4.Collidable": false,
+    "Target001.Collidable": false,
+    "Target002.Collidable": false,
+    "Target003.Collidable": false,
+    "Target004.Collidable": false,
+    "Target005.Collidable": false,
+    "Target006.Collidable": false,
+    "Target007.Collidable": false,
+    "Target008.Collidable": false,
+    "Target009.Collidable": false,
+    "Target010.Collidable": false,
+    "Target011.Collidable": false,
+    "Target012.Collidable": false,
+    "Target013.Collidable": false,
+    "Target014.Collidable": false,
+    "Cabinet_Side.Collidable": false,
+    "Camera1.Collidable": false,
+    "Camera2.Collidable": false,
+    "discoball.Collidable": false,
+    "FinniBalloons.Collidable": false,
+    "FinniCake.Collidable": false,
+    "FinniSlingCovers.Collidable": false,
+    "FinniWireRamp.Collidable": false,
+    "LeftFlipperTop.Collidable": false,
+    "Lemk.Collidable": false,
+    "LilHead.Collidable": false,
+    "LilLeftArm.Collidable": false,
+    "LilRightArm.Collidable": false,
+    "Primitive001.Collidable": false,
+    "Primitive002.Collidable": false,
+    "Primitive003.Collidable": false,
+    "Primitive004.Collidable": false,
+    "Primitive005.Collidable": false,
+    "Primitive006.Collidable": false,
+    "Primitive007.Collidable": false,
+    "Primitive008.Collidable": false,
+    "Primitive009.Collidable": false,
+    "Primitive010.Collidable": false,
+    "Primitive011.Collidable": false,
+    "Primitive012.Collidable": false,
+    "Primitive013.Collidable": false,
+    "Primitive014.Collidable": false,
+    "Primitive015.Collidable": false,
+    "Primitive016.Collidable": false,
+    "Primitive017.Collidable": false,
+    "Primitive018.Collidable": false,
+    "Primitive019.Collidable": false,
+    "Primitive020.Collidable": false,
+    "Primitive021.Collidable": false,
+    "Primitive022.Collidable": false,
+    "Primitive023.Collidable": false,
+    "Primitive024.Collidable": false,
+    "Primitive025.Collidable": false,
+    "Primitive026.Collidable": false,
+    "Primitive027.Collidable": false,
+    "Primitive028.Collidable": false,
+    "Primitive029.Collidable": false,
+    "Primitive030.Collidable": false,
+    "Primitive031.Collidable": false,
+    "Primitive032.Collidable": false,
+    "Primitive033.Collidable": false,
+    "Primitive034.Collidable": false,
+    "Primitive035.Collidable": false,
+    "Primitive036.Collidable": false,
+    "Primitive037.Collidable": false,
+    "Primitive038.Collidable": false,
+    "Primitive039.Collidable": false,
+    "Primitive040.Collidable": false,
+    "Primitive041.Collidable": false,
+    "Primitive042.Collidable": false,
+    "Primitive043.Collidable": false,
+    "Primitive044.Collidable": false,
+    "Primitive045.Collidable": false,
+    "Primitive046.Collidable": false,
+    "Primitive047.Collidable": false,
+    "Primitive048.Collidable": false,
+    "Primitive049.Collidable": false,
+    "Primitive050.Collidable": false,
+    "Primitive051.Collidable": false,
+    "Primitive052.Collidable": false,
+    "Primitive053.Collidable": false,
+    "Primitive054.Collidable": false,
+    "Primitive055.Collidable": false,
+    "Primitive056.Collidable": false,
+    "Primitive057.Collidable": false,
+    "Primitive058.Collidable": false,
+    "Primitive059.Collidable": false,
+    "Primitive060.Collidable": false,
+    "Primitive061.Collidable": false,
+    "Primitive062.Collidable": false,
+    "Primitive063.Collidable": false,
+    "Primitive064.Collidable": false,
+    "Primitive065.Collidable": false,
+    "Primitive066.Collidable": false,
+    "Primitive067.Collidable": false,
+    "Primitive068.Collidable": false,
+    "Primitive069.Collidable": false,
+    "Primitive070.Collidable": false,
+    "Primitive071.Collidable": false,
+    "Primitive072.Collidable": false,
+    "Primitive073.Collidable": false,
+    "Primitive074.Collidable": false,
+    "Primitive075.Collidable": false,
+    "Primitive076.Collidable": false,
+    "Primitive077.Collidable": false,
+    "Primitive078.Collidable": false,
+    "Primitive079.Collidable": false,
+    "Primitive080.Collidable": false,
+    "Primitive081.Collidable": false,
+    "Primitive082.Collidable": false,
+    "Primitive15.Collidable": false,
+    "Primitive31.Collidable": false,
+    "Primitive41.Collidable": false,
+    "Primitive73.Collidable": false,
+    "Primitive81.Collidable": false,
+    "Primitive83.Collidable": false,
+    "Primitive89.Collidable": false,
+    "Primitive93.Collidable": false,
+    "Remk.Collidable": false,
+    "RightFlipperTop.Collidable": false,
+    "Screw001.Collidable": false,
+    "Screw002.Collidable": false,
+    "Screw003.Collidable": false,
+    "Screw004.Collidable": false,
+    "Screw006.Collidable": false,
+    "screw007.Collidable": false,
+    "Screw008.Collidable": false,
+    "Screw009.Collidable": false,
+    "Screw010.Collidable": false,
+    "Screw011.Collidable": false,
+    "Screw012.Collidable": false,
+    "Screw013.Collidable": false,
+    "Screw014.Collidable": false,
+    "Screw015.Collidable": false,
+    "Screw016.Collidable": false,
+    "Screw018.Collidable": false,
+    "screw15.Collidable": false,
+    "lrail.Collidable": false,
+    "Ramp001.Collidable": false,
+    "Ramp002.Collidable": false,
+    "Ramp003.Collidable": false,
+    "Ramp004.Collidable": false,
+    "Ramp005.Collidable": false,
+    "Ramp006.Collidable": false,
+    "Ramp007.Collidable": false,
+    "Ramp008.Collidable": false,
+    "Ramp009.Collidable": false,
+    "Ramp010.Collidable": false,
+    "Ramp011.Collidable": false,
+    "Ramp012.Collidable": false,
+    "Ramp013.Collidable": false,
+    "Ramp014.Collidable": false,
+    "Ramp015.Collidable": false,
+    "Ramp016.Collidable": false,
+    "Ramp017.Collidable": false,
+    "Ramp018.Collidable": false,
+    "Ramp019.Collidable": false,
+    "Ramp020.Collidable": false,
+    "Ramp021.Collidable": false,
+    "Ramp022.Collidable": false,
+    "Ramp023.Collidable": false,
+    "Ramp024.Collidable": false,
+    "Ramp025.Collidable": false,
+    "Ramp026.Collidable": false,
+    "Ramp027.Collidable": false,
+    "Ramp028.Collidable": false,
+    "Ramp029.Collidable": false,
+    "Ramp030.Collidable": false,
+    "Ramp031.Collidable": false,
+    "Ramp032.Collidable": false,
+    "Ramp033.Collidable": false,
+    "Ramp034.Collidable": false,
+    "Ramp035.Collidable": false,
+    "Ramp036.Collidable": false,
+    "Ramp037.Collidable": false,
+    "Ramp038.Collidable": false,
+    "Ramp039.Collidable": false,
+    "Ramp040.Collidable": false,
+    "Ramp041.Collidable": false,
+    "Ramp042.Collidable": false,
+    "Ramp043.Collidable": false,
+    "Ramp044.Collidable": false,
+    "Ramp045.Collidable": false,
+    "Ramp046.Collidable": false,
+    "Ramp047.Collidable": false,
+    "Ramp048.Collidable": false,
+    "Ramp049.Collidable": false,
+    "Ramp050.Collidable": false,
+    "Ramp051.Collidable": false,
+    "Ramp064.Collidable": false,
+    "Ramp7.Collidable": false,
+    "rrail.Collidable": false,
+    "swPlunger.Enabled": false,
+    "swPlungerRest.Enabled": false,
+    "Trigger001.Enabled": false,
+    "Trigger002.Enabled": false,
+    "Trigger003.Enabled": false,
+    "Trigger004.Enabled": false,
+    "Trigger005.Enabled": false,
+    "Trigger006.Enabled": false,
+    "Trigger007.Enabled": false,
+    "Trigger008.Enabled": false,
+    "Trigger009.Enabled": false,
+    "Trigger010.Enabled": false,
+    "Trigger011.Enabled": false,
+    "Trigger012.Enabled": false,
+    "Trigger013.Enabled": false,
+    "Trigger014.Enabled": false,
+    "Trigger015.Enabled": false,
+    "Trigger016.Enabled": false,
+    "Trigger017.Enabled": false,
+    "10m.Collidable": false,
+    "120h.Collidable": false,
+    "180h.Collidable": false,
+    "56h.Collidable": false,
+    "60h.Collidable": false,
+    "83h.Collidable": false,
+    "apron.Collidable": false,
+    "apron2.Collidable": false,
+    "bumpertop001.Collidable": false,
+    "bumpertop002.Collidable": false,
+    "bumpertop003.Collidable": false,
+    "bumpertop004.Collidable": false,
+    "bumpertop005.Collidable": false,
+    "bumpertop006.Collidable": false,
+    "hole001.Collidable": false,
+    "hole002.Collidable": false,
+    "hole003.Collidable": false,
+    "hole004.Collidable": false,
+    "hole005.Collidable": false,
+    "hole006.Collidable": false,
+    "hole007.Collidable": false,
+    "hole008.Collidable": false,
+    "hole009.Collidable": false,
+    "hole010.Collidable": false,
+    "hole011.Collidable": false,
+    "hole012.Collidable": false,
+    "hole013.Collidable": false,
+    "hole014.Collidable": false,
+    "hole015.Collidable": false,
+    "hole016.Collidable": false,
+    "hole017.Collidable": false,
+    "hole018.Collidable": false,
+    "hole019.Collidable": false,
+    "hole020.Collidable": false,
+    "hole021.Collidable": false,
+    "hole022.Collidable": false,
+    "hole023.Collidable": false,
+    "hole024.Collidable": false,
+    "hole025.Collidable": false,
+    "hole026.Collidable": false,
+    "hole027.Collidable": false,
+    "hole028.Collidable": false,
+    "hole029.Collidable": false,
+    "hole030.Collidable": false,
+    "hole031.Collidable": false,
+    "hole032.Collidable": false,
+    "Leftslingshot.Collidable": false,
+    "peg-plastics001.Collidable": false,
+    "peg-plastics002.Collidable": false,
+    "peg-plastics003.Collidable": false,
+    "peg-plastics004.Collidable": false,
+    "peg-plastics005.Collidable": false,
+    "peg-plastics006.Collidable": false,
+    "peg-plastics007.Collidable": false,
+    "peg-plastics008.Collidable": false,
+    "peg-plastics009.Collidable": false,
+    "peg-plastics010.Collidable": false,
+    "peg-plastics011.Collidable": false,
+    "peg-plastics012.Collidable": false,
+    "peg-plastics013.Collidable": false,
+    "peg-plastics014.Collidable": false,
+    "peg-plastics015.Collidable": false,
+    "peg-plastics016.Collidable": false,
+    "peg-plastics017.Collidable": false,
+    "peg-plastics018.Collidable": false,
+    "peg-plastics019.Collidable": false,
+    "Rightslingshot.Collidable": false,
+    "rlband001.Collidable": false,
+    "rlband002.Collidable": false,
+    "rlband003.Collidable": false,
+    "rlband004.Collidable": false,
+    "rlband007.Collidable": false,
+    "rpeg001.Collidable": false,
+    "rpeg002.Collidable": false,
+    "rpeg003.Collidable": false,
+    "rpeg004.Collidable": false,
+    "rpeg005.Collidable": false,
+    "rpeg006.Collidable": false,
+    "rpeg007.Collidable": false,
+    "rpeg008.Collidable": false,
+    "rpeg009.Collidable": false,
+    "rpeg010.Collidable": false,
+    "rpeg011.Collidable": false,
+    "rpeg012.Collidable": false,
+    "rpeg013.Collidable": false,
+    "rpin001.Collidable": false,
+    "rpin002.Collidable": false,
+    "rpin003.Collidable": false,
+    "rpin004.Collidable": false,
+    "rpin005.Collidable": false,
+    "rpin006.Collidable": false,
+    "rpin007.Collidable": false,
+    "rpin008.Collidable": false,
+    "rpin009.Collidable": false,
+    "rpin010.Collidable": false,
+    "rpin011.Collidable": false,
+    "rpin012.Collidable": false,
+    "rpost001.Collidable": false,
+    "rpost002.Collidable": false,
+    "rpost003.Collidable": false,
+    "rpost004.Collidable": false,
+    "rpost005.Collidable": false,
+    "rpost006.Collidable": false,
+    "rpost007.Collidable": false,
+    "rpost008.Collidable": false,
+    "rpost009.Collidable": false,
+    "rpost010.Collidable": false,
+    "rpost011.Collidable": false,
+    "rpost012.Collidable": false,
+    "rpost013.Collidable": false,
+    "rpost014.Collidable": false,
+    "rpost015.Collidable": false,
+    "rpost016.Collidable": false,
+    "rpost017.Collidable": false,
+    "rpost018.Collidable": false,
+    "rpost019.Collidable": false,
+    "rpost020.Collidable": false,
+    "rpost021.Collidable": false,
+    "rpost022.Collidable": false,
+    "rpost023.Collidable": false,
+    "rpost024.Collidable": false,
+    "rsband001.Collidable": false,
+    "rsband002.Collidable": false,
+    "rsband005.Collidable": false,
+    "Wall001.Collidable": false,
+    "Wall002.Collidable": false,
+    "Wall003.Collidable": false,
+    "Wall004.Collidable": false,
+    "Wall005.Collidable": false,
+    "Wall006.Collidable": false,
+    "Wall007.Collidable": false,
+    "Wall008.Collidable": false,
+    "Wall009.Collidable": false,
+    "Wall010.Collidable": false,
+    "Wall011.Collidable": false,
+    "Wall012.Collidable": false,
+    "Wall013.Collidable": false,
+    "Wall014.Collidable": false,
+    "Wall015.Collidable": false,
+    "Wall016.Collidable": false,
+    "Wall017.Collidable": false,
+    "Wall018.Collidable": false,
+    "Wall019.Collidable": false,
+    "Wall020.Collidable": false,
+    "Wall021.Collidable": false,
+    "Wall022.Collidable": false,
+    "Wall023.Collidable": false,
+    "Wall024.Collidable": false,
+    "Wall025.Collidable": false,
+    "Wall026.Collidable": false,
+    "Wall027.Collidable": false,
+    "Wall028.Collidable": false,
+    "Wall029.Collidable": false,
+    "Wall030.Collidable": false,
+    "Wall031.Collidable": false,
+    "Wall032.Collidable": false,
+    "Wall033.Collidable": false,
+    "Wall034.Collidable": false,
+    "Wall035.Collidable": false,
+    "Wall036.Collidable": false,
+    "Wall037.Collidable": false,
+    "Wall038.Collidable": false,
+    "Wall039.Collidable": false,
+    "Wall040.Collidable": false,
+    "Wall041.Collidable": false,
+    "Wall042.Collidable": false,
+    "Wall043.Collidable": false,
+    "Wall044.Collidable": false,
+    "Wall045.Collidable": false,
+    "Wall046.Collidable": false,
+    "Wall047.Collidable": false,
+    "Wall048.Collidable": false,
+    "Wall049.Collidable": false,
+    "Wall050.Collidable": false,
+    "Wall051.Collidable": false,
+    "Wall052.Collidable": false,
+    "Wall053.Collidable": false,
+    "Wall054.Collidable": false,
+    "Wall055.Collidable": false,
+    "Wall056.Collidable": false,
+    "Wall057.Collidable": false,
+    "Wall058.Collidable": false,
+    "Wall059.Collidable": false,
+    "Wall060.Collidable": false,
+    "Wall061.Collidable": false,
+    "Wall062.Collidable": false,
+    "Wall063.Collidable": false,
+    "Wall064.Collidable": false,
+    "Wall065.Collidable": false,
+    "Wall066.Collidable": false,
+    "Wall067.Collidable": false,
+    "Wall068.Collidable": false,
+    "Wall069.Collidable": false,
+    "Wall070.Collidable": false,
+    "Wall071.Collidable": false,
+    "Wall072.Collidable": false,
+    "wall073.Collidable": false,
+    "Wall074.Collidable": false,
+    "wall074001.Collidable": false,
+    "Wall075.Collidable": false,
+    "Wall076.Collidable": false,
+    "Wall077.Collidable": false,
+    "wall078.Collidable": false,
+    "Wall1.Collidable": false,
+    "Wall138.Collidable": false,
+    "Wall16.Collidable": false,
+    "Wall17.Collidable": false,
+    "Wall21.Collidable": false,
+    "Wall22.Collidable": false,
+    "Wall24.Collidable": false,
+    "Wall317.Collidable": false,
+    "Wall348.Collidable": false,
+    "Wall5.Collidable": false,
+    "Wall85.Collidable": false,
+    "Wall86.Collidable": false,
+    "wallxxx001.Collidable": false,
+    "wallxxx002.Collidable": false,
+    "wallxxx003.Collidable": false,
+    "wallxxx004.Collidable": false,
+    "wallxxx005.Collidable": false,
+    "wallxxx006.Collidable": false,
+    "wallxxx007.Collidable": false,
+    "wallxxx008.Collidable": false,
+    "wallxxx009.Collidable": false,
+    "wallxxx010.Collidable": false,
+    "wallxxx011.Collidable": false,
+    "wallxxx012.Collidable": false,
+    "wallxxx013.Collidable": false,
+    "wallxxx014.Collidable": false,
+    "wallxxx016.Collidable": false,
+    "wallxxx2.Collidable": false
+  },
+  "columns": [
+    "ms",
+    "x",
+    "y",
+    "z",
+    "vx",
+    "vy",
+    "vz",
+    "wx",
+    "wy",
+    "wz",
+    "left",
+    "right",
+    "balls_over"
+  ],
+  "cases": [
+    {
+      "name": "shooter-circle",
+      "trigger": "swPlunger",
+      "x": 906.8096,
+      "y": 1820,
+      "z": 25,
+      "vx": 0,
+      "vy": 12,
+      "sampleCount": 40,
+      "runtimeOverrides": {
+        "swPlunger.Enabled": true
+      },
+      "initial": [
+        2805,
+        0,
+        0,
+        0,
+        906.8096,
+        1820,
+        25
+      ],
+      "actualDelay": 0,
+      "samples": [
+        [
+          0,
+          906.8096,
+          1820,
+          25,
+          0,
+          12,
+          0,
+          0,
+          0,
+          0,
+          120,
+          240,
+          1
+        ],
+        [
+          0,
+          906.8096,
+          1820,
+          25,
+          0,
+          12,
+          0,
+          0,
+          0,
+          0,
+          120,
+          240,
+          1
+        ],
+        [
+          17,
+          906.8096,
+          1840.277,
+          25.00406,
+          0,
+          11.558606,
+          0.16268,
+          -0.073206,
+          0,
+          0,
+          120,
+          240,
+          0
+        ],
+        [
+          34,
+          906.8096,
+          1859.637,
+          25.004,
+          0,
+          11.160095,
+          0.16268,
+          -0.142124,
+          0,
+          0,
+          120,
+          240,
+          0
+        ],
+        [
+          51,
+          906.8096,
+          1878.54,
+          25.00163,
+          0,
+          10.759373,
+          0.16268,
+          -0.211263,
+          0,
+          0,
+          120,
+          240,
+          1
+        ],
+        [
+          67,
+          906.8096,
+          1895.5,
+          25.00163,
+          0,
+          10.382221,
+          0.16268,
+          -0.276335,
+          0,
+          0,
+          120,
+          240,
+          1
+        ],
+        [
+          84,
+          906.8096,
+          1895.356,
+          24.99828,
+          0,
+          -3.417211,
+          0.16268,
+          -0.239732,
+          0,
+          0,
+          120,
+          240,
+          1
+        ],
+        [
+          101,
+          906.8096,
+          1890.362,
+          24.99828,
+          0,
+          -2.435149,
+          0.16268,
+          -0.170593,
+          0,
+          0,
+          120,
+          240,
+          1
+        ],
+        [
+          118,
+          906.8096,
+          1887.037,
+          24.99828,
+          0,
+          -1.453088,
+          0.16268,
+          -0.101454,
+          0,
+          0,
+          120,
+          240,
+          1
+        ],
+        [
+          136,
+          906.8096,
+          1885.336,
+          24.99828,
+          0,
+          -0.417934,
+          0.16268,
+          -0.028715,
+          0,
+          0,
+          120,
+          240,
+          1
+        ],
+        [
+          151,
+          906.8096,
+          1885.123,
+          24.99828,
+          0,
+          0.05788,
+          0.16268,
+          -0.006781,
+          0,
+          0,
+          120,
+          240,
+          1
+        ],
+        [
+          168,
+          906.8096,
+          1885.455,
+          24.99823,
+          0,
+          0.291284,
+          0.16268,
+          -0.012508,
+          0,
+          0,
+          120,
+          240,
+          1
+        ],
+        [
+          184,
+          906.8096,
+          1886.095,
+          24.99823,
+          0,
+          0.486694,
+          0.16268,
+          -0.020324,
+          0,
+          0,
+          120,
+          240,
+          1
+        ],
+        [
+          201,
+          906.8096,
+          1887.119,
+          24.99816,
+          0,
+          0.694317,
+          0.16268,
+          -0.028629,
+          0,
+          0,
+          120,
+          240,
+          1
+        ],
+        [
+          218,
+          906.8096,
+          1888.494,
+          24.99816,
+          0,
+          0.90194,
+          0.16268,
+          -0.036934,
+          0,
+          0,
+          120,
+          240,
+          1
+        ],
+        [
+          234,
+          906.8096,
+          1890.111,
+          24.99915,
+          0,
+          1.09735,
+          0.152143,
+          -0.044751,
+          0,
+          0,
+          120,
+          240,
+          1
+        ],
+        [
+          251,
+          906.8096,
+          1892.172,
+          24.9981,
+          0,
+          1.304973,
+          0.16268,
+          -0.053056,
+          0,
+          0,
+          120,
+          240,
+          1
+        ],
+        [
+          284,
+          906.8096,
+          1897.179,
+          24.9981,
+          0,
+          1.708005,
+          0.16268,
+          -0.069177,
+          0,
+          0,
+          120,
+          240,
+          1
+        ],
+        [
+          284,
+          906.8096,
+          1897.179,
+          24.9981,
+          0,
+          1.708005,
+          0.16268,
+          -0.069177,
+          0,
+          0,
+          120,
+          240,
+          1
+        ],
+        [
+          301,
+          906.8096,
+          1900.008,
+          24.9981,
+          0,
+          -0.732956,
+          0.16268,
+          -0.072926,
+          0,
+          0,
+          120,
+          240,
+          1
+        ],
+        [
+          317,
+          906.8096,
+          1899.523,
+          24.9981,
+          0,
+          0.060308,
+          0.16268,
+          -0.020957,
+          0,
+          0,
+          120,
+          240,
+          1
+        ],
+        [
+          333,
+          906.8096,
+          1899.929,
+          24.9981,
+          0,
+          0.382319,
+          0.16268,
+          -0.016113,
+          0,
+          0,
+          120,
+          240,
+          1
+        ],
+        [
+          351,
+          906.8096,
+          1900.063,
+          24.99803,
+          0,
+          -0.023041,
+          0.16268,
+          -0.006212,
+          0,
+          0,
+          120,
+          240,
+          1
+        ],
+        [
+          368,
+          906.8096,
+          1900.104,
+          24.99803,
+          0,
+          -0.027567,
+          0.16268,
+          -0.00376,
+          0,
+          0,
+          120,
+          240,
+          1
+        ],
+        [
+          401,
+          906.8096,
+          1900.13,
+          25.0072,
+          0,
+          -0.021959,
+          0.167809,
+          -0.000028,
+          0,
+          0,
+          120,
+          240,
+          1
+        ],
+        [
+          401,
+          906.8096,
+          1900.13,
+          25.0072,
+          0,
+          -0.021959,
+          0.167809,
+          -0.000028,
+          0,
+          0,
+          120,
+          240,
+          1
+        ],
+        [
+          434,
+          906.8096,
+          1900.136,
+          25.01692,
+          0,
+          -0.021979,
+          0.167809,
+          -0.000007,
+          0,
+          0,
+          120,
+          240,
+          1
+        ],
+        [
+          434,
+          906.8096,
+          1900.136,
+          25.01692,
+          0,
+          -0.021979,
+          0.167809,
+          -0.000007,
+          0,
+          0,
+          120,
+          240,
+          1
+        ],
+        [
+          451,
+          906.8096,
+          1900.138,
+          25.02205,
+          0,
+          -0.004351,
+          0.16268,
+          -0.000496,
+          0,
+          0,
+          120,
+          240,
+          1
+        ],
+        [
+          484,
+          906.8096,
+          1900.144,
+          25.03231,
+          0,
+          -0.00977,
+          0.16268,
+          -0.000486,
+          0,
+          0,
+          120,
+          240,
+          1
+        ],
+        [
+          484,
+          906.8096,
+          1900.144,
+          25.03231,
+          0,
+          -0.00977,
+          0.16268,
+          -0.000486,
+          0,
+          0,
+          120,
+          240,
+          1
+        ],
+        [
+          501,
+          906.8096,
+          1900.147,
+          25.03744,
+          0,
+          -0.021983,
+          0.167809,
+          0.000043,
+          0,
+          0,
+          120,
+          240,
+          1
+        ],
+        [
+          517,
+          906.8096,
+          1900.149,
+          25.04257,
+          0,
+          -0.004359,
+          0.16268,
+          -0.000488,
+          0,
+          0,
+          120,
+          240,
+          1
+        ],
+        [
+          534,
+          906.8096,
+          1900.154,
+          25.04667,
+          0,
+          -0.021984,
+          0.167809,
+          -0.000441,
+          0,
+          0,
+          120,
+          240,
+          1
+        ],
+        [
+          567,
+          906.8096,
+          1900.161,
+          25.01135,
+          0,
+          -0.00977,
+          0.16268,
+          -0.000689,
+          0,
+          0,
+          120,
+          240,
+          1
+        ],
+        [
+          567,
+          906.8096,
+          1900.161,
+          25.01135,
+          0,
+          -0.00977,
+          0.16268,
+          -0.000689,
+          0,
+          0,
+          120,
+          240,
+          1
+        ],
+        [
+          584,
+          906.8096,
+          1900.107,
+          25.01391,
+          0,
+          0.040452,
+          0.16268,
+          -0.002421,
+          0,
+          0,
+          120,
+          240,
+          1
+        ],
+        [
+          601,
+          906.8096,
+          1900.129,
+          25.02001,
+          0,
+          -0.00977,
+          0.152734,
+          -0.000222,
+          0,
+          0,
+          120,
+          240,
+          1
+        ],
+        [
+          617,
+          906.8096,
+          1900.132,
+          25.02363,
+          0,
+          -0.021984,
+          0.167809,
+          -0.000229,
+          0,
+          0,
+          120,
+          240,
+          1
+        ],
+        [
+          635,
+          906.8096,
+          1900.134,
+          25.02928,
+          0,
+          -0.00977,
+          0.16268,
+          -0.000187,
+          0,
+          0,
+          120,
+          240,
+          1
+        ]
+      ],
+      "rawSamples": [
+        "2805:906.8096:1820:25:0:12000000:0:0:0:0:120:240:1'",
+        "2805:906.8096:1820:25:0:12000000:0:0:0:0:120:240:1'",
+        "2822:906.8096:1840.277:25.00406:0:11558606:162680:-73206:0:0:120:240:0'",
+        "2839:906.8096:1859.637:25.004:0:11160095:162680:-142124:0:0:120:240:0'",
+        "2856:906.8096:1878.54:25.00163:0:10759373:162680:-211263:0:0:120:240:1'",
+        "2872:906.8096:1895.5:25.00163:0:10382221:162680:-276335:0:0:120:240:1'",
+        "2889:906.8096:1895.356:24.99828:0:-3417211:162680:-239732:0:0:120:240:1'",
+        "2906:906.8096:1890.362:24.99828:0:-2435149:162680:-170593:0:0:120:240:1'",
+        "2923:906.8096:1887.037:24.99828:0:-1453088:162680:-101454:0:0:120:240:1'",
+        "2941:906.8096:1885.336:24.99828:0:-417934:162680:-28715:0:0:120:240:1'",
+        "2956:906.8096:1885.123:24.99828:0:57880:162680:-6781:0:0:120:240:1'",
+        "2973:906.8096:1885.455:24.99823:0:291284:162680:-12508:0:0:120:240:1'",
+        "2989:906.8096:1886.095:24.99823:0:486694:162680:-20324:0:0:120:240:1'",
+        "3006:906.8096:1887.119:24.99816:0:694317:162680:-28629:0:0:120:240:1'",
+        "3023:906.8096:1888.494:24.99816:0:901940:162680:-36934:0:0:120:240:1'",
+        "3039:906.8096:1890.111:24.99915:0:1097350:152143:-44751:0:0:120:240:1'",
+        "3056:906.8096:1892.172:24.9981:0:1304973:162680:-53056:0:0:120:240:1'",
+        "3089:906.8096:1897.179:24.9981:0:1708005:162680:-69177:0:0:120:240:1'",
+        "3089:906.8096:1897.179:24.9981:0:1708005:162680:-69177:0:0:120:240:1'",
+        "3106:906.8096:1900.008:24.9981:0:-732956:162680:-72926:0:0:120:240:1'",
+        "3122:906.8096:1899.523:24.9981:0:60308:162680:-20957:0:0:120:240:1'",
+        "3138:906.8096:1899.929:24.9981:0:382319:162680:-16113:0:0:120:240:1'",
+        "3156:906.8096:1900.063:24.99803:0:-23041:162680:-6212:0:0:120:240:1'",
+        "3173:906.8096:1900.104:24.99803:0:-27567:162680:-3760:0:0:120:240:1'",
+        "3206:906.8096:1900.13:25.0072:0:-21959:167809:-28:0:0:120:240:1'",
+        "3206:906.8096:1900.13:25.0072:0:-21959:167809:-28:0:0:120:240:1'",
+        "3239:906.8096:1900.136:25.01692:0:-21979:167809:-7:0:0:120:240:1'",
+        "3239:906.8096:1900.136:25.01692:0:-21979:167809:-7:0:0:120:240:1'",
+        "3256:906.8096:1900.138:25.02205:0:-4351:162680:-496:0:0:120:240:1'",
+        "3289:906.8096:1900.144:25.03231:0:-9770:162680:-486:0:0:120:240:1'",
+        "3289:906.8096:1900.144:25.03231:0:-9770:162680:-486:0:0:120:240:1'",
+        "3306:906.8096:1900.147:25.03744:0:-21983:167809:43:0:0:120:240:1'",
+        "3322:906.8096:1900.149:25.04257:0:-4359:162680:-488:0:0:120:240:1'",
+        "3339:906.8096:1900.154:25.04667:0:-21984:167809:-441:0:0:120:240:1'",
+        "3372:906.8096:1900.161:25.01135:0:-9770:162680:-689:0:0:120:240:1'",
+        "3372:906.8096:1900.161:25.01135:0:-9770:162680:-689:0:0:120:240:1'",
+        "3389:906.8096:1900.107:25.01391:0:40452:162680:-2421:0:0:120:240:1'",
+        "3406:906.8096:1900.129:25.02001:0:-9770:152734:-222:0:0:120:240:1'",
+        "3422:906.8096:1900.132:25.02363:0:-21984:167809:-229:0:0:120:240:1'",
+        "3440:906.8096:1900.134:25.02928:0:-9770:162680:-187:0:0:120:240:1'"
+      ],
+      "timerTrace": [
+        [
+          "FLIP",
+          1
+        ],
+        [
+          "FLIP",
+          2
+        ],
+        [
+          "FLIP",
+          3
+        ],
+        [
+          "FLIP",
+          4
+        ],
+        [
+          "FLIP",
+          5
+        ],
+        [
+          "FLIP",
+          6
+        ],
+        [
+          "FLIP",
+          7
+        ],
+        [
+          "FLIP",
+          8
+        ],
+        [
+          "FLIP",
+          9
+        ],
+        [
+          "FLIP",
+          10
+        ],
+        [
+          "ROLL",
+          10
+        ],
+        [
+          "FLIP",
+          11
+        ],
+        [
+          "FLIP",
+          12
+        ],
+        [
+          "FLIP",
+          13
+        ],
+        [
+          "FLIP",
+          14
+        ],
+        [
+          "FLIP",
+          15
+        ],
+        [
+          "FLIP",
+          16
+        ],
+        [
+          "FLIP",
+          17
+        ],
+        [
+          "FLIP",
+          18
+        ],
+        [
+          "FLIP",
+          19
+        ],
+        [
+          "FLIP",
+          20
+        ],
+        [
+          "ROLL",
+          20
+        ],
+        [
+          "FLIP",
+          21
+        ],
+        [
+          "FLIP",
+          22
+        ],
+        [
+          "FLIP",
+          23
+        ],
+        [
+          "FLIP",
+          24
+        ],
+        [
+          "FLIP",
+          25
+        ],
+        [
+          "FLIP",
+          26
+        ],
+        [
+          "FLIP",
+          27
+        ],
+        [
+          "FLIP",
+          28
+        ],
+        [
+          "FLIP",
+          29
+        ],
+        [
+          "FLIP",
+          30
+        ],
+        [
+          "ROLL",
+          30
+        ],
+        [
+          "FLIP",
+          31
+        ],
+        [
+          "FLIP",
+          32
+        ],
+        [
+          "FLIP",
+          33
+        ],
+        [
+          "FLIP",
+          34
+        ],
+        [
+          "FLIP",
+          35
+        ],
+        [
+          "FLIP",
+          36
+        ],
+        [
+          "FLIP",
+          37
+        ],
+        [
+          "FLIP",
+          38
+        ],
+        [
+          "FLIP",
+          39
+        ],
+        [
+          "FLIP",
+          40
+        ],
+        [
+          "ROLL",
+          40
+        ],
+        [
+          "FLIP",
+          41
+        ],
+        [
+          "FLIP",
+          42
+        ],
+        [
+          "FLIP",
+          43
+        ],
+        [
+          "FLIP",
+          44
+        ],
+        [
+          "FLIP",
+          45
+        ],
+        [
+          "FLIP",
+          46
+        ],
+        [
+          "FLIP",
+          47
+        ],
+        [
+          "FLIP",
+          48
+        ],
+        [
+          "FLIP",
+          49
+        ],
+        [
+          "FLIP",
+          50
+        ],
+        [
+          "ROLL",
+          50
+        ],
+        [
+          "FLIP",
+          51
+        ],
+        [
+          "FLIP",
+          52
+        ],
+        [
+          "FLIP",
+          53
+        ],
+        [
+          "FLIP",
+          54
+        ],
+        [
+          "FLIP",
+          55
+        ],
+        [
+          "FLIP",
+          56
+        ],
+        [
+          "FLIP",
+          57
+        ],
+        [
+          "FLIP",
+          58
+        ],
+        [
+          "FLIP",
+          59
+        ],
+        [
+          "FLIP",
+          60
+        ],
+        [
+          "ROLL",
+          60
+        ],
+        [
+          "FLIP",
+          61
+        ],
+        [
+          "FLIP",
+          62
+        ],
+        [
+          "FLIP",
+          63
+        ],
+        [
+          "FLIP",
+          64
+        ],
+        [
+          "FLIP",
+          65
+        ],
+        [
+          "FLIP",
+          66
+        ],
+        [
+          "FLIP",
+          67
+        ],
+        [
+          "FLIP",
+          68
+        ],
+        [
+          "FLIP",
+          69
+        ],
+        [
+          "FLIP",
+          70
+        ],
+        [
+          "ROLL",
+          70
+        ],
+        [
+          "FLIP",
+          71
+        ],
+        [
+          "FLIP",
+          72
+        ],
+        [
+          "FLIP",
+          73
+        ],
+        [
+          "FLIP",
+          74
+        ],
+        [
+          "FLIP",
+          75
+        ],
+        [
+          "FLIP",
+          76
+        ],
+        [
+          "FLIP",
+          77
+        ],
+        [
+          "FLIP",
+          78
+        ],
+        [
+          "FLIP",
+          79
+        ],
+        [
+          "FLIP",
+          80
+        ],
+        [
+          "ROLL",
+          80
+        ],
+        [
+          "FLIP",
+          81
+        ],
+        [
+          "FLIP",
+          82
+        ],
+        [
+          "FLIP",
+          83
+        ],
+        [
+          "FLIP",
+          84
+        ],
+        [
+          "FLIP",
+          85
+        ],
+        [
+          "FLIP",
+          86
+        ],
+        [
+          "FLIP",
+          87
+        ],
+        [
+          "FLIP",
+          88
+        ],
+        [
+          "FLIP",
+          89
+        ],
+        [
+          "FLIP",
+          90
+        ],
+        [
+          "ROLL",
+          90
+        ],
+        [
+          "FLIP",
+          91
+        ],
+        [
+          "FLIP",
+          92
+        ],
+        [
+          "FLIP",
+          93
+        ],
+        [
+          "FLIP",
+          94
+        ],
+        [
+          "FLIP",
+          95
+        ],
+        [
+          "FLIP",
+          96
+        ],
+        [
+          "FLIP",
+          97
+        ],
+        [
+          "FLIP",
+          98
+        ],
+        [
+          "FLIP",
+          99
+        ],
+        [
+          "FLIP",
+          100
+        ],
+        [
+          "ROLL",
+          100
+        ],
+        [
+          "FLIP",
+          101
+        ],
+        [
+          "FLIP",
+          102
+        ],
+        [
+          "FLIP",
+          103
+        ],
+        [
+          "FLIP",
+          104
+        ],
+        [
+          "FLIP",
+          105
+        ],
+        [
+          "FLIP",
+          106
+        ],
+        [
+          "FLIP",
+          107
+        ],
+        [
+          "FLIP",
+          108
+        ],
+        [
+          "FLIP",
+          109
+        ],
+        [
+          "FLIP",
+          110
+        ],
+        [
+          "ROLL",
+          110
+        ],
+        [
+          "FLIP",
+          111
+        ],
+        [
+          "FLIP",
+          112
+        ],
+        [
+          "FLIP",
+          113
+        ],
+        [
+          "FLIP",
+          114
+        ],
+        [
+          "FLIP",
+          115
+        ],
+        [
+          "FLIP",
+          116
+        ],
+        [
+          "FLIP",
+          117
+        ],
+        [
+          "FLIP",
+          118
+        ],
+        [
+          "FLIP",
+          119
+        ],
+        [
+          "FLIP",
+          120
+        ],
+        [
+          "ROLL",
+          120
+        ],
+        [
+          "FLIP",
+          121
+        ],
+        [
+          "FLIP",
+          122
+        ],
+        [
+          "FLIP",
+          123
+        ],
+        [
+          "FLIP",
+          124
+        ],
+        [
+          "FLIP",
+          125
+        ],
+        [
+          "FLIP",
+          126
+        ],
+        [
+          "FLIP",
+          127
+        ],
+        [
+          "FLIP",
+          128
+        ],
+        [
+          "FLIP",
+          129
+        ],
+        [
+          "FLIP",
+          130
+        ],
+        [
+          "ROLL",
+          130
+        ],
+        [
+          "FLIP",
+          131
+        ],
+        [
+          "FLIP",
+          132
+        ],
+        [
+          "FLIP",
+          133
+        ],
+        [
+          "FLIP",
+          134
+        ],
+        [
+          "FLIP",
+          135
+        ],
+        [
+          "FLIP",
+          136
+        ],
+        [
+          "FLIP",
+          137
+        ],
+        [
+          "FLIP",
+          138
+        ],
+        [
+          "FLIP",
+          139
+        ],
+        [
+          "FLIP",
+          140
+        ],
+        [
+          "ROLL",
+          140
+        ],
+        [
+          "FLIP",
+          141
+        ],
+        [
+          "FLIP",
+          142
+        ],
+        [
+          "FLIP",
+          143
+        ],
+        [
+          "FLIP",
+          144
+        ],
+        [
+          "FLIP",
+          145
+        ],
+        [
+          "FLIP",
+          146
+        ],
+        [
+          "FLIP",
+          147
+        ],
+        [
+          "FLIP",
+          148
+        ],
+        [
+          "FLIP",
+          149
+        ],
+        [
+          "FLIP",
+          150
+        ],
+        [
+          "ROLL",
+          150
+        ],
+        [
+          "FLIP",
+          151
+        ],
+        [
+          "FLIP",
+          152
+        ],
+        [
+          "FLIP",
+          153
+        ],
+        [
+          "FLIP",
+          154
+        ],
+        [
+          "FLIP",
+          155
+        ],
+        [
+          "FLIP",
+          156
+        ],
+        [
+          "FLIP",
+          157
+        ],
+        [
+          "FLIP",
+          158
+        ],
+        [
+          "FLIP",
+          159
+        ],
+        [
+          "FLIP",
+          160
+        ],
+        [
+          "ROLL",
+          160
+        ],
+        [
+          "FLIP",
+          161
+        ],
+        [
+          "FLIP",
+          162
+        ],
+        [
+          "FLIP",
+          163
+        ],
+        [
+          "FLIP",
+          164
+        ],
+        [
+          "FLIP",
+          165
+        ],
+        [
+          "FLIP",
+          166
+        ],
+        [
+          "FLIP",
+          167
+        ],
+        [
+          "FLIP",
+          168
+        ],
+        [
+          "FLIP",
+          169
+        ],
+        [
+          "FLIP",
+          170
+        ],
+        [
+          "ROLL",
+          170
+        ],
+        [
+          "FLIP",
+          171
+        ],
+        [
+          "FLIP",
+          172
+        ],
+        [
+          "FLIP",
+          173
+        ],
+        [
+          "FLIP",
+          174
+        ],
+        [
+          "FLIP",
+          175
+        ],
+        [
+          "FLIP",
+          176
+        ],
+        [
+          "FLIP",
+          177
+        ],
+        [
+          "FLIP",
+          178
+        ],
+        [
+          "FLIP",
+          179
+        ],
+        [
+          "FLIP",
+          180
+        ],
+        [
+          "ROLL",
+          180
+        ],
+        [
+          "FLIP",
+          181
+        ],
+        [
+          "FLIP",
+          182
+        ],
+        [
+          "FLIP",
+          183
+        ],
+        [
+          "FLIP",
+          184
+        ],
+        [
+          "FLIP",
+          185
+        ],
+        [
+          "FLIP",
+          186
+        ],
+        [
+          "FLIP",
+          187
+        ],
+        [
+          "FLIP",
+          188
+        ],
+        [
+          "FLIP",
+          189
+        ],
+        [
+          "FLIP",
+          190
+        ],
+        [
+          "ROLL",
+          190
+        ],
+        [
+          "FLIP",
+          191
+        ],
+        [
+          "FLIP",
+          192
+        ],
+        [
+          "FLIP",
+          193
+        ],
+        [
+          "FLIP",
+          194
+        ],
+        [
+          "FLIP",
+          195
+        ],
+        [
+          "FLIP",
+          196
+        ],
+        [
+          "FLIP",
+          197
+        ],
+        [
+          "FLIP",
+          198
+        ],
+        [
+          "FLIP",
+          199
+        ],
+        [
+          "FLIP",
+          200
+        ],
+        [
+          "ROLL",
+          200
+        ],
+        [
+          "FLIP",
+          201
+        ],
+        [
+          "FLIP",
+          202
+        ],
+        [
+          "FLIP",
+          203
+        ],
+        [
+          "FLIP",
+          204
+        ],
+        [
+          "FLIP",
+          205
+        ],
+        [
+          "FLIP",
+          206
+        ],
+        [
+          "FLIP",
+          207
+        ],
+        [
+          "FLIP",
+          208
+        ],
+        [
+          "FLIP",
+          209
+        ],
+        [
+          "FLIP",
+          210
+        ],
+        [
+          "ROLL",
+          210
+        ],
+        [
+          "FLIP",
+          211
+        ],
+        [
+          "FLIP",
+          212
+        ],
+        [
+          "FLIP",
+          213
+        ],
+        [
+          "FLIP",
+          214
+        ],
+        [
+          "FLIP",
+          215
+        ],
+        [
+          "FLIP",
+          216
+        ],
+        [
+          "FLIP",
+          217
+        ],
+        [
+          "FLIP",
+          218
+        ],
+        [
+          "FLIP",
+          219
+        ],
+        [
+          "FLIP",
+          220
+        ],
+        [
+          "ROLL",
+          220
+        ],
+        [
+          "FLIP",
+          221
+        ],
+        [
+          "FLIP",
+          222
+        ],
+        [
+          "FLIP",
+          223
+        ],
+        [
+          "FLIP",
+          224
+        ],
+        [
+          "FLIP",
+          225
+        ],
+        [
+          "FLIP",
+          226
+        ],
+        [
+          "FLIP",
+          227
+        ],
+        [
+          "FLIP",
+          228
+        ],
+        [
+          "FLIP",
+          229
+        ],
+        [
+          "FLIP",
+          230
+        ],
+        [
+          "ROLL",
+          230
+        ],
+        [
+          "FLIP",
+          231
+        ],
+        [
+          "FLIP",
+          232
+        ],
+        [
+          "FLIP",
+          233
+        ],
+        [
+          "FLIP",
+          234
+        ],
+        [
+          "FLIP",
+          235
+        ],
+        [
+          "FLIP",
+          236
+        ],
+        [
+          "FLIP",
+          237
+        ],
+        [
+          "FLIP",
+          238
+        ],
+        [
+          "FLIP",
+          239
+        ],
+        [
+          "FLIP",
+          240
+        ],
+        [
+          "ROLL",
+          240
+        ],
+        [
+          "FLIP",
+          241
+        ],
+        [
+          "FLIP",
+          242
+        ],
+        [
+          "FLIP",
+          243
+        ],
+        [
+          "FLIP",
+          244
+        ],
+        [
+          "FLIP",
+          245
+        ],
+        [
+          "FLIP",
+          246
+        ],
+        [
+          "FLIP",
+          247
+        ],
+        [
+          "FLIP",
+          248
+        ],
+        [
+          "FLIP",
+          249
+        ],
+        [
+          "FLIP",
+          250
+        ],
+        [
+          "ROLL",
+          250
+        ],
+        [
+          "FLIP",
+          251
+        ],
+        [
+          "FLIP",
+          252
+        ],
+        [
+          "FLIP",
+          253
+        ],
+        [
+          "FLIP",
+          254
+        ],
+        [
+          "FLIP",
+          255
+        ],
+        [
+          "FLIP",
+          256
+        ],
+        [
+          "FLIP",
+          257
+        ],
+        [
+          "FLIP",
+          258
+        ],
+        [
+          "FLIP",
+          259
+        ],
+        [
+          "FLIP",
+          260
+        ],
+        [
+          "ROLL",
+          260
+        ],
+        [
+          "FLIP",
+          261
+        ],
+        [
+          "FLIP",
+          262
+        ],
+        [
+          "FLIP",
+          263
+        ],
+        [
+          "FLIP",
+          264
+        ],
+        [
+          "FLIP",
+          265
+        ],
+        [
+          "FLIP",
+          266
+        ],
+        [
+          "FLIP",
+          267
+        ],
+        [
+          "FLIP",
+          268
+        ],
+        [
+          "FLIP",
+          269
+        ],
+        [
+          "FLIP",
+          270
+        ],
+        [
+          "ROLL",
+          270
+        ],
+        [
+          "FLIP",
+          271
+        ],
+        [
+          "FLIP",
+          272
+        ],
+        [
+          "FLIP",
+          273
+        ],
+        [
+          "FLIP",
+          274
+        ],
+        [
+          "FLIP",
+          275
+        ],
+        [
+          "FLIP",
+          276
+        ],
+        [
+          "FLIP",
+          277
+        ],
+        [
+          "FLIP",
+          278
+        ],
+        [
+          "FLIP",
+          279
+        ],
+        [
+          "FLIP",
+          280
+        ],
+        [
+          "ROLL",
+          280
+        ],
+        [
+          "FLIP",
+          281
+        ],
+        [
+          "FLIP",
+          282
+        ],
+        [
+          "FLIP",
+          283
+        ],
+        [
+          "FLIP",
+          284
+        ],
+        [
+          "FLIP",
+          285
+        ],
+        [
+          "FLIP",
+          286
+        ],
+        [
+          "FLIP",
+          287
+        ],
+        [
+          "FLIP",
+          288
+        ],
+        [
+          "FLIP",
+          289
+        ],
+        [
+          "FLIP",
+          290
+        ],
+        [
+          "ROLL",
+          290
+        ],
+        [
+          "FLIP",
+          291
+        ],
+        [
+          "FLIP",
+          292
+        ],
+        [
+          "FLIP",
+          293
+        ],
+        [
+          "FLIP",
+          294
+        ],
+        [
+          "FLIP",
+          295
+        ],
+        [
+          "FLIP",
+          296
+        ],
+        [
+          "FLIP",
+          297
+        ],
+        [
+          "FLIP",
+          298
+        ],
+        [
+          "FLIP",
+          299
+        ],
+        [
+          "FLIP",
+          300
+        ],
+        [
+          "ROLL",
+          300
+        ],
+        [
+          "FLIP",
+          301
+        ],
+        [
+          "FLIP",
+          302
+        ],
+        [
+          "FLIP",
+          303
+        ],
+        [
+          "FLIP",
+          304
+        ],
+        [
+          "FLIP",
+          305
+        ],
+        [
+          "FLIP",
+          306
+        ],
+        [
+          "FLIP",
+          307
+        ],
+        [
+          "FLIP",
+          308
+        ],
+        [
+          "FLIP",
+          309
+        ],
+        [
+          "FLIP",
+          310
+        ],
+        [
+          "ROLL",
+          310
+        ],
+        [
+          "FLIP",
+          311
+        ],
+        [
+          "FLIP",
+          312
+        ],
+        [
+          "FLIP",
+          313
+        ],
+        [
+          "FLIP",
+          314
+        ],
+        [
+          "FLIP",
+          315
+        ],
+        [
+          "FLIP",
+          316
+        ],
+        [
+          "FLIP",
+          317
+        ],
+        [
+          "FLIP",
+          318
+        ],
+        [
+          "FLIP",
+          319
+        ],
+        [
+          "FLIP",
+          320
+        ],
+        [
+          "ROLL",
+          320
+        ],
+        [
+          "FLIP",
+          321
+        ],
+        [
+          "FLIP",
+          322
+        ],
+        [
+          "FLIP",
+          323
+        ],
+        [
+          "FLIP",
+          324
+        ],
+        [
+          "FLIP",
+          325
+        ],
+        [
+          "FLIP",
+          326
+        ],
+        [
+          "FLIP",
+          327
+        ],
+        [
+          "FLIP",
+          328
+        ],
+        [
+          "FLIP",
+          329
+        ],
+        [
+          "FLIP",
+          330
+        ],
+        [
+          "ROLL",
+          330
+        ],
+        [
+          "FLIP",
+          331
+        ],
+        [
+          "FLIP",
+          332
+        ],
+        [
+          "FLIP",
+          333
+        ],
+        [
+          "FLIP",
+          334
+        ],
+        [
+          "FLIP",
+          335
+        ],
+        [
+          "FLIP",
+          336
+        ],
+        [
+          "FLIP",
+          337
+        ],
+        [
+          "FLIP",
+          338
+        ],
+        [
+          "FLIP",
+          339
+        ],
+        [
+          "FLIP",
+          340
+        ],
+        [
+          "ROLL",
+          340
+        ],
+        [
+          "FLIP",
+          341
+        ],
+        [
+          "FLIP",
+          342
+        ],
+        [
+          "FLIP",
+          343
+        ],
+        [
+          "FLIP",
+          344
+        ],
+        [
+          "FLIP",
+          345
+        ],
+        [
+          "FLIP",
+          346
+        ],
+        [
+          "FLIP",
+          347
+        ],
+        [
+          "FLIP",
+          348
+        ],
+        [
+          "FLIP",
+          349
+        ],
+        [
+          "FLIP",
+          350
+        ],
+        [
+          "ROLL",
+          350
+        ],
+        [
+          "FLIP",
+          351
+        ],
+        [
+          "FLIP",
+          352
+        ],
+        [
+          "FLIP",
+          353
+        ],
+        [
+          "FLIP",
+          354
+        ],
+        [
+          "FLIP",
+          355
+        ],
+        [
+          "FLIP",
+          356
+        ],
+        [
+          "FLIP",
+          357
+        ],
+        [
+          "FLIP",
+          358
+        ],
+        [
+          "FLIP",
+          359
+        ],
+        [
+          "FLIP",
+          360
+        ],
+        [
+          "ROLL",
+          360
+        ],
+        [
+          "FLIP",
+          361
+        ],
+        [
+          "FLIP",
+          362
+        ],
+        [
+          "FLIP",
+          363
+        ],
+        [
+          "FLIP",
+          364
+        ],
+        [
+          "FLIP",
+          365
+        ],
+        [
+          "FLIP",
+          366
+        ],
+        [
+          "FLIP",
+          367
+        ],
+        [
+          "FLIP",
+          368
+        ],
+        [
+          "FLIP",
+          369
+        ],
+        [
+          "FLIP",
+          370
+        ],
+        [
+          "ROLL",
+          370
+        ],
+        [
+          "FLIP",
+          371
+        ],
+        [
+          "FLIP",
+          372
+        ],
+        [
+          "FLIP",
+          373
+        ],
+        [
+          "FLIP",
+          374
+        ],
+        [
+          "FLIP",
+          375
+        ],
+        [
+          "FLIP",
+          376
+        ],
+        [
+          "FLIP",
+          377
+        ],
+        [
+          "FLIP",
+          378
+        ],
+        [
+          "FLIP",
+          379
+        ],
+        [
+          "FLIP",
+          380
+        ],
+        [
+          "ROLL",
+          380
+        ],
+        [
+          "FLIP",
+          381
+        ],
+        [
+          "FLIP",
+          382
+        ],
+        [
+          "FLIP",
+          383
+        ],
+        [
+          "FLIP",
+          384
+        ],
+        [
+          "FLIP",
+          385
+        ],
+        [
+          "FLIP",
+          386
+        ],
+        [
+          "FLIP",
+          387
+        ],
+        [
+          "FLIP",
+          388
+        ],
+        [
+          "FLIP",
+          389
+        ],
+        [
+          "FLIP",
+          390
+        ],
+        [
+          "ROLL",
+          390
+        ],
+        [
+          "FLIP",
+          391
+        ],
+        [
+          "FLIP",
+          392
+        ],
+        [
+          "FLIP",
+          393
+        ],
+        [
+          "FLIP",
+          394
+        ],
+        [
+          "FLIP",
+          395
+        ],
+        [
+          "FLIP",
+          396
+        ],
+        [
+          "FLIP",
+          397
+        ],
+        [
+          "FLIP",
+          398
+        ],
+        [
+          "FLIP",
+          399
+        ],
+        [
+          "FLIP",
+          400
+        ],
+        [
+          "ROLL",
+          400
+        ],
+        [
+          "FLIP",
+          401
+        ],
+        [
+          "FLIP",
+          402
+        ],
+        [
+          "FLIP",
+          403
+        ],
+        [
+          "FLIP",
+          404
+        ],
+        [
+          "FLIP",
+          405
+        ],
+        [
+          "FLIP",
+          406
+        ],
+        [
+          "FLIP",
+          407
+        ],
+        [
+          "FLIP",
+          408
+        ],
+        [
+          "FLIP",
+          409
+        ],
+        [
+          "FLIP",
+          410
+        ],
+        [
+          "ROLL",
+          410
+        ],
+        [
+          "FLIP",
+          411
+        ],
+        [
+          "FLIP",
+          412
+        ],
+        [
+          "FLIP",
+          413
+        ],
+        [
+          "FLIP",
+          414
+        ],
+        [
+          "FLIP",
+          415
+        ],
+        [
+          "FLIP",
+          416
+        ],
+        [
+          "FLIP",
+          417
+        ],
+        [
+          "FLIP",
+          418
+        ],
+        [
+          "FLIP",
+          419
+        ],
+        [
+          "FLIP",
+          420
+        ],
+        [
+          "ROLL",
+          420
+        ],
+        [
+          "FLIP",
+          421
+        ],
+        [
+          "FLIP",
+          422
+        ],
+        [
+          "FLIP",
+          423
+        ],
+        [
+          "FLIP",
+          424
+        ],
+        [
+          "FLIP",
+          425
+        ],
+        [
+          "FLIP",
+          426
+        ],
+        [
+          "FLIP",
+          427
+        ],
+        [
+          "FLIP",
+          428
+        ],
+        [
+          "FLIP",
+          429
+        ],
+        [
+          "FLIP",
+          430
+        ],
+        [
+          "ROLL",
+          430
+        ],
+        [
+          "FLIP",
+          431
+        ],
+        [
+          "FLIP",
+          432
+        ],
+        [
+          "FLIP",
+          433
+        ],
+        [
+          "FLIP",
+          434
+        ],
+        [
+          "FLIP",
+          435
+        ],
+        [
+          "FLIP",
+          436
+        ],
+        [
+          "FLIP",
+          437
+        ],
+        [
+          "FLIP",
+          438
+        ],
+        [
+          "FLIP",
+          439
+        ],
+        [
+          "FLIP",
+          440
+        ],
+        [
+          "ROLL",
+          440
+        ],
+        [
+          "FLIP",
+          441
+        ],
+        [
+          "FLIP",
+          442
+        ],
+        [
+          "FLIP",
+          443
+        ],
+        [
+          "FLIP",
+          444
+        ],
+        [
+          "FLIP",
+          445
+        ],
+        [
+          "FLIP",
+          446
+        ],
+        [
+          "FLIP",
+          447
+        ],
+        [
+          "FLIP",
+          448
+        ],
+        [
+          "FLIP",
+          449
+        ],
+        [
+          "FLIP",
+          450
+        ],
+        [
+          "ROLL",
+          450
+        ],
+        [
+          "FLIP",
+          451
+        ],
+        [
+          "FLIP",
+          452
+        ],
+        [
+          "FLIP",
+          453
+        ],
+        [
+          "FLIP",
+          454
+        ],
+        [
+          "FLIP",
+          455
+        ],
+        [
+          "FLIP",
+          456
+        ],
+        [
+          "FLIP",
+          457
+        ],
+        [
+          "FLIP",
+          458
+        ],
+        [
+          "FLIP",
+          459
+        ],
+        [
+          "FLIP",
+          460
+        ],
+        [
+          "ROLL",
+          460
+        ],
+        [
+          "FLIP",
+          461
+        ],
+        [
+          "FLIP",
+          462
+        ],
+        [
+          "FLIP",
+          463
+        ],
+        [
+          "FLIP",
+          464
+        ],
+        [
+          "FLIP",
+          465
+        ],
+        [
+          "FLIP",
+          466
+        ],
+        [
+          "FLIP",
+          467
+        ],
+        [
+          "FLIP",
+          468
+        ],
+        [
+          "FLIP",
+          469
+        ],
+        [
+          "FLIP",
+          470
+        ],
+        [
+          "ROLL",
+          470
+        ],
+        [
+          "FLIP",
+          471
+        ],
+        [
+          "FLIP",
+          472
+        ],
+        [
+          "FLIP",
+          473
+        ],
+        [
+          "FLIP",
+          474
+        ],
+        [
+          "FLIP",
+          475
+        ],
+        [
+          "FLIP",
+          476
+        ],
+        [
+          "FLIP",
+          477
+        ],
+        [
+          "FLIP",
+          478
+        ],
+        [
+          "FLIP",
+          479
+        ],
+        [
+          "FLIP",
+          480
+        ],
+        [
+          "ROLL",
+          480
+        ],
+        [
+          "FLIP",
+          481
+        ],
+        [
+          "FLIP",
+          482
+        ],
+        [
+          "FLIP",
+          483
+        ],
+        [
+          "FLIP",
+          484
+        ],
+        [
+          "FLIP",
+          485
+        ],
+        [
+          "FLIP",
+          486
+        ],
+        [
+          "FLIP",
+          487
+        ],
+        [
+          "FLIP",
+          488
+        ],
+        [
+          "FLIP",
+          489
+        ],
+        [
+          "FLIP",
+          490
+        ],
+        [
+          "ROLL",
+          490
+        ],
+        [
+          "FLIP",
+          491
+        ],
+        [
+          "FLIP",
+          492
+        ],
+        [
+          "FLIP",
+          493
+        ],
+        [
+          "FLIP",
+          494
+        ],
+        [
+          "FLIP",
+          495
+        ],
+        [
+          "FLIP",
+          496
+        ],
+        [
+          "FLIP",
+          497
+        ],
+        [
+          "FLIP",
+          498
+        ],
+        [
+          "FLIP",
+          499
+        ],
+        [
+          "FLIP",
+          500
+        ],
+        [
+          "ROLL",
+          500
+        ],
+        [
+          "FLIP",
+          501
+        ],
+        [
+          "FLIP",
+          502
+        ],
+        [
+          "FLIP",
+          503
+        ],
+        [
+          "FLIP",
+          504
+        ],
+        [
+          "FLIP",
+          505
+        ],
+        [
+          "FLIP",
+          506
+        ],
+        [
+          "FLIP",
+          507
+        ],
+        [
+          "FLIP",
+          508
+        ],
+        [
+          "FLIP",
+          509
+        ],
+        [
+          "FLIP",
+          510
+        ],
+        [
+          "ROLL",
+          510
+        ],
+        [
+          "FLIP",
+          511
+        ],
+        [
+          "FLIP",
+          512
+        ],
+        [
+          "FLIP",
+          513
+        ],
+        [
+          "FLIP",
+          514
+        ],
+        [
+          "FLIP",
+          515
+        ],
+        [
+          "FLIP",
+          516
+        ],
+        [
+          "FLIP",
+          517
+        ],
+        [
+          "FLIP",
+          518
+        ],
+        [
+          "FLIP",
+          519
+        ],
+        [
+          "FLIP",
+          520
+        ],
+        [
+          "ROLL",
+          520
+        ],
+        [
+          "FLIP",
+          521
+        ],
+        [
+          "FLIP",
+          522
+        ],
+        [
+          "FLIP",
+          523
+        ],
+        [
+          "FLIP",
+          524
+        ],
+        [
+          "FLIP",
+          525
+        ],
+        [
+          "FLIP",
+          526
+        ],
+        [
+          "FLIP",
+          527
+        ],
+        [
+          "FLIP",
+          528
+        ],
+        [
+          "FLIP",
+          529
+        ],
+        [
+          "FLIP",
+          530
+        ],
+        [
+          "ROLL",
+          530
+        ],
+        [
+          "FLIP",
+          531
+        ],
+        [
+          "FLIP",
+          532
+        ],
+        [
+          "FLIP",
+          533
+        ],
+        [
+          "FLIP",
+          534
+        ],
+        [
+          "FLIP",
+          535
+        ],
+        [
+          "FLIP",
+          536
+        ],
+        [
+          "FLIP",
+          537
+        ],
+        [
+          "FLIP",
+          538
+        ],
+        [
+          "FLIP",
+          539
+        ],
+        [
+          "FLIP",
+          540
+        ],
+        [
+          "ROLL",
+          540
+        ],
+        [
+          "FLIP",
+          541
+        ],
+        [
+          "FLIP",
+          542
+        ],
+        [
+          "FLIP",
+          543
+        ],
+        [
+          "FLIP",
+          544
+        ],
+        [
+          "FLIP",
+          545
+        ],
+        [
+          "FLIP",
+          546
+        ],
+        [
+          "FLIP",
+          547
+        ],
+        [
+          "FLIP",
+          548
+        ],
+        [
+          "FLIP",
+          549
+        ],
+        [
+          "FLIP",
+          550
+        ],
+        [
+          "ROLL",
+          550
+        ],
+        [
+          "FLIP",
+          551
+        ],
+        [
+          "FLIP",
+          552
+        ],
+        [
+          "FLIP",
+          553
+        ],
+        [
+          "FLIP",
+          554
+        ],
+        [
+          "FLIP",
+          555
+        ],
+        [
+          "FLIP",
+          556
+        ],
+        [
+          "FLIP",
+          557
+        ],
+        [
+          "FLIP",
+          558
+        ],
+        [
+          "FLIP",
+          559
+        ],
+        [
+          "FLIP",
+          560
+        ],
+        [
+          "ROLL",
+          560
+        ],
+        [
+          "FLIP",
+          561
+        ],
+        [
+          "FLIP",
+          562
+        ],
+        [
+          "FLIP",
+          563
+        ],
+        [
+          "FLIP",
+          564
+        ],
+        [
+          "FLIP",
+          565
+        ],
+        [
+          "FLIP",
+          566
+        ],
+        [
+          "FLIP",
+          567
+        ],
+        [
+          "FLIP",
+          568
+        ],
+        [
+          "FLIP",
+          569
+        ],
+        [
+          "FLIP",
+          570
+        ],
+        [
+          "ROLL",
+          570
+        ],
+        [
+          "FLIP",
+          571
+        ],
+        [
+          "FLIP",
+          572
+        ],
+        [
+          "FLIP",
+          573
+        ],
+        [
+          "FLIP",
+          574
+        ],
+        [
+          "FLIP",
+          575
+        ],
+        [
+          "FLIP",
+          576
+        ],
+        [
+          "FLIP",
+          577
+        ],
+        [
+          "FLIP",
+          578
+        ],
+        [
+          "FLIP",
+          579
+        ],
+        [
+          "FLIP",
+          580
+        ],
+        [
+          "ROLL",
+          580
+        ],
+        [
+          "FLIP",
+          581
+        ],
+        [
+          "FLIP",
+          582
+        ],
+        [
+          "FLIP",
+          583
+        ],
+        [
+          "FLIP",
+          584
+        ],
+        [
+          "FLIP",
+          585
+        ],
+        [
+          "FLIP",
+          586
+        ],
+        [
+          "FLIP",
+          587
+        ],
+        [
+          "FLIP",
+          588
+        ],
+        [
+          "FLIP",
+          589
+        ],
+        [
+          "FLIP",
+          590
+        ],
+        [
+          "ROLL",
+          590
+        ],
+        [
+          "FLIP",
+          591
+        ],
+        [
+          "FLIP",
+          592
+        ],
+        [
+          "FLIP",
+          593
+        ],
+        [
+          "FLIP",
+          594
+        ],
+        [
+          "FLIP",
+          595
+        ],
+        [
+          "FLIP",
+          596
+        ],
+        [
+          "FLIP",
+          597
+        ],
+        [
+          "FLIP",
+          598
+        ],
+        [
+          "FLIP",
+          599
+        ],
+        [
+          "FLIP",
+          600
+        ],
+        [
+          "ROLL",
+          600
+        ],
+        [
+          "FLIP",
+          601
+        ],
+        [
+          "FLIP",
+          602
+        ],
+        [
+          "FLIP",
+          603
+        ],
+        [
+          "FLIP",
+          604
+        ],
+        [
+          "FLIP",
+          605
+        ],
+        [
+          "FLIP",
+          606
+        ],
+        [
+          "FLIP",
+          607
+        ],
+        [
+          "FLIP",
+          608
+        ],
+        [
+          "FLIP",
+          609
+        ],
+        [
+          "FLIP",
+          610
+        ],
+        [
+          "ROLL",
+          610
+        ],
+        [
+          "FLIP",
+          611
+        ],
+        [
+          "FLIP",
+          612
+        ],
+        [
+          "FLIP",
+          613
+        ],
+        [
+          "FLIP",
+          614
+        ],
+        [
+          "FLIP",
+          615
+        ],
+        [
+          "FLIP",
+          616
+        ],
+        [
+          "FLIP",
+          617
+        ],
+        [
+          "FLIP",
+          618
+        ],
+        [
+          "FLIP",
+          619
+        ],
+        [
+          "FLIP",
+          620
+        ],
+        [
+          "ROLL",
+          620
+        ],
+        [
+          "FLIP",
+          621
+        ],
+        [
+          "FLIP",
+          622
+        ],
+        [
+          "FLIP",
+          623
+        ],
+        [
+          "FLIP",
+          624
+        ],
+        [
+          "FLIP",
+          625
+        ],
+        [
+          "FLIP",
+          626
+        ],
+        [
+          "FLIP",
+          627
+        ],
+        [
+          "FLIP",
+          628
+        ],
+        [
+          "FLIP",
+          629
+        ],
+        [
+          "FLIP",
+          630
+        ],
+        [
+          "ROLL",
+          630
+        ],
+        [
+          "FLIP",
+          631
+        ],
+        [
+          "FLIP",
+          632
+        ],
+        [
+          "FLIP",
+          633
+        ],
+        [
+          "FLIP",
+          634
+        ],
+        [
+          "FLIP",
+          635
+        ],
+        [
+          "FLIP",
+          636
+        ],
+        [
+          "FLIP",
+          637
+        ],
+        [
+          "FLIP",
+          638
+        ],
+        [
+          "FLIP",
+          639
+        ],
+        [
+          "FLIP",
+          640
+        ],
+        [
+          "ROLL",
+          640
+        ],
+        [
+          "FLIP",
+          641
+        ],
+        [
+          "FLIP",
+          642
+        ],
+        [
+          "FLIP",
+          643
+        ],
+        [
+          "FLIP",
+          644
+        ],
+        [
+          "FLIP",
+          645
+        ],
+        [
+          "FLIP",
+          646
+        ],
+        [
+          "FLIP",
+          647
+        ],
+        [
+          "FLIP",
+          648
+        ],
+        [
+          "FLIP",
+          649
+        ],
+        [
+          "FLIP",
+          650
+        ],
+        [
+          "ROLL",
+          650
+        ],
+        [
+          "FLIP",
+          651
+        ]
+      ],
+      "initialBallStates": [
+        [
+          67.5357971191406,
+          2090.0458984375,
+          25.0193119049072,
+          0.00677069136872888,
+          -0.019388759508729,
+          0.167809322476387,
+          0.915368616580963,
+          0.0677117705345154,
+          0.0670924633741379,
+          1,
+          25,
+          0
+        ],
+        [
+          152.022186279297,
+          2090.02905273438,
+          25.0435314178467,
+          -0.00675084302201867,
+          -0.00977038592100143,
+          0.162679821252823,
+          -0.119074046611786,
+          -0.0675399750471115,
+          -0.0669178292155266,
+          1,
+          25,
+          1
+        ],
+        [
+          237.835540771484,
+          2090.02807617188,
+          25.0116901397705,
+          0.00685973837971687,
+          -0.018909752368927,
+          0.167809322476387,
+          0.759691476821899,
+          0.0686009377241135,
+          0.0677569434046745,
+          1,
+          25,
+          2
+        ],
+        [
+          906.8095703125,
+          1820,
+          25,
+          0,
+          12,
+          0,
+          0,
+          0,
+          0,
+          1,
+          25,
+          3
+        ]
+      ],
+      "rawInitialBallStates": "2805|67.5357971191406:2090.0458984375:25.0193119049072:0.00677069136872888:-0.019388759508729:0.167809322476387:0.915368616580963:0.0677117705345154:0.0670924633741379:1:25:0;152.022186279297:2090.02905273438:25.0435314178467:-0.00675084302201867:-0.00977038592100143:0.162679821252823:-0.119074046611786:-0.0675399750471115:-0.0669178292155266:1:25:1;237.835540771484:2090.02807617188:25.0116901397705:0.00685973837971687:-0.018909752368927:0.167809322476387:0.759691476821899:0.0686009377241135:0.0677569434046745:1:25:2;906.8095703125:1820:25:0:12:0:0:0:0:1:25:3;",
+      "initialMeasuredBallID": 3,
+      "initialBallTrails": [
+        {
+          "slot": 0,
+          "ms": 0,
+          "balls": [
+            [
+              0,
+              67.5357971191406,
+              2090.0458984375,
+              25.0193119049072
+            ],
+            [
+              1,
+              152.022186279297,
+              2090.02905273438,
+              25.0435314178467
+            ],
+            [
+              2,
+              237.835540771484,
+              2090.02807617188,
+              25.0116901397705
+            ],
+            [
+              3,
+              429.845367431641,
+              1506.10717773438,
+              25.0338668823242
+            ]
+          ]
+        },
+        {
+          "slot": 1,
+          "ms": -86,
+          "balls": [
+            [
+              0,
+              67.4775009155273,
+              2090.00927734375,
+              25.0419540405273
+            ],
+            [
+              1,
+              152.079925537109,
+              2090.01293945312,
+              25.0184898376465
+            ],
+            [
+              2,
+              237.776489257812,
+              2090.00170898438,
+              25.0327129364014
+            ],
+            [
+              3,
+              429.900421142578,
+              1466.88659667969,
+              25.0340366363525
+            ]
+          ]
+        },
+        {
+          "slot": 2,
+          "ms": -76,
+          "balls": [
+            [
+              0,
+              67.4842147827148,
+              2090.01245117188,
+              25.0445194244385
+            ],
+            [
+              1,
+              152.073211669922,
+              2090.01440429688,
+              25.0215682983398
+            ],
+            [
+              2,
+              237.783355712891,
+              2090.00317382812,
+              25.0357913970947
+            ],
+            [
+              3,
+              429.894012451172,
+              1470.98327636719,
+              25.0340366363525
+            ]
+          ]
+        },
+        {
+          "slot": 3,
+          "ms": -66,
+          "balls": [
+            [
+              0,
+              67.4909973144531,
+              2090.01440429688,
+              25.0475978851318
+            ],
+            [
+              1,
+              152.066497802734,
+              2090.01635742188,
+              25.0246467590332
+            ],
+            [
+              2,
+              237.790222167969,
+              2090.00561523438,
+              25.0388698577881
+            ],
+            [
+              3,
+              429.887603759766,
+              1475.20202636719,
+              25.0340366363525
+            ]
+          ]
+        },
+        {
+          "slot": 4,
+          "ms": -56,
+          "balls": [
+            [
+              0,
+              67.4977874755859,
+              2090.01635742188,
+              25.0506763458252
+            ],
+            [
+              1,
+              152.059783935547,
+              2090.01831054688,
+              25.0277252197266
+            ],
+            [
+              2,
+              237.797088623047,
+              2090.00830078125,
+              25.0414352416992
+            ],
+            [
+              3,
+              429.881195068359,
+              1479.54284667969,
+              25.0340366363525
+            ]
+          ]
+        },
+        {
+          "slot": 5,
+          "ms": -46,
+          "balls": [
+            [
+              0,
+              67.5045700073242,
+              2090.02197265625,
+              25.0080718994141
+            ],
+            [
+              1,
+              152.053070068359,
+              2090.01977539062,
+              25.0302410125732
+            ],
+            [
+              2,
+              237.803955078125,
+              2090.01025390625,
+              25.0439853668213
+            ],
+            [
+              3,
+              429.874816894531,
+              1484.00573730469,
+              25.0339508056641
+            ]
+          ]
+        },
+        {
+          "slot": 6,
+          "ms": -36,
+          "balls": [
+            [
+              0,
+              67.511360168457,
+              2090.0283203125,
+              25.0106372833252
+            ],
+            [
+              1,
+              152.046356201172,
+              2090.02294921875,
+              25.0328063964844
+            ],
+            [
+              2,
+              237.810821533203,
+              2090.01342773438,
+              25.0465507507324
+            ],
+            [
+              3,
+              429.868408203125,
+              1488.59069824219,
+              25.0339508056641
+            ]
+          ]
+        },
+        {
+          "slot": 7,
+          "ms": -26,
+          "balls": [
+            [
+              0,
+              67.5181503295898,
+              2090.033203125,
+              25.0132026672363
+            ],
+            [
+              1,
+              152.039642333984,
+              2090.0244140625,
+              25.0358848571777
+            ],
+            [
+              2,
+              237.817687988281,
+              2090.01489257812,
+              25.0496292114258
+            ],
+            [
+              3,
+              429.861999511719,
+              1493.29772949219,
+              25.0339508056641
+            ]
+          ]
+        },
+        {
+          "slot": 8,
+          "ms": -16,
+          "balls": [
+            [
+              0,
+              67.5249328613281,
+              2090.0380859375,
+              25.0152072906494
+            ],
+            [
+              1,
+              152.032928466797,
+              2090.02661132812,
+              25.0384006500244
+            ],
+            [
+              2,
+              237.824554443359,
+              2090.0185546875,
+              25.0075855255127
+            ],
+            [
+              3,
+              429.855621337891,
+              1498.12670898438,
+              25.0338668823242
+            ]
+          ]
+        },
+        {
+          "slot": 9,
+          "ms": -6,
+          "balls": [
+            [
+              0,
+              67.5317230224609,
+              2090.04296875,
+              25.0177726745605
+            ],
+            [
+              1,
+              152.026214599609,
+              2090.02856445312,
+              25.0414791107178
+            ],
+            [
+              2,
+              237.831420898438,
+              2090.02490234375,
+              25.0101509094238
+            ],
+            [
+              3,
+              429.849212646484,
+              1503.07788085938,
+              25.0338668823242
+            ]
+          ]
+        }
+      ],
+      "rawInitialBallTrails": [
+        "2805|0:67.5357971191406:2090.0458984375:25.0193119049072;1:152.022186279297:2090.02905273438:25.0435314178467;2:237.835540771484:2090.02807617188:25.0116901397705;3:429.845367431641:1506.10717773438:25.0338668823242;",
+        "2719|0:67.4775009155273:2090.00927734375:25.0419540405273;1:152.079925537109:2090.01293945312:25.0184898376465;2:237.776489257812:2090.00170898438:25.0327129364014;3:429.900421142578:1466.88659667969:25.0340366363525;",
+        "2729|0:67.4842147827148:2090.01245117188:25.0445194244385;1:152.073211669922:2090.01440429688:25.0215682983398;2:237.783355712891:2090.00317382812:25.0357913970947;3:429.894012451172:1470.98327636719:25.0340366363525;",
+        "2739|0:67.4909973144531:2090.01440429688:25.0475978851318;1:152.066497802734:2090.01635742188:25.0246467590332;2:237.790222167969:2090.00561523438:25.0388698577881;3:429.887603759766:1475.20202636719:25.0340366363525;",
+        "2749|0:67.4977874755859:2090.01635742188:25.0506763458252;1:152.059783935547:2090.01831054688:25.0277252197266;2:237.797088623047:2090.00830078125:25.0414352416992;3:429.881195068359:1479.54284667969:25.0340366363525;",
+        "2759|0:67.5045700073242:2090.02197265625:25.0080718994141;1:152.053070068359:2090.01977539062:25.0302410125732;2:237.803955078125:2090.01025390625:25.0439853668213;3:429.874816894531:1484.00573730469:25.0339508056641;",
+        "2769|0:67.511360168457:2090.0283203125:25.0106372833252;1:152.046356201172:2090.02294921875:25.0328063964844;2:237.810821533203:2090.01342773438:25.0465507507324;3:429.868408203125:1488.59069824219:25.0339508056641;",
+        "2779|0:67.5181503295898:2090.033203125:25.0132026672363;1:152.039642333984:2090.0244140625:25.0358848571777;2:237.817687988281:2090.01489257812:25.0496292114258;3:429.861999511719:1493.29772949219:25.0339508056641;",
+        "2789|0:67.5249328613281:2090.0380859375:25.0152072906494;1:152.032928466797:2090.02661132812:25.0384006500244;2:237.824554443359:2090.0185546875:25.0075855255127;3:429.855621337891:1498.12670898438:25.0338668823242;",
+        "2799|0:67.5317230224609:2090.04296875:25.0177726745605;1:152.026214599609:2090.02856445312:25.0414791107178;2:237.831420898438:2090.02490234375:25.0101509094238;3:429.849212646484:1503.07788085938:25.0338668823242;"
+      ],
+      "initialNativeRandom": {
+        "kind": "CONTACT_INIT",
+        "ms": 2805,
+        "low": 1435211723,
+        "high": 1768457778
+      },
+      "nativeRandomFrames": [
+        [
+          1,
+          1435211723,
+          1768457778
+        ],
+        [
+          2,
+          2746920203,
+          2932740492
+        ],
+        [
+          3,
+          2025143650,
+          1299191308
+        ],
+        [
+          4,
+          1772410645,
+          3926375744
+        ],
+        [
+          5,
+          845041972,
+          945655358
+        ],
+        [
+          6,
+          2566224411,
+          3737972125
+        ],
+        [
+          7,
+          1516337568,
+          1447236370
+        ],
+        [
+          8,
+          3600075067,
+          1645570229
+        ],
+        [
+          9,
+          403392686,
+          547383600
+        ],
+        [
+          10,
+          3126980732,
+          3871237149
+        ],
+        [
+          11,
+          296116912,
+          2866936471
+        ],
+        [
+          12,
+          2172695314,
+          101470048
+        ],
+        [
+          13,
+          3073982176,
+          3641434712
+        ],
+        [
+          14,
+          440670499,
+          1102683268
+        ],
+        [
+          15,
+          3748794265,
+          586360831
+        ],
+        [
+          16,
+          3407221605,
+          133124319
+        ],
+        [
+          17,
+          3320504394,
+          412844718
+        ],
+        [
+          18,
+          1854933469,
+          1059059095
+        ],
+        [
+          19,
+          2908719924,
+          3045427069
+        ],
+        [
+          20,
+          1199357446,
+          2260352775
+        ],
+        [
+          21,
+          1579950213,
+          3299008959
+        ],
+        [
+          22,
+          970582637,
+          2814962255
+        ],
+        [
+          23,
+          562051566,
+          3015834991
+        ],
+        [
+          24,
+          1106168129,
+          1673498655
+        ],
+        [
+          25,
+          3024832509,
+          3027041317
+        ],
+        [
+          26,
+          3819635337,
+          20545298
+        ],
+        [
+          27,
+          1453340424,
+          3084865839
+        ],
+        [
+          28,
+          3052530943,
+          1791220261
+        ],
+        [
+          29,
+          4098122093,
+          2921886936
+        ],
+        [
+          30,
+          2522386800,
+          3092416728
+        ],
+        [
+          31,
+          3499648535,
+          1331226359
+        ],
+        [
+          32,
+          3342326063,
+          2039184428
+        ],
+        [
+          33,
+          50736488,
+          780225652
+        ],
+        [
+          34,
+          1530596048,
+          3716340274
+        ],
+        [
+          35,
+          3570765702,
+          2567553164
+        ],
+        [
+          36,
+          653725838,
+          20672599
+        ],
+        [
+          37,
+          470105193,
+          3252714049
+        ],
+        [
+          38,
+          1827706956,
+          3116223902
+        ],
+        [
+          39,
+          2217675061,
+          934084399
+        ],
+        [
+          40,
+          2100209760,
+          224196888
+        ],
+        [
+          41,
+          636483739,
+          2699509159
+        ],
+        [
+          42,
+          1914186686,
+          3044334502
+        ],
+        [
+          43,
+          3477360555,
+          3748278890
+        ],
+        [
+          44,
+          4131535273,
+          4064811319
+        ],
+        [
+          45,
+          360529225,
+          1520520070
+        ],
+        [
+          46,
+          366494653,
+          1945822558
+        ],
+        [
+          47,
+          17023709,
+          2450668740
+        ],
+        [
+          48,
+          3530340029,
+          2134158179
+        ],
+        [
+          49,
+          2901189519,
+          3365960120
+        ],
+        [
+          50,
+          3081651185,
+          2667902877
+        ],
+        [
+          51,
+          3161643223,
+          3492760783
+        ],
+        [
+          52,
+          2473887259,
+          4060418463
+        ],
+        [
+          53,
+          2997543527,
+          3206988873
+        ],
+        [
+          54,
+          3763366492,
+          1063489516
+        ],
+        [
+          55,
+          3335092223,
+          686772204
+        ],
+        [
+          56,
+          1354382194,
+          146790612
+        ],
+        [
+          57,
+          3742999968,
+          2373827136
+        ],
+        [
+          58,
+          3708172820,
+          906232659
+        ],
+        [
+          59,
+          2358519614,
+          487831301
+        ],
+        [
+          60,
+          1147274189,
+          3104036683
+        ],
+        [
+          61,
+          465881345,
+          752326463
+        ],
+        [
+          62,
+          407480995,
+          2634884919
+        ],
+        [
+          63,
+          605579617,
+          4006908344
+        ],
+        [
+          64,
+          3726605423,
+          364682520
+        ],
+        [
+          65,
+          1798413178,
+          4192149808
+        ],
+        [
+          66,
+          2084877296,
+          1241885350
+        ],
+        [
+          67,
+          1382626568,
+          616791000
+        ],
+        [
+          68,
+          3392096857,
+          962866943
+        ],
+        [
+          69,
+          4210262126,
+          1451413225
+        ],
+        [
+          70,
+          2259712391,
+          888764436
+        ],
+        [
+          71,
+          1095690552,
+          699884747
+        ],
+        [
+          72,
+          4040609505,
+          4286366062
+        ],
+        [
+          73,
+          2253238891,
+          1162548001
+        ],
+        [
+          74,
+          942621359,
+          2394773098
+        ],
+        [
+          75,
+          4062675748,
+          701410373
+        ],
+        [
+          76,
+          4287522017,
+          3152650376
+        ],
+        [
+          77,
+          9834980,
+          1058934199
+        ],
+        [
+          78,
+          4204412332,
+          2288706607
+        ],
+        [
+          79,
+          1657688732,
+          497994949
+        ],
+        [
+          80,
+          626044795,
+          2346951974
+        ],
+        [
+          81,
+          2915958482,
+          573658780
+        ],
+        [
+          82,
+          3022672578,
+          4198677872
+        ],
+        [
+          83,
+          4245279684,
+          723534241
+        ],
+        [
+          84,
+          2387907980,
+          2413138568
+        ],
+        [
+          85,
+          2980237340,
+          117344361
+        ],
+        [
+          86,
+          3473976233,
+          997488194
+        ],
+        [
+          87,
+          3788312557,
+          4056443586
+        ],
+        [
+          88,
+          4031706930,
+          2019905577
+        ],
+        [
+          89,
+          1781304606,
+          83052764
+        ],
+        [
+          90,
+          2977319709,
+          3950396346
+        ],
+        [
+          91,
+          4108380195,
+          2504843021
+        ],
+        [
+          92,
+          612168138,
+          517334826
+        ],
+        [
+          93,
+          694774051,
+          2824807653
+        ],
+        [
+          94,
+          3409832434,
+          3019118929
+        ],
+        [
+          95,
+          1176225362,
+          1509798567
+        ],
+        [
+          96,
+          2850178834,
+          577100360
+        ],
+        [
+          97,
+          1888865019,
+          1975828468
+        ],
+        [
+          98,
+          1320849945,
+          3492623132
+        ],
+        [
+          99,
+          2375012803,
+          2660193164
+        ],
+        [
+          100,
+          107360791,
+          1381555982
+        ],
+        [
+          101,
+          4114073312,
+          995850064
+        ],
+        [
+          102,
+          749003643,
+          3974943633
+        ],
+        [
+          103,
+          2408359574,
+          916979775
+        ],
+        [
+          104,
+          857477573,
+          3857509102
+        ],
+        [
+          105,
+          2259292648,
+          3366872865
+        ],
+        [
+          106,
+          697002480,
+          2650893589
+        ],
+        [
+          107,
+          78637752,
+          2655285037
+        ],
+        [
+          108,
+          1204221081,
+          2995066502
+        ],
+        [
+          109,
+          935578259,
+          4112033154
+        ],
+        [
+          110,
+          2181162513,
+          3495179945
+        ],
+        [
+          111,
+          2793361191,
+          2395400654
+        ],
+        [
+          112,
+          520192516,
+          4252763827
+        ],
+        [
+          113,
+          1771824343,
+          3895316222
+        ],
+        [
+          114,
+          307996015,
+          3192299668
+        ],
+        [
+          115,
+          2898096561,
+          4182756730
+        ],
+        [
+          116,
+          211892488,
+          1970399257
+        ],
+        [
+          117,
+          2807317291,
+          262003950
+        ],
+        [
+          118,
+          1427205395,
+          958379137
+        ],
+        [
+          119,
+          2863552118,
+          210547335
+        ],
+        [
+          120,
+          3986277408,
+          497286467
+        ],
+        [
+          121,
+          1138196269,
+          233744513
+        ],
+        [
+          122,
+          2064903,
+          3532323076
+        ],
+        [
+          123,
+          2794861871,
+          4202491863
+        ],
+        [
+          124,
+          3893243290,
+          471042006
+        ],
+        [
+          125,
+          2465981452,
+          1228610733
+        ],
+        [
+          126,
+          858719570,
+          2326327031
+        ],
+        [
+          127,
+          2336354875,
+          4058030623
+        ],
+        [
+          128,
+          2447476088,
+          1736470971
+        ],
+        [
+          129,
+          1664669603,
+          1012308365
+        ],
+        [
+          130,
+          58487616,
+          3933766236
+        ],
+        [
+          131,
+          198520502,
+          4103726337
+        ],
+        [
+          132,
+          1546346848,
+          1192271778
+        ],
+        [
+          133,
+          1696245491,
+          1732041869
+        ],
+        [
+          134,
+          2373001560,
+          3219436732
+        ],
+        [
+          135,
+          933148055,
+          4197253252
+        ],
+        [
+          136,
+          1297648766,
+          1469487456
+        ],
+        [
+          137,
+          830645783,
+          846725951
+        ],
+        [
+          138,
+          2264740154,
+          2422916370
+        ],
+        [
+          139,
+          1151086784,
+          3010453477
+        ],
+        [
+          140,
+          1495967416,
+          1891461848
+        ],
+        [
+          141,
+          2531762821,
+          2213093368
+        ],
+        [
+          142,
+          2464218613,
+          2009824856
+        ],
+        [
+          143,
+          4081823500,
+          2040680853
+        ],
+        [
+          144,
+          420526128,
+          3040339328
+        ],
+        [
+          145,
+          1407166474,
+          897864913
+        ],
+        [
+          146,
+          1147576721,
+          3280585178
+        ],
+        [
+          147,
+          1991727597,
+          1473003890
+        ],
+        [
+          148,
+          2677016346,
+          1178007811
+        ],
+        [
+          149,
+          3252946188,
+          736159070
+        ],
+        [
+          150,
+          685755181,
+          4159717633
+        ],
+        [
+          151,
+          113372536,
+          3552471365
+        ],
+        [
+          152,
+          759188686,
+          3269804492
+        ],
+        [
+          153,
+          3898943563,
+          4077820388
+        ],
+        [
+          154,
+          3355012718,
+          3416563947
+        ],
+        [
+          155,
+          2432013126,
+          4254843062
+        ],
+        [
+          156,
+          3278314509,
+          4086095384
+        ],
+        [
+          157,
+          3655268316,
+          763252019
+        ],
+        [
+          158,
+          926598442,
+          3628742476
+        ],
+        [
+          159,
+          1631541149,
+          2861960161
+        ],
+        [
+          160,
+          3550245178,
+          455083721
+        ],
+        [
+          161,
+          3217657358,
+          2828322437
+        ],
+        [
+          162,
+          2105479670,
+          3601186863
+        ],
+        [
+          163,
+          1223710525,
+          2112471994
+        ],
+        [
+          164,
+          2081720041,
+          3007385138
+        ],
+        [
+          165,
+          1243003696,
+          449529614
+        ],
+        [
+          166,
+          1351753240,
+          2569439137
+        ],
+        [
+          167,
+          2958433113,
+          771570331
+        ],
+        [
+          168,
+          782547527,
+          1642253270
+        ],
+        [
+          169,
+          4243293174,
+          4221975487
+        ],
+        [
+          170,
+          3718882477,
+          2009231960
+        ],
+        [
+          171,
+          3180645775,
+          2201153016
+        ],
+        [
+          172,
+          321620684,
+          415104219
+        ],
+        [
+          173,
+          817073089,
+          1042360715
+        ],
+        [
+          174,
+          3058476480,
+          3086297011
+        ],
+        [
+          175,
+          2973002514,
+          1302545065
+        ],
+        [
+          176,
+          540330144,
+          1824043661
+        ],
+        [
+          177,
+          3159140032,
+          3865030448
+        ],
+        [
+          178,
+          2370102488,
+          13475097
+        ],
+        [
+          179,
+          3777963138,
+          15601571
+        ],
+        [
+          180,
+          1855219499,
+          2830504478
+        ],
+        [
+          181,
+          1673044412,
+          1860102312
+        ],
+        [
+          182,
+          2792866942,
+          2506526205
+        ],
+        [
+          183,
+          586244381,
+          1536382144
+        ],
+        [
+          184,
+          915409418,
+          1957906853
+        ],
+        [
+          185,
+          1694335987,
+          4261357001
+        ],
+        [
+          186,
+          3013289346,
+          51027518
+        ],
+        [
+          187,
+          3874164039,
+          1857932476
+        ],
+        [
+          188,
+          1857743402,
+          446539434
+        ],
+        [
+          189,
+          1679702596,
+          162249803
+        ],
+        [
+          190,
+          2112689149,
+          3170786421
+        ],
+        [
+          191,
+          640367025,
+          28408101
+        ],
+        [
+          192,
+          2512818057,
+          1415897872
+        ],
+        [
+          193,
+          1062356856,
+          3102509964
+        ],
+        [
+          194,
+          346485957,
+          2390785023
+        ],
+        [
+          195,
+          1378573006,
+          3851264395
+        ],
+        [
+          196,
+          908094420,
+          1861785612
+        ],
+        [
+          197,
+          440712359,
+          1689220323
+        ],
+        [
+          198,
+          1431093672,
+          685511790
+        ],
+        [
+          199,
+          1357943794,
+          4122896542
+        ],
+        [
+          200,
+          3816790085,
+          2366414891
+        ],
+        [
+          201,
+          2080948093,
+          2297033241
+        ],
+        [
+          202,
+          2614377751,
+          106966632
+        ],
+        [
+          203,
+          4107068278,
+          1678489913
+        ],
+        [
+          204,
+          154110478,
+          2367906866
+        ],
+        [
+          205,
+          3446888794,
+          1210785721
+        ],
+        [
+          206,
+          2672641850,
+          2513464560
+        ],
+        [
+          207,
+          3841690839,
+          2079713948
+        ],
+        [
+          208,
+          1208334904,
+          507137694
+        ],
+        [
+          209,
+          2121157427,
+          3095719527
+        ],
+        [
+          210,
+          3232294672,
+          3628570875
+        ],
+        [
+          211,
+          3900784438,
+          3557211382
+        ],
+        [
+          212,
+          2342112170,
+          269473904
+        ],
+        [
+          213,
+          4054751870,
+          205691080
+        ],
+        [
+          214,
+          3267772904,
+          1318558077
+        ],
+        [
+          215,
+          3338056028,
+          3694923371
+        ],
+        [
+          216,
+          2611815032,
+          2558543599
+        ],
+        [
+          217,
+          3951046879,
+          2736668786
+        ],
+        [
+          218,
+          1969729731,
+          512764315
+        ],
+        [
+          219,
+          3405845359,
+          2963617176
+        ],
+        [
+          220,
+          3318832941,
+          1998860549
+        ],
+        [
+          221,
+          1644413116,
+          2362919670
+        ],
+        [
+          222,
+          3590348421,
+          1854988569
+        ],
+        [
+          223,
+          2781959864,
+          280254960
+        ],
+        [
+          224,
+          1834523294,
+          2275755293
+        ],
+        [
+          225,
+          3138303668,
+          3075321385
+        ],
+        [
+          226,
+          642564680,
+          1912001935
+        ],
+        [
+          227,
+          4283427873,
+          667923120
+        ],
+        [
+          228,
+          1440519284,
+          1164389500
+        ],
+        [
+          229,
+          1667499736,
+          3528154549
+        ],
+        [
+          230,
+          453900530,
+          2294432021
+        ],
+        [
+          231,
+          1782329864,
+          767437187
+        ],
+        [
+          232,
+          4148431436,
+          2084883937
+        ],
+        [
+          233,
+          638582032,
+          3560371470
+        ],
+        [
+          234,
+          1767745031,
+          4264072913
+        ],
+        [
+          235,
+          1429754514,
+          900902651
+        ],
+        [
+          236,
+          3215014169,
+          1991810309
+        ],
+        [
+          237,
+          4015895253,
+          2590348400
+        ],
+        [
+          238,
+          3250607657,
+          2015010248
+        ],
+        [
+          239,
+          2739532266,
+          433588111
+        ],
+        [
+          240,
+          2124319170,
+          2320218136
+        ],
+        [
+          241,
+          4255643938,
+          4109729216
+        ],
+        [
+          242,
+          2146466647,
+          2040155582
+        ],
+        [
+          243,
+          2507879669,
+          2569348923
+        ],
+        [
+          244,
+          660512445,
+          2056899773
+        ],
+        [
+          245,
+          3839340498,
+          4059138937
+        ],
+        [
+          246,
+          1704271839,
+          3668107962
+        ],
+        [
+          247,
+          2850177293,
+          1344140813
+        ],
+        [
+          248,
+          2716766829,
+          631706198
+        ],
+        [
+          249,
+          225365973,
+          1659151535
+        ],
+        [
+          250,
+          3685444651,
+          2188812230
+        ],
+        [
+          251,
+          3655128099,
+          1508845055
+        ],
+        [
+          252,
+          1702466425,
+          1703933380
+        ],
+        [
+          253,
+          1570088918,
+          537297097
+        ],
+        [
+          254,
+          508514101,
+          4142242309
+        ],
+        [
+          255,
+          515471696,
+          751550077
+        ],
+        [
+          256,
+          1526213802,
+          60829786
+        ],
+        [
+          257,
+          3022741409,
+          4138276120
+        ],
+        [
+          258,
+          1330787159,
+          3590850655
+        ],
+        [
+          259,
+          1335135618,
+          707313017
+        ],
+        [
+          260,
+          1071404299,
+          606770837
+        ],
+        [
+          261,
+          2287129424,
+          1303639673
+        ],
+        [
+          262,
+          1785363895,
+          1591894767
+        ],
+        [
+          263,
+          675493886,
+          3253670536
+        ],
+        [
+          264,
+          2931850955,
+          4211193775
+        ],
+        [
+          265,
+          2144338006,
+          1306091342
+        ],
+        [
+          266,
+          1168933198,
+          2682000886
+        ],
+        [
+          267,
+          1834415698,
+          2561030346
+        ],
+        [
+          268,
+          337685813,
+          447281003
+        ],
+        [
+          269,
+          1852366729,
+          3417578742
+        ],
+        [
+          270,
+          1708189222,
+          3798278020
+        ],
+        [
+          271,
+          4202175101,
+          764946291
+        ],
+        [
+          272,
+          319215988,
+          788013785
+        ],
+        [
+          273,
+          1754675222,
+          3227101759
+        ],
+        [
+          274,
+          682088197,
+          3963538909
+        ],
+        [
+          275,
+          1513995218,
+          2055222470
+        ],
+        [
+          276,
+          2945955584,
+          1434272711
+        ],
+        [
+          277,
+          1980628456,
+          1452264280
+        ],
+        [
+          278,
+          3843400292,
+          86991496
+        ],
+        [
+          279,
+          2800884478,
+          1412699269
+        ],
+        [
+          280,
+          3307871235,
+          3041781511
+        ],
+        [
+          281,
+          2911199037,
+          1348534877
+        ],
+        [
+          282,
+          539705399,
+          429832013
+        ],
+        [
+          283,
+          3978454423,
+          1303905451
+        ],
+        [
+          284,
+          4091482832,
+          1309121669
+        ],
+        [
+          285,
+          2923184771,
+          3541766837
+        ],
+        [
+          286,
+          1513987490,
+          347816660
+        ],
+        [
+          287,
+          1535193629,
+          1900256929
+        ],
+        [
+          288,
+          2190027691,
+          184971267
+        ],
+        [
+          289,
+          3406330089,
+          189888976
+        ],
+        [
+          290,
+          3323334729,
+          1402078731
+        ],
+        [
+          291,
+          2419298638,
+          2777953122
+        ],
+        [
+          292,
+          1875636136,
+          3564748283
+        ],
+        [
+          293,
+          606442182,
+          2945230862
+        ],
+        [
+          294,
+          2983355780,
+          1431226600
+        ],
+        [
+          295,
+          1206219085,
+          2381342955
+        ],
+        [
+          296,
+          3580240695,
+          2353878050
+        ],
+        [
+          297,
+          3586968489,
+          2874485892
+        ],
+        [
+          298,
+          3971266488,
+          799549653
+        ],
+        [
+          299,
+          2746513211,
+          4178240
+        ],
+        [
+          300,
+          3735507811,
+          876772828
+        ],
+        [
+          301,
+          965347125,
+          3128919218
+        ],
+        [
+          302,
+          2042357849,
+          893063534
+        ],
+        [
+          303,
+          2753829540,
+          2552720969
+        ],
+        [
+          304,
+          2987068906,
+          2508203694
+        ],
+        [
+          305,
+          367748359,
+          840714254
+        ],
+        [
+          306,
+          3868694500,
+          830586449
+        ],
+        [
+          307,
+          1502684185,
+          661516156
+        ],
+        [
+          308,
+          1076652711,
+          3243274745
+        ],
+        [
+          309,
+          2753842877,
+          2757000339
+        ],
+        [
+          310,
+          2481835940,
+          144667398
+        ],
+        [
+          311,
+          555407651,
+          1664387714
+        ],
+        [
+          312,
+          2635740798,
+          1402639133
+        ],
+        [
+          313,
+          592808837,
+          201839833
+        ],
+        [
+          314,
+          1863245968,
+          2794356759
+        ],
+        [
+          315,
+          746945106,
+          1051990077
+        ],
+        [
+          316,
+          2254865041,
+          293154209
+        ],
+        [
+          317,
+          1302442454,
+          298376688
+        ],
+        [
+          318,
+          4158508500,
+          2515501327
+        ],
+        [
+          319,
+          428262627,
+          3223014869
+        ],
+        [
+          320,
+          486519723,
+          1194707172
+        ],
+        [
+          321,
+          3320185609,
+          4123535845
+        ],
+        [
+          322,
+          3511949570,
+          2027456744
+        ],
+        [
+          323,
+          1730659260,
+          872305930
+        ],
+        [
+          324,
+          1487449339,
+          2653480237
+        ],
+        [
+          325,
+          1263304401,
+          708610698
+        ],
+        [
+          326,
+          2844516647,
+          3450801358
+        ],
+        [
+          327,
+          2141070208,
+          1821890276
+        ],
+        [
+          328,
+          2949838629,
+          1493391792
+        ],
+        [
+          329,
+          297966246,
+          3508267878
+        ],
+        [
+          330,
+          2129110876,
+          1671657082
+        ],
+        [
+          331,
+          3766816122,
+          3640791707
+        ],
+        [
+          332,
+          1934128731,
+          1131009384
+        ],
+        [
+          333,
+          3359417623,
+          2438327077
+        ],
+        [
+          334,
+          721429560,
+          2333343882
+        ],
+        [
+          335,
+          45424759,
+          1676296717
+        ],
+        [
+          336,
+          196318826,
+          1975302529
+        ],
+        [
+          337,
+          358106522,
+          1873703696
+        ],
+        [
+          338,
+          3150206344,
+          2309053192
+        ],
+        [
+          339,
+          4052975447,
+          1437349198
+        ],
+        [
+          340,
+          1394625217,
+          2872005077
+        ],
+        [
+          341,
+          105351781,
+          3153285962
+        ],
+        [
+          342,
+          2695289244,
+          1266975179
+        ],
+        [
+          343,
+          115307323,
+          3579815590
+        ],
+        [
+          344,
+          1310444862,
+          419168934
+        ],
+        [
+          345,
+          3262800188,
+          1134600132
+        ],
+        [
+          346,
+          308791220,
+          4288346780
+        ],
+        [
+          347,
+          1640899835,
+          4231869415
+        ],
+        [
+          348,
+          3008710237,
+          1751360316
+        ],
+        [
+          349,
+          2396649160,
+          3148265391
+        ],
+        [
+          350,
+          229513711,
+          2677854675
+        ],
+        [
+          351,
+          1950439856,
+          2715298442
+        ],
+        [
+          352,
+          1503137992,
+          795349055
+        ],
+        [
+          353,
+          4225217507,
+          589740537
+        ],
+        [
+          354,
+          476436643,
+          2874622966
+        ],
+        [
+          355,
+          3155814825,
+          852812608
+        ],
+        [
+          356,
+          694922894,
+          2006538085
+        ],
+        [
+          357,
+          2738326750,
+          2209938590
+        ],
+        [
+          358,
+          2857986089,
+          581963152
+        ],
+        [
+          359,
+          848548395,
+          1410924001
+        ],
+        [
+          360,
+          3005907122,
+          3921248593
+        ],
+        [
+          361,
+          3122957882,
+          1726624251
+        ],
+        [
+          362,
+          1985351025,
+          3239707975
+        ],
+        [
+          363,
+          3960192458,
+          1457733332
+        ],
+        [
+          364,
+          3139095273,
+          510056266
+        ],
+        [
+          365,
+          1375684025,
+          2545953591
+        ],
+        [
+          366,
+          1335140006,
+          1823514648
+        ],
+        [
+          367,
+          1303655438,
+          1158540133
+        ],
+        [
+          368,
+          2061242532,
+          2102636208
+        ],
+        [
+          369,
+          634023895,
+          1728274171
+        ],
+        [
+          370,
+          432063929,
+          3596455279
+        ],
+        [
+          371,
+          1652209380,
+          2272404283
+        ],
+        [
+          372,
+          585238639,
+          4228562881
+        ],
+        [
+          373,
+          2530265531,
+          3951232935
+        ],
+        [
+          374,
+          3113219095,
+          2752990781
+        ],
+        [
+          375,
+          1746859867,
+          2660687222
+        ],
+        [
+          376,
+          370036763,
+          3559769657
+        ],
+        [
+          377,
+          242041672,
+          3890216991
+        ],
+        [
+          378,
+          2492270766,
+          1237630794
+        ],
+        [
+          379,
+          1106550349,
+          1397374177
+        ],
+        [
+          380,
+          1570522023,
+          823527323
+        ],
+        [
+          381,
+          4055748693,
+          1740135102
+        ],
+        [
+          382,
+          332834512,
+          3357136922
+        ],
+        [
+          383,
+          3390572705,
+          3118345347
+        ],
+        [
+          384,
+          1073130347,
+          2778453473
+        ],
+        [
+          385,
+          1699852573,
+          551743866
+        ],
+        [
+          386,
+          2411734870,
+          1327951338
+        ],
+        [
+          387,
+          57582377,
+          2584912019
+        ],
+        [
+          388,
+          4194968068,
+          534082832
+        ],
+        [
+          389,
+          2790702059,
+          3468882164
+        ],
+        [
+          390,
+          4116032607,
+          3640042469
+        ],
+        [
+          391,
+          1502736917,
+          523924004
+        ],
+        [
+          392,
+          3914301982,
+          3086393309
+        ],
+        [
+          393,
+          2864745535,
+          2350417698
+        ],
+        [
+          394,
+          1496980728,
+          2712742219
+        ],
+        [
+          395,
+          2970614399,
+          3219805490
+        ],
+        [
+          396,
+          3714378860,
+          3772509680
+        ],
+        [
+          397,
+          733194475,
+          701030371
+        ],
+        [
+          398,
+          2018541915,
+          1345778410
+        ],
+        [
+          399,
+          847532363,
+          1617145947
+        ],
+        [
+          400,
+          2506248479,
+          4169641840
+        ],
+        [
+          401,
+          1026323395,
+          1752301841
+        ],
+        [
+          402,
+          4174813063,
+          770798716
+        ],
+        [
+          403,
+          1079151683,
+          347271918
+        ],
+        [
+          404,
+          3952888303,
+          683125617
+        ],
+        [
+          405,
+          2197947816,
+          57733842
+        ],
+        [
+          406,
+          1748816490,
+          1192214583
+        ],
+        [
+          407,
+          126718681,
+          3990239623
+        ],
+        [
+          408,
+          416602557,
+          2423057653
+        ],
+        [
+          409,
+          3476483274,
+          303691116
+        ],
+        [
+          410,
+          434325158,
+          1112101983
+        ],
+        [
+          411,
+          3614737830,
+          3634346885
+        ],
+        [
+          412,
+          2892077062,
+          1032877569
+        ],
+        [
+          413,
+          1415415656,
+          3685983608
+        ],
+        [
+          414,
+          4184952834,
+          1467093552
+        ],
+        [
+          415,
+          726935013,
+          299598403
+        ],
+        [
+          416,
+          300432932,
+          554476565
+        ],
+        [
+          417,
+          1194834125,
+          2517338934
+        ],
+        [
+          418,
+          3958317107,
+          3094024093
+        ],
+        [
+          419,
+          2230734709,
+          2397711819
+        ],
+        [
+          420,
+          2537996131,
+          1847502836
+        ],
+        [
+          421,
+          1162920919,
+          949509381
+        ],
+        [
+          422,
+          1536104709,
+          1766004501
+        ],
+        [
+          423,
+          463317465,
+          2561866595
+        ],
+        [
+          424,
+          1253753301,
+          4221677779
+        ],
+        [
+          425,
+          1176166161,
+          1974517443
+        ],
+        [
+          426,
+          2247144532,
+          2754281886
+        ],
+        [
+          427,
+          834703091,
+          1474525308
+        ],
+        [
+          428,
+          2676071227,
+          1847922005
+        ],
+        [
+          429,
+          2094783941,
+          2927335691
+        ],
+        [
+          430,
+          286729053,
+          177770418
+        ],
+        [
+          431,
+          2983622324,
+          1917186151
+        ],
+        [
+          432,
+          1097132860,
+          1851420049
+        ],
+        [
+          433,
+          150545493,
+          887964654
+        ],
+        [
+          434,
+          1927565201,
+          2671093936
+        ],
+        [
+          435,
+          1399945798,
+          3144566370
+        ],
+        [
+          436,
+          2980324513,
+          2998756672
+        ],
+        [
+          437,
+          2853719356,
+          2400767066
+        ],
+        [
+          438,
+          781200693,
+          896236479
+        ],
+        [
+          439,
+          2795507471,
+          743053606
+        ],
+        [
+          440,
+          3201565669,
+          1441040990
+        ],
+        [
+          441,
+          2156771490,
+          442517376
+        ],
+        [
+          442,
+          1387407130,
+          4094326410
+        ],
+        [
+          443,
+          947924709,
+          4097270055
+        ],
+        [
+          444,
+          4127484988,
+          3935055858
+        ],
+        [
+          445,
+          3414534092,
+          2648405676
+        ],
+        [
+          446,
+          2104472940,
+          921066690
+        ],
+        [
+          447,
+          2059776455,
+          1030449455
+        ],
+        [
+          448,
+          2261811376,
+          3561376812
+        ],
+        [
+          449,
+          3483194638,
+          2234043232
+        ],
+        [
+          450,
+          1746481393,
+          1316389839
+        ],
+        [
+          451,
+          2691193890,
+          656988057
+        ],
+        [
+          452,
+          271340454,
+          3717182586
+        ],
+        [
+          453,
+          1274453680,
+          3895773257
+        ],
+        [
+          454,
+          1469348630,
+          3597449102
+        ],
+        [
+          455,
+          563775689,
+          3441215379
+        ],
+        [
+          456,
+          1605404720,
+          761324743
+        ],
+        [
+          457,
+          3468246974,
+          3822856791
+        ],
+        [
+          458,
+          3735319410,
+          1330204
+        ],
+        [
+          459,
+          1056629023,
+          2113552168
+        ],
+        [
+          460,
+          883056988,
+          199207950
+        ],
+        [
+          461,
+          701027815,
+          791079892
+        ],
+        [
+          462,
+          3306239814,
+          4252206782
+        ],
+        [
+          463,
+          4268362058,
+          348066943
+        ],
+        [
+          464,
+          2972195618,
+          3406427559
+        ],
+        [
+          465,
+          1810329939,
+          2162642262
+        ],
+        [
+          466,
+          1122704497,
+          999977051
+        ],
+        [
+          467,
+          4229393094,
+          2590691940
+        ],
+        [
+          468,
+          486549210,
+          2567129478
+        ],
+        [
+          469,
+          1294484037,
+          3624161654
+        ],
+        [
+          470,
+          4126712619,
+          74828985
+        ],
+        [
+          471,
+          1301136645,
+          1969631753
+        ],
+        [
+          472,
+          1495142536,
+          665092411
+        ],
+        [
+          473,
+          957499641,
+          731495241
+        ],
+        [
+          474,
+          1508864155,
+          1262298148
+        ],
+        [
+          475,
+          2428745618,
+          3197334585
+        ],
+        [
+          476,
+          3955753026,
+          2631250962
+        ],
+        [
+          477,
+          3287620354,
+          3009504858
+        ],
+        [
+          478,
+          3870626220,
+          2554496116
+        ],
+        [
+          479,
+          756024892,
+          3109091173
+        ],
+        [
+          480,
+          2582849287,
+          2814812332
+        ],
+        [
+          481,
+          3541066154,
+          2449500284
+        ],
+        [
+          482,
+          3466636729,
+          3640597536
+        ],
+        [
+          483,
+          1510707286,
+          4289192463
+        ],
+        [
+          484,
+          936767937,
+          930047768
+        ],
+        [
+          485,
+          3938750034,
+          667496928
+        ],
+        [
+          486,
+          524007879,
+          1809000244
+        ],
+        [
+          487,
+          2534712454,
+          2958964260
+        ],
+        [
+          488,
+          1559924892,
+          189117083
+        ],
+        [
+          489,
+          3259491399,
+          2027744356
+        ],
+        [
+          490,
+          1976062047,
+          3080540450
+        ],
+        [
+          491,
+          3323519974,
+          3368551147
+        ],
+        [
+          492,
+          1274774182,
+          4201894435
+        ],
+        [
+          493,
+          1868316130,
+          1718921184
+        ],
+        [
+          494,
+          175063984,
+          3721055293
+        ],
+        [
+          495,
+          4232018434,
+          3731760987
+        ],
+        [
+          496,
+          3453742391,
+          2888860639
+        ],
+        [
+          497,
+          1549326263,
+          2269876748
+        ],
+        [
+          498,
+          4161332480,
+          1385919269
+        ],
+        [
+          499,
+          4264110436,
+          3622031863
+        ],
+        [
+          500,
+          1066808934,
+          2008219112
+        ],
+        [
+          501,
+          978224220,
+          3581483146
+        ],
+        [
+          502,
+          2720795959,
+          3994334286
+        ],
+        [
+          503,
+          3296806333,
+          1559051638
+        ],
+        [
+          504,
+          2554567990,
+          2554103829
+        ],
+        [
+          505,
+          2320637509,
+          2734104898
+        ],
+        [
+          506,
+          3477466661,
+          2275511480
+        ],
+        [
+          507,
+          4031962976,
+          2512037959
+        ],
+        [
+          508,
+          1833130638,
+          1878923829
+        ],
+        [
+          509,
+          2595366793,
+          1030336038
+        ],
+        [
+          510,
+          1914492862,
+          2191630412
+        ],
+        [
+          511,
+          392578066,
+          451035824
+        ],
+        [
+          512,
+          369431824,
+          2264818087
+        ],
+        [
+          513,
+          3345725014,
+          3678292748
+        ],
+        [
+          514,
+          3799031486,
+          2116054495
+        ],
+        [
+          515,
+          1891733475,
+          2224134011
+        ],
+        [
+          516,
+          3009343210,
+          1887478181
+        ],
+        [
+          517,
+          1309356079,
+          2818779685
+        ],
+        [
+          518,
+          1988006210,
+          1477602490
+        ],
+        [
+          519,
+          3087075729,
+          2226802813
+        ],
+        [
+          520,
+          1540410824,
+          1996011617
+        ],
+        [
+          521,
+          3846629894,
+          2415208282
+        ],
+        [
+          522,
+          1449150177,
+          1010865062
+        ],
+        [
+          523,
+          1594367910,
+          2852676348
+        ],
+        [
+          524,
+          2964454461,
+          3130826118
+        ],
+        [
+          525,
+          1219754036,
+          2031390779
+        ],
+        [
+          526,
+          1517038935,
+          1807802895
+        ],
+        [
+          527,
+          259280255,
+          1424662115
+        ],
+        [
+          528,
+          3982563512,
+          3247239110
+        ],
+        [
+          529,
+          4049714594,
+          1988577078
+        ],
+        [
+          530,
+          4004343402,
+          615600107
+        ],
+        [
+          531,
+          1074860438,
+          478204107
+        ],
+        [
+          532,
+          1224910497,
+          482976601
+        ],
+        [
+          533,
+          1993033780,
+          1252368669
+        ],
+        [
+          534,
+          3135930618,
+          4206120627
+        ],
+        [
+          535,
+          588435589,
+          1760037835
+        ],
+        [
+          536,
+          3493019586,
+          3785307549
+        ],
+        [
+          537,
+          206082258,
+          3429520447
+        ],
+        [
+          538,
+          4039404417,
+          1273285782
+        ],
+        [
+          539,
+          1698727987,
+          2841823716
+        ],
+        [
+          540,
+          3412358424,
+          4219468630
+        ],
+        [
+          541,
+          3739138503,
+          1339713542
+        ],
+        [
+          542,
+          1979149040,
+          657298139
+        ],
+        [
+          543,
+          76459880,
+          1849880812
+        ],
+        [
+          544,
+          2032972074,
+          2785960725
+        ],
+        [
+          545,
+          113845642,
+          313312727
+        ],
+        [
+          546,
+          132602793,
+          858188937
+        ],
+        [
+          547,
+          3661972837,
+          3788503952
+        ],
+        [
+          548,
+          178024736,
+          2891895255
+        ],
+        [
+          549,
+          4188341267,
+          2505887226
+        ],
+        [
+          550,
+          4192540266,
+          461411416
+        ],
+        [
+          551,
+          3732608866,
+          3779047254
+        ],
+        [
+          552,
+          3110842722,
+          4064606902
+        ],
+        [
+          553,
+          661873136,
+          236684300
+        ],
+        [
+          554,
+          3043455984,
+          955607544
+        ],
+        [
+          555,
+          251553252,
+          3261282035
+        ],
+        [
+          556,
+          1676196111,
+          869832484
+        ],
+        [
+          557,
+          3523639890,
+          4074105186
+        ],
+        [
+          558,
+          2172067335,
+          1231443671
+        ],
+        [
+          559,
+          1024883240,
+          3185740137
+        ],
+        [
+          560,
+          1421358185,
+          3276019990
+        ],
+        [
+          561,
+          1160306207,
+          2201829687
+        ],
+        [
+          562,
+          2923285835,
+          702673383
+        ],
+        [
+          563,
+          4002388153,
+          3063377711
+        ],
+        [
+          564,
+          4039952526,
+          1106385670
+        ],
+        [
+          565,
+          1463337724,
+          1414669528
+        ],
+        [
+          566,
+          2627937914,
+          3423645912
+        ],
+        [
+          567,
+          2342844172,
+          2196065495
+        ],
+        [
+          568,
+          1131641995,
+          1901544225
+        ],
+        [
+          569,
+          1690801827,
+          2871812017
+        ],
+        [
+          570,
+          1586469436,
+          3506633084
+        ],
+        [
+          571,
+          505903251,
+          2297127804
+        ],
+        [
+          572,
+          3144353124,
+          4038956281
+        ],
+        [
+          573,
+          768386206,
+          2185637063
+        ],
+        [
+          574,
+          49886766,
+          1531029968
+        ],
+        [
+          575,
+          2865826740,
+          338949488
+        ],
+        [
+          576,
+          2712265769,
+          2747268884
+        ],
+        [
+          577,
+          3472184041,
+          3977573796
+        ],
+        [
+          578,
+          2088334405,
+          3171522028
+        ],
+        [
+          579,
+          3716051649,
+          2796748546
+        ],
+        [
+          580,
+          1329883160,
+          2603281629
+        ],
+        [
+          581,
+          1389369796,
+          3144892882
+        ],
+        [
+          582,
+          959977454,
+          809780243
+        ],
+        [
+          583,
+          2335335569,
+          4270916880
+        ],
+        [
+          584,
+          1217736066,
+          3652922852
+        ],
+        [
+          585,
+          1320639470,
+          3412740151
+        ],
+        [
+          586,
+          2277709022,
+          2649915424
+        ],
+        [
+          587,
+          3399034426,
+          1685731091
+        ],
+        [
+          588,
+          1342323208,
+          2840405394
+        ],
+        [
+          589,
+          737738143,
+          4058555168
+        ],
+        [
+          590,
+          100729869,
+          757558945
+        ],
+        [
+          591,
+          328320331,
+          1918899244
+        ],
+        [
+          592,
+          2570840263,
+          3000782622
+        ],
+        [
+          593,
+          1577118332,
+          2416649836
+        ],
+        [
+          594,
+          565895337,
+          3793145757
+        ],
+        [
+          595,
+          1667777847,
+          1443726668
+        ],
+        [
+          596,
+          1846128739,
+          2249452901
+        ],
+        [
+          597,
+          328693999,
+          1228207856
+        ],
+        [
+          598,
+          368920778,
+          2360368101
+        ],
+        [
+          599,
+          1802266767,
+          1963500435
+        ],
+        [
+          600,
+          3914597943,
+          2396706982
+        ],
+        [
+          601,
+          1929130531,
+          3504880337
+        ],
+        [
+          602,
+          3187104091,
+          2168026375
+        ],
+        [
+          603,
+          837617301,
+          1769166909
+        ],
+        [
+          604,
+          3788020068,
+          3013616322
+        ],
+        [
+          605,
+          4019993249,
+          3108363546
+        ],
+        [
+          606,
+          1508579506,
+          1552108611
+        ],
+        [
+          607,
+          1783912699,
+          770967572
+        ],
+        [
+          608,
+          4127795513,
+          3253197014
+        ],
+        [
+          609,
+          224587623,
+          1147418287
+        ],
+        [
+          610,
+          1330686093,
+          965319904
+        ],
+        [
+          611,
+          423829805,
+          1932611188
+        ],
+        [
+          612,
+          1956437419,
+          2590961347
+        ],
+        [
+          613,
+          4258828338,
+          3320299972
+        ],
+        [
+          614,
+          2485871909,
+          2037185961
+        ],
+        [
+          615,
+          1491883919,
+          1059845065
+        ],
+        [
+          616,
+          3973357085,
+          2970341464
+        ],
+        [
+          617,
+          3396293690,
+          52752264
+        ],
+        [
+          618,
+          1462467640,
+          3483262362
+        ],
+        [
+          619,
+          1204588199,
+          3416332112
+        ],
+        [
+          620,
+          3916217669,
+          1180493173
+        ],
+        [
+          621,
+          2039343421,
+          2597873532
+        ],
+        [
+          622,
+          4257219402,
+          1968250894
+        ],
+        [
+          623,
+          782186540,
+          2564830504
+        ],
+        [
+          624,
+          14767605,
+          3052131854
+        ],
+        [
+          625,
+          1833454363,
+          3042772883
+        ],
+        [
+          626,
+          802099861,
+          1982383336
+        ],
+        [
+          627,
+          1978538515,
+          3805968239
+        ],
+        [
+          628,
+          2336123588,
+          3118850551
+        ],
+        [
+          629,
+          1513486581,
+          4194877457
+        ],
+        [
+          630,
+          1318377493,
+          3074796309
+        ],
+        [
+          631,
+          4269950585,
+          3516375974
+        ],
+        [
+          632,
+          2628867595,
+          959296172
+        ],
+        [
+          633,
+          2397041161,
+          1114927781
+        ],
+        [
+          634,
+          3081634688,
+          1115656674
+        ],
+        [
+          635,
+          3975854966,
+          52112484
+        ],
+        [
+          636,
+          3531602997,
+          2193391568
+        ],
+        [
+          637,
+          2361350810,
+          1754568105
+        ],
+        [
+          638,
+          933965827,
+          1224266486
+        ],
+        [
+          639,
+          170832016,
+          2171097300
+        ],
+        [
+          640,
+          4202342915,
+          1498683692
+        ],
+        [
+          641,
+          3884256505,
+          806852389
+        ],
+        [
+          642,
+          436619548,
+          2663754412
+        ],
+        [
+          643,
+          1699766567,
+          3773672906
+        ],
+        [
+          644,
+          712303261,
+          1499640234
+        ],
+        [
+          645,
+          698424999,
+          358952527
+        ],
+        [
+          646,
+          2002097170,
+          1383670788
+        ],
+        [
+          647,
+          1888679504,
+          75443706
+        ],
+        [
+          648,
+          2080743664,
+          898691925
+        ],
+        [
+          649,
+          3327436063,
+          2609356983
+        ],
+        [
+          650,
+          1470225109,
+          1500637898
+        ],
+        [
+          651,
+          4105447344,
+          2638415872
+        ]
+      ]
+    }
+  ],
+  "regressionLimits": {
+    "shooter-circle": {
+      "position": 0.001,
+      "velocity": 0.00001,
+      "earlyMs": 70,
+      "earlyPosition": 0.001,
+      "earlyVelocity": 0.00001
+    }
+  },
+  "captureNotes": "Fresh native capture with all initial bodies, ball trails and read-only native random-state observation. State-string tracing and RNG marker DOM writes disabled to avoid exhausting the native timer budget. Existing unseeded recordings and their limits are retained separately."
+}

@@ -7,9 +7,9 @@ export function applyReferencePhysics(layout,objects,fixture){
     if(item.contact_physics)item.contact_physics.scatter=0;
   }
 }
-// The native capture does not expose its random generator state. Use a fixed
-// independent seed for repeatable diagnostic replays, never a seed fitted to a
-// measured trajectory. This leaves native contact-order variation visible.
+// Older native captures omit the generator state. Use a fixed independent seed
+// for their repeatable replays, never a seed fitted to a measured trajectory.
+// New complete-state captures restore the observed state separately below.
 export function referenceRandom(){
   let state=12345;
   return ()=>{state=(Math.imul(state,1664525)+1013904223)>>>0;return state/4294967296;};
@@ -52,12 +52,16 @@ export function restoreReferenceBalls(game,fixture,scenario,fallback){
     for(const method of ['apply','record']){const original=game.ballSpin[method].bind(game.ballSpin);game.ballSpin[method]=(body,ms)=>original(body,ms+offset);}
   }
   if(scenario.nativeRandomFrames){
+    if(fixture.nativeRandom.requireContinuity){
+      const through=Math.min(fixture.nativeRandom.continuityThroughMilliseconds??Infinity,Math.max(...scenario.samples.map(row=>row[0])));
+      for(let index=0;index<through;index++)if(scenario.nativeRandomFrames[index]?.[0]!==index+1)throw Error('Native reference omitted a physics-frame marker');
+    }
     const initial=scenario.initialNativeRandom,frames=new Map(scenario.nativeRandomFrames.map(([ms,low,high])=>[ms,[low,high]])),first=frames.get(1)??[initial.low,initial.high],random=nativeRandom(...first);
     game.random=random;game.nativeRandomAudit=[];const step=game.step.bind(game),origin=Math.round(game.time*1000);
     game.step=()=>{
       const ms=Math.round(game.time*1000)-origin+1,expected=frames.get(ms),actual=random.getState();
       const agrees=!expected||actual.every((word,i)=>word===expected[i]);
-      if(fixture.nativeRandom.requireContinuity&&!agrees)throw Error(`Native random-state progression differs before physics frame ${ms}`);
+      if(fixture.nativeRandom.requireContinuity&&ms<=(fixture.nativeRandom.continuityThroughMilliseconds??Infinity)&&!agrees)throw Error(`Native random-state progression differs before physics frame ${ms}`);
       const before=random.calls;step();game.nativeRandomAudit.push({ms,agrees,draws:random.calls-before,state:random.getState(),nextNativeState:frames.get(ms+1)});
     };
   }

@@ -399,7 +399,7 @@ export class Pinball {
             const {mesh,shape,f,plunger,gate,blocked,spinner,trigger,kicker}=entry;let hit;
             if(mesh){if(!mesh.collider.isEnabled())return;r.nativeQuery.dt=Math.fround(time*100);hit=nativeMeshHit(shape,p,v,RADIUS,time,r.nativeQuery);if(hit)hit.id=shape.id;}
             else if(f){pose(f);hit=flipperHit(ball,f,f.angle,f.body.angvel().z,RADIUS,time);}
-            else if(plunger)hit=this.plunger.hit(p,v,r.body.mass(),RADIUS,time);
+            else if(plunger)hit=this.plunger.hit(p,v,r.body.mass(),RADIUS,time,r.nativeQuery);
             else if(gate){if(!gate.enabled)return;hit=blocked?gate.blockHit(p,v,RADIUS,time):gate.hit(p,v,RADIUS,time);}
             else if(spinner){if(!spinner.collider.isEnabled())return;hit=spinner.hit(p,v,RADIUS,time);}
             else if(trigger)hit=trigger.hitShape(shape,r.nativeQuery,time,ball);
@@ -520,7 +520,7 @@ export class Pinball {
         else if(event.trigger)event.trigger.collide(impactBody,event.hit,event.r);
         else if(event.gate){if(event.blocked)collideSurface(impactBody,event.hit,event.gate.material,RADIUS,this.random);else event.gate.collide(impactBody,event.hit,event.r.proxy);}
         else if(event.spinner)event.spinner.collide(impactBody,event.hit);
-        else if(event.plunger)this.plunger.collide(impactBody,event.hit);
+        else if(event.plunger)this.plunger.collide(impactBody,event.hit,this.random,this.playfieldMaterial.difficulty);
         else if(event.mesh){
           const shape=event.mesh.mesh.shapes[event.hit.id],sling=shape.slingshot;
           if(sling&&!this.tilted&&event.hit.vn<=-sling.threshold){

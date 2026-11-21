@@ -30,3 +30,21 @@ test('the complete camera recording matches native position, speed and spin at e
   const reports=JSON.parse(execFileSync(process.execPath,['scripts/compare-vpx-contact.mjs','three/tests/fixtures/vpx-camera-native-state.json','--check','--json'],{cwd:new URL('../../',import.meta.url),encoding:'utf8',maxBuffer:2*1024*1024}));
   assert.equal(reports.length,1);assert.equal(reports[0].traceSamples.filter(s=>s.ms<=386).length,387);
 });
+
+test('the shooter switch recording retains native rod rebound and every observed random-state transition',()=>{
+  const reports=JSON.parse(execFileSync(process.execPath,['scripts/compare-vpx-triggers.mjs','three/tests/fixtures/vpx-shooter-switch-native-state.json','--check','--json','--report=.work/three-review/vpx-shooter-switch-native-state-comparison.json'],{cwd:new URL('../../',import.meta.url),encoding:'utf8',maxBuffer:2*1024*1024}));
+  assert.equal(reports.length,1);const report=reports[0];
+  assert.equal(report.samples.length,40);assert.equal(report.membershipMismatches,0);
+  assert.equal(report.nativeRandomAudit.length,report.samples.at(-1).ms);
+  assert.ok(report.nativeRandomAudit.every(row=>row.agrees));
+  assert.deepEqual(report.events,[{ms:4,event:'UnHit'},{ms:35,event:'Hit'}]);
+});
+
+test('the charged plunger pull, release and initial flight follow the observed native state through 700ms',()=>{
+  const reports=JSON.parse(execFileSync(process.execPath,['scripts/compare-vpx-plunger.mjs','three/tests/fixtures/vpx-plunger-native-state.json','--check','--json','--report=.work/three-review/vpx-plunger-native-state-comparison.json'],{cwd:new URL('../../',import.meta.url),encoding:'utf8',maxBuffer:2*1024*1024}));
+  assert.equal(reports.length,1);const report=reports[0];
+  assert.equal(report.actualDelay,583);
+  assert.ok(report.samples.filter(s=>s.expected[0]<=700).length>=40);
+  assert.ok(report.nativeRandomAudit.filter(row=>row.ms<=700).every(row=>row.agrees));
+  assert.ok(report.maxNativeSpeed>50);
+});

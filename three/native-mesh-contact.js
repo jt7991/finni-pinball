@@ -67,6 +67,11 @@ export function nativeMeshShapeData(s){
 export function nativeMeshHit(shape,worldP,worldV,radius,duration,query){
   query??=nativeMeshQuery(worldP,worldV,radius,duration);const bounds=nativeMeshBounds(shape);if(bounds&&!nativeBoundsOverlap(bounds,query))return null;
   const s=nativeMeshShapeData(shape);if(s.degenerate)return null;
+  return nativeShapeHit(s,query);
+}
+// Compound objects such as the plunger run their own broadphase once, then
+// test internal native shapes directly without another per-shape box query.
+export function nativeShapeHit(s,query){
   const {p,v,r,dt}=query;
   let time=0,contact=false,gap,vn,normal=s.n;
   if(['triangle','polygon','wall','plane'].includes(s.kind)){

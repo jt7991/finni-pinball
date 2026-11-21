@@ -9,6 +9,7 @@ import re
 ROOT=Path(__file__).resolve().parents[1]
 parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--source-root',type=Path,required=True)
+parser.add_argument('--output-root',type=Path,help='New diagnostic output directory; never overwrite a running reference.')
 parser.add_argument('--instrument-timers',action='store_true',help='Build a separate diagnostic table that records actual timer callbacks.')
 parser.add_argument('--instrument-spinners',action='store_true',help='Build a separate timer/plate-angle diagnostic table.')
 parser.add_argument('--instrument-ball-trails',action='store_true',help='Record the source ten-slot old-position history before controlled resets.')
@@ -23,6 +24,7 @@ out=ROOT/('.work/vpx-all-scatter'+('-timing' if args.instrument_timers else '')+
 if args.instrument_spinners:out=ROOT/'.work/vpx-spinner-timing-reference'
 if args.instrument_ball_trails:out=ROOT/'.work/vpx-trail-timing-reference'
 if args.instrument_rng:out=ROOT/'.work/vpx-rng-timing-reference'
+if args.output_root:out=args.output_root.resolve()
 out.mkdir(parents=True,exist_ok=True)
 extracted=out/'extracted'
 subprocess.run([str(tool),'extract',str(table),'-o',str(extracted),'-f'],check=True)
@@ -49,7 +51,7 @@ if args.instrument_timers:
     script_path=extracted/'script.vbs'
     script=script_path.read_text()
     script+='\nDim RefTraceOn,RefTrace\nRefTraceOn=False:RefTrace=""\n'
-    script+='Dim RefDriveAt,RefDriveSide,RefDrivePress,RefDriveMarker,RefTraceBall,RefTraceUntil\nRefDriveAt=0\n'
+    script+='Dim RefDriveAt,RefDriveSide,RefDrivePress,RefDriveMarker,RefTraceBall,RefTraceUntil,RefStateTraceOn\nRefDriveAt=0:RefStateTraceOn=True\n'
     if args.instrument_ball_trails:
         script+='Dim RefTrailOn,RefTrailSlots(9),RefTrailBalls,RefTrailBall,RefTrailIndex,RefTrailRow,RefTrailSlot\nRefTrailOn=False\n'
     for name,marker in [('RollingTimer_Timer','ROLL'),('LeftFlipper_Timer','FLIP')]:
@@ -74,11 +76,11 @@ if args.instrument_timers:
     state_fields=['GameTime','RefTraceBall.X','RefTraceBall.Y','RefTraceBall.Z']
     state_fields+=['CLng(RefTraceBall.'+p+'*1000000)' for p in ['VelX','VelY','VelZ','AngVelX','AngVelY','AngVelZ']]
     state_fields+=['RightFlipper.CurrentAngle','RightFlipper.Strength','RightFlipper.Elasticity','RightFlipper.EOSTorque']
-    state='    If RefTraceOn And GameTime<=RefTraceUntil Then RefTrace=RefTrace & "STATE|" & '+' & "|" & '.join(state_fields)+' & ";"\n'
+    state='    If RefTraceOn And RefStateTraceOn And GameTime<=RefTraceUntil Then RefTrace=RefTrace & "STATE|" & '+' & "|" & '.join(state_fields)+' & ";"\n'
     if args.instrument_rng:
-        state+='    If RefTraceOn And GameTime<=RefTraceUntil Then Debug.Print "RNG_FRAME|" & GameTime\n'
+        state+='    If RefTraceOn Then Debug.Print "RNG_FRAME|" & GameTime\n'
     if args.instrument_spinners:
-        state+='    If RefTraceOn And GameTime<=RefTraceUntil Then RefTrace=RefTrace & "SPIN|" & GameTime & "|" & CLng(Spinner001.CurrentAngle*1000000) & "|" & CLng(Spinner002.CurrentAngle*1000000) & ";"\n'
+        state+='    If RefTraceOn And RefStateTraceOn And GameTime<=RefTraceUntil Then RefTrace=RefTrace & "SPIN|" & GameTime & "|" & CLng(Spinner001.CurrentAngle*1000000) & "|" & CLng(Spinner002.CurrentAngle*1000000) & ";"\n'
     if args.instrument_ball_trails:
         # The timer observes the previous physics step's position. The probe
         # snapshots the final completed step before teleporting the test ball.
@@ -111,6 +113,7 @@ if args.all_scatter_zero:metadata.update({'allScatterZero':True,'scatterOverride
 if args.instrument_timers:
     metadata['instrumentation']={
         'timerTrace':['RollingTimer_Timer','LeftFlipper_Timer'],
+        'optionalStateTrace':True,
         'stateColumns':['ms','x','y','z','vx_micro','vy_micro','vz_micro','wx_micro','wy_micro','wz_micro','right_angle','right_strength','right_elasticity','right_eos_torque'],
         'changes':'Record native timer clocks and ball state before each physics update while RefTraceOn is true. Optional exact-clock input at RefDriveAt is delivered at the start of LeftFlipper_Timer. Authored timer bodies and rules are retained.'}
     if args.instrument_spinners:metadata['instrumentation']['spinnerTraceColumns']=['ms','spinner001_angle_micro','spinner002_angle_micro']
