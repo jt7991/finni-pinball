@@ -1,3 +1,4 @@
+import {nativeRandom} from '../three/native-random.js';
 // Measurement overrides are applied only by comparison tools, never gameplay.
 export function applyReferencePhysics(layout,objects,fixture){
   Object.assign(layout.physics,fixture.controlledOverrides);
@@ -29,7 +30,7 @@ export function placeReferenceBall(game,record,scenario){
 // split time for every mover even when they are outside the visible playfield.
 export function restoreReferenceBalls(game,fixture,scenario,fallback){
   if(!scenario.initialBallStates)return fallback;
-  const records=[...game.toyRecords,...game.records],columns=fixture.initialBallStateColumns;
+  const records=game.physicalRecords,columns=fixture.initialBallStateColumns;
   if(records.length!==scenario.initialBallStates.length)throw Error('native capture/replay body count differs');
   let measured;
   scenario.initialBallStates.forEach((row,index)=>{
@@ -40,5 +41,25 @@ export function restoreReferenceBalls(game,fixture,scenario,fallback){
     if(values.id===scenario.initialMeasuredBallID)measured=record;
   });
   if(!measured)throw Error('native measured ball missing from initial snapshot');
+  if(scenario.initialBallTrails){
+    const idColumn=columns.indexOf('ID'),byId=new Map(scenario.initialBallStates.map((row,index)=>[row[idColumn],records[index]]));
+    for(const record of records)game.ballSpin.state(game.nativeBall(record.body).body).positions=Array(10);
+    for(const {slot,balls}of scenario.initialBallTrails)for(const [id,x,y,z]of balls){
+      const record=byId.get(id);if(!record)throw Error('native trail refers to a missing initial body');
+      game.ballSpin.state(game.nativeBall(record.body).body).positions[slot]={x:x*.01,y:(2115-y)*.01,z:z*.01};
+    }
+    const offset=scenario.initial[0]-Math.round(game.time*1000);
+    for(const method of ['apply','record']){const original=game.ballSpin[method].bind(game.ballSpin);game.ballSpin[method]=(body,ms)=>original(body,ms+offset);}
+  }
+  if(scenario.nativeRandomFrames){
+    const initial=scenario.initialNativeRandom,frames=new Map(scenario.nativeRandomFrames.map(([ms,low,high])=>[ms,[low,high]])),first=frames.get(1)??[initial.low,initial.high],random=nativeRandom(...first);
+    game.random=random;game.nativeRandomAudit=[];const step=game.step.bind(game),origin=Math.round(game.time*1000);
+    game.step=()=>{
+      const ms=Math.round(game.time*1000)-origin+1,expected=frames.get(ms),actual=random.getState();
+      const agrees=!expected||actual.every((word,i)=>word===expected[i]);
+      if(fixture.nativeRandom.requireContinuity&&!agrees)throw Error(`Native random-state progression differs before physics frame ${ms}`);
+      const before=random.calls;step();game.nativeRandomAudit.push({ms,agrees,draws:random.calls-before,state:random.getState(),nextNativeState:frames.get(ms+1)});
+    };
+  }
   return measured;
 }

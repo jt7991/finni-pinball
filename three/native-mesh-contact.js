@@ -18,9 +18,9 @@ export function nativeMeshBounds(shape){
   }
   return box;
 }
-export function nativeBoundsOverlap(box,query){
+export function nativeBoundsOverlap(box,query,sphereOnly=false){
   const a=query.box;if(!a)return true;
-  if(a.right<box.left||a.left>box.right||a.bottom<box.top||a.top>box.bottom||a.high<box.low||a.low>box.high)return false;
+  if(!sphereOnly&&(a.right<box.left||a.left>box.right||a.bottom<box.top||a.top>box.bottom||a.high<box.low||a.low>box.high))return false;
   const p=query.p,dx=f(Math.max(f(box.left-p.x),0)+Math.max(f(p.x-box.right),0)),dy=f(Math.max(f(box.top-p.y),0)+Math.max(f(p.y-box.bottom),0)),dz=f(Math.max(f(box.low-p.z),0)+Math.max(f(p.z-box.high),0));
   return f(f(f(dx*dx)+f(dy*dy))+f(dz*dz))<=query.radiusSquared;
 }

@@ -48,8 +48,23 @@ every body's exact initial float state; fresh raw-flipper and spinner fixtures
 retain their existing acceptance limits and closely reproduce both trajectories.
 The kicker fixture also checks exact sampled lifecycle, score and pocket count.
 Older fixtures omit the hidden bodies' initial state and several gates currently
-fail. They remain in the suite with unchanged limits. Rapier ball/ball response,
-remaining contact/rule timing and complete gameplay parity are still unfinished.
+fail. They remain in the suite with unchanged limits. Ball/ball response now uses
+native HitBall quadratic search and impulses, including frozen bodies, with a
+separate scalar HitKD tree. Rapier's duplicate pair response is disabled. Five
+independent native recordings verify head-on, oblique, vertical, embedded and
+frozen-body impacts through the production simulation.
+
+The camera mismatch exposed an inverted contact-order random branch, now fixed.
+A separate instrumented native table records actual MWC64X state through read-only
+WASM memory observation at native debug markers. The compiled engine hash and
+global-load instructions verify the state address. `vpx-camera-native-state.json`
+retains every body, source position-history slots and random-state observations.
+Replay seeds once from the first observed frame, then audits every subsequent
+state without reseeding. Position, speed and spin match all 387 millisecond
+observations at .001 VPU/.00001 speed/.00001 angular velocity. Source uint64 MWC64X
+arithmetic and both float mappings are independently tested. Remaining plunger,
+switch, spinner/gate, wire-entry and older raw-flipper comparisons still fail;
+complete gameplay parity remains unfinished.
 
 Native measurement fixtures include their source-table hash, controlled-table
 hash and the exact comparison overrides. `scripts/prepare-vpx-contact-reference.py`

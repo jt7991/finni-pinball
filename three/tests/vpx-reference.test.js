@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import RAPIER from '@dimforge/rapier3d-compat';
 import {createFullGame} from '../full-game.js';
 import {STEP,createGame} from '../physics.js';
-import {applyReferencePhysics,referenceRandom} from '../../scripts/reference-physics.mjs';
+import {applyReferencePhysics,referenceRandom,placeReferenceBall} from '../../scripts/reference-physics.mjs';
 const root=new URL('../../',import.meta.url);
 const json=name=>JSON.parse(fs.readFileSync(new URL(`../public/${name}.json`,import.meta.url)));
 test('production flipper trajectory matches captured native VPX samples within .01 degrees',()=>{
@@ -185,15 +185,21 @@ test('free rolling reaches the native horizontal speed without artificial drag',
   }finally{g.dispose();}
 });
 test('physical balls use the native .8 ball-ball coefficient independently of wall response',async()=>{
-  const g=await createFullGame(json('layout'),json('objects'),fs.readFileSync(new URL('../public/rules.vbs',import.meta.url),'utf8'),()=>{});
+  const layout=json('layout');layout.physics.gravity=0;layout.physics.slope=0;
+  const g=await createFullGame(layout,json('objects'),fs.readFileSync(new URL('../public/rules.vbs',import.meta.url),'utf8'),()=>{});
   try{
     g.start();for(let i=0;i<1.7/STEP;i++)g.step();g.spawn('BallRelease');
-    g.world.gravity={x:0,y:0,z:0};
+    for(const mesh of g.nativeMeshes)mesh.collider.setEnabled?.(false);
+    for(const mechanism of [...g.spinners,...g.triggers,...g.kickers])mechanism.collider.setEnabled(false);
+    for(const gate of g.gates)gate.setCollidable(false);
     const [a,b]=g.records;
-    for(const [r,x,v]of [[a,4,10],[b,5,-10]]){
-      r.body.setBodyType(RAPIER.RigidBodyType.Dynamic,true);r.body.setTranslation({x,y:10,z:5},true);r.body.setLinvel({x:v,y:0,z:0},true);r.body.setAngvel({x:0,y:0,z:0},true);
+    for(const [r,x,v]of [[a,400,10],[b,500,-10]]){
+      r.held=null;r.body.setBodyType(RAPIER.RigidBodyType.Dynamic,true);placeReferenceBall(g,r,{x,y:1100,z:150,vx:v});
     }
-    for(let i=0;i<.05/STEP;i++)g.world.step();
+    const impacts=[],run=g.rules.run;g.rules.run=(name,...args)=>{if(name==='OnBallBallCollision')impacts.push(args[2]);return run(name,...args);};
+    for(let i=0;i<.05/STEP;i++)g.step();
     assert.ok(Math.abs(a.body.linvel().x+8)<.02);assert.ok(Math.abs(b.body.linvel().x-8)<.02);
+    assert.deepEqual(impacts,[20],'one callback with the incoming normal speed');
+    assert.ok(Math.abs(a.proxy.x-405)<.01);assert.ok(Math.abs(b.proxy.x-495)<.01);
   }finally{g.dispose();}
 });

@@ -2,12 +2,27 @@
 // engine; every case resets both linear velocity and angular momentum.
 import {writeFile,readFile} from 'node:fs/promises';
 import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
 const [debug,base,output]=process.argv.slice(2);
-const probeKind=process.argv.includes('--triggers')?'triggers':process.argv.includes('--targets')?'targets':process.argv.includes('--gates')?'gates':process.argv.includes('--spinners')?'spinners':process.argv.includes('--plunger')?'plunger':process.argv.includes('--nudge')?'nudge':'contacts';
+const probeKind=process.argv.includes('--ball-pairs')?'ball-pairs':process.argv.includes('--triggers')?'triggers':process.argv.includes('--targets')?'targets':process.argv.includes('--gates')?'gates':process.argv.includes('--spinners')?'spinners':process.argv.includes('--plunger')?'plunger':process.argv.includes('--nudge')?'nudge':'contacts';
 const reference=await(await fetch(new URL('/reference-metadata.json',base))).json();
 const recordTimers=!!reference.instrumentation&&!process.argv.includes('--no-timer-trace');
 const recordAllBalls=process.argv.includes('--all-ball-state');
 const recordKickers=process.argv.includes('--kickers');
+const recordTrails=process.argv.includes('--ball-trails');
+const recordRng=process.argv.includes('--rng-state');
+if(recordTrails)assert.ok(reference.instrumentation?.ballTrails,'trail capture requires the separately instrumented native table');
+if(recordTrails)assert.ok(recordAllBalls,'trail capture requires all initial body states');
+if(recordRng){
+  assert.ok(reference.instrumentation?.nativeRngMarkers,'random capture requires the separately instrumented table');
+  const wasm=Buffer.from(await(await fetch(new URL('/engine/vpinball.wasm',base))).arrayBuffer()),sha=createHash('sha256').update(wasm).digest('hex');
+  // This pinned binary's MWC64X sites all load/store the same uint64 global.
+  // The address is verified from its i64 multiplier instruction, not guessed
+  // by trying seeds or trajectories. Reject any other compiled engine.
+  assert.equal(sha,'c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8','native random-state layout requires the pinned engine');
+  assert.ok(wasm.includes(Buffer.from('41d0cdd303290300','hex')),'verified uint64 MWC64X global load');
+  reference.nativeRandom={algorithm:'MWC64X',engineSha256:sha,stateAddress:7661264,wordOrder:['low','high'],capture:'Read-only WASM memory reads synchronized to native Debug.Print frame markers.'};
+}
 const ballStateFields=['X','Y','Z','VelX','VelY','VelZ','AngMomX','AngMomY','AngMomZ','Mass','Radius','ID'];
 if(recordAllBalls)reference.initialBallStateColumns=ballStateFields;
 const traceMilliseconds=Number(process.argv.find(a=>a.startsWith('--trace-ms='))?.slice(11)??70);
@@ -18,6 +33,7 @@ assert.deepEqual(reference.controlledOverrides,{scatter:0,default_scatter:0},'co
 const runtimeOverrides={'LeftFlipper.Scatter':0,'RightFlipper.Scatter':0};
 const columns=['ms','x','y','z','vx','vy','vz','wx','wy','wz','left','right',...(probeKind==='triggers'?['balls_over']:probeKind==='plunger'?['plunger_position']:probeKind==='targets'?['target009_dropped','target010_dropped','target011_dropped','target009_offset','target010_offset','target011_offset','score']:['spinners','gates'].includes(probeKind)?[probeKind==='gates'?'gate_angle':'spinner_angle','score','left_spinner_count']:[])];
 if(recordKickers)columns.push('ball_count','score','balls_in_hole');
+if(probeKind==='ball-pairs')columns.push('other_x','other_y','other_z','other_vx','other_vy','other_vz','other_wx','other_wy','other_wz');
 reference.timerSynchronization='RollingTimer disabled/enabled immediately before each initial state, resetting its 10ms phase.';
 const tabs=await(await fetch(`${debug}/json/list`)).json();
 const socket=new WebSocket(tabs.find(t=>t.type==='page').webSocketDebuggerUrl);
@@ -61,6 +77,13 @@ if(process.argv.includes('--feed')){
 if(recordKickers){
   cases.length=0;
   cases.push({name:'hellhouse-capture',kicker:'HellHouse',x:293.68433,y:530,z:25,vx:0,vy:-8,sampleCount:120});
+}
+if(probeKind==='ball-pairs'){
+  cases.length=0;
+  for(const [name,x,y,z,speed]of [['head-on',500,1200,180,12],['glancing',500,1230,180,12],['height-offset',500,1200,195,12],['embedded',427,1200,180,2]]){
+    cases.push({name,x:380,y:1200,z:180,vx:speed,vy:0,otherBall:{index:1,x,y,z,vx:-speed,vy:0,vz:0},sampleCount:12,maximumMilliseconds:80});
+  }
+  cases.push({name:'frozen-kicker',x:90,y:2061,z:25,vx:12,vy:0,otherBall:{index:4,spawn:'la',x:153.00056,y:2061,z:25,vx:0,vy:0,vz:0},sampleCount:12,maximumMilliseconds:80});
 }
 if(probeKind==='triggers'){
   cases.length=0;
@@ -115,14 +138,34 @@ if(exactDelay!==undefined){
 }
 try{
   await call('Page.enable');await call('Emulation.setFocusEmulationEnabled',{enabled:true});
+  if(recordRng)await call('Page.addScriptToEvaluateOnNewDocument',{source:`
+    window.nativeReferenceMemories=[];
+    for(const method of ['instantiate','instantiateStreaming']){
+      const original=WebAssembly[method];if(!original)continue;
+      WebAssembly[method]=async function(...args){const result=await original.apply(WebAssembly,args),instance=result.instance??result;
+        for(const value of Object.values(instance.exports??{}))if(value instanceof WebAssembly.Memory&&!window.nativeReferenceMemories.includes(value))window.nativeReferenceMemories.push(value);
+        return result;
+      };
+    }
+  `});
   await call('Page.navigate',{url:base});console.log('Loading native contact reference');
   await wait('!!window.finni && !document.getElementById("play").disabled');await evaluate('document.getElementById("play").click()');await wait('document.body.classList.contains("playing")');
   // Table startup creates three bobble-animation balls before its delayed
   // playable ball. Waiting for the real plunger switch avoids measuring a toy
   // that the authored rolling/spin controller deliberately skips.
   await wait('document.body.classList.contains("ball-in-plunger")');
-  const rawAnimation=process.argv.includes('--raw-animation');
+  if(recordRng)await evaluate(`(()=>{
+    const memory=window.nativeReferenceMemories.find(m=>m.buffer.byteLength>${reference.nativeRandom.stateAddress+8});if(!memory)throw Error('Native WASM memory was not observed');
+    const element=document.getElementById('log'),descriptor=Object.getOwnPropertyDescriptor(Node.prototype,'textContent');window.nativeRandomRecords=[];
+    Object.defineProperty(element,'textContent',{get(){return descriptor.get.call(this);},set(value){descriptor.set.call(this,value);
+      const line=String(value).split('\\n').at(-1),match=line.match(/(RNG_FRAME|CONTACT_INIT)\\|(\\d+)/);if(!match)return;
+      const data=new DataView(memory.buffer),low=data.getUint32(${reference.nativeRandom.stateAddress},true),high=data.getUint32(${reference.nativeRandom.stateAddress+4},true);
+      window.nativeRandomRecords.push({kind:match[1],ms:Number(match[2]),low,high});
+    }});return true;
+  })()`);
+  const rawAnimation=process.argv.includes('--raw-animation')||probeKind==='ball-pairs';
   await script(`Dim RefBalls,RefBall:RefBalls=GetBalls:Set RefBall=RefBalls(${rawAnimation?'0':'UBound(RefBalls)'})`);
+  if(probeKind==='ball-pairs')await script('Dim RefOtherBall:Set RefOtherBall=RefBalls(1)');
   if(recordAllBalls)await script('Dim RefInitBalls,RefInitBall,RefInitIdx,RefInitTrace');
   await script('Debug.Print "REFERENCE_RULE_STATE|" & (UBound(RefBalls)+1) & ":" & CLng(RollingTimer.Enabled) & ":" & maxvel & ":" & lob');
   const state=(await marker('REFERENCE_RULE_STATE')).split(':').map(parseFloat);assert.equal(state.length,4);assert.ok(state.every(Number.isFinite));
@@ -138,7 +181,7 @@ try{
   if(process.argv.includes('--rotate-camera')){
     await script('Camera1.RotY=90');runtimeOverrides['Camera1.RotY']=90;
   }
-  if(['spinners','gates','triggers'].includes(probeKind)){
+  if(['spinners','gates','triggers','ball-pairs'].includes(probeKind)){
     const specs=JSON.parse(await readFile(new URL('../three/public/objects.json',import.meta.url),'utf8')).objects;
     const overrides=[];
     for(const s of specs){
@@ -156,8 +199,8 @@ try{
       const flags=(await marker(label)).split(':').map(parseFloat);assert.equal(flags.length,batch.length);assert.ok(flags.every(n=>n===0),'native mechanism isolation setters took effect');
     }
     reference.isolation='Other authored solid geometry and switches disabled; cabinet bounds and the playfield retained. From parkFromSample onward, reset the measured ball to a remote flat spot immediately before each observation so the plate coasts without further strikes.';
-    const settingsKey=probeKind==='gates'?'nativeGateProperties':'nativeSpinnerProperties';if(probeKind!=='triggers')reference[settingsKey]={};
-    for(const name of probeKind==='triggers'?[]:probeKind==='gates'?['Gate001','Gate002','Gate3','Gate4']:['Spinner001','Spinner002']){
+    const settingsKey=probeKind==='gates'?'nativeGateProperties':'nativeSpinnerProperties';if(!['triggers','ball-pairs'].includes(probeKind))reference[settingsKey]={};
+    for(const name of ['triggers','ball-pairs'].includes(probeKind)?[]:probeKind==='gates'?['Gate001','Gate002','Gate3','Gate4']:['Spinner001','Spinner002']){
       const properties=['Height','Length','Rotation','Damping',...(probeKind==='gates'?['OpenAngle','CloseAngle']:['AngleMin','AngleMax']),'Elasticity'];
       await script('Debug.Print "SPINNER_SETTINGS|" & '+properties.map(p=>`${name}.${p}`).join(' & ":" & '));
       const values=(await marker('SPINNER_SETTINGS')).split(':').map(parseFloat);assert.ok(values.every(Number.isFinite));
@@ -185,6 +228,8 @@ try{
   }
   const results=[];
   for(const scenario of cases.filter(s=>!selected||s.name===selected)){
+    if(recordRng)await evaluate('window.nativeRandomRecords.length=0');
+    if(recordTrails)await script('RefTrailOn=True');
     await script(`SolLFlipper 0:SolRFlipper 0:${reset(430,1400,0,0)}`);await new Promise(r=>setTimeout(r,400));
     if(scenario.plunger){await script('Plunger.Fire');await new Promise(r=>setTimeout(r,600));}
     if(scenario.startRaised){await script(`Sol${scenario.side==='left'?'L':'R'}Flipper 1`);await new Promise(r=>setTimeout(r,200));}
@@ -207,11 +252,14 @@ try{
     // Capture every body in the same synchronous call as the measured reset.
     // Explicit Double formatting preserves the original Single's low bits.
     const allBalls=recordAllBalls?'RefInitBalls=GetBalls:RefInitTrace="":For RefInitIdx=0 To UBound(RefInitBalls):Set RefInitBall=RefInitBalls(RefInitIdx):RefInitTrace=RefInitTrace & '+ballStateFields.map(p=>`CStr(CDbl(RefInitBall.${p}))`).join(' & ":" & ')+' & ";":Next:Debug.Print "BALL_INIT|" & GameTime & "|" & RefInitTrace:':'';
-    await script(`${trace}RollingTimer.Enabled=False:RollingTimer.Enabled=True:${reset(scenario.x,scenario.y,scenario.vx,scenario.vy,scenario.z,scenario.vz)}:${drive?drive+':':''}${allBalls}Debug.Print "CONTACT_INIT|" & GameTime & ":" & RefBall.AngMomX & ":" & RefBall.AngMomY & ":" & RefBall.AngMomZ & ":" & RefBall.X & ":" & RefBall.Y & ":" & RefBall.Z`);
+    const finishTrail=recordTrails?'RefTrailOn=False:RefTrailBalls=GetBalls:RefTrailRow=CStr(GameTime) & "|":For RefTrailIndex=0 To UBound(RefTrailBalls):Set RefTrailBall=RefTrailBalls(RefTrailIndex):RefTrailRow=RefTrailRow & RefTrailBall.ID & ":" & CStr(CDbl(RefTrailBall.X)) & ":" & CStr(CDbl(RefTrailBall.Y)) & ":" & CStr(CDbl(RefTrailBall.Z)) & ";":Next:RefTrailSlots((GameTime\\10) Mod 10)=RefTrailRow:':'';
+    const other=scenario.otherBall,otherReset=other?(other.spawn?`Set RefOtherBall=${other.spawn}.CreateBall:`:'')+reset(other.x,other.y,other.vx,other.vy,other.z,other.vz).replaceAll('RefBall.','RefOtherBall.')+':':'';
+    await script(`${finishTrail}${trace}RollingTimer.Enabled=False:RollingTimer.Enabled=True:${reset(scenario.x,scenario.y,scenario.vx,scenario.vy,scenario.z,scenario.vz)}:${otherReset}${drive?drive+':':''}${allBalls}Debug.Print "CONTACT_INIT|" & GameTime & ":" & RefBall.AngMomX & ":" & RefBall.AngMomY & ":" & RefBall.AngMomZ & ":" & RefBall.X & ":" & RefBall.Y & ":" & RefBall.Z`);
     const initial=(await marker('CONTACT_INIT')).split(':').map(parseFloat);assert.equal(initial.length,7);assert.deepEqual(initial.slice(1,4),[0,0,0],'native spin reset');
     for(const [actual,expected]of [[initial[4],scenario.x],[initial[5],scenario.y],[initial[6],scenario.z??25]])assert.ok(Math.abs(actual-expected)<.001,`native initial position ${actual} vs ${expected}`);
     const origin=initial[0],samples=[],rawSamples=[];
     let initialBallStates,rawInitialBallStates,initialMeasuredBallID;
+    const initialBallTrails=[],rawInitialBallTrails=[];
     if(recordAllBalls){
       rawInitialBallStates=(await marker('BALL_INIT')).replace(/'$/,'');const [clock,rows]=rawInitialBallStates.split('|');assert.equal(Number(clock),origin,'all bodies share the initial clock');
       initialBallStates=rows.split(';').filter(Boolean).map(row=>row.split(':').map(Number));
@@ -230,13 +278,16 @@ try{
       const park=scenario.parkFromSample!==undefined&&i>=scenario.parkFromSample?reset(430,1500,0,0)+':':'';
       const mechanism=scenario.spinner??scenario.gate;
       const targetFields=scenario.target?['Target009','Target010','Target011'].map(n=>`CLng(${n}.IsDropped)`).concat(['Target009','Target010','Target011'].map(n=>`CLng(${n}.CurrentAnimOffset*1000000)`),'Score(CurrentPlayer)'):null;
-      const extra=scenario.kicker?' & ":" & (UBound(GetBalls)+1) & ":" & Score(CurrentPlayer) & ":" & BallsInHole':scenario.trigger?` & ":" & ${scenario.trigger}.BallCntOver`:mechanism?` & ":" & CLng(${mechanism}.CurrentAngle*1000000) & ":" & Score(CurrentPlayer) & ":" & LeftSpinnerCount(CurrentPlayer)`:targetFields?' & ":" & '+targetFields.join(' & ":" & '):scenario.plunger?' & ":" & Plunger.Position':'';
+      const pairFields=scenario.otherBall?['X','Y','Z',...['VelX','VelY','VelZ','AngVelX','AngVelY','AngVelZ']].map((p,i)=>i<3?`RefOtherBall.${p}`:`CLng(RefOtherBall.${p}*1000000)`):null;
+      const extra=pairFields?' & ":" & '+pairFields.join(' & ":" & '):scenario.kicker?' & ":" & (UBound(GetBalls)+1) & ":" & Score(CurrentPlayer) & ":" & BallsInHole':scenario.trigger?` & ":" & ${scenario.trigger}.BallCntOver`:mechanism?` & ":" & CLng(${mechanism}.CurrentAngle*1000000) & ":" & Score(CurrentPlayer) & ":" & LeftSpinnerCount(CurrentPlayer)`:targetFields?' & ":" & '+targetFields.join(' & ":" & '):scenario.plunger?' & ":" & Plunger.Position':'';
       await script(park+'Debug.Print "CONTACT_SAMPLE|" & GameTime & ":" & RefBall.X & ":" & RefBall.Y & ":" & RefBall.Z & ":" & CLng(RefBall.VelX*1000000) & ":" & CLng(RefBall.VelY*1000000) & ":" & CLng(RefBall.VelZ*1000000) & ":" & CLng(RefBall.AngVelX*1000000) & ":" & CLng(RefBall.AngVelY*1000000) & ":" & CLng(RefBall.AngVelZ*1000000) & ":" & LeftFlipper.CurrentAngle & ":" & RightFlipper.CurrentAngle'+extra);
       const raw=await marker('CONTACT_SAMPLE');rawSamples.push(raw);
       const values=raw.split(':').map(parseFloat);assert.equal(values.length,columns.length);assert.ok(values.every(Number.isFinite));for(let k=4;k<10;k++)values[k]/=1000000;values[0]-=origin;samples.push(values);
+      if(pairFields)for(let k=15;k<21;k++)values[k]/=1000000;
       if(mechanism)values[12]/=1000000;
       if(scenario.target)for(let k=15;k<=17;k++)values[k]/=1000000;
       await captureInput();
+      if(scenario.maximumMilliseconds!==undefined&&values[0]>=scenario.maximumMilliseconds)break;
       await new Promise(r=>setTimeout(r,5));
     }
     const actualDelay=command?inputAt-origin:0;assert.ok(Number.isFinite(actualDelay),'observed native input clock');
@@ -252,8 +303,21 @@ try{
       assert.ok(timerTrace[0][1]<=10,'full trace must include the first timer callbacks');
     }
     const closing=scenario.closeDelay?{actualCloseDelay:closeAt-origin}:{};if(scenario.closeDelay)assert.ok(Number.isFinite(closing.actualCloseDelay)&&closing.actualCloseDelay>0,'observed native gate-close clock');
-    results.push({...scenario,initial,actualDelay,...closing,samples,rawSamples,...(timerTrace?{timerTrace}:{}),...(recordAllBalls?{initialBallStates,rawInitialBallStates,initialMeasuredBallID}:{})});console.log(scenario.name,'input at',actualDelay,JSON.stringify(samples.at(-1)));
-    const suffix=recordKickers?'kickers-reference':rawAnimation&&selected?`raw-${recordTimers?'timing-':''}${selected}`:reference.geometryProbe&&selected?`geometry-${recordTimers?'timing-':''}${selected}`:reference.shooterProbe&&selected?`${recordTimers?'timing-':''}${selected}`:['spinners','gates','targets','triggers'].includes(probeKind)&&selected?`${probeKind}-${reference.instrumentation?.spinnerTraceColumns?'timing-':''}${reference.animationBallIsolation?'isolated-animation-':''}${selected}`:`${reference.geometryProbe?'geometry':probeKind==='contacts'?'contact':probeKind}-reference`;
-    await writeFile(`${output}/vpx-${suffix}${recordAllBalls?'-all-balls':''}${recordTimers&&traceMilliseconds!==70?`-${traceMilliseconds}ms`:''}.json`,JSON.stringify({...reference,probeKind,runtimeOverrides,columns,cases:results},null,2));
+    let nativeRandomFrames,initialNativeRandom;
+    if(recordRng){
+      const rows=await evaluate('window.nativeRandomRecords');initialNativeRandom=rows.find(r=>r.kind==='CONTACT_INIT'&&r.ms===origin);assert.ok(initialNativeRandom,'observed initial native random state');
+      nativeRandomFrames=rows.filter(r=>r.kind==='RNG_FRAME').map(({ms,low,high})=>[ms-origin,low,high]);
+      assert.ok(nativeRandomFrames.length&&nativeRandomFrames[0][0]===1,'native random state for the first physics frame');
+    }
+    if(recordTrails)for(let slot=0;slot<10;slot++){
+      await script(`Debug.Print "TRAIL_LENGTH|" & Len(RefTrailSlots(${slot}))`);const size=parseFloat(await marker('TRAIL_LENGTH'));assert.ok(Number.isInteger(size)&&size>0,'filled native trail slot');
+      let raw='';for(let offset=1;offset<=size;offset+=180){await script(`Debug.Print "TRAIL_CHUNK|" & Mid(RefTrailSlots(${slot}),${offset},180)`);raw+=(await marker('TRAIL_CHUNK')).replace(/'$/,'');}
+      rawInitialBallTrails.push(raw);const [clock,positions]=raw.split('|'),ms=Number(clock);assert.ok(ms<=origin&&ms>=origin-100);assert.equal(Math.floor(ms/10)%10,slot);
+      const balls=positions.split(';').filter(Boolean).map(row=>row.split(':').map(Number));assert.ok(balls.every(row=>row.length===4&&row.every(Number.isFinite)));
+      initialBallTrails.push({slot,ms:ms-origin,balls});
+    }
+    results.push({...scenario,initial,actualDelay,...closing,samples,rawSamples,...(timerTrace?{timerTrace}:{}),...(recordAllBalls?{initialBallStates,rawInitialBallStates,initialMeasuredBallID}:{}),...(recordTrails?{initialBallTrails,rawInitialBallTrails}:{}),...(recordRng?{initialNativeRandom,nativeRandomFrames}:{})});console.log(scenario.name,'input at',actualDelay,JSON.stringify(samples.at(-1)));
+    const suffix=probeKind==='ball-pairs'?`ball-pairs-${selected??'reference'}`:recordKickers?'kickers-reference':rawAnimation&&selected?`raw-${recordTimers?'timing-':''}${selected}`:reference.geometryProbe&&selected?`geometry-${recordTimers?'timing-':''}${selected}`:reference.shooterProbe&&selected?`${recordTimers?'timing-':''}${selected}`:['spinners','gates','targets','triggers'].includes(probeKind)&&selected?`${probeKind}-${reference.instrumentation?.spinnerTraceColumns?'timing-':''}${reference.animationBallIsolation?'isolated-animation-':''}${selected}`:`${reference.geometryProbe?'geometry':probeKind==='contacts'?'contact':probeKind}-reference`;
+    await writeFile(`${output}/vpx-${suffix}${recordAllBalls?'-all-balls':''}${recordTrails?'-trails':''}${recordRng?'-rng':''}${recordTimers&&traceMilliseconds!==70?`-${traceMilliseconds}ms`:''}.json`,JSON.stringify({...reference,probeKind,runtimeOverrides,columns,cases:results},null,2));
   }
 }finally{socket.close();}

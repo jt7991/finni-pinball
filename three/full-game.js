@@ -2,7 +2,7 @@
 // Target shape/trigger behavior adapted from Visual Pinball contributors.
 // See public/licenses/VPX-Physics-NOTICE.txt.
 import RAPIER from '@dimforge/rapier3d-compat';
-import {Pinball,STEP,RADIUS,point,BALL_GROUP,STATIC_GROUP,BALL_RESTITUTION,surfaceRestitution} from './physics.js';
+import {Pinball,STEP,RADIUS,point,BALL_GROUP,NATIVE_BALL_GROUP,STATIC_GROUP,BALL_RESTITUTION,surfaceRestitution} from './physics.js';
 import {createRules} from './rules.js';
 import {ContactMesh} from './mesh-contact.js';
 import {dropTargetFront} from './target-contact.js';
@@ -45,7 +45,7 @@ class FullGame extends Pinball {
       shake:strength=>emit({type:'shake',strength}),
       message:text=>emit({type:'message',text}),mechanism:(name,k,v)=>this.mechanism(name,k,v),
       mechanismValue:(name,key)=>{const lower=name.toLowerCase(),target=this.targetMotions.get(lower);if(target)return ({isdropped:target.dropped?1:0,currentanimoffset:target.offset})[key];const gate=this.gates.find(g=>g.spec.name.toLowerCase()===lower);if(gate)return ({currentangle:gate.currentAngle,collidable:gate.enabled,open:gate.open})[key];},
-      balls:()=>[...this.toyRecords,...this.records].map(r=>r.proxy),...storage,
+      balls:()=>this.physicalRecords.map(r=>r.proxy),...storage,
     });
     this.rules.init();
     this.rules.execute('bFreePlay=True:BallsPerGame=3');
@@ -157,7 +157,7 @@ class FullGame extends Pinball {
       .setCcdEnabled(true).setCanSleep(false));
     if(this.nativePlayfieldContacts)body.setGravityScale(0,true);
     const collider=this.world.createCollider(RAPIER.ColliderDesc.ball(RADIUS).setMass(1).setRestitution(BALL_RESTITUTION).setRestitutionCombineRule(RAPIER.CoefficientCombineRule.Multiply).setFriction(0).setFrictionCombineRule(RAPIER.CoefficientCombineRule.Max)
-      .setCollisionGroups(BALL_GROUP).setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS),body);
+      .setCollisionGroups(this.nativeBallContacts?NATIVE_BALL_GROUP:BALL_GROUP).setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS),body);
     if(this.nativePositionUnits)this.nativeBall(body).body.setTranslation(p,true);
     const isToy=['he','la','ra'].includes(key),rec={body,collider,isToy,held:key,inLane:false,previous:{...p},cooldowns:new Map(),laneTime:this.time};
     rec.proxy=new Proxy({radius:25,mass:1,id:body.handle},{
@@ -209,6 +209,7 @@ class FullGame extends Pinball {
     if(Math.abs(elevation)>f(Math.PI/2))elevation=f(elevation*f(Math.PI/180));
     const vertical=f(f(Math.sin(elevation))*horizontal);if(vertical>0)horizontal=f(horizontal*f(Math.cos(elevation)));
     rec.held=null;rec.body.setBodyType(RAPIER.RigidBodyType.Dynamic,true);
+    if(this.nativePositionUnits){const native=this.nativeBall(rec.body);native.collisionGap=0;this.ballSpin.impact(native.body,0);}
     rec.body.setAngvel({x:0,y:0,z:0},true);
     rec.body.setLinvel({x:f(f(Math.sin(a))*horizontal),y:f(f(Math.cos(a))*horizontal),z:vertical},true);
     this.captures.delete(key);
@@ -269,7 +270,7 @@ class FullGame extends Pinball {
     this.events.drainCollisionEvents((a,b,started)=>{
       const rec=this.byCollider.get(a)??this.byCollider.get(b);if(!rec||rec.held)return;
       const other=this.byCollider.get(a)===rec?this.byCollider.get(b):this.byCollider.get(a);
-      if(other){if(started){const u=rec.body.linvel(),v=other.body.linvel();this.rules.run('OnBallBallCollision',rec.proxy,other.proxy,Math.hypot(u.x-v.x,u.y-v.y,u.z-v.z));}return;}
+      if(other){if(started&&!this.nativeBallContacts){const u=rec.body.linvel(),v=other.body.linvel();this.rules.run('OnBallBallCollision',rec.proxy,other.proxy,Math.hypot(u.x-v.x,u.y-v.y,u.z-v.z));}return;}
       const tag=this.tags.get(this.byCollider.has(a)?b:a);if(!tag)return;
       if(tag.kind==='target-body'||tag.kind==='spinner-body'||tag.kind==='gate-body'||tag.kind==='trigger-body'||tag.kind==='kicker-body')return;
       if(!started){if(tag.spec?.kind==='Trigger'){if(tag.name.toLowerCase()==='swplungerrest')rec.inLane=false;this.rules.hit(tag.name,'UnHit',rec.proxy);}return;}

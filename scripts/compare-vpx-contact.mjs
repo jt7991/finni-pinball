@@ -35,16 +35,25 @@ for(const scenario of fixture.cases){
       const pressed=scenario.press===false?0:1;
       if(scenario.actualDelay??scenario.delay)g.rules.schedule(scenario.actualDelay??scenario.delay,`${command} ${pressed}`);else g.rules.run(command,!!pressed);
     }
-    let elapsed=0;const samples=[];
+    let elapsed=0;const samples=[],traceSamples=[];
+    const traceRows=new Map((fixture.traceRegression?scenario.timerTrace:[]).filter(r=>r[0]==='STATE').map(row=>[row[1]-1,row]));
+    const observeTrace=ms=>{
+      const row=traceRows.get(ms);if(!row)return;
+      const expected=row.slice(2,11);for(let i=3;i<9;i++)expected[i]/=1e6;
+      const b=r.proxy,actual=[b.x,b.y,b.z,b.velx,b.vely,b.velz,b.angvelx,b.angvely,b.angvelz];
+      const error=offset=>Math.hypot(...actual.slice(offset,offset+3).map((n,i)=>n-expected[offset+i]));
+      traceSamples.push({ms,expected,actual,positionError:error(0),velocityError:error(3),angularError:error(6)});
+    };
+    if(fixture.traceRegression)observeTrace(0);
     for(const expected of scenario.samples){
-      const ms=expected[0];for(let i=0;i<Math.round((ms-elapsed)/1000/STEP);i++)g.step();elapsed=ms;
+      const ms=expected[0];for(let i=0;i<Math.round((ms-elapsed)/1000/STEP);i++){g.step();if(fixture.traceRegression)observeTrace(elapsed+i+1);}elapsed=ms;
       const p=r.body.translation(),v=r.body.linvel(),w=r.body.angvel();
       const actual=[ms,p.x*100,2115-p.y*100,p.z*100,v.x,-v.y,v.z,-w.x/100,w.y/100,-w.z/100,...g.flippers.map(f=>90-f.angle*180/Math.PI)];
       const positionError=Math.hypot(...actual.slice(1,4).map((n,i)=>n-expected[i+1]));
       const velocityError=Math.hypot(...actual.slice(4,7).map((n,i)=>n-expected[i+4]));
       samples.push({expected,actual,positionError,velocityError});
     }
-    const report={name:scenario.name,maxPositionError:Math.max(...samples.map(r=>r.positionError)),maxVelocityError:Math.max(...samples.map(r=>r.velocityError)),physicsStats:g.physicsStats,samples};reports.push(report);
+    const report={name:scenario.name,maxPositionError:Math.max(...samples.map(r=>r.positionError)),maxVelocityError:Math.max(...samples.map(r=>r.velocityError)),physicsStats:g.physicsStats,samples,...(fixture.traceRegression?{traceSamples}:{})};reports.push(report);
     if(!process.argv.includes('--json'))console.log(JSON.stringify({name:report.name,position:report.maxPositionError,velocity:report.maxVelocityError,end:samples.at(-1).actual}));
   }finally{g.dispose();}
 }
@@ -56,4 +65,8 @@ if(process.argv.includes('--check'))for(const report of reports){
   assert.ok(report.maxPositionError<limit.position,`${report.name} position ${report.maxPositionError} VPU`);
   assert.ok(report.maxVelocityError<limit.velocity,`${report.name} speed ${report.maxVelocityError}`);
   assert.equal(report.physicsStats.substepBudgetExceeded,0,'collision iteration budget');
+  if(fixture.traceRegression){
+    const limit=fixture.traceRegression,rows=report.traceSamples.filter(s=>s.ms<=limit.throughMilliseconds);assert.equal(rows.length,limit.throughMilliseconds+1,'every native millisecond is covered');
+    for(const row of rows){assert.ok(row.positionError<limit.position,`${report.name} trace position at ${row.ms}ms`);assert.ok(row.velocityError<limit.velocity,`${report.name} trace speed at ${row.ms}ms`);assert.ok(row.angularError<limit.angular,`${report.name} trace spin at ${row.ms}ms`);}
+  }
 }

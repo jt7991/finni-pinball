@@ -1,0 +1,5236 @@
+{
+  "engine": "@valknar/vpinball-wasm 0.3.4",
+  "upstreamCommit": "195f214dd4849b8ef6113fd377258b78d0dec3bf",
+  "sourceSha256": "6300d64767894aebcf82f378985cb63e8a540fa373365c7a82c189f78dadfd5a",
+  "controlledSha256": "15fa801ac18a457c3e84c8e29d3afc705a182c281680ccf90136c50e294d5707",
+  "controlledOverrides": {
+    "scatter": 0,
+    "default_scatter": 0
+  },
+  "originalValues": {
+    "scatter": 5,
+    "default_scatter": 10
+  },
+  "diff": "table settings:\n    scatter 5 -> 0\n    default scatter 10 -> 0\nscript changed (+18 -0 lines)\nmaterial \"Toys Dynamic\":\n    scatter angle 5 -> 0\nmaterial \"_Ball Guides\":\n    scatter angle 5 -> 0\nmaterial \"_Droptargets\":\n    scatter angle 10 -> 0\nmaterial \"_Metals\":\n    scatter angle 5 -> 0\nmaterial \"_Plastics\":\n    scatter angle 5 -> 0\nmaterial \"_Playfield\":\n    scatter angle 5 -> 0\nmaterial \"_Ramps\":\n    scatter angle 5 -> 0\nmaterial \"_Ramps Down\":\n    scatter angle 5 -> 0\nmaterial \"_Rubber Dampener\":\n    scatter angle 5 -> 0\nmaterial \"_Rubber EM Wheel\":\n    scatter angle 10 -> 0\nmaterial \"_Rubber Long Bands\":\n    scatter angle 15 -> 0\nmaterial \"_Rubber Medium Bands\":\n    scatter angle 15 -> 0\nmaterial \"_Rubber Pegs\":\n    scatter angle 5 -> 0\nmaterial \"_Rubber Pins\":\n    scatter angle 5 -> 0\nmaterial \"_Rubber Posts\":\n    scatter angle 5 -> 0\nmaterial \"_Rubber Short Bands\":\n    scatter angle 5 -> 0\nmaterial \"_Slingshots\":\n    scatter angle 15 -> 0\nmaterial \"_Targets\":\n    scatter angle 10 -> 0\nmaterial \"_Woods\":\n    scatter angle 5 -> 0\nWall \"Wall317\":\n    scatter 5 -> 0\nWall \"Leftslingshot\":\n    scatter 5 -> 0\nWall \"Wall348\":\n    scatter 5 -> 0\nWall \"Wall85\":\n    scatter 5 -> 0\nWall \"Wall86\":\n    scatter 5 -> 0\nWall \"wallxxx2\":\n    scatter 5 -> 0\nWall \"Wall138\":\n    scatter 5 -> 0\nWall \"120h\":\n    scatter 5 -> 0\nWall \"60h\":\n    scatter 5 -> 0\nWall \"10m\":\n    scatter 5 -> 0\nRamp \"Ramp7\":\n    scatter 5 -> 0\nWall \"Wall5\":\n    scatter 5 -> 0\nWall \"Wall1\":\n    scatter 5 -> 0\nWall \"Wall17\":\n    scatter 5 -> 0\nFlipper \"RightFlipper\":\n    scatter 15 -> 0\nFlipper \"LeftFlipper\":\n    scatter 15 -> 0\nWall \"Wall001\":\n    scatter 5 -> 0\nWall \"Wall002\":\n    scatter 5 -> 0\nWall \"Wall003\":\n    scatter 5 -> 0\nWall \"Wall004\":\n    scatter 5 -> 0\nWall \"Wall005\":\n    scatter 5 -> 0\nWall \"Wall006\":\n    scatter 5 -> 0\nWall \"Wall007\":\n    scatter 5 -> 0\nWall \"Wall008\":\n    scatter 5 -> 0\nWall \"Wall009\":\n    scatter 5 -> 0\nWall \"Wall010\":\n    scatter 5 -> 0\nWall \"rpost018\":\n    scatter 5 -> 0\nWall \"peg-plastics001\":\n    scatter 5 -> 0\nWall \"rpost001\":\n    scatter 5 -> 0\nRubber \"Rubber001\":\n    scatter 5 -> 0\nWall \"peg-plastics002\":\n    scatter 5 -> 0\nWall \"rpost002\":\n    scatter 5 -> 0\nWall \"peg-plastics003\":\n    scatter 5 -> 0\nWall \"rpost003\":\n    scatter 5 -> 0\nWall \"peg-plastics004\":\n    scatter 5 -> 0\nWall \"Rightslingshot\":\n    scatter 5 -> 0\nRubber \"RightSling001\":\n    scatter 5 -> 0\nRubber \"LeftSling001\":\n    scatter 5 -> 0\nWall \"rlband001\":\n    scatter 5 -> 0\nWall \"rsband002\":\n    scatter 5 -> 0\nRubber \"Rubber007\":\n    scatter 5 -> 0\nWall \"rpin001\":\n    scatter 5 -> 0\nRubber \"Rubber002\":\n    scatter 5 -> 0\nWall \"rpin002\":\n    scatter 5 -> 0\nWall \"Wall011\":\n    scatter 5 -> 0\nWall \"Wall012\":\n    scatter 5 -> 0\nWall \"Wall013\":\n    scatter 5 -> 0\nWall \"Wall014\":\n    scatter 5 -> 0\nWall \"rpost004\":\n    scatter 5 -> 0\nWall \"peg-plastics005\":\n    scatter 5 -> 0\nWall \"rpost005\":\n    scatter 5 -> 0\nWall \"peg-plastics006\":\n    scatter 5 -> 0\nWall \"rpost006\":\n    scatter 5 -> 0\nWall \"peg-plastics007\":\n    scatter 5 -> 0\nWall \"rsband001\":\n    scatter 5 -> 0\nWall \"rlband002\":\n    scatter 5 -> 0\nRubber \"RightSling002\":\n    scatter 5 -> 0\nRubber \"RightSling003\":\n    scatter 5 -> 0\nRubber \"RightSling004\":\n    scatter 5 -> 0\nRubber \"LeftSling002\":\n    scatter 5 -> 0\nRubber \"LeftSling003\":\n    scatter 5 -> 0\nRubber \"LeftSling004\":\n    scatter 5 -> 0\nWall \"Wall016\":\n    scatter 5 -> 0\nWall \"Wall015\":\n    scatter 5 -> 0\nWall \"rpeg001\":\n    scatter 5 -> 0\nWall \"Wall018\":\n    scatter 5 -> 0\nWall \"Wall019\":\n    scatter 5 -> 0\nWall \"rpeg002\":\n    scatter 5 -> 0\nWall \"rpost007\":\n    scatter 5 -> 0\nRubber \"Rubber003\":\n    scatter 5 -> 0\nWall \"peg-plastics008\":\n    scatter 5 -> 0\nWall \"rpost009\":\n    scatter 5 -> 0\nRubber \"Rubber008\":\n    scatter 5 -> 0\nWall \"peg-plastics010\":\n    scatter 5 -> 0\nWall \"rpost010\":\n    scatter 5 -> 0\nRubber \"Rubber005\":\n    scatter 5 -> 0\nWall \"peg-plastics011\":\n    scatter 5 -> 0\nWall \"rpost011\":\n    scatter 5 -> 0\nRubber \"Rubber006\":\n    scatter 5 -> 0\nWall \"peg-plastics012\":\n    scatter 5 -> 0\nWall \"Wall017\":\n    scatter 5 -> 0\nWall \"Wall020\":\n    scatter 5 -> 0\nWall \"rpeg003\":\n    scatter 5 -> 0\nWall \"Wall021\":\n    scatter 5 -> 0\nWall \"Wall022\":\n    scatter 5 -> 0\nWall \"rpeg004\":\n    scatter 5 -> 0\nHitTarget \"Target001\":\n    scatter 5 -> 0\nHitTarget \"Target002\":\n    scatter 5 -> 0\nHitTarget \"Target003\":\n    scatter 5 -> 0\nHitTarget \"Target004\":\n    scatter 5 -> 0\nHitTarget \"Target005\":\n    scatter 5 -> 0\nHitTarget \"Target006\":\n    scatter 5 -> 0\nHitTarget \"Target007\":\n    scatter 5 -> 0\nHitTarget \"Target008\":\n    scatter 5 -> 0\nWall \"wallxxx002\":\n    scatter 5 -> 0\nWall \"wallxxx001\":\n    scatter 5 -> 0\nWall \"wallxxx003\":\n    scatter 5 -> 0\nHitTarget \"Target009\":\n    scatter 5 -> 0\nHitTarget \"Target010\":\n    scatter 5 -> 0\nHitTarget \"Target011\":\n    scatter 5 -> 0\nRubber \"Rubber004\":\n    scatter 5 -> 0\nWall \"rpin004\":\n    scatter 5 -> 0\nRubber \"Rubber009\":\n    scatter 5 -> 0\nWall \"rpin005\":\n    scatter 5 -> 0\nRubber \"Rubber010\":\n    scatter 5 -> 0\nWall \"rpin003\":\n    scatter 5 -> 0\nRubber \"Rubber011\":\n    scatter 5 -> 0\nWall \"rpin006\":\n    scatter 5 -> 0\nRubber \"Rubber012\":\n    scatter 5 -> 0\nWall \"rpin007\":\n    scatter 5 -> 0\nRubber \"Rubber013\":\n    scatter 5 -> 0\nWall \"rpin008\":\n    scatter 5 -> 0\nRubber \"Rubber014\":\n    scatter 5 -> 0\nWall \"rpin009\":\n    scatter 5 -> 0\nRubber \"Rubber015\":\n    scatter 5 -> 0\nWall \"rpin010\":\n    scatter 5 -> 0\nRubber \"Rubber016\":\n    scatter 5 -> 0\nWall \"rpin011\":\n    scatter 5 -> 0\nRubber \"Rubber017\":\n    scatter 5 -> 0\nWall \"rpin012\":\n    scatter 5 -> 0\nHitTarget \"Target012\":\n    scatter 5 -> 0\nHitTarget \"Target013\":\n    scatter 5 -> 0\nRamp \"Ramp002\":\n    scatter 5 -> 0\nHitTarget \"Target014\":\n    scatter 5 -> 0\nBumper \"Bumper1\":\n    scatter 10 -> 0\nBumper \"Bumper2\":\n    scatter 10 -> 0\nBumper \"Bumper3\":\n    scatter 10 -> 0\nWall \"Wall031\":\n    scatter 5 -> 0\nWall \"Wall036\":\n    scatter 5 -> 0\nWall \"bumpertop001\":\n    scatter 5 -> 0\nWall \"bumpertop002\":\n    scatter 5 -> 0\nWall \"bumpertop003\":\n    scatter 5 -> 0\nWall \"Wall037\":\n    scatter 5 -> 0\nWall \"Wall039\":\n    scatter 5 -> 0\nWall \"wallxxx004\":\n    scatter 5 -> 0\nWall \"wallxxx005\":\n    scatter 5 -> 0\nWall \"wallxxx006\":\n    scatter 5 -> 0\nWall \"wallxxx008\":\n    scatter 5 -> 0\nWall \"wallxxx009\":\n    scatter 5 -> 0\nWall \"wallxxx010\":\n    scatter 5 -> 0\nWall \"wallxxx011\":\n    scatter 5 -> 0\nWall \"wallxxx012\":\n    scatter 5 -> 0\nWall \"wallxxx013\":\n    scatter 5 -> 0\nWall \"wallxxx016\":\n    scatter 5 -> 0\nWall \"Wall038\":\n    scatter 5 -> 0\nWall \"Wall040\":\n    scatter 5 -> 0\nWall \"rpeg005\":\n    scatter 5 -> 0\nWall \"Wall041\":\n    scatter 5 -> 0\nWall \"Wall042\":\n    scatter 5 -> 0\nWall \"rpeg006\":\n    scatter 5 -> 0\nWall \"Wall043\":\n    scatter 5 -> 0\nWall \"Wall044\":\n    scatter 5 -> 0\nWall \"rpeg007\":\n    scatter 5 -> 0\nWall \"Wall048\":\n    scatter 5 -> 0\nWall \"Wall049\":\n    scatter 5 -> 0\nWall \"rpeg008\":\n    scatter 5 -> 0\nWall \"Wall050\":\n    scatter 5 -> 0\nWall \"Wall051\":\n    scatter 5 -> 0\nWall \"rpeg009\":\n    scatter 5 -> 0\nWall \"Wall052\":\n    scatter 5 -> 0\nWall \"Wall053\":\n    scatter 5 -> 0\nWall \"rpeg010\":\n    scatter 5 -> 0\nWall \"Wall055\":\n    scatter 5 -> 0\nWall \"Wall056\":\n    scatter 5 -> 0\nWall \"rpeg011\":\n    scatter 5 -> 0\nWall \"rpost008\":\n    scatter 5 -> 0\nWall \"peg-plastics009\":\n    scatter 5 -> 0\nWall \"rpost012\":\n    scatter 5 -> 0\nWall \"peg-plastics013\":\n    scatter 5 -> 0\nRubber \"Rubber018\":\n    scatter 5 -> 0\nWall \"rlband007\":\n    scatter 5 -> 0\nWall \"Wall059\":\n    scatter 5 -> 0\nWall \"rpost017\":\n    scatter 5 -> 0\nWall \"peg-plastics014\":\n    scatter 5 -> 0\nWall \"rpost019\":\n    scatter 5 -> 0\nWall \"peg-plastics015\":\n    scatter 5 -> 0\nWall \"rlband003\":\n    scatter 5 -> 0\nRubber \"Rubber019\":\n    scatter 5 -> 0\nWall \"rpost021\":\n    scatter 5 -> 0\nWall \"peg-plastics016\":\n    scatter 5 -> 0\nWall \"rpost022\":\n    scatter 5 -> 0\nWall \"peg-plastics017\":\n    scatter 5 -> 0\nWall \"rlband004\":\n    scatter 5 -> 0\nRubber \"Rubber020\":\n    scatter 5 -> 0\nWall \"rpost023\":\n    scatter 5 -> 0\nWall \"peg-plastics018\":\n    scatter 5 -> 0\nWall \"rpost024\":\n    scatter 5 -> 0\nWall \"peg-plastics019\":\n    scatter 5 -> 0\nRubber \"Rubber021\":\n    scatter 5 -> 0\nWall \"rsband005\":\n    scatter 5 -> 0\nWall \"bumpertop004\":\n    scatter 5 -> 0\nWall \"bumpertop005\":\n    scatter 5 -> 0\nWall \"bumpertop006\":\n    scatter 5 -> 0\nRubber \"Rubber022\":\n    scatter 5 -> 0\nRubber \"Rubber023\":\n    scatter 5 -> 0\nWall \"Wall057\":\n    scatter 5 -> 0\nWall \"Wall058\":\n    scatter 5 -> 0\nWall \"Wall060\":\n    scatter 5 -> 0\nWall \"Wall062\":\n    scatter 5 -> 0\nWall \"Wall063\":\n    scatter 5 -> 0\nWall \"Wall064\":\n    scatter 5 -> 0\nWall \"wallxxx014\":\n    scatter 5 -> 0\nRamp \"Ramp019\":\n    scatter 5 -> 0\nRamp \"Ramp020\":\n    scatter 5 -> 0\nWall \"Wall065\":\n    scatter 5 -> 0\nWall \"Wall066\":\n    scatter 5 -> 0\nWall \"Wall067\":\n    scatter 5 -> 0\nWall \"Wall068\":\n    scatter 5 -> 0\nWall \"Wall069\":\n    scatter 5 -> 0\nWall \"Wall070\":\n    scatter 5 -> 0\nWall \"Wall071\":\n    scatter 5 -> 0\nWall \"wallxxx007\":\n    scatter 5 -> 0\nWall \"Wall074\":\n    scatter 5 -> 0\nWall \"Wall075\":\n    scatter 5 -> 0\nWall \"rpeg012\":\n    scatter 5 -> 0\nWall \"Wall076\":\n    scatter 5 -> 0\nWall \"Wall077\":\n    scatter 5 -> 0\nWall \"rpeg013\":\n    scatter 5 -> 0\nWall \"83h\":\n    scatter 5 -> 0\nWall \"180h\":\n    scatter 5 -> 0\nWall \"56h\":\n    scatter 5 -> 0\nWall \"wall074001\":\n    scatter 5 -> 0\nWall \"wall073\":\n    scatter 5 -> 0\nWall \"wall078\":\n    scatter 5 -> 0\nWall \"hole004\":\n    scatter 5 -> 0\nWall \"hole006\":\n    scatter 5 -> 0\nWall \"hole001\":\n    scatter 5 -> 0\nWall \"hole002\":\n    scatter 5 -> 0\nWall \"hole003\":\n    scatter 5 -> 0\nWall \"hole005\":\n    scatter 5 -> 0\nWall \"hole007\":\n    scatter 5 -> 0\nWall \"hole008\":\n    scatter 5 -> 0\nWall \"hole009\":\n    scatter 5 -> 0\nWall \"hole010\":\n    scatter 5 -> 0\nWall \"hole011\":\n    scatter 5 -> 0\nWall \"hole012\":\n    scatter 5 -> 0\nWall \"hole013\":\n    scatter 5 -> 0\nWall \"hole015\":\n    scatter 5 -> 0\nWall \"hole014\":\n    scatter 5 -> 0\nWall \"hole016\":\n    scatter 5 -> 0\nWall \"hole017\":\n    scatter 5 -> 0\nWall \"hole018\":\n    scatter 5 -> 0\nWall \"hole019\":\n    scatter 5 -> 0\nWall \"hole020\":\n    scatter 5 -> 0\nWall \"hole021\":\n    scatter 5 -> 0\nWall \"hole022\":\n    scatter 5 -> 0\nWall \"hole023\":\n    scatter 5 -> 0\nWall \"hole024\":\n    scatter 5 -> 0\nWall \"hole025\":\n    scatter 5 -> 0\nWall \"hole026\":\n    scatter 5 -> 0\nWall \"hole027\":\n    scatter 5 -> 0\nWall \"hole028\":\n    scatter 5 -> 0\nWall \"hole029\":\n    scatter 5 -> 0\nWall \"hole030\":\n    scatter 5 -> 0\nWall \"hole031\":\n    scatter 5 -> 0\nWall \"hole032\":\n    scatter 5 -> 0\n0 added, 0 removed, 277 changed\n",
+  "verification": {
+    "path": "C:\\Users\\Jacob\\.t3\\worktrees\\fin-ball\\experiment-threejs-phys-17e4e4836d7b0c6e\\.work\\vpx-spinner-timing-reference\\zero-scatter.vpx",
+    "mac": "4f9cdfdbe693adb340b065e21f0913c7",
+    "computed_mac": "4f9cdfdbe693adb340b065e21f0913c7",
+    "sha256": "15fa801ac18a457c3e84c8e29d3afc705a182c281680ccf90136c50e294d5707",
+    "valid": true
+  },
+  "allScatterZero": true,
+  "scatterOverrides": [
+    {
+      "kind": "material",
+      "name": "Toys Dynamic",
+      "field": "scatter_angle",
+      "original": 5
+    },
+    {
+      "kind": "material",
+      "name": "_Ball Guides",
+      "field": "scatter_angle",
+      "original": 5
+    },
+    {
+      "kind": "material",
+      "name": "_Droptargets",
+      "field": "scatter_angle",
+      "original": 10
+    },
+    {
+      "kind": "material",
+      "name": "_Metals",
+      "field": "scatter_angle",
+      "original": 5
+    },
+    {
+      "kind": "material",
+      "name": "_Plastics",
+      "field": "scatter_angle",
+      "original": 5
+    },
+    {
+      "kind": "material",
+      "name": "_Playfield",
+      "field": "scatter_angle",
+      "original": 5
+    },
+    {
+      "kind": "material",
+      "name": "_Ramps",
+      "field": "scatter_angle",
+      "original": 5
+    },
+    {
+      "kind": "material",
+      "name": "_Ramps Down",
+      "field": "scatter_angle",
+      "original": 5
+    },
+    {
+      "kind": "material",
+      "name": "_Rubber Dampener",
+      "field": "scatter_angle",
+      "original": 5
+    },
+    {
+      "kind": "material",
+      "name": "_Rubber EM Wheel",
+      "field": "scatter_angle",
+      "original": 10
+    },
+    {
+      "kind": "material",
+      "name": "_Rubber Long Bands",
+      "field": "scatter_angle",
+      "original": 15
+    },
+    {
+      "kind": "material",
+      "name": "_Rubber Medium Bands",
+      "field": "scatter_angle",
+      "original": 15
+    },
+    {
+      "kind": "material",
+      "name": "_Rubber Pegs",
+      "field": "scatter_angle",
+      "original": 5
+    },
+    {
+      "kind": "material",
+      "name": "_Rubber Pins",
+      "field": "scatter_angle",
+      "original": 5
+    },
+    {
+      "kind": "material",
+      "name": "_Rubber Posts",
+      "field": "scatter_angle",
+      "original": 5
+    },
+    {
+      "kind": "material",
+      "name": "_Rubber Short Bands",
+      "field": "scatter_angle",
+      "original": 5
+    },
+    {
+      "kind": "material",
+      "name": "_Slingshots",
+      "field": "scatter_angle",
+      "original": 15
+    },
+    {
+      "kind": "material",
+      "name": "_Targets",
+      "field": "scatter_angle",
+      "original": 10
+    },
+    {
+      "kind": "material",
+      "name": "_Woods",
+      "field": "scatter_angle",
+      "original": 5
+    },
+    {
+      "kind": "Bumper",
+      "name": "Bumper1",
+      "field": "scatter",
+      "original": 10
+    },
+    {
+      "kind": "Bumper",
+      "name": "Bumper2",
+      "field": "scatter",
+      "original": 10
+    },
+    {
+      "kind": "Bumper",
+      "name": "Bumper3",
+      "field": "scatter",
+      "original": 10
+    },
+    {
+      "kind": "Flipper",
+      "name": "LeftFlipper",
+      "field": "scatter",
+      "original": 15
+    },
+    {
+      "kind": "Flipper",
+      "name": "RightFlipper",
+      "field": "scatter",
+      "original": 15
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target003",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target004",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target005",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target006",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target007",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target008",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target009",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target010",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target011",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target012",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target013",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "HitTarget",
+      "name": "Target014",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Ramp",
+      "name": "Ramp002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Ramp",
+      "name": "Ramp019",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Ramp",
+      "name": "Ramp020",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Ramp",
+      "name": "Ramp7",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "LeftSling001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "LeftSling002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "LeftSling003",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "LeftSling004",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "RightSling001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "RightSling002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "RightSling003",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "RightSling004",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber003",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber004",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber005",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber006",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber007",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber008",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber009",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber010",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber011",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber012",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber013",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber014",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber015",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber016",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber017",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber018",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber019",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber020",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber021",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber022",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Rubber",
+      "name": "Rubber023",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "10m",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "120h",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "180h",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "56h",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "60h",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "83h",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "bumpertop001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "bumpertop002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "bumpertop003",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "bumpertop004",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "bumpertop005",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "bumpertop006",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole003",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole004",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole005",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole006",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole007",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole008",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole009",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole010",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole011",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole012",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole013",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole014",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole015",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole016",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole017",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole018",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole019",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole020",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole021",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole022",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole023",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole024",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole025",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole026",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole027",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole028",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole029",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole030",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole031",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "hole032",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Leftslingshot",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics003",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics004",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics005",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics006",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics007",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics008",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics009",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics010",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics011",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics012",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics013",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics014",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics015",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics016",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics017",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics018",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "peg-plastics019",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Rightslingshot",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rlband001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rlband002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rlband003",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rlband004",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rlband007",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpeg001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpeg002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpeg003",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpeg004",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpeg005",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpeg006",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpeg007",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpeg008",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpeg009",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpeg010",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpeg011",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpeg012",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpeg013",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpin001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpin002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpin003",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpin004",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpin005",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpin006",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpin007",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpin008",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpin009",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpin010",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpin011",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpin012",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost003",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost004",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost005",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost006",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost007",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost008",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost009",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost010",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost011",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost012",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost017",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost018",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost019",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost021",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost022",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost023",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rpost024",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rsband001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rsband002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "rsband005",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall003",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall004",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall005",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall006",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall007",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall008",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall009",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall010",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall011",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall012",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall013",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall014",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall015",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall016",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall017",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall018",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall019",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall020",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall021",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall022",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall031",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall036",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall037",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall038",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall039",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall040",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall041",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall042",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall043",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall044",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall048",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall049",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall050",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall051",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall052",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall053",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall055",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall056",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall057",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall058",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall059",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall060",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall062",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall063",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall064",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall065",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall066",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall067",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall068",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall069",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall070",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall071",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wall073",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall074",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wall074001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall075",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall076",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall077",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wall078",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall1",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall138",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall17",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall317",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall348",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall5",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall85",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "Wall86",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx001",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx002",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx003",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx004",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx005",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx006",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx007",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx008",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx009",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx010",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx011",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx012",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx013",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx014",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx016",
+      "field": "scatter",
+      "original": 5
+    },
+    {
+      "kind": "Wall",
+      "name": "wallxxx2",
+      "field": "scatter",
+      "original": 5
+    }
+  ],
+  "instrumentation": {
+    "timerTrace": [
+      "RollingTimer_Timer",
+      "LeftFlipper_Timer"
+    ],
+    "stateColumns": [
+      "ms",
+      "x",
+      "y",
+      "z",
+      "vx_micro",
+      "vy_micro",
+      "vz_micro",
+      "wx_micro",
+      "wy_micro",
+      "wz_micro",
+      "right_angle",
+      "right_strength",
+      "right_elasticity",
+      "right_eos_torque"
+    ],
+    "changes": "Record native timer clocks and ball state before each physics update while RefTraceOn is true. Optional exact-clock input at RefDriveAt is delivered at the start of LeftFlipper_Timer. Authored timer bodies and rules are retained.",
+    "spinnerTraceColumns": [
+      "ms",
+      "spinner001_angle_micro",
+      "spinner002_angle_micro"
+    ]
+  },
+  "initialBallStateColumns": [
+    "X",
+    "Y",
+    "Z",
+    "VelX",
+    "VelY",
+    "VelZ",
+    "AngMomX",
+    "AngMomY",
+    "AngMomZ",
+    "Mass",
+    "Radius",
+    "ID"
+  ],
+  "timerTraceCaptured": true,
+  "traceMilliseconds": 100,
+  "timerSynchronization": "RollingTimer disabled/enabled immediately before each initial state, resetting its 10ms phase.",
+  "inputScheduling": {
+    "kind": "vpmtimer"
+  },
+  "nativeRuleState": {
+    "ballCount": 4,
+    "measuredBallIndex": 0,
+    "measuredBallRole": "animation",
+    "rollingTimerEnabled": true,
+    "maxvel": 52,
+    "lockedBallOffset": 3
+  },
+  "comparisonScope": "raw physical ball excluded by the authored playable-ball spin/speed controller",
+  "isolation": "Other authored solid geometry and switches disabled; cabinet bounds and the playfield retained. From parkFromSample onward, reset the measured ball to a remote flat spot immediately before each observation so the plate coasts without further strikes.",
+  "animationBallIsolation": [
+    {
+      "index": 0,
+      "x": -10000,
+      "y": 0,
+      "z": -1000
+    },
+    {
+      "index": 1,
+      "x": -10200,
+      "y": 0,
+      "z": -1000
+    },
+    {
+      "index": 2,
+      "x": -10400,
+      "y": 0,
+      "z": -1000
+    }
+  ],
+  "probeKind": "ball-pairs",
+  "runtimeOverrides": {
+    "LeftFlipper.Scatter": 0,
+    "RightFlipper.Scatter": 0,
+    "Bumper1.Collidable": false,
+    "Bumper2.Collidable": false,
+    "Bumper3.Collidable": false,
+    "Gate001.Collidable": false,
+    "Gate002.Collidable": false,
+    "Gate3.Collidable": false,
+    "Gate4.Collidable": false,
+    "Target001.Collidable": false,
+    "Target002.Collidable": false,
+    "Target003.Collidable": false,
+    "Target004.Collidable": false,
+    "Target005.Collidable": false,
+    "Target006.Collidable": false,
+    "Target007.Collidable": false,
+    "Target008.Collidable": false,
+    "Target009.Collidable": false,
+    "Target010.Collidable": false,
+    "Target011.Collidable": false,
+    "Target012.Collidable": false,
+    "Target013.Collidable": false,
+    "Target014.Collidable": false,
+    "Cabinet_Side.Collidable": false,
+    "Camera1.Collidable": false,
+    "Camera2.Collidable": false,
+    "discoball.Collidable": false,
+    "FinniBalloons.Collidable": false,
+    "FinniCake.Collidable": false,
+    "FinniSlingCovers.Collidable": false,
+    "FinniWireRamp.Collidable": false,
+    "LeftFlipperTop.Collidable": false,
+    "Lemk.Collidable": false,
+    "LilHead.Collidable": false,
+    "LilLeftArm.Collidable": false,
+    "LilRightArm.Collidable": false,
+    "Primitive001.Collidable": false,
+    "Primitive002.Collidable": false,
+    "Primitive003.Collidable": false,
+    "Primitive004.Collidable": false,
+    "Primitive005.Collidable": false,
+    "Primitive006.Collidable": false,
+    "Primitive007.Collidable": false,
+    "Primitive008.Collidable": false,
+    "Primitive009.Collidable": false,
+    "Primitive010.Collidable": false,
+    "Primitive011.Collidable": false,
+    "Primitive012.Collidable": false,
+    "Primitive013.Collidable": false,
+    "Primitive014.Collidable": false,
+    "Primitive015.Collidable": false,
+    "Primitive016.Collidable": false,
+    "Primitive017.Collidable": false,
+    "Primitive018.Collidable": false,
+    "Primitive019.Collidable": false,
+    "Primitive020.Collidable": false,
+    "Primitive021.Collidable": false,
+    "Primitive022.Collidable": false,
+    "Primitive023.Collidable": false,
+    "Primitive024.Collidable": false,
+    "Primitive025.Collidable": false,
+    "Primitive026.Collidable": false,
+    "Primitive027.Collidable": false,
+    "Primitive028.Collidable": false,
+    "Primitive029.Collidable": false,
+    "Primitive030.Collidable": false,
+    "Primitive031.Collidable": false,
+    "Primitive032.Collidable": false,
+    "Primitive033.Collidable": false,
+    "Primitive034.Collidable": false,
+    "Primitive035.Collidable": false,
+    "Primitive036.Collidable": false,
+    "Primitive037.Collidable": false,
+    "Primitive038.Collidable": false,
+    "Primitive039.Collidable": false,
+    "Primitive040.Collidable": false,
+    "Primitive041.Collidable": false,
+    "Primitive042.Collidable": false,
+    "Primitive043.Collidable": false,
+    "Primitive044.Collidable": false,
+    "Primitive045.Collidable": false,
+    "Primitive046.Collidable": false,
+    "Primitive047.Collidable": false,
+    "Primitive048.Collidable": false,
+    "Primitive049.Collidable": false,
+    "Primitive050.Collidable": false,
+    "Primitive051.Collidable": false,
+    "Primitive052.Collidable": false,
+    "Primitive053.Collidable": false,
+    "Primitive054.Collidable": false,
+    "Primitive055.Collidable": false,
+    "Primitive056.Collidable": false,
+    "Primitive057.Collidable": false,
+    "Primitive058.Collidable": false,
+    "Primitive059.Collidable": false,
+    "Primitive060.Collidable": false,
+    "Primitive061.Collidable": false,
+    "Primitive062.Collidable": false,
+    "Primitive063.Collidable": false,
+    "Primitive064.Collidable": false,
+    "Primitive065.Collidable": false,
+    "Primitive066.Collidable": false,
+    "Primitive067.Collidable": false,
+    "Primitive068.Collidable": false,
+    "Primitive069.Collidable": false,
+    "Primitive070.Collidable": false,
+    "Primitive071.Collidable": false,
+    "Primitive072.Collidable": false,
+    "Primitive073.Collidable": false,
+    "Primitive074.Collidable": false,
+    "Primitive075.Collidable": false,
+    "Primitive076.Collidable": false,
+    "Primitive077.Collidable": false,
+    "Primitive078.Collidable": false,
+    "Primitive079.Collidable": false,
+    "Primitive080.Collidable": false,
+    "Primitive081.Collidable": false,
+    "Primitive082.Collidable": false,
+    "Primitive15.Collidable": false,
+    "Primitive31.Collidable": false,
+    "Primitive41.Collidable": false,
+    "Primitive73.Collidable": false,
+    "Primitive81.Collidable": false,
+    "Primitive83.Collidable": false,
+    "Primitive89.Collidable": false,
+    "Primitive93.Collidable": false,
+    "Remk.Collidable": false,
+    "RightFlipperTop.Collidable": false,
+    "Screw001.Collidable": false,
+    "Screw002.Collidable": false,
+    "Screw003.Collidable": false,
+    "Screw004.Collidable": false,
+    "Screw006.Collidable": false,
+    "screw007.Collidable": false,
+    "Screw008.Collidable": false,
+    "Screw009.Collidable": false,
+    "Screw010.Collidable": false,
+    "Screw011.Collidable": false,
+    "Screw012.Collidable": false,
+    "Screw013.Collidable": false,
+    "Screw014.Collidable": false,
+    "Screw015.Collidable": false,
+    "Screw016.Collidable": false,
+    "Screw018.Collidable": false,
+    "screw15.Collidable": false,
+    "lrail.Collidable": false,
+    "Ramp001.Collidable": false,
+    "Ramp002.Collidable": false,
+    "Ramp003.Collidable": false,
+    "Ramp004.Collidable": false,
+    "Ramp005.Collidable": false,
+    "Ramp006.Collidable": false,
+    "Ramp007.Collidable": false,
+    "Ramp008.Collidable": false,
+    "Ramp009.Collidable": false,
+    "Ramp010.Collidable": false,
+    "Ramp011.Collidable": false,
+    "Ramp012.Collidable": false,
+    "Ramp013.Collidable": false,
+    "Ramp014.Collidable": false,
+    "Ramp015.Collidable": false,
+    "Ramp016.Collidable": false,
+    "Ramp017.Collidable": false,
+    "Ramp018.Collidable": false,
+    "Ramp019.Collidable": false,
+    "Ramp020.Collidable": false,
+    "Ramp021.Collidable": false,
+    "Ramp022.Collidable": false,
+    "Ramp023.Collidable": false,
+    "Ramp024.Collidable": false,
+    "Ramp025.Collidable": false,
+    "Ramp026.Collidable": false,
+    "Ramp027.Collidable": false,
+    "Ramp028.Collidable": false,
+    "Ramp029.Collidable": false,
+    "Ramp030.Collidable": false,
+    "Ramp031.Collidable": false,
+    "Ramp032.Collidable": false,
+    "Ramp033.Collidable": false,
+    "Ramp034.Collidable": false,
+    "Ramp035.Collidable": false,
+    "Ramp036.Collidable": false,
+    "Ramp037.Collidable": false,
+    "Ramp038.Collidable": false,
+    "Ramp039.Collidable": false,
+    "Ramp040.Collidable": false,
+    "Ramp041.Collidable": false,
+    "Ramp042.Collidable": false,
+    "Ramp043.Collidable": false,
+    "Ramp044.Collidable": false,
+    "Ramp045.Collidable": false,
+    "Ramp046.Collidable": false,
+    "Ramp047.Collidable": false,
+    "Ramp048.Collidable": false,
+    "Ramp049.Collidable": false,
+    "Ramp050.Collidable": false,
+    "Ramp051.Collidable": false,
+    "Ramp064.Collidable": false,
+    "Ramp7.Collidable": false,
+    "rrail.Collidable": false,
+    "swPlunger.Enabled": false,
+    "swPlungerRest.Enabled": false,
+    "Trigger001.Enabled": false,
+    "Trigger002.Enabled": false,
+    "Trigger003.Enabled": false,
+    "Trigger004.Enabled": false,
+    "Trigger005.Enabled": false,
+    "Trigger006.Enabled": false,
+    "Trigger007.Enabled": false,
+    "Trigger008.Enabled": false,
+    "Trigger009.Enabled": false,
+    "Trigger010.Enabled": false,
+    "Trigger011.Enabled": false,
+    "Trigger012.Enabled": false,
+    "Trigger013.Enabled": false,
+    "Trigger014.Enabled": false,
+    "Trigger015.Enabled": false,
+    "Trigger016.Enabled": false,
+    "Trigger017.Enabled": false,
+    "10m.Collidable": false,
+    "120h.Collidable": false,
+    "180h.Collidable": false,
+    "56h.Collidable": false,
+    "60h.Collidable": false,
+    "83h.Collidable": false,
+    "apron.Collidable": false,
+    "apron2.Collidable": false,
+    "bumpertop001.Collidable": false,
+    "bumpertop002.Collidable": false,
+    "bumpertop003.Collidable": false,
+    "bumpertop004.Collidable": false,
+    "bumpertop005.Collidable": false,
+    "bumpertop006.Collidable": false,
+    "hole001.Collidable": false,
+    "hole002.Collidable": false,
+    "hole003.Collidable": false,
+    "hole004.Collidable": false,
+    "hole005.Collidable": false,
+    "hole006.Collidable": false,
+    "hole007.Collidable": false,
+    "hole008.Collidable": false,
+    "hole009.Collidable": false,
+    "hole010.Collidable": false,
+    "hole011.Collidable": false,
+    "hole012.Collidable": false,
+    "hole013.Collidable": false,
+    "hole014.Collidable": false,
+    "hole015.Collidable": false,
+    "hole016.Collidable": false,
+    "hole017.Collidable": false,
+    "hole018.Collidable": false,
+    "hole019.Collidable": false,
+    "hole020.Collidable": false,
+    "hole021.Collidable": false,
+    "hole022.Collidable": false,
+    "hole023.Collidable": false,
+    "hole024.Collidable": false,
+    "hole025.Collidable": false,
+    "hole026.Collidable": false,
+    "hole027.Collidable": false,
+    "hole028.Collidable": false,
+    "hole029.Collidable": false,
+    "hole030.Collidable": false,
+    "hole031.Collidable": false,
+    "hole032.Collidable": false,
+    "Leftslingshot.Collidable": false,
+    "peg-plastics001.Collidable": false,
+    "peg-plastics002.Collidable": false,
+    "peg-plastics003.Collidable": false,
+    "peg-plastics004.Collidable": false,
+    "peg-plastics005.Collidable": false,
+    "peg-plastics006.Collidable": false,
+    "peg-plastics007.Collidable": false,
+    "peg-plastics008.Collidable": false,
+    "peg-plastics009.Collidable": false,
+    "peg-plastics010.Collidable": false,
+    "peg-plastics011.Collidable": false,
+    "peg-plastics012.Collidable": false,
+    "peg-plastics013.Collidable": false,
+    "peg-plastics014.Collidable": false,
+    "peg-plastics015.Collidable": false,
+    "peg-plastics016.Collidable": false,
+    "peg-plastics017.Collidable": false,
+    "peg-plastics018.Collidable": false,
+    "peg-plastics019.Collidable": false,
+    "Rightslingshot.Collidable": false,
+    "rlband001.Collidable": false,
+    "rlband002.Collidable": false,
+    "rlband003.Collidable": false,
+    "rlband004.Collidable": false,
+    "rlband007.Collidable": false,
+    "rpeg001.Collidable": false,
+    "rpeg002.Collidable": false,
+    "rpeg003.Collidable": false,
+    "rpeg004.Collidable": false,
+    "rpeg005.Collidable": false,
+    "rpeg006.Collidable": false,
+    "rpeg007.Collidable": false,
+    "rpeg008.Collidable": false,
+    "rpeg009.Collidable": false,
+    "rpeg010.Collidable": false,
+    "rpeg011.Collidable": false,
+    "rpeg012.Collidable": false,
+    "rpeg013.Collidable": false,
+    "rpin001.Collidable": false,
+    "rpin002.Collidable": false,
+    "rpin003.Collidable": false,
+    "rpin004.Collidable": false,
+    "rpin005.Collidable": false,
+    "rpin006.Collidable": false,
+    "rpin007.Collidable": false,
+    "rpin008.Collidable": false,
+    "rpin009.Collidable": false,
+    "rpin010.Collidable": false,
+    "rpin011.Collidable": false,
+    "rpin012.Collidable": false,
+    "rpost001.Collidable": false,
+    "rpost002.Collidable": false,
+    "rpost003.Collidable": false,
+    "rpost004.Collidable": false,
+    "rpost005.Collidable": false,
+    "rpost006.Collidable": false,
+    "rpost007.Collidable": false,
+    "rpost008.Collidable": false,
+    "rpost009.Collidable": false,
+    "rpost010.Collidable": false,
+    "rpost011.Collidable": false,
+    "rpost012.Collidable": false,
+    "rpost013.Collidable": false,
+    "rpost014.Collidable": false,
+    "rpost015.Collidable": false,
+    "rpost016.Collidable": false,
+    "rpost017.Collidable": false,
+    "rpost018.Collidable": false,
+    "rpost019.Collidable": false,
+    "rpost020.Collidable": false,
+    "rpost021.Collidable": false,
+    "rpost022.Collidable": false,
+    "rpost023.Collidable": false,
+    "rpost024.Collidable": false,
+    "rsband001.Collidable": false,
+    "rsband002.Collidable": false,
+    "rsband005.Collidable": false,
+    "Wall001.Collidable": false,
+    "Wall002.Collidable": false,
+    "Wall003.Collidable": false,
+    "Wall004.Collidable": false,
+    "Wall005.Collidable": false,
+    "Wall006.Collidable": false,
+    "Wall007.Collidable": false,
+    "Wall008.Collidable": false,
+    "Wall009.Collidable": false,
+    "Wall010.Collidable": false,
+    "Wall011.Collidable": false,
+    "Wall012.Collidable": false,
+    "Wall013.Collidable": false,
+    "Wall014.Collidable": false,
+    "Wall015.Collidable": false,
+    "Wall016.Collidable": false,
+    "Wall017.Collidable": false,
+    "Wall018.Collidable": false,
+    "Wall019.Collidable": false,
+    "Wall020.Collidable": false,
+    "Wall021.Collidable": false,
+    "Wall022.Collidable": false,
+    "Wall023.Collidable": false,
+    "Wall024.Collidable": false,
+    "Wall025.Collidable": false,
+    "Wall026.Collidable": false,
+    "Wall027.Collidable": false,
+    "Wall028.Collidable": false,
+    "Wall029.Collidable": false,
+    "Wall030.Collidable": false,
+    "Wall031.Collidable": false,
+    "Wall032.Collidable": false,
+    "Wall033.Collidable": false,
+    "Wall034.Collidable": false,
+    "Wall035.Collidable": false,
+    "Wall036.Collidable": false,
+    "Wall037.Collidable": false,
+    "Wall038.Collidable": false,
+    "Wall039.Collidable": false,
+    "Wall040.Collidable": false,
+    "Wall041.Collidable": false,
+    "Wall042.Collidable": false,
+    "Wall043.Collidable": false,
+    "Wall044.Collidable": false,
+    "Wall045.Collidable": false,
+    "Wall046.Collidable": false,
+    "Wall047.Collidable": false,
+    "Wall048.Collidable": false,
+    "Wall049.Collidable": false,
+    "Wall050.Collidable": false,
+    "Wall051.Collidable": false,
+    "Wall052.Collidable": false,
+    "Wall053.Collidable": false,
+    "Wall054.Collidable": false,
+    "Wall055.Collidable": false,
+    "Wall056.Collidable": false,
+    "Wall057.Collidable": false,
+    "Wall058.Collidable": false,
+    "Wall059.Collidable": false,
+    "Wall060.Collidable": false,
+    "Wall061.Collidable": false,
+    "Wall062.Collidable": false,
+    "Wall063.Collidable": false,
+    "Wall064.Collidable": false,
+    "Wall065.Collidable": false,
+    "Wall066.Collidable": false,
+    "Wall067.Collidable": false,
+    "Wall068.Collidable": false,
+    "Wall069.Collidable": false,
+    "Wall070.Collidable": false,
+    "Wall071.Collidable": false,
+    "Wall072.Collidable": false,
+    "wall073.Collidable": false,
+    "Wall074.Collidable": false,
+    "wall074001.Collidable": false,
+    "Wall075.Collidable": false,
+    "Wall076.Collidable": false,
+    "Wall077.Collidable": false,
+    "wall078.Collidable": false,
+    "Wall1.Collidable": false,
+    "Wall138.Collidable": false,
+    "Wall16.Collidable": false,
+    "Wall17.Collidable": false,
+    "Wall21.Collidable": false,
+    "Wall22.Collidable": false,
+    "Wall24.Collidable": false,
+    "Wall317.Collidable": false,
+    "Wall348.Collidable": false,
+    "Wall5.Collidable": false,
+    "Wall85.Collidable": false,
+    "Wall86.Collidable": false,
+    "wallxxx001.Collidable": false,
+    "wallxxx002.Collidable": false,
+    "wallxxx003.Collidable": false,
+    "wallxxx004.Collidable": false,
+    "wallxxx005.Collidable": false,
+    "wallxxx006.Collidable": false,
+    "wallxxx007.Collidable": false,
+    "wallxxx008.Collidable": false,
+    "wallxxx009.Collidable": false,
+    "wallxxx010.Collidable": false,
+    "wallxxx011.Collidable": false,
+    "wallxxx012.Collidable": false,
+    "wallxxx013.Collidable": false,
+    "wallxxx014.Collidable": false,
+    "wallxxx016.Collidable": false,
+    "wallxxx2.Collidable": false
+  },
+  "columns": [
+    "ms",
+    "x",
+    "y",
+    "z",
+    "vx",
+    "vy",
+    "vz",
+    "wx",
+    "wy",
+    "wz",
+    "left",
+    "right",
+    "other_x",
+    "other_y",
+    "other_z",
+    "other_vx",
+    "other_vy",
+    "other_vz",
+    "other_wx",
+    "other_wy",
+    "other_wz"
+  ],
+  "cases": [
+    {
+      "name": "frozen-kicker",
+      "x": 90,
+      "y": 2061,
+      "z": 25,
+      "vx": 12,
+      "vy": 0,
+      "otherBall": {
+        "index": 4,
+        "spawn": "la",
+        "x": 153.00056,
+        "y": 2061,
+        "z": 25,
+        "vx": 0,
+        "vy": 0,
+        "vz": 0
+      },
+      "sampleCount": 12,
+      "maximumMilliseconds": 80,
+      "initial": [
+        2768,
+        0,
+        0,
+        0,
+        90,
+        2061,
+        25
+      ],
+      "actualDelay": 0,
+      "samples": [
+        [
+          19,
+          95.80116,
+          2061.354,
+          25.00416,
+          -8.885907,
+          0.356861,
+          0.162679,
+          -0.001361,
+          0.016523,
+          0,
+          120,
+          240,
+          153.0006,
+          2061,
+          25,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          19,
+          95.80116,
+          2061.354,
+          25.00416,
+          -8.885907,
+          0.356861,
+          0.162679,
+          -0.001361,
+          0.016523,
+          0,
+          120,
+          240,
+          153.0006,
+          2061,
+          25,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          34,
+          82.89888,
+          2062.075,
+          25.00416,
+          -8.276662,
+          0.582501,
+          0.162679,
+          -0.004445,
+          -0.044401,
+          0,
+          120,
+          240,
+          153.0006,
+          2061,
+          25,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          51,
+          69.37981,
+          2063.282,
+          25.00416,
+          -7.588122,
+          0.811219,
+          0.162679,
+          -0.01064,
+          -0.113255,
+          0,
+          120,
+          240,
+          153.0006,
+          2061,
+          25,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          67,
+          57.72222,
+          2064.746,
+          25.00416,
+          -6.944864,
+          0.98756,
+          0.162679,
+          -0.020363,
+          -0.177581,
+          0,
+          120,
+          240,
+          153.0006,
+          2061,
+          25,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          84,
+          46.42703,
+          2066.563,
+          25.00416,
+          -6.383734,
+          1.12571,
+          0.162679,
+          -0.035616,
+          -0.233694,
+          0,
+          120,
+          240,
+          153.0006,
+          2061,
+          25,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "rawSamples": [
+        "2787:95.80116:2061.354:25.00416:-8885907:356861:162679:-1361:16523:0:120:240:153.0006:2061:25:0:0:0:0:0:0'",
+        "2787:95.80116:2061.354:25.00416:-8885907:356861:162679:-1361:16523:0:120:240:153.0006:2061:25:0:0:0:0:0:0'",
+        "2802:82.89888:2062.075:25.00416:-8276662:582501:162679:-4445:-44401:0:120:240:153.0006:2061:25:0:0:0:0:0:0'",
+        "2819:69.37981:2063.282:25.00416:-7588122:811219:162679:-10640:-113255:0:120:240:153.0006:2061:25:0:0:0:0:0:0'",
+        "2835:57.72222:2064.746:25.00416:-6944864:987560:162679:-20363:-177581:0:120:240:153.0006:2061:25:0:0:0:0:0:0'",
+        "2852:46.42703:2066.563:25.00416:-6383734:1125710:162679:-35616:-233694:0:120:240:153.0006:2061:25:0:0:0:0:0:0'"
+      ],
+      "timerTrace": [
+        [
+          "FLIP",
+          1
+        ],
+        [
+          "STATE",
+          1,
+          90,
+          2061,
+          25,
+          12000000,
+          0,
+          0,
+          0,
+          0,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          1,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          2
+        ],
+        [
+          "STATE",
+          2,
+          91.19593,
+          2061.002,
+          25.00406,
+          11918660,
+          16982,
+          162681,
+          -12,
+          8134,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          2,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          3
+        ],
+        [
+          "STATE",
+          3,
+          92.38779,
+          2061.005,
+          25.00406,
+          11877991,
+          33963,
+          162681,
+          -23,
+          12201,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          3,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          4
+        ],
+        [
+          "STATE",
+          4,
+          93.57559,
+          2061.01,
+          25.00406,
+          11837321,
+          50884,
+          162681,
+          -41,
+          16268,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          4,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          5
+        ],
+        [
+          "STATE",
+          5,
+          94.75932,
+          2061.017,
+          25.00406,
+          11796652,
+          67745,
+          162681,
+          -65,
+          20335,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          5,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          6
+        ],
+        [
+          "STATE",
+          6,
+          95.93899,
+          2061.026,
+          25.00406,
+          11755983,
+          84543,
+          162681,
+          -95,
+          24402,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          6,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          7
+        ],
+        [
+          "STATE",
+          7,
+          97.11459,
+          2061.036,
+          25.00406,
+          11715315,
+          101279,
+          162681,
+          -131,
+          28469,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          7,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          8
+        ],
+        [
+          "STATE",
+          8,
+          98.28612,
+          2061.048,
+          25.00406,
+          11674647,
+          117952,
+          162681,
+          -174,
+          32535,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          8,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          9
+        ],
+        [
+          "STATE",
+          9,
+          99.45358,
+          2061.061,
+          25.00406,
+          11633981,
+          134561,
+          162681,
+          -223,
+          36602,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          9,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          10
+        ],
+        [
+          "STATE",
+          10,
+          100.617,
+          2061.076,
+          25.00406,
+          11593314,
+          151105,
+          162681,
+          -278,
+          40669,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          10,
+          0,
+          0
+        ],
+        [
+          "ROLL",
+          10
+        ],
+        [
+          "FLIP",
+          11
+        ],
+        [
+          "STATE",
+          11,
+          101.7763,
+          2061.093,
+          25.00406,
+          11552649,
+          167583,
+          162681,
+          -340,
+          44735,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          11,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          12
+        ],
+        [
+          "STATE",
+          12,
+          102.9316,
+          2061.112,
+          25.00406,
+          11511985,
+          183995,
+          162681,
+          -409,
+          48802,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          12,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          13
+        ],
+        [
+          "STATE",
+          13,
+          102.1351,
+          2061.136,
+          25.00514,
+          -9170471,
+          245542,
+          152912,
+          -524,
+          44980,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          13,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          14
+        ],
+        [
+          "STATE",
+          14,
+          101.2181,
+          2061.162,
+          25.00416,
+          -9129813,
+          261655,
+          162679,
+          -623,
+          40914,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          14,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          15
+        ],
+        [
+          "STATE",
+          15,
+          100.3051,
+          2061.19,
+          25.00416,
+          -9089157,
+          277700,
+          162679,
+          -728,
+          36848,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          15,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          16
+        ],
+        [
+          "STATE",
+          16,
+          99.39617,
+          2061.22,
+          25.00416,
+          -9048503,
+          293675,
+          162679,
+          -841,
+          32783,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          16,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          17
+        ],
+        [
+          "STATE",
+          17,
+          98.49132,
+          2061.251,
+          25.00416,
+          -9007851,
+          309579,
+          162679,
+          -960,
+          28718,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          17,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          18
+        ],
+        [
+          "STATE",
+          18,
+          97.59053,
+          2061.283,
+          25.00416,
+          -8967200,
+          325413,
+          162679,
+          -1086,
+          24653,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          18,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          19
+        ],
+        [
+          "STATE",
+          19,
+          96.69381,
+          2061.318,
+          25.00416,
+          -8926553,
+          341173,
+          162679,
+          -1220,
+          20588,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          19,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          20
+        ],
+        [
+          "STATE",
+          20,
+          95.80116,
+          2061.354,
+          25.00416,
+          -8885907,
+          356861,
+          162679,
+          -1361,
+          16523,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          20,
+          0,
+          0
+        ],
+        [
+          "ROLL",
+          20
+        ],
+        [
+          "FLIP",
+          21
+        ],
+        [
+          "STATE",
+          21,
+          94.91257,
+          2061.391,
+          25.00416,
+          -8845264,
+          372473,
+          162679,
+          -1510,
+          12459,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          21,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          22
+        ],
+        [
+          "STATE",
+          22,
+          94.02804,
+          2061.43,
+          25.00416,
+          -8804625,
+          388010,
+          162679,
+          -1666,
+          8395,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          22,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          23
+        ],
+        [
+          "STATE",
+          23,
+          93.14758,
+          2061.47,
+          25.00416,
+          -8763988,
+          403470,
+          162679,
+          -1830,
+          4331,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          23,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          24
+        ],
+        [
+          "STATE",
+          24,
+          92.27118,
+          2061.512,
+          25.00416,
+          -8723353,
+          418852,
+          162679,
+          -2002,
+          268,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          24,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          25
+        ],
+        [
+          "STATE",
+          25,
+          91.39884,
+          2061.556,
+          25.00416,
+          -8682723,
+          434154,
+          162679,
+          -2181,
+          -3795,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          25,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          26
+        ],
+        [
+          "STATE",
+          26,
+          90.53057,
+          2061.601,
+          25.00416,
+          -8642097,
+          449376,
+          162679,
+          -2369,
+          -7858,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          26,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          27
+        ],
+        [
+          "STATE",
+          27,
+          89.66636,
+          2061.648,
+          25.00416,
+          -8601474,
+          464515,
+          162679,
+          -2565,
+          -11920,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          27,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          28
+        ],
+        [
+          "STATE",
+          28,
+          88.80621,
+          2061.696,
+          25.00416,
+          -8560855,
+          479571,
+          162679,
+          -2769,
+          -15982,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          28,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          29
+        ],
+        [
+          "STATE",
+          29,
+          87.95013,
+          2061.746,
+          25.00416,
+          -8520241,
+          494542,
+          162679,
+          -2982,
+          -20043,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          29,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          30
+        ],
+        [
+          "STATE",
+          30,
+          87.0981,
+          2061.797,
+          25.00416,
+          -8479631,
+          509427,
+          162679,
+          -3203,
+          -24104,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          30,
+          0,
+          0
+        ],
+        [
+          "ROLL",
+          30
+        ],
+        [
+          "FLIP",
+          31
+        ],
+        [
+          "STATE",
+          31,
+          86.25014,
+          2061.85,
+          25.00416,
+          -8439027,
+          524224,
+          162679,
+          -3433,
+          -28165,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          31,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          32
+        ],
+        [
+          "STATE",
+          32,
+          85.40623,
+          2061.904,
+          25.00416,
+          -8398427,
+          538932,
+          162679,
+          -3672,
+          -32225,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          32,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          33
+        ],
+        [
+          "STATE",
+          33,
+          84.56639,
+          2061.959,
+          25.00416,
+          -8357833,
+          553548,
+          162679,
+          -3920,
+          -36284,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          33,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          34
+        ],
+        [
+          "STATE",
+          34,
+          83.73061,
+          2062.017,
+          25.00416,
+          -8317245,
+          568072,
+          162679,
+          -4178,
+          -40343,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          34,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          35
+        ],
+        [
+          "STATE",
+          35,
+          82.89888,
+          2062.075,
+          25.00416,
+          -8276662,
+          582501,
+          162679,
+          -4445,
+          -44401,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          35,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          36
+        ],
+        [
+          "STATE",
+          36,
+          82.07121,
+          2062.135,
+          25.00416,
+          -8236086,
+          596833,
+          162679,
+          -4721,
+          -48459,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          36,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          37
+        ],
+        [
+          "STATE",
+          37,
+          81.2476,
+          2062.197,
+          25.00416,
+          -8195517,
+          611068,
+          162679,
+          -5008,
+          -52516,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          37,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          38
+        ],
+        [
+          "STATE",
+          38,
+          80.42805,
+          2062.259,
+          25.00416,
+          -8154955,
+          625202,
+          162679,
+          -5304,
+          -56572,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          38,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          39
+        ],
+        [
+          "STATE",
+          39,
+          79.61256,
+          2062.323,
+          25.00416,
+          -8114401,
+          639234,
+          162679,
+          -5611,
+          -60627,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          39,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          40
+        ],
+        [
+          "STATE",
+          40,
+          78.80112,
+          2062.389,
+          25.00416,
+          -8073854,
+          653161,
+          162679,
+          -5928,
+          -64682,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          40,
+          0,
+          0
+        ],
+        [
+          "ROLL",
+          40
+        ],
+        [
+          "FLIP",
+          41
+        ],
+        [
+          "STATE",
+          41,
+          77.99373,
+          2062.456,
+          25.00416,
+          -8033317,
+          666982,
+          162679,
+          -6256,
+          -68736,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          41,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          42
+        ],
+        [
+          "STATE",
+          42,
+          77.1904,
+          2062.525,
+          25.00416,
+          -7992788,
+          680693,
+          162679,
+          -6594,
+          -72789,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          42,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          43
+        ],
+        [
+          "STATE",
+          43,
+          76.39112,
+          2062.594,
+          25.00416,
+          -7952269,
+          694294,
+          162679,
+          -6944,
+          -76840,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          43,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          44
+        ],
+        [
+          "STATE",
+          44,
+          75.59589,
+          2062.666,
+          25.00416,
+          -7911759,
+          707780,
+          162679,
+          -7305,
+          -80891,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          44,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          45
+        ],
+        [
+          "STATE",
+          45,
+          74.80472,
+          2062.738,
+          25.00416,
+          -7871261,
+          721150,
+          162679,
+          -7678,
+          -84941,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          45,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          46
+        ],
+        [
+          "STATE",
+          46,
+          74.01759,
+          2062.812,
+          25.00416,
+          -7830773,
+          734400,
+          162679,
+          -8063,
+          -88990,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          46,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          47
+        ],
+        [
+          "STATE",
+          47,
+          73.23451,
+          2062.887,
+          25.00416,
+          -7790298,
+          747528,
+          162679,
+          -8460,
+          -93038,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          47,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          48
+        ],
+        [
+          "STATE",
+          48,
+          72.45548,
+          2062.963,
+          25.00416,
+          -7749835,
+          760530,
+          162679,
+          -8870,
+          -97084,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          48,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          49
+        ],
+        [
+          "STATE",
+          49,
+          71.6805,
+          2063.041,
+          25.00416,
+          -7709384,
+          773404,
+          162679,
+          -9292,
+          -101129,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          49,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          50
+        ],
+        [
+          "STATE",
+          50,
+          70.90956,
+          2063.12,
+          25.00416,
+          -7668949,
+          786146,
+          162679,
+          -9728,
+          -105172,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          50,
+          0,
+          0
+        ],
+        [
+          "ROLL",
+          50
+        ],
+        [
+          "FLIP",
+          51
+        ],
+        [
+          "STATE",
+          51,
+          70.14267,
+          2063.201,
+          25.00416,
+          -7628528,
+          798752,
+          162679,
+          -10177,
+          -109215,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          51,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          52
+        ],
+        [
+          "STATE",
+          52,
+          69.37981,
+          2063.282,
+          25.00416,
+          -7588122,
+          811219,
+          162679,
+          -10640,
+          -113255,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          52,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          53
+        ],
+        [
+          "STATE",
+          53,
+          68.621,
+          2063.365,
+          25.00416,
+          -7547734,
+          823543,
+          162679,
+          -11118,
+          -117294,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          53,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          54
+        ],
+        [
+          "STATE",
+          54,
+          67.86623,
+          2063.449,
+          25.00416,
+          -7507363,
+          835720,
+          162679,
+          -11610,
+          -121331,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          54,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          55
+        ],
+        [
+          "STATE",
+          55,
+          67.11549,
+          2063.534,
+          25.00416,
+          -7467010,
+          847744,
+          162679,
+          -12117,
+          -125366,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          55,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          56
+        ],
+        [
+          "STATE",
+          56,
+          66.36878,
+          2063.621,
+          25.00416,
+          -7426678,
+          859612,
+          162679,
+          -12640,
+          -129400,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          56,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          57
+        ],
+        [
+          "STATE",
+          57,
+          65.62611,
+          2063.708,
+          25.00416,
+          -7386367,
+          871318,
+          162679,
+          -13179,
+          -133431,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          57,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          58
+        ],
+        [
+          "STATE",
+          58,
+          64.88747,
+          2063.797,
+          25.00416,
+          -7346079,
+          882857,
+          162679,
+          -13735,
+          -137459,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          58,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          59
+        ],
+        [
+          "STATE",
+          59,
+          64.15286,
+          2063.887,
+          25.00416,
+          -7305815,
+          894223,
+          162679,
+          -14309,
+          -141486,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          59,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          60
+        ],
+        [
+          "STATE",
+          60,
+          63.42228,
+          2063.978,
+          25.00416,
+          -7265577,
+          905411,
+          162679,
+          -14900,
+          -145510,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          60,
+          0,
+          0
+        ],
+        [
+          "ROLL",
+          60
+        ],
+        [
+          "FLIP",
+          61
+        ],
+        [
+          "STATE",
+          61,
+          62.69572,
+          2064.071,
+          25.00416,
+          -7225367,
+          916413,
+          162679,
+          -15509,
+          -149531,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          61,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          62
+        ],
+        [
+          "STATE",
+          62,
+          61.97318,
+          2064.164,
+          25.00416,
+          -7185186,
+          927222,
+          162679,
+          -16138,
+          -153549,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          62,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          63
+        ],
+        [
+          "STATE",
+          63,
+          61.25467,
+          2064.258,
+          25.00416,
+          -7145037,
+          937832,
+          162679,
+          -16787,
+          -157564,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          63,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          64
+        ],
+        [
+          "STATE",
+          64,
+          60.54016,
+          2064.354,
+          25.00416,
+          -7104922,
+          948233,
+          162679,
+          -17457,
+          -161575,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          64,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          65
+        ],
+        [
+          "STATE",
+          65,
+          59.82967,
+          2064.45,
+          25.00416,
+          -7064845,
+          958416,
+          162679,
+          -18148,
+          -165583,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          65,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          66
+        ],
+        [
+          "STATE",
+          66,
+          59.12318,
+          2064.548,
+          25.00416,
+          -7024806,
+          968372,
+          162679,
+          -18862,
+          -169587,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          66,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          67
+        ],
+        [
+          "STATE",
+          67,
+          58.4207,
+          2064.646,
+          25.00416,
+          -6984812,
+          978091,
+          162679,
+          -19600,
+          -173586,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          67,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          68
+        ],
+        [
+          "STATE",
+          68,
+          57.72222,
+          2064.746,
+          25.00416,
+          -6944864,
+          987560,
+          162679,
+          -20363,
+          -177581,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          68,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          69
+        ],
+        [
+          "STATE",
+          69,
+          57.02774,
+          2064.847,
+          25.00416,
+          -6904967,
+          996766,
+          162679,
+          -21153,
+          -181571,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          69,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          70
+        ],
+        [
+          "STATE",
+          70,
+          56.33724,
+          2064.948,
+          25.00416,
+          -6865126,
+          1005696,
+          162679,
+          -21969,
+          -185555,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          70,
+          0,
+          0
+        ],
+        [
+          "ROLL",
+          70
+        ],
+        [
+          "FLIP",
+          71
+        ],
+        [
+          "STATE",
+          71,
+          55.65073,
+          2065.05,
+          25.00416,
+          -6825346,
+          1014332,
+          162679,
+          -22816,
+          -189533,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          71,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          72
+        ],
+        [
+          "STATE",
+          72,
+          54.96819,
+          2065.153,
+          25.00416,
+          -6785633,
+          1022658,
+          162679,
+          -23693,
+          -193504,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          72,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          73
+        ],
+        [
+          "STATE",
+          73,
+          54.28963,
+          2065.257,
+          25.00416,
+          -6745995,
+          1030652,
+          162679,
+          -24603,
+          -197468,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          73,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          74
+        ],
+        [
+          "STATE",
+          74,
+          53.61503,
+          2065.362,
+          25.00416,
+          -6706440,
+          1038291,
+          162679,
+          -25549,
+          -201423,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          74,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          75
+        ],
+        [
+          "STATE",
+          75,
+          52.94439,
+          2065.468,
+          25.00416,
+          -6666979,
+          1045549,
+          162679,
+          -26533,
+          -205370,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          75,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          76
+        ],
+        [
+          "STATE",
+          76,
+          52.27769,
+          2065.574,
+          25.00416,
+          -6627623,
+          1052394,
+          162679,
+          -27559,
+          -209305,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          76,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          77
+        ],
+        [
+          "STATE",
+          77,
+          51.61493,
+          2065.681,
+          25.00416,
+          -6588386,
+          1058789,
+          162679,
+          -28629,
+          -213229,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          77,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          78
+        ],
+        [
+          "STATE",
+          78,
+          50.95609,
+          2065.788,
+          25.00416,
+          -6552453,
+          1065597,
+          162679,
+          -29658,
+          -216822,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          78,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          79
+        ],
+        [
+          "STATE",
+          79,
+          50.30084,
+          2065.896,
+          25.00416,
+          -6520113,
+          1072946,
+          162679,
+          -30633,
+          -220056,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          79,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          80
+        ],
+        [
+          "STATE",
+          80,
+          49.64883,
+          2066.005,
+          25.00416,
+          -6491006,
+          1080781,
+          162679,
+          -31559,
+          -222967,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          80,
+          0,
+          0
+        ],
+        [
+          "ROLL",
+          80
+        ],
+        [
+          "FLIP",
+          81
+        ],
+        [
+          "STATE",
+          81,
+          48.99973,
+          2066.115,
+          25.00416,
+          -6464811,
+          1089053,
+          162679,
+          -32442,
+          -225586,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          81,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          82
+        ],
+        [
+          "STATE",
+          82,
+          48.35325,
+          2066.226,
+          25.00416,
+          -6441235,
+          1097720,
+          162679,
+          -33285,
+          -227944,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          82,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          83
+        ],
+        [
+          "STATE",
+          83,
+          47.70913,
+          2066.337,
+          25.00416,
+          -6420017,
+          1106741,
+          162679,
+          -34093,
+          -230066,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          83,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          84
+        ],
+        [
+          "STATE",
+          84,
+          47.06712,
+          2066.45,
+          25.00416,
+          -6400920,
+          1116082,
+          162679,
+          -34868,
+          -231975,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          84,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          85
+        ],
+        [
+          "STATE",
+          85,
+          46.42703,
+          2066.563,
+          25.00416,
+          -6383734,
+          1125710,
+          162679,
+          -35616,
+          -233694,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          85,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          86
+        ],
+        [
+          "STATE",
+          86,
+          45.78866,
+          2066.677,
+          25.00416,
+          -6368266,
+          1135596,
+          162679,
+          -36337,
+          -235241,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          86,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          87
+        ],
+        [
+          "STATE",
+          87,
+          45.15183,
+          2066.792,
+          25.00416,
+          -6354344,
+          1145715,
+          162679,
+          -37035,
+          -236633,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          87,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          88
+        ],
+        [
+          "STATE",
+          88,
+          44.5164,
+          2066.909,
+          25.00416,
+          -6341815,
+          1156043,
+          162679,
+          -37712,
+          -237886,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          88,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          89
+        ],
+        [
+          "STATE",
+          89,
+          43.88222,
+          2067.026,
+          25.00416,
+          -6330539,
+          1166560,
+          162679,
+          -38370,
+          -239013,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          89,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          90
+        ],
+        [
+          "STATE",
+          90,
+          43.24916,
+          2067.145,
+          25.00416,
+          -6320390,
+          1177247,
+          162679,
+          -39011,
+          -240028,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          90,
+          0,
+          0
+        ],
+        [
+          "ROLL",
+          90
+        ],
+        [
+          "FLIP",
+          91
+        ],
+        [
+          "STATE",
+          91,
+          42.61713,
+          2067.264,
+          25.00416,
+          -6311256,
+          1188086,
+          162679,
+          -39637,
+          -240942,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          91,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          92
+        ],
+        [
+          "STATE",
+          92,
+          41.986,
+          2067.385,
+          25.00416,
+          -6303036,
+          1199062,
+          162679,
+          -40249,
+          -241764,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          92,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          93
+        ],
+        [
+          "STATE",
+          93,
+          41.3557,
+          2067.506,
+          25.00416,
+          -6295638,
+          1210163,
+          162679,
+          -40849,
+          -242504,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          93,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          94
+        ],
+        [
+          "STATE",
+          94,
+          40.72614,
+          2067.629,
+          25.00416,
+          -6288979,
+          1221374,
+          162679,
+          -41438,
+          -243169,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          94,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          95
+        ],
+        [
+          "STATE",
+          95,
+          40.09724,
+          2067.753,
+          25.00416,
+          -6282986,
+          1232686,
+          162679,
+          -42016,
+          -243769,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          95,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          96
+        ],
+        [
+          "STATE",
+          96,
+          39.46894,
+          2067.878,
+          25.00416,
+          -6277593,
+          1244088,
+          162679,
+          -42586,
+          -244308,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          96,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          97
+        ],
+        [
+          "STATE",
+          97,
+          38.84118,
+          2068.004,
+          25.00416,
+          -6272738,
+          1255571,
+          162679,
+          -43147,
+          -244793,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          97,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          98
+        ],
+        [
+          "STATE",
+          98,
+          38.21391,
+          2068.131,
+          25.00416,
+          -6268370,
+          1267126,
+          162679,
+          -43702,
+          -245230,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          98,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          99
+        ],
+        [
+          "STATE",
+          99,
+          37.58707,
+          2068.26,
+          25.00416,
+          -6264438,
+          1278748,
+          162679,
+          -44249,
+          -245623,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          99,
+          0,
+          0
+        ],
+        [
+          "FLIP",
+          100
+        ],
+        [
+          "STATE",
+          100,
+          36.96062,
+          2068.389,
+          25.00416,
+          -6260899,
+          1290429,
+          162679,
+          -44791,
+          -245977,
+          0,
+          240,
+          720,
+          0.6,
+          0.3
+        ],
+        [
+          "SPIN",
+          100,
+          0,
+          0
+        ],
+        [
+          "ROLL",
+          100
+        ],
+        [
+          "FLIP",
+          101
+        ]
+      ],
+      "initialBallStates": [
+        [
+          90,
+          2061,
+          25,
+          12,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          25,
+          0
+        ],
+        [
+          -10200,
+          137.128921508789,
+          -2304.6953125,
+          0,
+          6.83935785293579,
+          -65.0722579956055,
+          0.0233717672526836,
+          0.0685834288597107,
+          -0.00752023048698902,
+          1,
+          25,
+          1
+        ],
+        [
+          -10400,
+          137.128921508789,
+          -2304.6953125,
+          0,
+          6.83935785293579,
+          -65.0722579956055,
+          0.135409772396088,
+          0.0146200302988291,
+          -0.0152001045644283,
+          1,
+          25,
+          2
+        ],
+        [
+          905.285034179688,
+          1900.1533203125,
+          25.0111885070801,
+          0.00639753974974155,
+          -0.0096491938456893,
+          0.118178278207779,
+          0.0938569158315659,
+          0.0639754012227058,
+          0.0248718000948429,
+          1,
+          25,
+          3
+        ],
+        [
+          153.000564575195,
+          2061,
+          25,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          25,
+          4
+        ]
+      ],
+      "rawInitialBallStates": "2768|90:2061:25:12:0:0:0:0:0:1:25:0;-10200:137.128921508789:-2304.6953125:0:6.83935785293579:-65.0722579956055:0.0233717672526836:0.0685834288597107:-0.00752023048698902:1:25:1;-10400:137.128921508789:-2304.6953125:0:6.83935785293579:-65.0722579956055:0.135409772396088:0.0146200302988291:-0.0152001045644283:1:25:2;905.285034179688:1900.1533203125:25.0111885070801:0.00639753974974155:-0.0096491938456893:0.118178278207779:0.0938569158315659:0.0639754012227058:0.0248718000948429:1:25:3;153.000564575195:2061:25:0:0:0:0:0:0:1:25:4;",
+      "initialMeasuredBallID": 0
+    }
+  ],
+  "regressionLimits": {
+    "frozen-kicker": {
+      "position": 0.001,
+      "velocity": 0.0001,
+      "angular": 0.000001
+    }
+  }
+}
