@@ -1,4 +1,4 @@
-Native physics behavior in physics.js, full-game.js, drag-curve.js,
+Native physics behavior in physics.js, full-game.js, drag-curve.js, cabinet-nudge.js,
 flipper-contact.js, mesh-contact.js, plunger.js and playfield-contact.js is adapted from
 Visual Pinball, copyright its respective contributors, licensed GPLv3 or later.
 These derived modules are distributed under GPL-3.0-or-later.

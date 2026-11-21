@@ -3,8 +3,10 @@
 import {writeFile} from 'node:fs/promises';
 import assert from 'node:assert/strict';
 const [debug,base,output]=process.argv.slice(2);
-const probeKind=process.argv.includes('--plunger')?'plunger':'contacts';
+const probeKind=process.argv.includes('--plunger')?'plunger':process.argv.includes('--nudge')?'nudge':'contacts';
 const reference=await(await fetch(new URL('/reference-metadata.json',base))).json();
+const recordTimers=!!reference.instrumentation&&!process.argv.includes('--no-timer-trace');
+reference.timerTraceCaptured=recordTimers;
 assert.deepEqual(reference.controlledOverrides,{scatter:0,default_scatter:0},'controlled native table metadata');
 const runtimeOverrides={'LeftFlipper.Scatter':0,'RightFlipper.Scatter':0};
 const columns=['ms','x','y','z','vx','vy','vz','wx','wy','wz','left','right',...(probeKind==='plunger'?['plunger_position']:[])];
@@ -38,6 +40,15 @@ if(probeKind==='plunger'){
   cases.length=0;
   for(const delay of [50,100,200,400,600,1000])cases.push({name:`plunger-${delay}`,plunger:true,delay,x:906.5192,y:1900.1128,z:25,vx:0,vy:0,sampleCount:100});
 }
+if(probeKind==='nudge'){
+  cases.length=0;
+  const pocket=process.argv.includes('--pocket');reference.nudgeScenario=pocket?'target-wire-pocket-delayed':'flat';
+  for(const angle of [0,90,270])cases.push({name:`nudge-${angle}`,nudgeAngle:angle,force:2,x:pocket?612.3:430,y:pocket?803.1:1500,z:25,vx:0,vy:0,sampleCount:pocket?120:24,...(pocket?{delay:1000}:{})});
+}
+if(exactDelay!==undefined){
+  const driven=cases.filter(s=>!selected||s.name===selected);
+  assert.ok(driven.length&&driven.every(s=>s.side),'exact clock scheduling requires selected flipper scenarios');
+}
 try{
   await call('Page.enable');await call('Emulation.setFocusEmulationEnabled',{enabled:true});
   await call('Page.navigate',{url:base});console.log('Loading native contact reference');
@@ -70,13 +81,13 @@ try{
     await script(`SolLFlipper 0:SolRFlipper 0:${reset(430,1400,0,0)}`);await new Promise(r=>setTimeout(r,400));
     if(scenario.plunger){await script('Plunger.Fire');await new Promise(r=>setTimeout(r,600));}
     if(scenario.startRaised){await script(`Sol${scenario.side==='left'?'L':'R'}Flipper 1`);await new Promise(r=>setTimeout(r,200));}
-    const command=scenario.plunger?'Plunger.Fire':scenario.side?`Sol${scenario.side==='left'?'L':'R'}Flipper ${scenario.press===false?0:1}`:'';
+    const command=scenario.plunger?'Plunger.Fire':scenario.nudgeAngle!==undefined?`Nudge ${scenario.nudgeAngle},${scenario.force}`:scenario.side?`Sol${scenario.side==='left'?'L':'R'}Flipper ${scenario.press===false?0:1}`:'';
     const inputMarker=`CONTACT_INPUT_${scenario.name}`;
     const input=`Debug.Print "${inputMarker}|" & GameTime:${command}`;
     let drive=command?(scenario.delay?`vpmtimer.addtimer ${scenario.delay},"${input.replaceAll('"','""')} '"`:input):'';
     if(exactDelay!==undefined&&scenario.side)drive=`RefDriveMarker="${inputMarker}":RefDriveSide=${scenario.side==='left'?1:2}:RefDrivePress=${scenario.press===false?0:1}:RefDriveAt=GameTime+${Number(exactDelay)}`;
     if(scenario.plunger)drive='Plunger.PullBack:'+drive;
-    const trace=reference.instrumentation?'RefTrace="":Set RefTraceBall=RefBall:RefTraceUntil=GameTime+70:RefTraceOn=True:':'';
+    const trace=recordTimers?'RefTrace="":Set RefTraceBall=RefBall:RefTraceUntil=GameTime+70:RefTraceOn=True:':'';
     await script(`${trace}RollingTimer.Enabled=False:RollingTimer.Enabled=True:${reset(scenario.x,scenario.y,scenario.vx,scenario.vy,scenario.z)}:${drive?drive+':':''}Debug.Print "CONTACT_INIT|" & GameTime & ":" & RefBall.AngMomX & ":" & RefBall.AngMomY & ":" & RefBall.AngMomZ & ":" & RefBall.X & ":" & RefBall.Y & ":" & RefBall.Z`);
     const initial=(await marker('CONTACT_INIT')).split(':').map(parseFloat);assert.equal(initial.length,7);assert.deepEqual(initial.slice(1,4),[0,0,0],'native spin reset');
     for(const [actual,expected]of [[initial[4],scenario.x],[initial[5],scenario.y],[initial[6],scenario.z??25]])assert.ok(Math.abs(actual-expected)<.001,`native initial position ${actual} vs ${expected}`);
@@ -89,7 +100,7 @@ try{
     }
     const actualDelay=command?parseFloat(await marker(inputMarker))-origin:0;
     let timerTrace;
-    if(reference.instrumentation){
+    if(recordTimers){
       await script('RefTraceOn=False:Debug.Print "TIMER_TRACE_LENGTH|" & Len(RefTrace)');
       const length=parseFloat(await marker('TIMER_TRACE_LENGTH'));assert.ok(Number.isFinite(length)&&length>0);
       let raw='';
@@ -99,6 +110,6 @@ try{
       assert.ok(timerTrace[0][1]<=10,'full trace must include the first timer callbacks');
     }
     results.push({...scenario,initial,actualDelay,samples,rawSamples,...(timerTrace?{timerTrace}:{})});console.log(scenario.name,'input at',actualDelay,JSON.stringify(samples.at(-1)));
-    await writeFile(`${output}/${probeKind==='plunger'?'vpx-plunger-reference':'vpx-contact-reference'}.json`,JSON.stringify({...reference,probeKind,runtimeOverrides,columns,cases:results},null,2));
+    await writeFile(`${output}/vpx-${probeKind==='contacts'?'contact':probeKind}-reference.json`,JSON.stringify({...reference,probeKind,runtimeOverrides,columns,cases:results},null,2));
   }
 }finally{socket.close();}

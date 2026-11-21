@@ -30,6 +30,18 @@ test('millisecond native trace verifies timer phase and the coupled floor/flippe
   assert.equal(full.length,1);
 });
 
+test('cabinet nudges match three independently started native directional recordings',()=>{
+  const reports=JSON.parse(execFileSync(process.execPath,['scripts/compare-vpx-nudge.mjs','--check','--json'],{cwd:root,encoding:'utf8'}));
+  assert.equal(reports.length,3);
+});
+
+test('a settled target/wire pocket responds to the native nudge without an invented rescue',()=>{
+  const reports=JSON.parse(execFileSync(process.execPath,['scripts/compare-vpx-nudge.mjs','three/tests/fixtures/vpx-pocket-nudge.json','--check','--json'],{cwd:root,encoding:'utf8'}));
+  assert.equal(reports.length,1);
+  const end=reports[0].samples.at(-1);
+  assert.ok(Math.hypot(end.actual[1]-612.3,end.actual[2]-803.1)<.1,'same native trapped position after oscillation');
+});
+
 test('raw engine heel/tip, sliding and cradle contacts retain their independently measured baseline',()=>{
   const reports=JSON.parse(execFileSync(process.execPath,['scripts/compare-vpx-contact.mjs','--check','--json'],{cwd:root,encoding:'utf8'}));
   assert.equal(reports.length,11);assert.equal(reports.filter(r=>r.name.includes('cradle')).length,2);

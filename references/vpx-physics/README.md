@@ -36,6 +36,13 @@ The trace identified skipped contact handling at zero-time impacts. Native
 contacts still cancel their recorded incoming normal velocity at dtime=0. The
 port now preserves this behavior through the coupled floor/flipper heel shot.
 
+`vpx-nudge.json` combines three directions, each captured with `--nudge --case=...`
+after a fresh native engine start. The default native cabinet model uses a 25ms
+force envelope, separate side/front oscillators and acceleration projected onto
+the playfield slope. The pocket fixture adds `--pocket --no-timer-trace`, waits
+about one second through the native delayed callback, and retains the observed
+input time. Both native and port remain trapped after the same side nudge.
+
 The `slot-back` fixture records a target/wire pocket that also holds the ball in
 native VPX. Keep this separate from port regressions. The randomized gameplay
 probe still reports it as a stall; it has no blanket exception or automatic rescue.

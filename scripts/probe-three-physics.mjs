@@ -16,8 +16,9 @@ const contactNames=(g,ball)=>{
 const round=p=>Object.fromEntries(['x','y','z'].map(k=>[k,Number(p[k].toFixed(3))]));
 const results=[];
 const multiball=process.argv.includes('--multiball');
+const nudged=process.argv.includes('--nudges');
 const seedArgument=process.argv.find(a=>a.startsWith('--seed-start=')),firstSeed=Number(seedArgument?.split('=')[1]??0);
-const reportName=(process.argv.includes('--flippers')?'flippers':process.argv.includes('--full')?`full${multiball?'-multiball':''}`:'launches')+(seedArgument?`-seed${firstSeed}`:'');
+const reportName=(process.argv.includes('--flippers')?'flippers':process.argv.includes('--full')?`full${multiball?'-multiball':''}`:'launches')+(nudged?'-nudges':'')+(seedArgument?`-seed${firstSeed}`:'');
 if(process.argv.includes('--flippers')){
   for(const side of ['left','right'])for(const offset of [.35,.6,.85,1.05])for(const delay of [0,.02,.04,.06]){
     const g=await createGame(layout);g.start();g.launch();const f=g.flippers.find(f=>f.side===side),sign=side==='left'?1:-1;
@@ -41,6 +42,7 @@ if(process.argv.includes('--flippers')){
     g.random=random;
     g.start();if(full)g.rules.execute(`Randomize ${seed+1}`);
     let stuck=null,error=null,completedGames=0,flips=0,maximumBalls=0,launched=0,maximumSpeed=0,qualified=false;
+    let nudgeCount=0,nextNudge=5;
     const motion=new Map(),captures=new Map(),flipUntil={left:0,right:0},nextFlip={left:0,right:0};
     let charge=seed<3?.4+seed*.3:.6+random()*.6;
     if(!full){g.charge=seed%4*.4;g.launch();}
@@ -52,6 +54,10 @@ if(process.argv.includes('--flippers')){
         g.rules.execute('hsCurrentDigit=0:hsCurrentLetter=InStr(hsValidLetters,"T"):Table1_KeyDown PlungerKey:hsCurrentLetter=InStr(hsValidLetters,"S"):Table1_KeyDown PlungerKey:hsCurrentLetter=InStr(hsValidLetters,"T"):Table1_KeyDown PlungerKey');
       }
       if(full&&g.state==='over'){completedGames++;qualified=false;g.start();}
+      if(full&&nudged&&g.time>=nextNudge&&g.state==='playing'&&!g.inLane){
+        const action=['nudgeLeft','nudgeForward','nudgeRight'][Math.floor(random()*3)];
+        g.input(action,true);g.input(action,false);nudgeCount++;nextNudge=g.time+5+random()*8;
+      }
       // Qualify via the original lock rules, then exercise their queued physical
       // releases and ball/ball contacts using the same randomized controls.
       if(full&&multiball&&!qualified){
@@ -90,7 +96,7 @@ if(process.argv.includes('--flippers')){
       g.step();
       }catch(cause){error={message:cause.message,at:g.time};break;}
     }
-    const result={seed,seconds,simulatedSeconds:Number(g.time.toFixed(2)),stuck,error,state:g.state,score:g.score,launched,flips,maximumBalls,maximumSpeed:Number(maximumSpeed.toFixed(2)),completedGames,physicsStats:g.physicsStats};results.push(result);console.log(JSON.stringify(result));g.dispose();
+    const result={seed,seconds,simulatedSeconds:Number(g.time.toFixed(2)),stuck,error,state:g.state,score:g.score,launched,flips,maximumBalls,maximumSpeed:Number(maximumSpeed.toFixed(2)),completedGames,...(nudged?{nudgeCount}:{}),physicsStats:g.physicsStats};results.push(result);console.log(JSON.stringify(result));g.dispose();
     fs.mkdirSync('.work/three-physics',{recursive:true});fs.writeFileSync(`.work/three-physics/${seedArgument?`progress-${reportName}`:multiball?'progress-multiball':'progress'}.json`,JSON.stringify(results,null,2));
   }
 }

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {createFullGame} from '../three/full-game.js';
 import {STEP} from '../three/physics.js';
 const fixture=JSON.parse(fs.readFileSync(process.argv.slice(2).find(a=>!a.startsWith('--'))??'three/tests/fixtures/vpx-contact.json'));
-assert.ok(fixture.probeKind!=='plunger','Use a plunger comparator for these measurements');
+assert.ok(!fixture.probeKind||fixture.probeKind==='contacts','Use the dedicated plunger or nudge comparator for those measurements');
 const layout=JSON.parse(fs.readFileSync('three/public/layout.json')),objects=JSON.parse(fs.readFileSync('three/public/objects.json')),source=fs.readFileSync('three/public/rules.vbs','utf8');
 Object.assign(layout.physics,fixture.controlledOverrides);
 if(process.argv.includes('--native-contact-solver'))layout.physics.native_flipper_contacts=true;

@@ -5,6 +5,7 @@ import RAPIER from '@dimforge/rapier3d-compat';
 import {Pinball,STEP,RADIUS,point,BALL_GROUP,STATIC_GROUP,BALL_RESTITUTION,surfaceRestitution} from './physics.js';
 import {createRules} from './rules.js';
 import {ContactMesh} from './mesh-contact.js';
+import {CabinetNudge} from './cabinet-nudge.js';
 
 export async function createFullGame(layout,specs,source,emit,media) {
   await RAPIER.init();
@@ -14,6 +15,7 @@ export async function createFullGame(layout,specs,source,emit,media) {
 class FullGame extends Pinball {
   constructor(layout,specs,source,emit,media) {
     super(layout,emit);
+    this.cabinetNudge=new CabinetNudge();
     this.placeholder=this.ball;this.ballCollider.setEnabled(false);
     this.records=[];this.byCollider=new Map();this.captures=new Map();this.mechanisms=new Map();
     this.targetFronts=new Map();this.targetDrops=new Map();
@@ -29,7 +31,7 @@ class FullGame extends Pinball {
       flipper:(side,down)=>{this.held[side]=down;},plunger:down=>{this.held.launch=down;if(down)this.plunger.pull();else this.launch();},
       plungerPosition:()=>this.plunger.position,
       autofire:()=>this.autofire(),
-      nudge:(angle,strength)=>{for(const rec of this.records)if(!rec.held)rec.body.applyImpulse({x:Math.sin(angle*Math.PI/180)*strength,y:Math.cos(angle*Math.PI/180)*strength,z:.25},true);},
+      nudge:(angle,strength)=>this.cabinetNudge.nudge(angle,strength),
       sound:(name,settings)=>media?.play(name,settings),stopSound:name=>media?.stop(name),
       shake:strength=>emit({type:'shake',strength}),
       message:text=>emit({type:'message',text}),mechanism:(name,k,v)=>this.mechanism(name,k,v),

@@ -39,7 +39,9 @@ The collision response adapts the native revision pinned by the reference WASM e
 
 The manual plunger now uses the authored geometry, pull acceleration, release speed, moving-tip collisions, momentum transfer, travel limits and spring rebound. Lane balls remain dynamic; weak shots can roll back without being frozen or automatically launched. The shooter switch controls lane state. The separate auto-launch coil follows the authored nominal force and random variation. Focus/pointer cancellation returns the rod to park without crossing it and firing an interrupted gesture.
 
-Three exterior rails and the earlier right-return guide remain in this experiment and still need comparison against the complete native boundary geometry. Gate/spinner, kicker and cabinet-nudge behavior also retain approximations. This is active port work, not a completed parity claim.
+Cabinet nudges use the native 25ms force envelope and calibrated side/front damped oscillators, projected onto the inclined playfield. They replace the old instant sideways/upward impulse. `node scripts/compare-vpx-nudge.mjs --check` compares three separately started native directions in `vpx-nudge.json`; a fresh engine for each capture avoids residual oscillation from a preceding nudge. `vpx-pocket-nudge.json` separately records a side nudge after the target/wire pocket has settled: native and port move about 3.3 VPU and remain trapped. There is no automatic rescue or exemption from stall reporting.
+
+Three exterior rails and the earlier right-return guide remain in this experiment and still need comparison against the complete native boundary geometry. Gate/spinner and kicker behavior, cabinet visual movement and physical tilt-bob simulation also retain approximations. This is active port work, not a completed parity claim.
 
 This is not certified to reproduce VPX’s contact response, friction, ramp travel times or flipper tricks exactly. Headless desktop checks do not establish physical Android/iPhone frame rate. Physical device testing and shot-by-shot feel comparisons remain necessary before treating this branch as a replacement release.
 

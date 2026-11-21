@@ -82,6 +82,7 @@ export class Pinball {
     // VPX velocities use VPU / 10 ms; scale .01 VPU makes them world units/s.
     // Acceleration therefore converts by .01 / .01^2 = 100.
     const gravity=physics.gravity*100,incline=physics.slope*Math.PI/180;
+    this.incline=incline;
     this.world = new RAPIER.World({x:0,y:-gravity*Math.sin(incline),z:-gravity*Math.cos(incline)});
     this.world.timestep = STEP;
     this.world.numSolverIterations = 8;
@@ -266,12 +267,16 @@ export class Pinball {
 
   stepPhysics(records){
     this.plunger?.updateVelocity();
-    if(!this.nativeFlipperContacts){this.world.step(this.events);this.plunger?.displace(STEP);return;}
+    const nudge=this.cabinetNudge?.step(this.incline)??{x:0,y:0,z:0};
+    if(!this.nativeFlipperContacts){
+      if(this.cabinetNudge)for(const r of records)if(!r.held){const v=r.body.linvel();r.body.setLinvel({x:v.x+nudge.x*STEP,y:v.y+nudge.y*STEP,z:v.z+nudge.z*STEP},true);}
+      this.world.step(this.events);this.plunger?.displace(STEP);return;
+    }
     if(this.nativePlayfieldContacts)for(const r of records){
       if(r.held)continue;
       r.body.setGravityScale(0,true);
       const v=r.body.linvel(),g=this.world.gravity;
-      r.body.setLinvel({x:v.x+g.x*STEP,y:v.y+g.y*STEP,z:v.z+g.z*STEP},true);
+      r.body.setLinvel({x:v.x+(g.x+nudge.x)*STEP,y:v.y+(g.y+nudge.y)*STEP,z:v.z+(g.z+nudge.z)*STEP},true);
     }
     const pose=f=>{const q=f.body.rotation();f.angle=f.rest+2*Math.atan2(q.z,q.w);};
     let remaining=STEP,count=0;const handled=new Set();
