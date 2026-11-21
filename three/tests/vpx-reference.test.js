@@ -56,6 +56,14 @@ test('native shooter switch exits preserve the first 184ms of the independently 
   // check does not certify the subsequent curved-guide trajectory.
 });
 
+test('native shooter guide retains the first two wall impacts with VPX default material physics',()=>{
+  const report=JSON.parse(execFileSync(process.execPath,['scripts/compare-vpx-shooter.mjs','--check'],{cwd:root,encoding:'utf8'}));
+  assert.equal(report.checkedThrough,396);
+  // Later contacts remain in the same report; this gate covers the measured
+  // feed and first two guide impacts, not the entire subsequent curved path.
+  assert.ok(report.checked.velocityError<.00001);
+});
+
 test('native target recordings preserve corner misses, completion scores and the full timed hold/release',()=>{
   const reports=JSON.parse(execFileSync(process.execPath,['scripts/compare-vpx-targets.mjs','--check','--json'],{cwd:root,encoding:'utf8',maxBuffer:1024*1024}));
   assert.equal(reports.length,3);

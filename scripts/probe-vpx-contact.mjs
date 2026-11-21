@@ -6,7 +6,10 @@ const [debug,base,output]=process.argv.slice(2);
 const probeKind=process.argv.includes('--triggers')?'triggers':process.argv.includes('--targets')?'targets':process.argv.includes('--gates')?'gates':process.argv.includes('--spinners')?'spinners':process.argv.includes('--plunger')?'plunger':process.argv.includes('--nudge')?'nudge':'contacts';
 const reference=await(await fetch(new URL('/reference-metadata.json',base))).json();
 const recordTimers=!!reference.instrumentation&&!process.argv.includes('--no-timer-trace');
+const traceMilliseconds=Number(process.argv.find(a=>a.startsWith('--trace-ms='))?.slice(11)??70);
+assert.ok(Number.isInteger(traceMilliseconds)&&traceMilliseconds>=1&&traceMilliseconds<=1000,'trace duration must be 1..1000ms');
 reference.timerTraceCaptured=recordTimers;
+if(recordTimers)reference.traceMilliseconds=traceMilliseconds;
 assert.deepEqual(reference.controlledOverrides,{scatter:0,default_scatter:0},'controlled native table metadata');
 const runtimeOverrides={'LeftFlipper.Scatter':0,'RightFlipper.Scatter':0};
 const columns=['ms','x','y','z','vx','vy','vz','wx','wy','wz','left','right',...(probeKind==='triggers'?['balls_over']:probeKind==='plunger'?['plunger_position']:probeKind==='targets'?['target009_dropped','target010_dropped','target011_dropped','target009_offset','target010_offset','target011_offset','score']:['spinners','gates'].includes(probeKind)?[probeKind==='gates'?'gate_angle':'spinner_angle','score','left_spinner_count']:[])];
@@ -186,7 +189,7 @@ try{
     if(scenario.plunger)drive='Plunger.PullBack:'+drive;
     const closeMarker=`CONTACT_GATE_CLOSE_${scenario.name}`;
     if(scenario.closeDelay){const close=`Debug.Print "${closeMarker}|" & GameTime:${scenario.gate}.Open=False`;drive+=`:vpmtimer.addtimer ${scenario.closeDelay},"${close.replaceAll('"','""')} '"`;}
-    const trace=recordTimers?'RefTrace="":Set RefTraceBall=RefBall:RefTraceUntil=GameTime+70:RefTraceOn=True:':'';
+    const trace=recordTimers?`RefTrace="":Set RefTraceBall=RefBall:RefTraceUntil=GameTime+${traceMilliseconds}:RefTraceOn=True:`:'';
     await script(`${trace}RollingTimer.Enabled=False:RollingTimer.Enabled=True:${reset(scenario.x,scenario.y,scenario.vx,scenario.vy,scenario.z,scenario.vz)}:${drive?drive+':':''}Debug.Print "CONTACT_INIT|" & GameTime & ":" & RefBall.AngMomX & ":" & RefBall.AngMomY & ":" & RefBall.AngMomZ & ":" & RefBall.X & ":" & RefBall.Y & ":" & RefBall.Z`);
     const initial=(await marker('CONTACT_INIT')).split(':').map(parseFloat);assert.equal(initial.length,7);assert.deepEqual(initial.slice(1,4),[0,0,0],'native spin reset');
     for(const [actual,expected]of [[initial[4],scenario.x],[initial[5],scenario.y],[initial[6],scenario.z??25]])assert.ok(Math.abs(actual-expected)<.001,`native initial position ${actual} vs ${expected}`);
@@ -226,7 +229,7 @@ try{
     }
     const closing=scenario.closeDelay?{actualCloseDelay:closeAt-origin}:{};if(scenario.closeDelay)assert.ok(Number.isFinite(closing.actualCloseDelay)&&closing.actualCloseDelay>0,'observed native gate-close clock');
     results.push({...scenario,initial,actualDelay,...closing,samples,rawSamples,...(timerTrace?{timerTrace}:{})});console.log(scenario.name,'input at',actualDelay,JSON.stringify(samples.at(-1)));
-    const suffix=rawAnimation&&selected?`raw-${recordTimers?'timing-':''}${selected}`:reference.shooterProbe&&selected?`${recordTimers?'timing-':''}${selected}`:['spinners','gates','targets','triggers'].includes(probeKind)&&selected?`${probeKind}-${reference.instrumentation?.spinnerTraceColumns?'timing-':''}${reference.animationBallIsolation?'isolated-animation-':''}${selected}`:`${reference.geometryProbe?'geometry':probeKind==='contacts'?'contact':probeKind}-reference`;
-    await writeFile(`${output}/vpx-${suffix}.json`,JSON.stringify({...reference,probeKind,runtimeOverrides,columns,cases:results},null,2));
+    const suffix=rawAnimation&&selected?`raw-${recordTimers?'timing-':''}${selected}`:reference.geometryProbe&&selected?`geometry-${recordTimers?'timing-':''}${selected}`:reference.shooterProbe&&selected?`${recordTimers?'timing-':''}${selected}`:['spinners','gates','targets','triggers'].includes(probeKind)&&selected?`${probeKind}-${reference.instrumentation?.spinnerTraceColumns?'timing-':''}${reference.animationBallIsolation?'isolated-animation-':''}${selected}`:`${reference.geometryProbe?'geometry':probeKind==='contacts'?'contact':probeKind}-reference`;
+    await writeFile(`${output}/vpx-${suffix}${recordTimers&&traceMilliseconds!==70?`-${traceMilliseconds}ms`:''}.json`,JSON.stringify({...reference,probeKind,runtimeOverrides,columns,cases:results},null,2));
   }
 }finally{socket.close();}

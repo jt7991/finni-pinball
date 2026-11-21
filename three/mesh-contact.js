@@ -55,14 +55,16 @@ export class ContactMesh{
   }
   hitsAt(p,v,radius,duration,native=false){
     const q=add(p,mul(v,duration)),seen=new Set(),hits=[];
-    const query=native?native===true?nativeMeshQuery(p,v,radius,duration):native:null;
-    for(const plane of this.planes){const hit=native?nativeMeshHit(plane,p,v,radius,duration,query):planeHit(p,v,radius,duration,plane);if(hit)hits.push({...hit,id:plane.id});}
-    if(Math.min(p.z,q.z)-radius>this.bounds.maxZ+.0005||Math.max(p.z,q.z)+radius<this.bounds.minZ-.0005)return hits;
-    for(let x=Math.floor(Math.min(p.x,q.x)-radius);x<=Math.floor(Math.max(p.x,q.x)+radius);x++)for(let y=Math.floor(Math.min(p.y,q.y)-radius);y<=Math.floor(Math.max(p.y,q.y)+radius);y++){
+    const query=native?{...(native===true?nativeMeshQuery(p,v,radius,duration):native),dt:Math.fround(duration*100)}:null;
+    const extent=query?query.extent*.01:radius;
+    const record=(hit,id)=>{if(!hit)return;hits.push({...hit,id});if(query&&!hit.contact)query.dt=Math.min(query.dt,Math.fround(hit.time*100));};
+    for(const plane of this.planes){const hit=native?nativeMeshHit(plane,p,v,radius,duration,query):planeHit(p,v,radius,duration,plane);record(hit,plane.id);}
+    if(query?p.z-extent>this.bounds.maxZ||p.z+extent<this.bounds.minZ:Math.min(p.z,q.z)-radius>this.bounds.maxZ+.0005||Math.max(p.z,q.z)+radius<this.bounds.minZ-.0005)return hits;
+    for(let x=Math.floor((query?p.x:Math.min(p.x,q.x))-extent);x<=Math.floor((query?p.x:Math.max(p.x,q.x))+extent);x++)for(let y=Math.floor((query?p.y:Math.min(p.y,q.y))-extent);y<=Math.floor((query?p.y:Math.max(p.y,q.y))+extent);y++){
       for(const shape of this.grid.get(`${x},${y}`)??[]){
         if(seen.has(shape.id))continue;seen.add(shape.id);
         const hit=native?nativeMeshHit(shape,p,v,radius,duration,query):shape.kind==='triangle'?triangleHit(p,v,radius,duration,shape):shape.kind==='polygon'?polygonHit(p,v,radius,duration,shape):shape.kind==='wall'?wallHit(p,v,radius,duration,shape):roundHit(p,v,radius,duration,shape);
-        if(hit)hits.push({...hit,id:shape.id});
+        record(hit,shape.id);
       }
     }
     return hits;

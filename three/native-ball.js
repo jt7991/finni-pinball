@@ -53,6 +53,15 @@ export class NativeBall {
     this.syncAngular();const m=this.angularMomentum,i=this.inertia;
     return {x:-f(m.x/i)*100,y:f(m.y/i)*100,z:-f(m.z/i)*100};
   }
+  restoreAngular(){
+    // Rapier's orientation integration can perturb angular velocity by a few
+    // ULPs even for an isolated sphere. Native momentum changes only on an
+    // impulse or an authored setter; don't adopt that integrator drift.
+    const w=this.rapier.angvel(),old=this.lastAngular;
+    if(old&&w.x===old.x&&w.y===old.y&&w.z===old.z)return;
+    const m=this.angularMomentum,i=this.inertia;
+    this.rapier.setAngvel({x:-f(m.x/i)*100,y:f(m.y/i)*100,z:-f(m.z/i)*100},true);this.lastAngular=this.rapier.angvel();
+  }
   angularImpulse(impulse){
     this.syncAngular();const m=this.angularMomentum;
     this.angularMomentum={x:f(m.x+f(-impulse.x*100)),y:f(m.y+f(impulse.y*100)),z:f(m.z+f(-impulse.z*100))};

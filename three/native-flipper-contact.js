@@ -51,7 +51,7 @@ export function nativeFlipperHit(body,flipper,radius,duration){
   }
   if(!Number.isFinite(time)||time<0||Object.is(time,-0)||time>dt)return null;
   const hitZ=f(z+f(vz*time));if(f(hitZ+f(r*.5))<0||f(hitZ-f(r*.5))>f(flipper.height*100))return null;
-  const hx=f(dx+f(vx*time)),hy=f(dy+f(vy*time)),inverse=f(1/length(hx,hy)),normal={x:f(hx*inverse),y:-f(hy*inverse),z:0};
+  const hx=f(f(x+f(vx*time))-cx),hy=f(f(y+f(vy*time))-cy),inverse=f(1/length(hx,hy)),normal={x:f(hx*inverse),y:-f(hy*inverse),z:0};
   return {time:time*.01,contact,profile:{normal,gap:gap*.01},normal,gap:gap*.01,vn};
 }
 function context(body,flipper,normal,radius){
@@ -82,7 +82,10 @@ export function collideNativeFlipper(body,flipper,contact,material,radius){
 }
 export function supportNativeFlipper(body,flipper,hit,gravity,friction,radius,duration){
   const {state,ball,n,rB,rF,omega,inertia,...rest}=context(body,flipper,hit.profile.normal,radius),dt=f(duration*100),g=nativeGravity(gravity);let relative=rest.relative;
-  if(f(hit.profile.gap*100)<0){const push=mul(n,f(.1));ball.v=add(ball.v,push);relative=add(relative,push);}
+  if(f(hit.profile.gap*100)<0){
+    ball.v=add(ball.v,mul(n,f(.1)));
+    relative=sub(add(ball.v,cross(div(ball.m,ball.inertia),rB)),{x:f(-omega*rF.y),y:f(omega*rF.x),z:0});
+  }
   const vn=dot(relative,n);if(vn>f(.099)){state.commit(ball);return;}
   const w=div(ball.m,ball.inertia),aB=add(div(g,ball.mass),cross(w,cross(w,rB))),acc=f(-flipper.angularAcceleration*.0001),omega2=f(omega*omega);
   const aF=add({x:f(-acc*rF.y),y:f(acc*rF.x),z:0},{x:f(-omega2*rF.x),y:f(-omega2*rF.y),z:0}),arel=sub(aB,aF),dn={x:f(-omega*n.y),y:f(omega*n.x),z:0},normalAcc=f(dot(arel,n)+f(2*dot(dn,relative)));

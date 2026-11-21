@@ -3,7 +3,7 @@
 // public/licenses/VPX-Physics-NOTICE.txt. Adapted to Three.js/Rapier units.
 import RAPIER from '@dimforge/rapier3d-compat';
 import {Vector2,ShapeUtils} from 'three';
-import {dragCurve} from './drag-curve.js';
+import {nativeDragCurve} from './native-curve.js';
 import {flipperContact,flipperHit,resolveFlipperContact,supportFlipper} from './flipper-contact.js';
 import {playfieldHit,supportPlayfield,collidePlayfield} from './playfield-contact.js';
 import {ContactMesh,collideSurface,supportSurface} from './mesh-contact.js';
@@ -12,6 +12,7 @@ import {BallSpin} from './ball-spin.js';
 import {NativeBall} from './native-ball.js';
 import {NativeAngular,nativeFlipperInertia} from './native-angular.js';
 import {nativeMeshQuery} from './native-mesh-contact.js';
+import {nativeRampSurface,nativeRampContacts,rampWallHeights} from './native-ramp.js';
 
 export const STEP = 1 / 1000;
 export const RADIUS = 0.25;
@@ -26,7 +27,7 @@ let initialized;
 // VPX walls are closed, filled surfaces, with zero outward padding. Padding every
 // edge by 2.5 VPU narrowed the 50-VPU rollover openings enough to jam a ball.
 export function wallSurface(item){
-  const points=dragCurve(item.drag_points.map(p=>({...point(p),smooth:p.smooth})),true,4);
+  const points=nativeDragCurve(item.drag_points,true,4,2).map(p=>({...p,...point(p)}));
   const bottom=item.height_bottom*.01,top=item.height_top*.01,vertices=[],indices=[];
   for(const z of [bottom,top])for(const p of points)vertices.push(p.x,p.y,z);
   const count=points.length;
@@ -44,30 +45,7 @@ export function wallSurface(item){
 
 // Only collision geometry is generated here; the accepted wire model is separate.
 export function rampSurface(item) {
-  const raw=item.drag_points.map(p=>({...point(p),z:(p.z??0)*.01,smooth:p.smooth}));
-  const center=dragCurve(raw),count=center.length-1,vertices=[],indices=[],edges=[[],[]];
-  let length=0;const samples=[];
-  for(let i=0;i<=count;i++){
-    const p=center[i];if(i)length+=Math.hypot(p.x-samples.at(-1).p.x,p.y-samples.at(-1).p.y);
-    samples.push({p,distance:length});
-  }
-  for (let i = 0; i <= count; i++) {
-    const {p,distance}=samples[i],t=distance/length,previous=center[Math.max(0,i-1)],next=center[Math.min(count,i+1)];
-    const normal=(a,b)=>{const d=Math.hypot(b.x-a.x,b.y-a.y)||1;return {x:-(b.y-a.y)/d,y:(b.x-a.x)/d};};
-    const a=normal(previous,p),b=normal(p,next);
-    let n=i===0?b:i===count?a:null;
-    if(!n){const denominator=1+a.x*b.x+a.y*b.y;n=Math.abs(denominator)<1e-10?a:{x:(a.x+b.x)/denominator,y:(a.y+b.y)/denominator};}
-    const width=item.ramp_type==='one_wire'?item.wire_diameter:item.ramp_type==='two_wire'?item.wire_distance_x+20:item.width_bottom+(item.width_top-item.width_bottom)*t;
-    const half=width*.005;
-    const z=p.z+(item.height_bottom+(item.height_top-item.height_bottom)*t)*.01;
-    for (const [side, sign] of [[0, -1], [1, 1]]) {
-      const x = p.x+n.x*half*sign, y = p.y+n.y*half*sign;
-      vertices.push(x, y, z);
-      edges[side].push({x, y, z});
-    }
-    if (i) {const a = (i - 1) * 2; indices.push(a,a+2,a+1,a+1,a+2,a+3);}
-  }
-  return {vertices, indices, edges};
+  return nativeRampSurface(item);
 }
 
 export async function createGame(layout, emit = () => {}) {
@@ -88,6 +66,7 @@ export class Pinball {
     const gravity=physics.gravity*100,incline=physics.slope*Math.PI/180;
     this.incline=incline;
     const round=Math.fround,nativeIncline=round(round(physics.slope)*round(Math.PI/180)),nativeStrength=round(physics.gravity);
+    this.nativeIncline=nativeIncline;
     this.nativeGravity={x:0,y:round(round(Math.sin(nativeIncline))*nativeStrength),z:round(-round(Math.cos(nativeIncline))*nativeStrength)};
     this.world = new RAPIER.World(physics.native_position_units===false?{x:0,y:-gravity*Math.sin(incline),z:-gravity*Math.cos(incline)}:{x:0,y:-this.nativeGravity.y*100,z:this.nativeGravity.z*100});
     this.world.timestep = STEP;
@@ -199,7 +178,7 @@ export class Pinball {
       this.colliderLabels.set(collider.handle,item.name);
       this.contactMaterials.set(collider.handle,{collider,...material});
       if(this.nativeFlipperContacts){
-        const points=dragCurve(item.drag_points.map(p=>({...point(p),smooth:p.smooth,slingshot:p.is_slingshot})),true,4),count=points.length;
+        const points=nativeDragCurve(item.drag_points,true,4,2).map(p=>({...p,...point(p)})),count=points.length;
         const mesh=new ContactMesh({vertices:[],indices:[]});
         const clockwise=ShapeUtils.isClockWise(points.map(p=>new Vector2(p.x,p.y)));
         for(let i=0;i<count;i++){
@@ -227,17 +206,10 @@ export class Pinball {
 
   ramp(item) {
     const surface = rampSurface(item),material=item.contact_physics??{friction:item.friction??.035,elasticity:item.elasticity??0};
-    const nativeMesh=new ContactMesh(surface,{preserveNormals:true,twoSided:true,coplanarJoints:false,points:false});
+    const nativeMesh=nativeRampContacts(surface,item);
     for (const [side, edge] of surface.edges.entries()) {
-      const height=(['one_wire','two_wire'].includes(item.ramp_type)?31:side===0?item.right_wall_height:item.left_wall_height)*.01;
+      const height=rampWallHeights(item)[side]*.01;
       if(height<=0)continue;
-      for(let i=0;i<edge.length-1;i++){
-        const a=edge[i],b=edge[i+1];
-        nativeMesh.addRampWall(a,b,a.z,b.z,height,i>0);
-        nativeMesh.addRampWall(b,a,a.z,b.z,height,i<edge.length-2);
-        if(i===0)nativeMesh.addVertical(a,a.z,a.z+height);
-      }
-      const end=edge.at(-1);nativeMesh.addVertical(end,end.z,end.z+height);
       const start=surface.vertices.length/3;
       for(const p of edge)surface.vertices.push(p.x,p.y,p.z+height);
       for(let i=0;i<edge.length-1;i++){
@@ -332,7 +304,7 @@ export class Pinball {
     for(const spinner of this.spinners)spinner.updateVelocity();
     for(const gate of this.gates)gate.updateVelocity();
     this.plunger?.updateVelocity();
-    const nudge=this.cabinetNudge?.step(this.incline)??{x:0,y:0,z:0};
+    const nudge=this.cabinetNudge?.step(this.nativePositionUnits?this.nativeIncline:this.incline)??{x:0,y:0,z:0};
     if(!this.nativeFlipperContacts){
       if(this.cabinetNudge)for(const r of records)if(!r.held){const v=r.body.linvel();r.body.setLinvel({x:v.x+nudge.x*STEP,y:v.y+nudge.y*STEP,z:v.z+nudge.z*STEP},true);}
       this.world.step(this.events);this.plunger?.displace(STEP);return;
@@ -341,8 +313,8 @@ export class Pinball {
       if(r.held)continue;
       r.body.setGravityScale(0,true);
       const v=r.body.linvel(),g=this.world.gravity;
-      if(this.nativePositionUnits){const f=Math.fround,dt=f(.1),force=(old,acceleration,nudge)=>f(f(old+f(acceleration*dt))+f(f(nudge)*dt));
-        r.body.setLinvel({x:force(v.x,this.nativeGravity.x,nudge.x*.01),y:-force(-v.y,this.nativeGravity.y,-nudge.y*.01),z:force(v.z,this.nativeGravity.z,nudge.z*.01)},true);
+      if(this.nativePositionUnits){const f=Math.fround,dt=f(.1),force=(old,acceleration,delta)=>f(f(old+f(acceleration*dt))+delta),delta=nudge.nativeDelta??{x:0,y:0,z:0};
+        r.body.setLinvel({x:force(v.x,this.nativeGravity.x,delta.x),y:-force(-v.y,this.nativeGravity.y,delta.y),z:force(v.z,this.nativeGravity.z,delta.z)},true);
       }else r.body.setLinvel({x:v.x+(g.x+nudge.x)*STEP,y:v.y+(g.y+nudge.y)*STEP,z:v.z+(g.z+nudge.z)*STEP},true);
     }
     const pose=f=>{if(f.nativeAngle!==undefined){f.angle=Math.PI/2-f.nativeAngle;return;}const q=f.body.rotation();f.angle=f.rest+2*Math.atan2(q.z,q.w);};
@@ -376,8 +348,8 @@ export class Pinball {
         }
       }
       for(const r of records){if(r.held)continue;
-        const p=r.queryPosition,v=r.queryVelocity,x2=p.x+v.x*remaining,y2=p.y+v.y*remaining,candidates=new Set(this.nativeGlobalMeshes);
-        for(let x=Math.floor(Math.min(p.x,x2)-RADIUS);x<=Math.floor(Math.max(p.x,x2)+RADIUS);x++)for(let y=Math.floor(Math.min(p.y,y2)-RADIUS);y<=Math.floor(Math.max(p.y,y2)+RADIUS);y++){
+        const p=r.queryPosition,v=r.queryVelocity,x2=p.x+v.x*remaining,y2=p.y+v.y*remaining,candidates=new Set(this.nativeGlobalMeshes),extent=r.nativeQuery?r.nativeQuery.extent*.01:RADIUS;
+        for(let x=Math.floor((r.nativeQuery?p.x:Math.min(p.x,x2))-extent);x<=Math.floor((r.nativeQuery?p.x:Math.max(p.x,x2))+extent);x++)for(let y=Math.floor((r.nativeQuery?p.y:Math.min(p.y,y2))-extent);y<=Math.floor((r.nativeQuery?p.y:Math.max(p.y,y2))+extent);y++){
           for(const mesh of this.nativeMeshGrid.get(`${x},${y}`)??[])candidates.add(mesh);
         }
         // Keep the same component order across spatial cells.
@@ -422,7 +394,7 @@ export class Pinball {
       if(event?.r&&time<staticTime&&--staticCount<0){staticCount=0;time=staticTime;}
       if(time>staticTime)staticCount=10;
       if(time>0){
-        const motions=this.nativePositionUnits?records.filter(r=>!r.held).map(r=>({r,s:state(r),p:{...state(r).sync()},v:r.body.linvel()})):[];
+        const motions=this.nativePositionUnits?records.filter(r=>!r.held).map(r=>{const s=state(r);s.syncAngular();return {r,s,p:{...s.sync()},v:r.body.linvel()};}):[];
         const angles=this.flippers.filter(f=>f.nativeAngle!==undefined).map(f=>({f,angle:f.nativeAngle,speed:-f.nativeMotion.speed}));
         this.world.timestep=time;this.world.step(this.events);remaining=this.nativePositionUnits?Math.fround(Math.fround(remaining*100)-Math.fround(time*100))*.01:remaining-time;
         for(const {f,angle,speed}of angles){f.nativeAngle=Math.fround(angle+Math.fround(speed*Math.fround(time*100)));f.body.setRotation(quaternion(Math.PI/2-f.nativeAngle-f.rest),true);}
@@ -433,6 +405,7 @@ export class Pinball {
           // Keep Rapier's resolved displacement when another physical ball has
           // changed the velocity. Static native contacts use VPX's float units.
           if(!ballContact&&after.x===v.x&&after.y===v.y&&after.z===v.z)s.displace(p,v,time);else s.sync();
+          if(!ballContact)s.restoreAngular();
         }
       }
       this.plunger?.displace(time);

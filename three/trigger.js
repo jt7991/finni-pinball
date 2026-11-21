@@ -2,7 +2,7 @@
 // Visual Pinball contributors' Trigger/LineSeg/HitCircle/Hit3DPoly behavior,
 // revision 195f214dd4849b8ef6113fd377258b78d0dec3bf.
 // See licenses/VPX-Physics-NOTICE.txt. Queries retain native Float32 VPU units.
-import {dragCurve} from './drag-curve.js';
+import {nativeDragCurve} from './native-curve.js';
 import {add,sub,mul,length} from './native-vector.js';
 const f=Math.fround;
 const dot=(a,b)=>f(f(f(a.x*b.x)+f(a.y*b.y))+f(a.z*b.z));
@@ -16,7 +16,7 @@ export class Trigger {
       const c={x:f(spec.center.x),y:f(spec.center.y)},r=f(spec.radius);
       this.shapes.push({kind:'circle',c,r,box:{left:f(c.x-r),right:f(c.x+r),top:f(c.y-r),bottom:f(c.y+r),low,high}});
     }else{
-      const points=dragCurve((spec.drag_points??[]).map(p=>({...p,x:p.x*.01,y:p.y*.01})),true,4).map(p=>({x:f(p.x*100),y:f(p.y*100),z:f(low+50)}));
+      const points=nativeDragCurve(spec.drag_points??[],true,4,2).map(p=>({x:p.x,y:p.y,z:f(low+50)}));
       for(let i=0;i<points.length;i++){
         const a=points[(i+1)%points.length],b=points[(i+2)%points.length],dx=f(a.x-b.x),dy=f(a.y-b.y),length=f(Math.sqrt(f(f(dx*dx)+f(dy*dy)))),inv=f(1/length);
         if(length)this.shapes.push({kind:'line',a,b,length,n:{x:f(dy*inv),y:f(-dx*inv),z:0},box:bounds([a,b],low,f(low+Math.max(f(spec.hit_height-8),0)))});

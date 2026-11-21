@@ -43,6 +43,12 @@ shutil.copyfile(ROOT / 'assets/fonts/chewy/Chewy-Regular.ttf', OUT / 'chewy.ttf'
 
 source = (args.extracted_root.resolve() if args.extracted_root else SOURCE_ROOT / '.work/finni-live-extracted')/'gameitems'
 materials={m['name']:m for m in json.loads((source.parent/'materials.json').read_text())}
+def contact_physics(item):
+    # PinTable::GetMaterial returns its zero-physics dummy material for empty
+    # or missing names. The object's own values apply only with overwrite on.
+    material=materials.get(item.get('physics_material'),{})
+    return {k:(item.get(k,0) if item.get('overwrite_physics') else material.get(k if k!='scatter' else 'scatter_angle',0))
+            for k in ('elasticity','elasticity_falloff','friction','scatter')}
 source_order={item['file_name']:index for index,item in enumerate(json.loads((source.parent/'gameitems.json').read_text()))}
 source_files=sorted(source/name for name in source_order)
 object_order={}
@@ -90,8 +96,7 @@ for path in source_files:
 for item in items:
     item['native_source_order']=object_order[item['kind'],item['name']]
     if item['kind'] in ('Wall','Ramp','Primitive'):
-        material=materials.get(item.get('physics_material'))
-        item['contact_physics']={k:(material[k if k!='scatter' else 'scatter_angle'] if material and not item.get('overwrite_physics') else item.get(k,0)) for k in ('elasticity','elasticity_falloff','friction','scatter')}
+        item['contact_physics']=contact_physics(item)
     if 'drag_points' in item:
         item['drag_points'] = [{k: p[k]
                                 for k in ('x', 'y', 'smooth', 'is_slingshot', *(['z'] if item['kind']=='Ramp' else []))} for p in item['drag_points']]
@@ -139,8 +144,7 @@ for path in source_files:
         specs[-1].update({k:item[k] for k in ('damping','angle_max','angle_min','elasticity','friction','scatter','gravity_factor','two_way','show_bracket') if k in item})
     if kind=='HitTarget':
         specs[-1].update({k:item[k] for k in ('is_legacy','use_hit_event','threshold','drop_speed','raise_delay')})
-        material=materials.get(item.get('physics_material'))
-        specs[-1]['contact_physics']={k:(material[k if k!='scatter' else 'scatter_angle'] if material and not item.get('overwrite_physics') else item.get(k,0)) for k in ('elasticity','elasticity_falloff','friction','scatter')}
+        specs[-1]['contact_physics']=contact_physics(item)
         shape=target_shapes[item['target_type']]
         specs[-1]['collision_mesh']=shape
     if 'drag_points' in specs[-1]:specs[-1]['drag_points']=[{k:p[k] for k in ('x','y',*(['smooth'] if kind=='Trigger' else []))} for p in specs[-1]['drag_points']]

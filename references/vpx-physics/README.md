@@ -22,8 +22,26 @@ early-position and velocity checks. Full floor-supported paths retain contact
 phase variation. `vpx-shooter-feed.json` retains a complete native shot and 1ms
 timer observations; its test checks the initial 184ms at .001 VPU/.00001 speed.
 The subsequent curved-guide path is retained diagnostically and still diverges.
-Existing raw-contact, primitive/camera reference checks remain failing during
-this work; their gates are unchanged. Native quadtree traversal is not ported.
+`vpx-shooter-guide.json` adds a separate 500ms native state trace. The strict
+gate through 396ms covers the feed and first two guide impacts; the full trace
+remains in `compare-vpx-shooter.mjs` diagnostics. The guide's blank physics
+material uses VPX's zero-physics dummy material, rather than the wall's unused
+elasticity setting. See `PinTable::GetMaterial` and `parts/Material.h` at the
+pinned revision. This fixes the first large shooter-wall rebound difference.
+
+`native-curve.js` retains Float32 Catmull coefficients, evaluation and adaptive
+subdivision for walls, ramps and wire triggers. `native-ramp.js` retains source
+miter intersections, wall joints/subdivisions, floor diagonals and underside
+faces. Its collision shapes remain independent of the visible wire GLB.
+Native ball momentum is preserved across Rapier orientation updates unless a
+physical ball/ball contact actually requires adopting the Rapier result.
+
+The camera reference gates now pass. The full suite still has four unchanged
+failures: directional nudge speed, upper-ramp geometry contact, wire-entry path
+and the old raw left-tip/floor recording. Native quadtree traversal and its
+duplicate contact visits are not ported. Shrinking every mechanism's search
+time in the existing grid order regressed the strict heel recording; query
+limits must be integrated with the native traversal, not applied in isolation.
 
 Native measurement fixtures include their source-table hash, controlled-table
 hash and the exact comparison overrides. `scripts/prepare-vpx-contact-reference.py`

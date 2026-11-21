@@ -3,7 +3,23 @@
 // 195f214dd4849b8ef6113fd377258b78d0dec3bf. See licenses/VPX-Physics-NOTICE.txt.
 import {f,add,sub,mul,div,dot,cross,length,unit,nativeNormal} from './native-vector.js';
 const position=p=>({x:f(p.x*100),y:f(2115-p.y*100),z:f(p.z*100)});
-export const nativeMeshQuery=(p,v,radius,duration)=>({p:position(p),v:{x:f(v.x),y:f(-v.y),z:f(v.z)},r:f(radius*100),dt:f(duration*100)});
+export function nativeMeshQuery(p,v,radius,duration){
+  const center=position(p),velocity={x:f(v.x),y:f(-v.y),z:f(v.z)},r=f(radius*100),extent=f(f(length(velocity)+r)+f(.05));
+  const box={left:f(center.x-extent),right:f(center.x+extent),top:f(center.y-extent),bottom:f(center.y+extent),low:f(center.z-extent),high:f(center.z+extent)},hitRadius=f(f(box.right-box.left)*.5);
+  return {p:center,v:velocity,r,dt:f(duration*100),extent,box,radiusSquared:f(hitRadius*hitRadius)};
+}
+function overlaps(shape,query){
+  if(shape.kind==='plane')return true;
+  let box=shape.nativeBounds;
+  if(!box){
+    const points=shape.points.map(position);
+    box=shape.nativeBounds={left:Math.min(...points.map(p=>p.x)),right:Math.max(...points.map(p=>p.x)),top:Math.min(...points.map(p=>p.y)),bottom:Math.max(...points.map(p=>p.y)),low:Math.min(...points.map(p=>p.z)),high:Math.max(...points.map(p=>p.z))};
+  }
+  const a=query.box;if(!a)return true;
+  if(a.right<box.left||a.left>box.right||a.bottom<box.top||a.top>box.bottom||a.high<box.low||a.low>box.high)return false;
+  const p=query.p,dx=f(Math.max(f(box.left-p.x),0)+Math.max(f(p.x-box.right),0)),dy=f(Math.max(f(box.top-p.y),0)+Math.max(f(p.y-box.bottom),0)),dz=f(Math.max(f(box.low-p.z),0)+Math.max(f(p.z-box.high),0));
+  return f(f(f(dx*dx)+f(dy*dy))+f(dz*dz))<=query.radiusSquared;
+}
 const valid=(t,dt)=>Number.isFinite(t)&&t>=0&&!Object.is(t,-0)&&t<=dt;
 const transform=(m,v)=>({x:dot(m[0],v),y:dot(m[1],v),z:dot(m[2],v)});
 function lineMatrix(direction){
@@ -40,14 +56,15 @@ function shapeData(s){
   s.native=n;return n;
 }
 export function nativeMeshHit(shape,worldP,worldV,radius,duration,query){
+  query??=nativeMeshQuery(worldP,worldV,radius,duration);if(!overlaps(shape,query))return null;
   const s=shapeData(shape);if(s.degenerate)return null;
-  const {p,v,r,dt}=query??nativeMeshQuery(worldP,worldV,radius,duration);
+  const {p,v,r,dt}=query;
   let time=0,contact=false,gap,vn,normal=s.n;
   if(['triangle','polygon','wall','plane'].includes(s.kind)){
     vn=dot(v,normal);if(vn>f(s.kind==='triangle'||s.kind==='plane'?.099:.0001))return null;
-    const nearest=sub(p,mul(normal,r)),difference=s.kind==='plane'?dot(p,normal):dot(sub(nearest,s.a),normal);
-    gap=s.kind==='plane'?f(f(difference-r)-s.d):difference;
-    if(gap< -f(s.kind==='plane'?r*2:r)||s.kind==='wall'&&f(gap+r)<0)return null;
+    const nearest=sub(p,mul(normal,r)),difference=s.kind==='plane'?dot(p,normal):s.kind==='wall'?dot(sub(p,s.a),normal):dot(sub(nearest,s.a),normal);
+    gap=s.kind==='plane'?f(f(difference-r)-s.d):s.kind==='wall'?f(difference-r):difference;
+    if(gap< -f(s.kind==='plane'?r*2:r)||s.kind==='wall'&&difference<0)return null;
     if(s.kind==='plane'){
       if(Math.abs(vn)<=f(.099)){if(Math.abs(gap)>f(.05))return null;contact=true;}
       else time=Math.max(0,f(gap/-vn));
@@ -90,7 +107,12 @@ export function nativeMeshHit(shape,worldP,worldV,radius,duration,query){
     if(!valid(time,dt))return null;
     if(s.matrix){const z=f(localP.z+f(localV.z*time));if(z<s.low||z>s.high)return null;}
     else if(s.axis){const at=add(p,mul(v,time)),along=dot(sub(at,s.a),s.axis),skin=s.kind==='circle'?f(r*.5):0;if(along< -skin||along>f(s.length+skin))return null;}
-    normal=unit(add(d,mul(dv,time)));
+    // Native advances absolute coordinates before subtracting the cylinder/
+    // point center. Moving the subtraction before the advance loses different
+    // low bits in Float32, especially at playfield seams far from the origin.
+    if(s.matrix)normal=unit({x:f(f(localP.x+f(localV.x*time))-s.xy.x),y:f(f(localP.y+f(localV.y*time))-s.xy.y),z:0});
+    else if(s.kind==='circle')normal=unit({x:f(f(p.x+f(v.x*time))-s.a.x),y:f(f(p.y+f(v.y*time))-s.a.y),z:0});
+    else normal=unit(sub(add(p,mul(v,time)),s.a));
     if(s.matrix)normal={x:f(f(f(s.matrix[0].x*normal.x)+f(s.matrix[1].x*normal.y))+f(s.matrix[2].x*normal.z)),y:f(f(f(s.matrix[0].y*normal.x)+f(s.matrix[1].y*normal.y))+f(s.matrix[2].y*normal.z)),z:f(f(f(s.matrix[0].z*normal.x)+f(s.matrix[1].z*normal.y))+f(s.matrix[2].z*normal.z))};
   }
   return {time:time*.01,gap:gap*.01,vn,contact,normal:{x:normal.x,y:-normal.y,z:normal.z}};
