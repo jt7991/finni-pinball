@@ -45,7 +45,7 @@ for path in sorted(source.glob('*.json')):
     kind, item = next(iter(data.items()))
     if kind == 'Wall' and item.get('is_collidable'):
         items.append({'kind': kind, **{k: item[k] for k in ('name', 'height_bottom', 'height_top', 'is_bottom_solid', 'slingshot_force', 'slingshot_threshold', 'elasticity', 'friction', 'elasticity_falloff', 'scatter', 'physics_material', 'overwrite_physics', 'drag_points')}})
-    elif kind in ('Bumper', 'Flipper') or kind == 'Kicker' and item['name'] == 'HellHouse':
+    elif kind in ('Bumper', 'Flipper', 'Plunger') or kind == 'Kicker' and item['name'] == 'HellHouse':
         items.append({'kind': kind, **item})
     elif kind == 'Ramp' and item.get('is_collidable'):
         items.append({'kind': kind, **item})

@@ -32,6 +32,8 @@ export function flipperContact(position,f,angle,radius){
 }
 export function flipperHit(body,f,angle,omega,radius,duration){
   const p=body.translation(),v=body.linvel();
+  const reach=f.length+f.endRadius+radius,x2=p.x+v.x*duration,y2=p.y+v.y*duration,z2=p.z+v.z*duration;
+  if(Math.min(p.x,x2)>f.p.x+reach||Math.max(p.x,x2)<f.p.x-reach||Math.min(p.y,y2)>f.p.y+reach||Math.max(p.y,y2)<f.p.y-reach||Math.min(p.z,z2)-radius*.5>f.height||Math.max(p.z,z2)+radius*.5<0)return null;
   const at=t=>flipperContact({x:p.x+v.x*t,y:p.y+v.y*t,z:p.z+v.z*t},f,angle+omega*t,radius);
   const start=at(0);if(!start)return null;
   if(start.gap<=.0005){

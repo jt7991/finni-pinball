@@ -62,7 +62,7 @@ export class ContactMesh{
   addVertical(a,low,high){if(high<=low)return;this.insert({kind:'edge',points:[{...a,z:low},{...a,z:high}],a:{...a,z:low},axis:{x:0,y:0,z:1},length:high-low});}
   addCircle(center,radius,low,high){this.insert({kind:'circle',points:[{x:center.x-radius,y:center.y-radius,z:low},{x:center.x+radius,y:center.y+radius,z:high}],a:{...center,z:low},axis:{x:0,y:0,z:1},length:high-low,radius});}
 }
-function wallHit(p,v,radius,duration,s){
+export function wallHit(p,v,radius,duration,s){
   const vn=dot(v,s.normal);if(vn>.0001)return null;
   const distance=dot(sub(p,s.a),s.normal),gap=distance-radius;if(gap< -radius||distance<0)return null;
   let time;
@@ -85,7 +85,7 @@ function triangleHit(p,v,radius,duration,s){
   if(u<0||w<0||u+w>1)return null;
   return {time,contact,gap,vn,normal:s.n};
 }
-function roundHit(p,v,radius,duration,s){
+export function roundHit(p,v,radius,duration,s){
   const totalRadius=radius+(s.radius??0);
   let d=sub(p,s.a),dv=v;
   if(s.axis){d=sub(d,mul(s.axis,dot(d,s.axis)));dv=sub(v,mul(s.axis,dot(v,s.axis)));}

@@ -57,7 +57,7 @@ export function createRules(source,specs,host={}) {
       getballs:()=>host.balls?.()??[],
     };
     const proxy=new Proxy(state,{
-      get(target,key){if(typeof key==='symbol')return target[key];const k=key.toLowerCase();return k in actions?actions[k]:target[k]??0;},
+      get(target,key){if(typeof key==='symbol')return target[key];const k=key.toLowerCase();if(spec.kind==='Plunger'&&k==='position')return host.plungerPosition?.()??0;return k in actions?actions[k]:target[k]??0;},
       set(target,key,v){const k=String(key).toLowerCase();target[k]=v;
         if(k==='enabled'&&spec.kind==='Timer'||k==='timerenabled'){
           const enabled=!!v,timerKey=k==='enabled'?lower:`${lower}:timer`;

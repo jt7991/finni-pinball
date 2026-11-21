@@ -26,8 +26,9 @@ class FullGame extends Pinball {
     this.rules=createRules(source,specs,{
       createBall:name=>this.spawn(name),destroyBall:(name,ball)=>this.remove(name,ball),
       kick:(name,ball,angle,speed,inclination)=>this.kick(name,ball,angle,speed,inclination),
-      flipper:(side,down)=>{this.held[side]=down;},plunger:down=>{this.held.launch=down;if(!down)this.launch();},
-      autofire:()=>{this.charge=1.2;this.launch();},
+      flipper:(side,down)=>{this.held[side]=down;},plunger:down=>{this.held.launch=down;if(down)this.plunger.pull();else this.launch();},
+      plungerPosition:()=>this.plunger.position,
+      autofire:()=>this.autofire(),
       nudge:(angle,strength)=>{for(const rec of this.records)if(!rec.held)rec.body.applyImpulse({x:Math.sin(angle*Math.PI/180)*strength,y:Math.cos(angle*Math.PI/180)*strength,z:.25},true);},
       sound:(name,settings)=>media?.play(name,settings),stopSound:name=>media?.stop(name),
       shake:strength=>emit({type:'shake',strength}),
@@ -109,12 +110,12 @@ class FullGame extends Pinball {
 
   spawn(name) {
     const key=name.toLowerCase(),spec=this.specs.objects.find(s=>s.name.toLowerCase()===key);
-    const p=key==='ballrelease'?{x:9,y:2.65,z:RADIUS+.01}:{...point(spec?.center??{x:293.68,y:473.63}),z:this.surface(spec??{})+RADIUS};
+    const p=key==='ballrelease'?{x:this.plunger.spec.center.x*.01,y:(2115-this.plunger.end-5)*.01,z:RADIUS}:{...point(spec?.center??{x:293.68,y:473.63}),z:this.surface(spec??{})+RADIUS};
     const body=this.world.createRigidBody(RAPIER.RigidBodyDesc.dynamic().setTranslation(p.x,p.y,p.z)
       .setCcdEnabled(true).setCanSleep(false));
     const collider=this.world.createCollider(RAPIER.ColliderDesc.ball(RADIUS).setMass(1).setRestitution(BALL_RESTITUTION).setRestitutionCombineRule(RAPIER.CoefficientCombineRule.Multiply).setFriction(0).setFrictionCombineRule(RAPIER.CoefficientCombineRule.Max)
       .setCollisionGroups(BALL_GROUP).setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS),body);
-    const rec={body,collider,held:key==='ballrelease'?'lane':key,previous:{...p},cooldowns:new Map(),laneTime:this.time};
+    const rec={body,collider,held:key==='ballrelease'?null:key,inLane:key==='ballrelease',previous:{...p},cooldowns:new Map(),laneTime:this.time};
     rec.proxy=new Proxy({radius:25,mass:1,id:body.handle},{
       get:(target,key)=>{
         if(typeof key!=='string')return target[key];key=key.toLowerCase();
@@ -133,10 +134,10 @@ class FullGame extends Pinball {
         if(key==='velx')vel.x=v;if(key==='vely')vel.y=-v;if(key==='velz')vel.z=v;
         body.setTranslation(p,true);body.setLinvel(vel,true);return true;},
     });
-    body.setBodyType(RAPIER.RigidBodyType.KinematicPositionBased,true);
+    if(rec.held)body.setBodyType(RAPIER.RigidBodyType.KinematicPositionBased,true);
     this.records.push(rec);this.byCollider.set(collider.handle,rec);this.captures.set(key,rec);this.pendingCreate=rec;this.ball=body;
     if(key==='ballrelease'){
-      this.inLane=true;this.rules.schedule(0,'swPlungerRest_Hit');
+      this.inLane=true;
     }
     return rec.proxy;
   }
@@ -160,17 +161,20 @@ class FullGame extends Pinball {
   }
 
   start(){this.input('start',true);this.input('start',false);}
-  input(action,down){if(action==='launch'&&!down&&!this.held.launch)return;this.rules.key(action,down);this.sync();}
+  input(action,down){if(action==='launch'&&down===this.held.launch)return;this.rules.key(action,down);this.sync();}
   release(){
     this.charge=0;this.held.launch=false;
+    this.plunger.cancel();
     if(this.rules){this.rules.key('left',false);this.rules.key('right',false);}
     this.held.left=false;this.held.right=false;
   }
   launch(){
-    const rec=this.records.find(r=>r.held==='lane');if(!rec||this.state!=='playing')return;
-    rec.held=null;rec.body.setBodyType(RAPIER.RigidBodyType.Dynamic,true);
-    rec.body.setLinvel({x:0,y:24+Math.min(1,this.charge/1.2)*21,z:0},true);
-    this.captures.delete('ballrelease');this.inLane=false;this.charge=0;this.rules.hit('swPlungerRest','UnHit',rec.proxy);
+    this.plunger.fire();this.charge=0;
+  }
+  autofire(){
+    // cvpmImpulseP.AutoFire is a separate coil acting on balls in swPlunger;
+    // it does not release the manual rod or add the old minimum launch speed.
+    for(const rec of this.records)if(rec.inLane){const v=rec.body.linvel();rec.body.setLinvel({x:v.x,y:45-this.random()*1.5,z:v.z},true);}
   }
 
   sync(){
@@ -180,7 +184,7 @@ class FullGame extends Pinball {
     this.score=Number(this.rules.value(`Score(${this.player})`))||0;
     this.ballNumber=playing?4-Number(this.rules.value(`BallsRemaining(${this.player})`)):0;
     this.tilted=!!this.rules.value('Tilted');
-    this.inLane=this.records.some(r=>r.held==='lane');
+    this.inLane=this.records.some(r=>r.inLane);
     this.gameState={playing,entering:!!this.rules.value('hsbModeActive'),player:this.player,
       players:Number(this.rules.value('PlayersPlayingGame'))||1,scores:[1,2,3,4].map(i=>Number(this.rules.value(`Score(${i})`))||0)};
     if(playing&&old!=='playing')this.emit({type:'start'});
@@ -200,9 +204,9 @@ class FullGame extends Pinball {
       state.startangle=90-f.rest*180/Math.PI;state.endangle=90-f.raised*180/Math.PI;
       f.collider.setRestitution(surfaceRestitution(Number(state.elasticity)||0));
     }
-    if(this.held.launch&&this.inLane)this.charge=Math.min(1.2,this.charge+STEP);
     this.prepareContacts(this.records);
     this.stepPhysics(this.records);
+    this.charge=this.held.launch?1.2*this.plunger.charge:0;
     this.readFlippers();
     for(const f of this.flippers){
       const state=this.rules.objects.get(`${f.side}flipper`);
@@ -214,7 +218,11 @@ class FullGame extends Pinball {
       if(other){if(started){const u=rec.body.linvel(),v=other.body.linvel();this.rules.run('OnBallBallCollision',rec.proxy,other.proxy,Math.hypot(u.x-v.x,u.y-v.y,u.z-v.z));}return;}
       const tag=this.tags.get(this.byCollider.has(a)?b:a);if(!tag)return;
       if(tag.kind==='target-body')return;
-      if(!started){if(tag.spec?.kind==='Trigger')this.rules.hit(tag.name,'UnHit',rec.proxy);return;}
+      if(!started){if(tag.spec?.kind==='Trigger'){if(tag.name.toLowerCase()==='swplungerrest')rec.inLane=false;this.rules.hit(tag.name,'UnHit',rec.proxy);}return;}
+      if(tag.spec?.kind==='Trigger'){
+        if(tag.name.toLowerCase()==='swplungerrest')rec.inLane=true;
+        this.rules.hit(tag.name,'Hit',rec.proxy);return;
+      }
       const key=tag.name.toLowerCase();if((rec.cooldowns.get(key)||0)>this.time)return;
       rec.cooldowns.set(key,this.time+.1);
       if(tag.kind==='bumper'){
@@ -243,14 +251,11 @@ class FullGame extends Pinball {
       }else if(tag.spec?.kind==='Kicker'){
         rec.held=key;rec.body.setBodyType(RAPIER.RigidBodyType.KinematicPositionBased,true);rec.body.setLinvel({x:0,y:0,z:0},true);
         this.captures.set(key,rec);this.rules.hit(tag.name,'Hit',rec.proxy);
-      }else this.rules.hit(tag.name,'Hit',rec.proxy);
+      }else {if(key==='swplungerrest')rec.inLane=true;this.rules.hit(tag.name,'Hit',rec.proxy);}
     });
     for(const rec of [...this.records]){
       if(rec.held)continue;
-      const p=rec.body.translation(),v=rec.body.linvel();
-      if(p.x>8.85&&p.y<2.9&&Math.abs(v.y)<1&&this.time-rec.laneTime>1){
-        rec.held='lane';rec.body.setBodyType(RAPIER.RigidBodyType.KinematicPositionBased,true);this.inLane=true;this.rules.hit('swPlungerRest','Hit',rec.proxy);
-      }
+      const p=rec.body.translation();
       if(p.y<1||p.x<-.5||p.x>10||p.z<-.5)this.rules.hit('Drain','Hit',rec.proxy);
     }
     if(++this.syncCount%Math.round(1/(30*STEP))===0)this.sync();

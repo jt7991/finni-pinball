@@ -7,6 +7,7 @@ import {dragCurve} from './drag-curve.js';
 import {flipperContact,flipperHit,resolveFlipperContact,supportFlipper} from './flipper-contact.js';
 import {playfieldHit,supportPlayfield,collidePlayfield} from './playfield-contact.js';
 import {ContactMesh,collideSurface,supportSurface} from './mesh-contact.js';
+import {Plunger} from './plunger.js';
 
 export const STEP = 1 / 1000;
 export const RADIUS = 0.25;
@@ -111,6 +112,7 @@ export class Pinball {
       if (item.kind === 'Bumper') this.bumper(item);
       if (item.kind === 'Kicker') this.scoop = point(item.center);
       if (item.kind === 'Ramp') this.ramp(item);
+      if (item.kind === 'Plunger') this.plunger = new Plunger(item);
     }
     // Close the inaccessible sub-ball-width pocket behind the right return post.
     // The diagonal lies under the existing plastic and feeds balls back infield.
@@ -263,7 +265,8 @@ export class Pinball {
   }
 
   stepPhysics(records){
-    if(!this.nativeFlipperContacts){this.world.step(this.events);return;}
+    this.plunger?.updateVelocity();
+    if(!this.nativeFlipperContacts){this.world.step(this.events);this.plunger?.displace(STEP);return;}
     if(this.nativePlayfieldContacts)for(const r of records){
       if(r.held)continue;
       r.body.setGravityScale(0,true);
@@ -275,6 +278,12 @@ export class Pinball {
     while(remaining>1e-9&&count++<32){
       let event=null,time=remaining;const contacts=[];
       for(const r of records)if(!r.held){r.queryPosition=r.body.translation();r.queryVelocity=r.body.linvel();}
+      if(this.plunger)for(const r of records){
+        if(r.held)continue;
+        const hit=this.plunger.hit(r.queryPosition,r.queryVelocity,r.body.mass(),RADIUS,remaining),key=`${r.body.handle}:plunger`;
+        if(hit?.contact)contacts.push({r,hit,plunger:true});
+        else if(hit&&hit.time<=time&&!(hit.time<1e-9&&handled.has(key))){event={r,hit,key,plunger:true};time=hit.time;}
+      }
       if(this.nativePlayfieldContacts)for(const r of records){
         if(r.held)continue;
         const hits=this.playfieldMesh?this.playfieldMesh.hitsAt(r.queryPosition,r.queryVelocity,RADIUS,remaining):[playfieldHit(r.body,RADIUS,remaining)];
@@ -311,9 +320,10 @@ export class Pinball {
           else if(hit&&hit.time<=time&&!(hit.time<1e-9&&handled.has(key))){event={f,r,key};time=hit.time;}
         }
       }
-      if(time>1e-9){this.world.timestep=time;this.world.step(this.events);remaining-=time;handled.clear();}
+      if(time>1e-9){this.world.timestep=time;this.world.step(this.events);this.plunger?.displace(time);remaining-=time;handled.clear();}
       if(event&&!event.f){
-        if(event.mesh){
+        if(event.plunger)this.plunger.collide(event.r.body,event.hit);
+        else if(event.mesh){
           const shape=event.mesh.mesh.shapes[event.hit.id],sling=shape.slingshot;
           if(sling&&!this.tilted&&event.hit.vn<=-sling.threshold){
             const p=event.r.body.translation(),n=event.hit.normal,t=((p.x-n.x*RADIUS-shape.a.x)*shape.axis.x+(p.y-n.y*RADIUS-shape.a.y)*shape.axis.y)/shape.length;
@@ -341,15 +351,16 @@ export class Pinball {
         f.angle=event.bound;f.body.setRotation(quaternion(f.angle-f.rest),true);f.body.setAngvel({x:0,y:0,z:Math.abs(omega)<.05?0:-.3*omega},true);
       }
       }
-      if(time>1e-9)for(const {r,hit,f,mesh}of contacts){
+      if(time>1e-9)for(const {r,hit,f,mesh,plunger}of contacts){
         if(f)supportFlipper(r.body,f,hit,this.world.gravity,f.friction,RADIUS,time);
+        else if(plunger)supportSurface(r.body,hit,this.world.gravity,{friction:.3},RADIUS,time);
         else if(mesh)supportSurface(r.body,hit,this.world.gravity,mesh.material,RADIUS,time);
         else if(this.playfieldMesh)supportSurface(r.body,hit,this.world.gravity,this.playfieldMaterial,RADIUS,time);
         else supportPlayfield(r.body,hit,this.world.gravity,this.playfieldMaterial,time);
       }
       if(!event)break;
     }
-    if(remaining>1e-9){this.physicsStats.substepBudgetExceeded++;this.world.timestep=remaining;this.world.step(this.events);}
+    if(remaining>1e-9){this.physicsStats.substepBudgetExceeded++;this.world.timestep=remaining;this.world.step(this.events);this.plunger?.displace(remaining);}
     this.physicsStats.maxSubsteps=Math.max(this.physicsStats.maxSubsteps,count);this.world.timestep=STEP;
   }
 

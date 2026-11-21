@@ -18,6 +18,11 @@ test('physics materials retain the actual VPX rubber and metal overrides',()=>{
   assert.equal(peg.elasticity,.3);assert.equal(peg.contact_physics.elasticity,.9);assert.equal(peg.contact_physics.friction,.9);
 });
 
+test('physical plunger follows six native pull/release recordings and initial launch energies',()=>{
+  const reports=JSON.parse(execFileSync(process.execPath,['scripts/compare-vpx-plunger.mjs','--check','--json'],{cwd:root,encoding:'utf8',maxBuffer:2*1024*1024}));
+  assert.equal(reports.length,6);assert.ok(reports[0].maxModelSpeed<.1);assert.ok(reports.at(-1).maxModelSpeed>65);
+});
+
 test('raw engine heel/tip, sliding and cradle contacts retain their independently measured baseline',()=>{
   const reports=JSON.parse(execFileSync(process.execPath,['scripts/compare-vpx-contact.mjs','--check','--json'],{cwd:root,encoding:'utf8'}));
   assert.equal(reports.length,11);assert.equal(reports.filter(r=>r.name.includes('cradle')).length,2);

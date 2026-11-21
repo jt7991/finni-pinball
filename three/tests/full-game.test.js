@@ -27,12 +27,24 @@ test('native bonus, game over and replay complete across three physical drains',
   try{
     g.start();ticks(g,1.7);
     for(let ball=1;ball<=3;ball++){
-      const rec=g.records.find(r=>r.held==='lane');assert.ok(rec,`ball ${ball} released`);
+      const rec=g.records.find(r=>r.inLane);assert.ok(rec,`ball ${ball} released`);
       g.rules.execute('bBallSaverActive=False:bBallSaverReady=False');
       g.rules.hit('Drain','Hit',rec.proxy);ticks(g,20);
     }
     assert.equal(g.state,'over');assert.equal(g.records.length,0);
     g.start();ticks(g,1.7);assert.equal(g.state,'playing');assert.equal(g.ballNumber,1);assert.equal(g.records.length,1);
+  }finally{g.dispose();}
+});
+test('weak manual shots roll back dynamically and cancelled pulls never fire',async()=>{
+  const g=await createFullGame(json('layout'),json('objects'),source,()=>{});
+  try{
+    g.start();ticks(g,1.7);const r=g.records[0];
+    g.input('launch',true);ticks(g,.19);g.input('launch',false);ticks(g,1.2);
+    assert.ok(r.inLane,'weak shot returns to the shooter switch');assert.ok(Math.abs(r.body.linvel().y)<.1);
+    assert.equal(r.held,null,'returning ball remains dynamic');
+    g.input('launch',true);ticks(g,.55);g.release();ticks(g,.5);
+    assert.ok(r.inLane,'focus cancellation keeps the ball in lane');assert.ok(Math.abs(r.body.linvel().y)<.1);
+    assert.equal(g.charge,0);assert.ok(Math.abs(g.plunger.position-25*g.plunger.rest)<.001);
   }finally{g.dispose();}
 });
 test('authored flipper trick timers deliver symmetric shots on a controlled flat playfield',async()=>{
@@ -46,6 +58,7 @@ test('authored flipper trick timers deliver symmetric shots on a controlled flat
         const f=g.flippers.find(f=>f.side===side),ball=g.records[0].body,sign=side==='left'?1:-1;
         ball.setTranslation({x:f.p.x+sign*offset,y:f.p.y+.5,z:RADIUS+.005},true);
         ball.setLinvel({x:0,y:-6,z:0},true);
+        ball.setAngvel({x:0,y:0,z:0},true);
         let maximum=0,height=0,shot=false;
         for(let i=0;i<.18/STEP;i++){
           if(i*STEP>=delay&&!g.held[side])g.input(side,true);

@@ -46,7 +46,7 @@ if(process.argv.includes('--flippers')){
     if(!full){g.charge=seed%4*.4;g.launch();}
     for(let i=0;i<seconds/STEP;i++){
       try{
-      if(full&&g.inLane){g.input('launch',true);if(g.charge>=charge-1e-6){g.input('launch',false);launched++;charge=Math.min(1.2,charge+.05);}}
+      if(full&&g.inLane&&!g.plunger.fireTimer){g.input('launch',true);if(g.charge>=charge-1e-6){g.input('launch',false);launched++;charge=Math.min(1.2,charge+.05);}}
       if(full&&i%120===0&&g.rules.value('bChooseBattle')){g.input('action',true);g.input('action',false);}
       if(full&&i%120===0&&g.gameState.entering){
         g.rules.execute('hsCurrentDigit=0:hsCurrentLetter=InStr(hsValidLetters,"T"):Table1_KeyDown PlungerKey:hsCurrentLetter=InStr(hsValidLetters,"S"):Table1_KeyDown PlungerKey:hsCurrentLetter=InStr(hsValidLetters,"T"):Table1_KeyDown PlungerKey');
