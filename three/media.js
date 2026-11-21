@@ -1,3 +1,5 @@
+import {nativeSoundRate} from './native-sound.js';
+
 export function createAudio(manifest,base) {
   let context,muted=false,primed=false;
   const musicElement=new Audio();
@@ -35,7 +37,7 @@ export function createAudio(manifest,base) {
     const element=music.get(String(name).toLowerCase());if(element){element.pause();element.removeAttribute('src');element.load();music.delete(String(name).toLowerCase());}
     for(const s of playing.get(String(name).toLowerCase())??[])s.stop();playing.delete(String(name).toLowerCase());
   }
-  async function play(name,{loop=0,volume=1,pan=0,rate=1}={}){
+  async function play(name,{loop=0,volume=1,pan=0,rate=1,pitch=0,pitchFactor=1}={}){
     name=String(name).toLowerCase();if(muted||!context||!manifest[name])return;
     try{
       if(manifest[name].music){
@@ -44,20 +46,21 @@ export function createAudio(manifest,base) {
         element.volume=Math.max(0,Math.min(1,Number(volume)));element.preload='none';music.set(name,element);await element.play();return;
       }
       let loopState;
+      const playbackRate=data=>rate*nativeSoundRate(manifest[name].sampleRate??data.sampleRate,pitch,pitchFactor);
       if(loop===-1){
         loopState=loops.get(name);
         if(loopState){
-          Object.assign(loopState,{volume,pan,rate});
-          if(loopState.gain){loopState.gain.gain.value=volume;loopState.panner.pan.value=Math.max(-1,Math.min(1,pan));loopState.source.playbackRate.value=rate;}
+          Object.assign(loopState,{volume,pan,pitch,pitchFactor,rate});
+          if(loopState.gain){loopState.gain.gain.value=volume;loopState.panner.pan.value=Math.max(-1,Math.min(1,pan));loopState.source.playbackRate.value=playbackRate(loopState.source.buffer);}
           return;
         }
-        loopState={volume,pan,rate};loops.set(name,loopState);
+        loopState={volume,pan,rate,pitch,pitchFactor};loops.set(name,loopState);
       }
       const requested=context.currentTime,data=await buffer(name);
       if(muted||context.currentTime-requested>2&&!loopState||loopState&&loops.get(name)!==loopState)return;
       const source=context.createBufferSource(),gain=context.createGain(),panner=context.createStereoPanner();
       source.buffer=data;source.loop=loop===-1;gain.gain.value=Math.max(0,Math.min(1,Number(loopState?.volume??volume)));
-      panner.pan.value=Math.max(-1,Math.min(1,Number(loopState?.pan??pan)));source.playbackRate.value=loopState?.rate??rate;
+      panner.pan.value=Math.max(-1,Math.min(1,Number(loopState?.pan??pan)));source.playbackRate.value=loopState?(loopState.rate*nativeSoundRate(manifest[name].sampleRate??data.sampleRate,loopState.pitch,loopState.pitchFactor)):playbackRate(data);
       if(loopState)Object.assign(loopState,{source,gain,panner});source.connect(gain).connect(panner).connect(context.destination);
       const set=playing.get(name)??new Set();playing.set(name,set);set.add(source);
       source.onended=()=>set.delete(source);source.start();

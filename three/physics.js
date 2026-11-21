@@ -17,6 +17,7 @@ import {nativeRubberMesh} from './native-rubber.js';
 import {NativeTree} from './native-tree.js';
 import {NativeDynamicTree} from './native-dynamic-tree.js';
 import {nativeBallHit,collideNativeBalls} from './native-ball-collision.js';
+import {collideNativeBumper} from './native-bumper.js';
 
 export const STEP = 1 / 1000;
 export const RADIUS = 0.25;
@@ -82,7 +83,7 @@ export class Pinball {
     this.tags = new Map();
     this.colliderLabels = new Map();
     this.contactMaterials=new Map();this.changedMaterials=new Set();this.queryBall=new RAPIER.Ball(RADIUS);
-    this.nativeMeshes=[];this.nativeMeshGrid=new Map();this.nativeGlobalMeshes=[];
+    this.nativeMeshes=[];this.nativeMeshGrid=new Map();this.nativeGlobalMeshes=[];this.nativeBumpers=new Map();
     this.nativeParts=new Map([...layout.items,...(layout.rubbers??[])].map(item=>[item.name.toLowerCase(),item]));
     this.nativeParts.set('playfield_mesh',layout.playfield);this.nativeTreeEnabled=this.nativePositionUnits&&this.nativeFlipperContacts&&physics.native_tree!==false;
     this.nativeBallContacts=this.nativeTreeEnabled&&physics.native_ball_contacts!==false;this.ballCollisionSwap=false;this.dynamicBallTree=new NativeDynamicTree();
@@ -522,6 +523,13 @@ export class Pinball {
         else if(event.spinner)event.spinner.collide(impactBody,event.hit);
         else if(event.plunger)this.plunger.collide(impactBody,event.hit,this.random,this.playfieldMaterial.difficulty);
         else if(event.mesh){
+          if(event.mesh.bumper&&impactBody.native){
+            if(event.mesh.collider.isEnabled())collideNativeBumper(impactBody,event.hit,event.mesh.bumper,event.mesh.material,RADIUS,this.random,()=>{
+              if(this.rules)this.rules.hit(event.mesh.bumper.name,'Hit',event.r.proxy);
+              else if(this.state==='playing'&&!this.tilted)this.award(100,'bumper');
+            });
+            continue;
+          }
           const shape=event.mesh.mesh.shapes[event.hit.id],sling=shape.slingshot;
           if(sling&&!this.tilted&&event.hit.vn<=-sling.threshold){
             const p=impactBody.translation(),n=event.hit.normal,t=((p.x-n.x*RADIUS-shape.a.x)*shape.axis.x+(p.y-n.y*RADIUS-shape.a.y)*shape.axis.y)/shape.length;
@@ -615,7 +623,9 @@ export class Pinball {
     const collider=this.world.createCollider(RAPIER.ColliderDesc.cylinder(height/2,item.radius*.01)
       .setTranslation(p.x,p.y,height/2).setRotation({x:Math.SQRT1_2,y:0,z:0,w:Math.SQRT1_2}).setSensor(this.nativeFlipperContacts)
       .setCollisionGroups(STATIC_GROUP).setRestitutionCombineRule(RAPIER.CoefficientCombineRule.Multiply).setRestitution(surfaceRestitution(.3)).setFriction(.3).setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS));
-    if(this.nativeFlipperContacts){const mesh=new ContactMesh({vertices:[],indices:[]});mesh.addCircle(p,item.radius*.01,0,height);this.registerMesh({collider,mesh,bumper:item,source_order:item.source_order,material:{...this.playfieldMaterial,elasticity:.3,elasticity_falloff:0,friction:.3,scatter:item.scatter}});}
+    const bumper={...item,hit_event:item.hit_event!==false},record={collider,bumper,source_order:item.source_order,material:{...this.playfieldMaterial,elasticity:.3,elasticity_falloff:0,friction:.3,scatter:item.scatter}};
+    this.nativeBumpers.set(item.name.toLowerCase(),record);
+    if(this.nativeFlipperContacts){const mesh=new ContactMesh({vertices:[],indices:[]});mesh.addCircle(p,item.radius*.01,0,height);record.mesh=mesh;this.registerMesh(record);}
     this.tags.set(collider.handle,{kind:'bumper',name:item.name,p,threshold:item.threshold});this.colliderLabels.set(collider.handle,item.name);
   }
 
@@ -680,6 +690,7 @@ export class Pinball {
       if(!started||this.state!=='playing'||this.tilted) return;
       const handle=a===this.ballCollider.handle?b:b===this.ballCollider.handle?a:null;
       const tag=this.tags.get(handle);if(!tag||(this.cooldowns.get(tag.name)||0)>this.time)return;
+      if(this.nativeFlipperContacts&&tag.kind==='bumper')return;
       this.cooldowns.set(tag.name,this.time+.12);
       const p=this.ball.translation();
       if(tag.kind==='bumper') {

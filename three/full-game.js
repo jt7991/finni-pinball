@@ -14,6 +14,7 @@ import {Trigger} from './trigger.js';
 import {nativeTargetMesh} from './native-target.js';
 import {Kicker} from './kicker.js';
 import {nativeSurfaceHeight} from './native-ramp.js';
+import {nativePitchFactor} from './native-sound.js';
 
 export async function createFullGame(layout,specs,source,emit,media) {
   await RAPIER.init();
@@ -27,7 +28,7 @@ class FullGame extends Pinball {
     this.placeholder=this.ball;this.ballCollider.setEnabled(false);
     this.records=[];this.toyRecords=[];this.physicalRecords=[];this.byCollider=new Map();this.captures=new Map();this.mechanisms=new Map(this.nativeMeshes.map(m=>[this.colliderLabels.get(m.collider.handle)?.toLowerCase(),m.collider]));
     this.targetFronts=new Map();this.targetMotions=new Map();this.targetEventBall=null;
-    this.specs=specs;this.media=media;this.pendingCreate=null;this.syncCount=0;
+    this.specs=specs;this.media=media;this.soundNames=new Set(specs.sound_names??[]);this.pendingCreate=null;this.syncCount=0;
     for(const spec of specs.objects)this.nativeParts.set(spec.name.toLowerCase(),{...this.nativeParts.get(spec.name.toLowerCase()),...spec});
     for(const spec of specs.objects)this.addMechanism(spec);
     const storage={
@@ -40,10 +41,14 @@ class FullGame extends Pinball {
       flipper:(side,down)=>{this.held[side]=down;},plunger:down=>{this.held.launch=down;if(down)this.plunger.pull();else this.launch();},
       plungerPosition:()=>this.plunger.position,
       nudge:(angle,strength)=>this.cabinetNudge.nudge(angle,strength),
-      sound:(name,settings)=>media?.play(name,settings),stopSound:name=>media?.stop(name),
+      sound:(name,settings)=>{
+        if(!this.soundNames.has(String(name).toLowerCase()))return;
+        const pitchFactor=nativePitchFactor(settings.randomPitch??0,this.random);
+        media?.play(name,{...settings,pitchFactor});
+      },stopSound:name=>media?.stop(name),
       shake:strength=>emit({type:'shake',strength}),
       message:text=>emit({type:'message',text}),mechanism:(name,k,v)=>this.mechanism(name,k,v),
-      mechanismValue:(name,key)=>{const lower=name.toLowerCase(),target=this.targetMotions.get(lower);if(target)return ({isdropped:target.dropped?1:0,currentanimoffset:target.offset})[key];const gate=this.gates.find(g=>g.spec.name.toLowerCase()===lower);if(gate)return ({currentangle:gate.currentAngle,collidable:gate.enabled,open:gate.open})[key];},
+      mechanismValue:(name,key)=>{const lower=name.toLowerCase(),target=this.targetMotions.get(lower);if(target)return ({isdropped:target.dropped?1:0,currentanimoffset:target.offset})[key];const gate=this.gates.find(g=>g.spec.name.toLowerCase()===lower);if(gate)return ({currentangle:gate.currentAngle,collidable:gate.enabled,open:gate.open})[key];const bumper=this.nativeBumpers.get(lower);if(bumper)return ({threshold:bumper.bumper.threshold,force:bumper.bumper.force,scatter:bumper.bumper.scatter,hashitevent:bumper.bumper.hit_event,collidable:bumper.collider.isEnabled()})[key];},
       balls:()=>this.physicalRecords.map(r=>r.proxy),...storage,
     });
     this.rules.init();
@@ -139,6 +144,13 @@ class FullGame extends Pinball {
 
   mechanism(name,key,v) {
     const collider=this.mechanisms.get(name.toLowerCase());if(!collider)return;
+    const bumper=this.nativeBumpers.get(name.toLowerCase());
+    if(bumper){
+      if(key==='collidable')collider.setEnabled(!!v);
+      else if(key==='hashitevent')bumper.bumper.hit_event=!!v;
+      else if(['threshold','force','scatter'].includes(key)){bumper.bumper[key]=Math.fround(Number(v));if(key==='scatter')bumper.material.scatter=bumper.bumper.scatter;}
+      return;
+    }
     const target=this.targetMotions.get(name.toLowerCase());
     if(target){if(key==='isdropped')target.setDropped(v,this.targetEventBall??this.records[0]?.proxy);if(key==='collidable')target.setCollidable(v);this.targetFronts.get(name.toLowerCase())?.setEnabled(collider.isEnabled());return;}
     const gate=this.gates.find(g=>g.spec.name.toLowerCase()===name.toLowerCase());
@@ -270,6 +282,7 @@ class FullGame extends Pinball {
       if(other){if(started&&!this.nativeBallContacts){const u=rec.body.linvel(),v=other.body.linvel();this.rules.run('OnBallBallCollision',rec.proxy,other.proxy,Math.hypot(u.x-v.x,u.y-v.y,u.z-v.z));}return;}
       const tag=this.tags.get(this.byCollider.has(a)?b:a);if(!tag)return;
       if(tag.kind==='target-body'||tag.kind==='spinner-body'||tag.kind==='gate-body'||tag.kind==='trigger-body'||tag.kind==='kicker-body')return;
+      if(this.nativeFlipperContacts&&tag.kind==='bumper')return;
       if(!started){if(tag.spec?.kind==='Trigger'){if(tag.name.toLowerCase()==='swplungerrest')rec.inLane=false;this.rules.hit(tag.name,'UnHit',rec.proxy);}return;}
       if(tag.spec?.kind==='Trigger'){
         if(tag.name.toLowerCase()==='swplungerrest')rec.inLane=true;

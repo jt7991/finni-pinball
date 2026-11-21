@@ -14,9 +14,10 @@ parser.add_argument('--instrument-timers',action='store_true',help='Build a sepa
 parser.add_argument('--instrument-spinners',action='store_true',help='Build a separate timer/plate-angle diagnostic table.')
 parser.add_argument('--instrument-ball-trails',action='store_true',help='Record the source ten-slot old-position history before controlled resets.')
 parser.add_argument('--instrument-rng',action='store_true',help='Emit physics-frame markers for read-only native random-state capture.')
+parser.add_argument('--instrument-bumpers',action='store_true',help='Observe bumper callback clocks and physics-affecting script random outputs.')
 parser.add_argument('--all-scatter-zero',action='store_true',help='Also zero every material/object scatter field in a separate reference copy.')
 args=parser.parse_args()
-if args.instrument_spinners or args.instrument_ball_trails or args.instrument_rng:args.instrument_timers=True
+if args.instrument_spinners or args.instrument_ball_trails or args.instrument_rng or args.instrument_bumpers:args.instrument_timers=True
 source=args.source_root.resolve()
 tool=source/'.tools/vpxtool/vpxtool.exe'
 table=source/'runtime/Finni-Big-Day.vpx'
@@ -52,6 +53,24 @@ if args.instrument_timers:
     script=script_path.read_text()
     script+='\nDim RefTraceOn,RefTrace\nRefTraceOn=False:RefTrace=""\n'
     script+='Dim RefDriveAt,RefDriveSide,RefDrivePress,RefDriveMarker,RefTraceBall,RefTraceUntil,RefStateTraceOn,RefTraceFrom\nRefDriveAt=0:RefStateTraceOn=True:RefTraceFrom=0\n'
+    if args.instrument_bumpers:
+        for index in range(1,4):
+            pattern=rf'(Sub Bumper{index}_Hit\b[^\r\n]*[\r\n]+)'
+            observer=f'    If RefTraceOn Then RefTrace=RefTrace & "BUMPER|" & GameTime & "|{index}|" & CStr(CDbl(ActiveBall.VelX)) & "|" & CStr(CDbl(ActiveBall.VelY)) & "|" & CStr(CDbl(ActiveBall.VelZ)) & ";"\n'
+            script,count=re.subn(pattern,lambda m:m[1]+observer,script,count=1,flags=re.I)
+            if count!=1:raise RuntimeError(f'Missing native bumper handler {index}')
+        # Observe the original Rnd return values. The wrapper preserves the
+        # Single variant and advances the native script RNG exactly once.
+        script,count=re.subn(r'(Sub LilDPShake\b.*?)(End Sub)',lambda m:re.sub(r'\bRND\(1\)', 'RefShakeRnd(1)',m[1],flags=re.I)+m[2],script,count=1,flags=re.I|re.S)
+        if count!=1:raise RuntimeError('Missing physics-affecting toy shake routine')
+        script+='''
+Function RefShakeRnd(n)
+    Dim observed
+    observed=Rnd(n)
+    If RefTraceOn Then RefTrace=RefTrace & "SCRIPT_RND|" & GameTime & "|" & CStr(CDbl(observed)) & ";"
+    RefShakeRnd=observed
+End Function
+'''
     if args.instrument_ball_trails:
         script+='Dim RefTrailOn,RefTrailSlots(9),RefTrailBalls,RefTrailBall,RefTrailIndex,RefTrailRow,RefTrailSlot\nRefTrailOn=False\n'
     for name,marker in [('RollingTimer_Timer','ROLL'),('LeftFlipper_Timer','FLIP')]:
@@ -108,6 +127,7 @@ comparison=subprocess.run([str(tool),'table','diff',str(table),str(copy)],text=T
 if comparison.returncode not in (0,1):raise RuntimeError(comparison.stderr)
 diff=comparison.stdout
 metadata={'engine':'@valknar/vpinball-wasm 0.3.4','upstreamCommit':'195f214dd4849b8ef6113fd377258b78d0dec3bf',
+          'nativePhysicsMaxLoops':0 if data['physics_max_loops']==0xFFFFFFFF else data['physics_max_loops']*10,
           'sourceSha256':hashlib.sha256(table.read_bytes()).hexdigest(),
           'controlledSha256':hashlib.sha256(copy.read_bytes()).hexdigest(),
           'controlledOverrides':overrides,'originalValues':original,'diff':diff,'verification':verify}
@@ -123,6 +143,7 @@ if args.instrument_timers:
     if args.instrument_ball_trails:
         metadata['instrumentation']['ballTrails']={'slots':10,'bucketMilliseconds':10,'columns':['ball_id','x','y','z'],'positionPhase':'Timer observes the preceding physics step; the final completed-step position is captured before each controlled reset.'}
     if args.instrument_rng:metadata['instrumentation']['nativeRngMarkers']='RNG_FRAME emitted before each physics step; the browser probe reads the unmodified engine state synchronously when this debug message is written.'
+    if args.instrument_bumpers:metadata['instrumentation']['bumperTrace']={'callbacks':'BUMPER records handler entry clock, index and incoming scripted ball velocity after the native kick.','scriptRandom':'SCRIPT_RND records original Single outputs in LilDPShake through a wrapper that preserves value type and one native RNG advance per call.'}
 (out/'metadata.json').write_text(json.dumps(metadata,indent=2)+'\n')
 print(diff)
 print(f'Controlled native reference: {copy}')

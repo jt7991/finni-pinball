@@ -41,6 +41,24 @@ export function restoreReferenceBalls(game,fixture,scenario,fallback){
     if(values.id===scenario.initialMeasuredBallID)measured=record;
   });
   if(!measured)throw Error('native measured ball missing from initial snapshot');
+  if(scenario.initialNativeInternals){
+    const internals=scenario.initialNativeInternals,idColumn=columns.indexOf('ID');
+    game.ballCollisionSwap=internals.swapBallCollisions;
+    for(const body of internals.balls){
+      const index=scenario.initialBallStates.findIndex(row=>row[idColumn]===body.id),record=records[index];if(!record)throw Error('native internal state refers to a missing body');
+      if(!!record.held!==body.locked)throw Error('native internal frozen state differs from replay');
+      // Native CStr(CDbl(tinyValue)) can omit its exponent in this WASM build.
+      // The validated memory snapshot retains all Float32 bits, including the
+      // nearly stationary animation balls, rather than reconstructing text.
+      if(body.position&&body.velocity&&body.momentum){
+        placeReferenceBall(game,record,{x:body.position[0],y:body.position[1],z:body.position[2],vx:body.velocity[0],vy:body.velocity[1],vz:body.velocity[2]});
+        for(const [axis,key]of ['x','y','z'].entries())game.nativeBall(record.body).setAngularMomentum(key,body.momentum[axis]);
+      }
+      const native=game.nativeBall(record.body);native.order=body.address;native.collisionGap=body.collisionGap;
+      native.eventPosition=Object.fromEntries(['x','y','z'].map((key,index)=>[key,body.eventPosition[index]]));native.eventDistance=body.eventDistance;
+      game.ballSpin.state(native.body).gap=body.collisionGap*.01;
+    }
+  }
   if(scenario.initialBallTrails){
     const idColumn=columns.indexOf('ID'),byId=new Map(scenario.initialBallStates.map((row,index)=>[row[idColumn],records[index]]));
     for(const record of records)game.ballSpin.state(game.nativeBall(record.body).body).positions=Array(10);
@@ -56,11 +74,19 @@ export function restoreReferenceBalls(game,fixture,scenario,fallback){
       const through=Math.min(fixture.nativeRandom.continuityThroughMilliseconds??Infinity,Math.max(...scenario.samples.map(row=>row[0])));
       for(let index=0;index<through;index++)if(scenario.nativeRandomFrames[index]?.[0]!==index+1)throw Error('Native reference omitted a physics-frame marker');
     }
-    const initial=scenario.initialNativeRandom,frames=new Map(scenario.nativeRandomFrames.map(([ms,low,high])=>[ms,[low,high]])),first=frames.get(1)??[initial.low,initial.high],random=nativeRandom(...first);
-    game.random=random;game.nativeRandomAudit=[];const step=game.step.bind(game),origin=Math.round(game.time*1000);
+    const initial=scenario.initialNativeRandom,frames=new Map(scenario.nativeRandomFrames.map(([ms,low,high])=>[ms,[low,high]])),bodyFrames=new Map(scenario.nativeRandomFrames.filter(row=>row[3]).map(row=>[row[0],row[3]])),first=frames.get(1)??[initial.low,initial.high],random=nativeRandom(...first);
+    game.random=random;game.nativeRandomAudit=[];game.nativeBodyAudit=[];const step=game.step.bind(game),origin=Math.round(game.time*1000);
     game.step=()=>{
       const ms=Math.round(game.time*1000)-origin+1,expected=frames.get(ms),actual=random.getState();
       const agrees=!expected||actual.every((word,i)=>word===expected[i]);
+      const observed=bodyFrames.get(ms);
+      if(observed){
+        const bodies=records.map((record,index)=>{
+          const native=game.nativeBall(record.body),state=native.snapshot(),reference=observed.balls[index],error=(a,b)=>Math.hypot(...['x','y','z'].map((key,i)=>a[key]-b[i]));
+          return {id:reference.id,positionError:error(state.p,reference.position),velocityError:error(state.v,reference.velocity),momentumError:error(state.m,reference.momentum),actual:state,expected:reference};
+        });
+        game.nativeBodyAudit.push({ms,swap:game.ballCollisionSwap,expectedSwap:observed.swapBallCollisions,bodies});
+      }
       if(fixture.nativeRandom.requireContinuity&&ms<=(fixture.nativeRandom.continuityThroughMilliseconds??Infinity)&&!agrees)throw Error(`Native random-state progression differs before physics frame ${ms}`);
       const before=random.calls;step();game.nativeRandomAudit.push({ms,agrees,draws:random.calls-before,state:random.getState(),nextNativeState:frames.get(ms+1)});
     };

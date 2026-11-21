@@ -127,3 +127,36 @@ input time. Both native and port remain trapped after the same side nudge.
 The `slot-back` fixture records a target/wire pocket that also holds the ball in
 native VPX. Keep this separate from port regressions. The randomized gameplay
 probe still reports it as a stall; it has no blanket exception or automatic rescue.
+
+`vpx-bumpers-native-state.json` records fourteen isolated bumper scenarios:
+three approach speeds at each bumper, live threshold/force/HasHitEvent/Collidable
+changes, and a second strike within 100ms. The authored bumper callbacks remain
+active. `native-bumper.js` follows `BumperHitCircle::Collide` in `collideex.cpp`:
+the force adds velocity independently of mass, and HasHitEvent controls both
+the kick and event. There is no invented scoring cooldown.
+
+Reproduce the separately instrumented table with
+`prepare-vpx-contact-reference.py --source-root PATH --output-root NEW_PATH
+--all-scatter-zero --instrument-timers --instrument-ball-trails --instrument-rng
+--instrument-bumpers`, then use `check-three.py URL --native-contact --bumpers
+--all-ball-state --ball-trails --rng-state --native-internals --no-state-trace`.
+Never regenerate a table while a reference server is serving it. The replay is
+`node scripts/compare-vpx-bumpers.mjs three/tests/fixtures/vpx-bumpers-native-state.json --check`.
+
+The read-only observer validates the pinned WASM checksum and HitBall self
+pointers before reading position, velocity, angular momentum, collision gap,
+event history, pointer order and the ball-collision swap phase. This is observed
+initial state, not a fitted seed or a runtime physics override. Native diagnostic
+CStr output can lose the exponent of tiny floats; validated memory snapshots
+retain those values. Dense observations are hashed in the fixture metadata;
+the committed fixture retains initial snapshots and every physics RNG word.
+
+Pitch variation in native `audio/SoundPlayer.cpp` consumes two draws from the
+same MWC generator used by physics. The rules bridge preserves those parameters
+even without an attached audio player. The browser uses original WAV sample
+rates from the manifest when applying pitch offsets after device resampling.
+The six script Rnd outputs in each authored bumper shake are separately observed
+and replayed only within that callback. The fourteen cases reproduce 1,454
+observed physics frames, exact callback clocks/scores, and sampled trajectory
+errors below .0001 VPU / .000001 velocity / .000001 angular velocity. This does
+not establish parity for other mechanisms or complete gameplay.

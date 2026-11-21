@@ -41,7 +41,8 @@ export function createRules(source,specs,host={}) {
       interval:spec.timer_interval??100,blinkinterval:spec.blink_interval??125,intensity:spec.intensity??1,
       color:spec.color??0xffffff,colorfull:spec.color2??0xffffff,imagea:'d_empty',userValue:0,
       isdropped:spec.is_dropped??false,open:false,rotx:spec.rot_and_tra?.[0]??0,roty:spec.rot_and_tra?.[1]??0,rotz:spec.rot_z??spec.rot_and_tra?.[2]??0,
-      currentangle:0,startangle:0,endangle:0,transz:0,height:spec.height??50,sequenceactive:false,sequencestate:0};
+      currentangle:0,startangle:0,endangle:0,transz:0,height:spec.height??50,sequenceactive:false,sequencestate:0,
+      threshold:spec.threshold??0,force:spec.force??0,scatter:spec.scatter??0,hashitevent:spec.hit_event??false};
     const actions={
       createball:()=>host.createBall?.(name)??{x:state.x,y:state.y,z:25,velx:0,vely:0,velz:0},
       createsizedballwithmass:()=>host.createBall?.(name)??{x:state.x,y:state.y,z:25,velx:0,vely:0,velz:0},
@@ -62,7 +63,7 @@ export function createRules(source,specs,host={}) {
       getballs:()=>host.balls?.()??[],
     };
     const proxy=new Proxy(state,{
-      get(target,key){if(typeof key==='symbol')return target[key];const k=key.toLowerCase();if(spec.kind==='Plunger'&&k==='position')return host.plungerPosition?.()??0;if(spec.kind==='Gate'||spec.kind==='HitTarget'){const value=host.mechanismValue?.(name,k);if(value!==undefined)return value;}return k in actions?actions[k]:target[k]??0;},
+      get(target,key){if(typeof key==='symbol')return target[key];const k=key.toLowerCase();if(spec.kind==='Plunger'&&k==='position')return host.plungerPosition?.()??0;if(spec.kind==='Gate'||spec.kind==='HitTarget'||spec.kind==='Bumper'){const value=host.mechanismValue?.(name,k);if(value!==undefined)return value;}return k in actions?actions[k]:target[k]??0;},
       set(target,key,v){const k=String(key).toLowerCase();target[k]=v;
         if(k==='enabled'&&spec.kind==='Timer'||k==='timerenabled'){
           const enabled=!!v,timerKey=k==='enabled'?lower:`${lower}:timer`;
@@ -70,6 +71,7 @@ export function createRules(source,specs,host={}) {
           else timers.delete(timerKey);
         }
         if(k==='isdropped'||k==='collidable'||k==='open'||k==='enabled'&&['Trigger','Kicker'].includes(spec.kind))host.mechanism?.(name,k,v);
+        if(spec.kind==='Bumper'&&['threshold','force','scatter','hashitevent'].includes(k))host.mechanism?.(name,k,v);
         return true;},
       has(target,key){return typeof key==='string'&&(key.toLowerCase() in target||key.toLowerCase() in actions);},
       ownKeys(target){return [...new Set([...Reflect.ownKeys(target),...Object.keys(actions)])];},
@@ -95,7 +97,7 @@ export function createRules(source,specs,host={}) {
   for(const c of specs.collections)engine.addCode(`Dim ${c.name}\n${c.name}=Array(${c.items.filter(n=>objects.has(n.toLowerCase())).join(',')})`);
   const natives={
     LoadEM:empty,DOF:empty,SoundFXDOF:name=>name,SoundFX:name=>name,
-    PlaySound:(name,loop=0,volume=1,pan=0)=>host.sound?.(name,{loop,volume,pan}),StopSound:name=>host.stopSound?.(name),
+    PlaySound:(name,loop=0,volume=1,pan=0,randomPitch=0,pitch=0,useExisting=false,restart=false,frontRearFade=0)=>host.sound?.(name,{loop,volume,pan,randomPitch,pitch,useExisting,restart,frontRearFade}),StopSound:name=>host.stopSound?.(name),
     PlayMusic:name=>host.sound?.(name,{music:true}),EndMusic:()=>host.stopSound?.(),
     LoadValue:(table,key)=>host.load?.(key)??'',SaveValue:(table,key,v)=>host.save?.(key,v),
     RGB:(r,g,b)=>Math.round(r)+Math.round(g)*256+Math.round(b)*65536,
