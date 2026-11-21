@@ -32,10 +32,9 @@ export function preserveLightAlpha(gl){
 // Retina phone screens otherwise get desktop-sized render targets and passes.
 export function configureRenderer(engine,{mobile=false,quality='auto'}={}){
   const performance=quality==='performance'||quality==='auto'&&mobile;
-  if(!performance)return;
   const viewport=engine.canvas?.parentElement;
   const width=viewport?.clientWidth,height=viewport?.clientHeight;
-  if(width>0&&height>0){
+  if(performance&&width>0&&height>0){
     // Budget the final buffer too: AAFactor alone leaves post-processing and
     // browser composition at the phone's full, often 3x, device-pixel ratio.
     const density=Math.min(globalThis.devicePixelRatio||1,1.5,720/width);
@@ -46,6 +45,9 @@ export function configureRenderer(engine,{mobile=false,quality='auto'}={}){
   engine.FS.mkdirTree(directory);
   engine.FS.writeFile(`${directory}/VPinballX.ini`,[
     '[Player]',
+    'BallTrail=0',
+    'ForceMotionBlurOff=1',
+    ...(performance?[
     `AAFactor=${engine.finniRenderDensity?1:0.5}`,
     'MaxTexDimension=2048',
     'DisableAO=1',
@@ -53,6 +55,7 @@ export function configureRenderer(engine,{mobile=false,quality='auto'}={}){
     'PFReflection=0',
     'SSRefl=0',
     'ForceBloomOff=1',
+    ]:[]),
     '',
   ].join('\n'));
 }

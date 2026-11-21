@@ -261,6 +261,9 @@ async function boot(){
       try{
         const result=startTable(engine,'/tables/finni.vpx');
         if(result!==1)throw Error(`VPX could not start this table (code ${result}). See the engine log.`);
+        // Legacy tables can import their own trail preference over the global
+        // setting. Keep one sharp ball even when the packed table requests it.
+        evaluate('Table1.BallTrail=0');
         // The native table now owns its decoded art/audio. Replay uses the
         // running player, so retaining the packed upload only wastes memory.
         engine.FS.unlink('/tables/finni.vpx');

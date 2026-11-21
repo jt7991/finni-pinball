@@ -73,6 +73,8 @@ try{
   const button=await evaluate(`(()=>{const r=document.getElementById('play').getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2}})()`);
   for(const type of ['mousePressed','mouseReleased'])await call('Input.dispatchMouseEvent',{type,...button,button:'left',clickCount:1});
   await wait('document.body.classList.contains("playing")');await delay(500);
+  await evaluate(`finni.evaluate('Debug.Print "BALL_TRAIL_CHECK|" & Table1.BallTrail')`);
+  assert.ok(await evaluate(`document.getElementById('log').textContent.includes('BALL_TRAIL_CHECK|0')`),'Native table ball trail is disabled after loading legacy preferences');
   assert.equal(await evaluate(`finni.engine.FS.analyzePath('/tables/finni.vpx').exists`),false,'Packed table upload released after startup');
   const shaders=await evaluate('shaderTest');
   assert.ok(shaders.lightBlends>0,'Real VPX light passes preserve HDR target alpha');

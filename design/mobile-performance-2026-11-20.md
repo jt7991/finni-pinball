@@ -2,6 +2,8 @@
 
 Automatic uses the Performance profile on phones. It caps SDL's final render density at 1.5 and its width at 720 pixels, then renders internally at that size (`AAFactor=1`). If the browser cannot temporarily override its density, the profile falls back to `AAFactor=0.5`. The browser's real density and canvas context factory are restored immediately after synchronous native startup, including on failure. Detailed retains the engine defaults.
 
+All graphics profiles explicitly disable ball trails and motion blur (`BallTrail=0`, `ForceMotionBlurOff=1`). After native table loading, `Table1.BallTrail=0` also overrides legacy preferences imported from the packed table. The real-engine test checks the table's resulting BallTrail property.
+
 Performance also uses `MaxTexDimension=2048`, `DisableAO=1`, `DynamicAO=0`, `PFReflection=0`, `SSRefl=0` and `ForceBloomOff=1`. These settings reach native initialization through Emscripten's preRun array. Rules, physics, artwork, audio and the compact help/controls layout are preserved.
 
 The 166,285,312-byte packed table is handed to MEMFS with `canOwn:true`, avoiding another full download-buffer copy. Its virtual file is unlinked after successful native loading. Replay keeps the loaded player.
