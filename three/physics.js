@@ -100,6 +100,7 @@ export class Pinball {
     this.random=Math.random;
     this.flippers = [];
     this.spinners = [];
+    this.gates = [];
     this.cooldowns = new Map();
     this.time = 0;
     this.score = 0;
@@ -325,6 +326,7 @@ export class Pinball {
     const state=r=>this.nativeBall(r.body);
     const body=r=>this.nativePositionUnits?state(r).body:r.body;
     for(const spinner of this.spinners)spinner.updateVelocity();
+    for(const gate of this.gates)gate.updateVelocity();
     this.plunger?.updateVelocity();
     const nudge=this.cabinetNudge?.step(this.incline)??{x:0,y:0,z:0};
     if(!this.nativeFlipperContacts){
@@ -348,6 +350,15 @@ export class Pinball {
         const hit=this.plunger.hit(r.queryPosition,r.queryVelocity,r.body.mass(),RADIUS,remaining),key=`${r.body.handle}:plunger`;
         if(hit?.contact)contacts.push({r,hit,plunger:true});
         else if(hit&&hit.time<=time){event={r,hit,key,plunger:true};time=hit.time;}
+      }
+      for(const gate of this.gates)if(gate.enabled)for(const r of records){
+        if(r.held)continue;
+        // The rigid one-way face wins equal-time tests against the flap sensor.
+        for(const blocked of [false,true]){
+          const hit=blocked?gate.blockHit(r.queryPosition,r.queryVelocity,RADIUS,remaining):gate.hit(r.queryPosition,r.queryVelocity,RADIUS,remaining);
+          if(hit?.contact)contacts.push({r,hit,gate,blocked});
+          else if(hit&&hit.time<=time){event={r,hit,gate,blocked};time=hit.time;}
+        }
       }
       if(this.nativePlayfieldContacts&&!this.playfieldMesh)for(const r of records){
         if(r.held)continue;
@@ -413,6 +424,7 @@ export class Pinball {
       }
       this.plunger?.displace(time);
       for(const spinner of this.spinners)spinner.displace(time);
+      for(const gate of this.gates)gate.displace(time);
       for(const f of this.flippers){
         pose(f);const low=Math.min(f.rest,f.raised),high=Math.max(f.rest,f.raised),omega=f.body.angvel().z;
         const bound=event?.f===f&&!event.r?event.bound:f.angle>=high?high:f.angle<=low?low:null;
@@ -424,7 +436,8 @@ export class Pinball {
       }
       if(event&&!event.f){
         const impactBody=body(event.r);this.ballSpin.impact(impactBody,event.hit.gap);
-        if(event.spinner)event.spinner.collide(impactBody,event.hit);
+        if(event.gate){if(event.blocked)collideSurface(impactBody,event.hit,event.gate.material,RADIUS,this.random);else event.gate.collide(impactBody,event.hit,event.r.proxy);}
+        else if(event.spinner)event.spinner.collide(impactBody,event.hit);
         else if(event.plunger)this.plunger.collide(impactBody,event.hit);
         else if(event.mesh){
           const shape=event.mesh.mesh.shapes[event.hit.id],sling=shape.slingshot;
@@ -459,10 +472,11 @@ export class Pinball {
       // VPX alternates the traversal direction randomly to avoid giving one
       // persistent contact priority on every pass through an embedded pocket.
       if(this.random()<.5)contacts.reverse();
-      for(const {r,hit,f,mesh,plunger,spinner}of contacts){
+      for(const {r,hit,f,mesh,plunger,spinner,gate,blocked}of contacts){
         if(f)supportFlipper(body(r),f,hit,this.world.gravity,f.friction,RADIUS,time);
         else if(plunger)supportSurface(body(r),hit,this.world.gravity,{friction:.3},RADIUS,time);
         else if(spinner)supportSurface(body(r),hit,this.world.gravity,{friction:.3},RADIUS,time);
+        else if(gate)supportSurface(body(r),hit,this.world.gravity,blocked?gate.material:{friction:.3},RADIUS,time);
         else if(mesh)supportSurface(body(r),hit,this.world.gravity,mesh.material,RADIUS,time);
         else if(this.playfieldMesh)supportSurface(body(r),hit,this.world.gravity,this.playfieldMaterial,RADIUS,time);
         else supportPlayfield(body(r),hit,this.world.gravity,this.playfieldMaterial,time);

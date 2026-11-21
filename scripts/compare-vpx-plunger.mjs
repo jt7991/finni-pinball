@@ -2,12 +2,14 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {createFullGame} from '../three/full-game.js';
 import {STEP} from '../three/physics.js';
+import {referenceRandom} from './reference-physics.mjs';
 const fixture=JSON.parse(fs.readFileSync('three/tests/fixtures/vpx-plunger.json'));
 const layout=JSON.parse(fs.readFileSync('three/public/layout.json')),objects=JSON.parse(fs.readFileSync('three/public/objects.json')),source=fs.readFileSync('three/public/rules.vbs','utf8');
 Object.assign(layout.physics,fixture.controlledOverrides);
 const reports=[];
 for(const scenario of fixture.cases){
   const g=await createFullGame(layout,objects,source,()=>{});
+  g.random=referenceRandom();
   try{
     g.start();for(let i=0;i<2/STEP;i++)g.step();const r=g.records[0];
     r.body.setTranslation({x:scenario.x*.01,y:(2115-scenario.y)*.01,z:scenario.z*.01},true);r.body.setLinvel({x:0,y:0,z:0},true);r.body.setAngvel({x:0,y:0,z:0},true);

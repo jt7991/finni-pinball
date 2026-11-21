@@ -33,6 +33,13 @@ test('ten independent native spinner recordings retain every scored rotation, co
   for(const r of reports.filter(r=>r.name.includes('forward-24')))assert.equal(r.spins,9);
 });
 
+test('twenty native gate recordings verify blocking, pass-through, open/close motion and overhead misses',()=>{
+  const reports=JSON.parse(execFileSync(process.execPath,['scripts/compare-vpx-gates.mjs','--check','--json'],{cwd:root,encoding:'utf8',maxBuffer:2*1024*1024}));
+  assert.equal(reports.length,20);assert.equal(reports.reduce((n,r)=>n+r.samples.length,0),2400);
+  assert.equal(reports.filter(r=>r.name.endsWith('-overhead')).length,4);
+  assert.equal(reports.filter(r=>r.name.endsWith('-open-close')).length,4);
+});
+
 test('millisecond native trace verifies timer phase and the coupled floor/flipper heel impacts',()=>{
   const report=JSON.parse(execFileSync(process.execPath,['scripts/compare-vpx-heel.mjs','--check','--json'],{cwd:root,encoding:'utf8'}));
   assert.equal(report.samples.length,70);assert.equal(report.firstDivergence,undefined);

@@ -1,3 +1,6 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Collection event dispatch follows Visual Pinball eventproxy.h / ieditable.cpp,
+// 195f214dd4849b8ef6113fd377258b78d0dec3bf. See licenses/VPX-Physics-NOTICE.txt.
 import {VbsEngine} from '@devscholar/vbs-engine-js';
 
 export const KEY={left:42,right:54,launch:28,start:2,action:57,nudgeLeft:44,nudgeForward:45,nudgeRight:53};
@@ -57,7 +60,7 @@ export function createRules(source,specs,host={}) {
       getballs:()=>host.balls?.()??[],
     };
     const proxy=new Proxy(state,{
-      get(target,key){if(typeof key==='symbol')return target[key];const k=key.toLowerCase();if(spec.kind==='Plunger'&&k==='position')return host.plungerPosition?.()??0;return k in actions?actions[k]:target[k]??0;},
+      get(target,key){if(typeof key==='symbol')return target[key];const k=key.toLowerCase();if(spec.kind==='Plunger'&&k==='position')return host.plungerPosition?.()??0;if(spec.kind==='Gate'){const value=host.mechanismValue?.(name,k);if(value!==undefined)return value;}return k in actions?actions[k]:target[k]??0;},
       set(target,key,v){const k=String(key).toLowerCase();target[k]=v;
         if(k==='enabled'&&spec.kind==='Timer'||k==='timerenabled'){
           const enabled=!!v,timerKey=k==='enabled'?lower:`${lower}:timer`;
@@ -131,7 +134,15 @@ export function createRules(source,specs,host={}) {
   // runs, so a later ramp assist or ball/ball event can bind its arguments.
   for(let i=0;i<6;i++)engine.addObject(`HostArg${i}`,{});
   engine.addCode(qualify(source));
-  function hit(name,kind='Hit',ball){activeBall=ball;engine.addObject('ActiveBall',ball??{});return run(`${name}_${kind}`);}
+  const eventGroups=new Map();
+  for(const collection of specs.collections)if(collection.fire_events||collection.stop_single_events)collection.items.forEach((name,index)=>{
+    const key=name.toLowerCase();if(!eventGroups.has(key))eventGroups.set(key,[]);eventGroups.get(key).push({collection,index});
+  });
+  function hit(name,kind='Hit',ball){
+    activeBall=ball;engine.addObject('ActiveBall',ball??{});const groups=eventGroups.get(name.toLowerCase())??[];
+    for(const {collection,index}of groups)if(collection.fire_events)run(`${collection.name}_${kind}`,index);
+    if(!groups.some(({collection})=>collection.stop_single_events))return run(`${name}_${kind}`);
+  }
   function tick(dt){
     time+=dt;
     for(const delay of [...delays])if(delay.at<=time+1e-9){delays.splice(delays.indexOf(delay),1);execute(delay.statement);}

@@ -27,10 +27,10 @@ export async function createView(canvas, game) {
   scene.add(table.scene);
   const moving=[];
   table.scene.traverse(obj=>{
-    const state=game.rules?.objects.get(obj.name.replace(/_Finni$/,'').replace(/Plate$/,'').toLowerCase());
+    const state=game.rules?.objects.get(obj.name.replace(/_Finni$/,'').replace(/(Plate|Wire)$/,'').toLowerCase());
     if(state){
-      const spinner=game.spinners?.find(s=>obj.name===s.spec.name+'Plate'),angle=(spinner?.spec.rotation??0)*Math.PI/180;
-      moving.push({obj,state,position:obj.position.clone(),rotation:obj.rotation.clone(),quaternion:obj.quaternion.clone(),spinner,axis:spinner?new THREE.Vector3(Math.cos(angle),0,Math.sin(angle)):null});
+      const mechanism=game.spinners?.find(s=>obj.name===s.spec.name+'Plate')??game.gates?.find(s=>obj.name===s.spec.name+'Wire'),angle=(mechanism?.spec.rotation??0)*Math.PI/180;
+      moving.push({obj,state,position:obj.position.clone(),rotation:obj.rotation.clone(),quaternion:obj.quaternion.clone(),mechanism,axis:mechanism?new THREE.Vector3(Math.cos(angle),0,Math.sin(angle)):null});
     }
   });
 
@@ -109,7 +109,7 @@ export async function createView(canvas, game) {
     }
     for(const m of moving){
       m.obj.position.copy(m.position);if(m.state.isdropped)m.obj.position.y-=.04;
-      if(m.spinner)m.obj.quaternion.setFromAxisAngle(m.axis,m.spinner.angle).multiply(m.quaternion);
+      if(m.mechanism)m.obj.quaternion.setFromAxisAngle(m.axis,m.mechanism.angle).multiply(m.quaternion);
       if(/discoball/i.test(m.obj.name))m.obj.rotation.y=m.rotation.y+Number(m.state.rotz)*Math.PI/180;
       if(/LilHead|LilLeftArm|LilRightArm/.test(m.obj.name)){
         const remaining=Math.max(0,shakeUntil-game.time);

@@ -3,13 +3,13 @@
 import {writeFile,readFile} from 'node:fs/promises';
 import assert from 'node:assert/strict';
 const [debug,base,output]=process.argv.slice(2);
-const probeKind=process.argv.includes('--spinners')?'spinners':process.argv.includes('--plunger')?'plunger':process.argv.includes('--nudge')?'nudge':'contacts';
+const probeKind=process.argv.includes('--gates')?'gates':process.argv.includes('--spinners')?'spinners':process.argv.includes('--plunger')?'plunger':process.argv.includes('--nudge')?'nudge':'contacts';
 const reference=await(await fetch(new URL('/reference-metadata.json',base))).json();
 const recordTimers=!!reference.instrumentation&&!process.argv.includes('--no-timer-trace');
 reference.timerTraceCaptured=recordTimers;
 assert.deepEqual(reference.controlledOverrides,{scatter:0,default_scatter:0},'controlled native table metadata');
 const runtimeOverrides={'LeftFlipper.Scatter':0,'RightFlipper.Scatter':0};
-const columns=['ms','x','y','z','vx','vy','vz','wx','wy','wz','left','right',...(probeKind==='plunger'?['plunger_position']:probeKind==='spinners'?['spinner_angle','score','left_spinner_count']:[])];
+const columns=['ms','x','y','z','vx','vy','vz','wx','wy','wz','left','right',...(probeKind==='plunger'?['plunger_position']:['spinners','gates'].includes(probeKind)?[probeKind==='gates'?'gate_angle':'spinner_angle','score','left_spinner_count']:[])];
 reference.timerSynchronization='RollingTimer disabled/enabled immediately before each initial state, resetting its 10ms phase.';
 const tabs=await(await fetch(`${debug}/json/list`)).json();
 const socket=new WebSocket(tabs.find(t=>t.type==='page').webSocketDebuggerUrl);
@@ -64,6 +64,15 @@ if(probeKind==='spinners'){
   }
   for(const c of cases.filter(c=>c.name.endsWith('forward-12')))cases.push({...c,name:c.name.replace('forward','overhead'),z:120,sampleCount:60});
 }
+if(probeKind==='gates'){
+  cases.length=0;
+  const specs=JSON.parse(await readFile(new URL('../three/public/objects.json',import.meta.url),'utf8')).objects;
+  for(const gate of specs.filter(s=>s.kind==='Gate'))for(const [direction,open,overhead]of [[1,false,false],[-1,false,false],[1,true,false],[1,false,true]]){
+    const a=gate.rotation*Math.PI/180,n={x:-Math.sin(a),y:Math.cos(a)},p=gate.center,z=gate.surface?115:25;
+    cases.push({name:`${gate.name}-${overhead?'overhead':open?'open':direction>0?'forward':'reverse'}`,gate:gate.name,direction,open,x:p.x-n.x*60*direction,y:p.y-n.y*60*direction,z:z+(overhead?100:0),vx:n.x*12*direction,vy:n.y*12*direction,sampleCount:120,parkFromSample:12});
+  }
+  for(const gate of specs.filter(s=>s.kind==='Gate'))cases.push({name:gate.name+'-open-close',gate:gate.name,open:true,closeDelay:400,x:430,y:1500,z:25,vx:0,vy:0,sampleCount:120,parkFromSample:0});
+}
 if(exactDelay!==undefined){
   const driven=cases.filter(s=>!selected||s.name===selected);
   assert.ok(driven.length&&driven.every(s=>s.side),'exact clock scheduling requires selected flipper scenarios');
@@ -91,7 +100,7 @@ try{
   if(process.argv.includes('--rotate-camera')){
     await script('Camera1.RotY=90');runtimeOverrides['Camera1.RotY']=90;
   }
-  if(probeKind==='spinners'){
+  if(['spinners','gates'].includes(probeKind)){
     const specs=JSON.parse(await readFile(new URL('../three/public/objects.json',import.meta.url),'utf8')).objects;
     const overrides=[];
     for(const s of specs){
@@ -109,12 +118,12 @@ try{
       const flags=(await marker(label)).split(':').map(parseFloat);assert.equal(flags.length,batch.length);assert.ok(flags.every(n=>n===0),'native mechanism isolation setters took effect');
     }
     reference.isolation='Other authored solid geometry and switches disabled; cabinet bounds and the playfield retained. From parkFromSample onward, reset the measured ball to a remote flat spot immediately before each observation so the plate coasts without further strikes.';
-    reference.nativeSpinnerProperties={};
-    for(const name of ['Spinner001','Spinner002']){
-      const properties=['Height','Length','Rotation','Damping','AngleMin','AngleMax','Elasticity'];
+    const settingsKey=probeKind==='gates'?'nativeGateProperties':'nativeSpinnerProperties';reference[settingsKey]={};
+    for(const name of probeKind==='gates'?['Gate001','Gate002','Gate3','Gate4']:['Spinner001','Spinner002']){
+      const properties=['Height','Length','Rotation','Damping',...(probeKind==='gates'?['OpenAngle','CloseAngle']:['AngleMin','AngleMax']),'Elasticity'];
       await script('Debug.Print "SPINNER_SETTINGS|" & '+properties.map(p=>`${name}.${p}`).join(' & ":" & '));
       const values=(await marker('SPINNER_SETTINGS')).split(':').map(parseFloat);assert.ok(values.every(Number.isFinite));
-      reference.nativeSpinnerProperties[name]=Object.fromEntries(properties.map((p,i)=>[p,values[i]]));
+      reference[settingsKey][name]=Object.fromEntries(properties.map((p,i)=>[p,values[i]]));
     }
     if(process.argv.includes('--isolate-animation-balls')){
       await script('Dim RefToyBall');reference.animationBallIsolation=[];
@@ -141,27 +150,46 @@ try{
     await script(`SolLFlipper 0:SolRFlipper 0:${reset(430,1400,0,0)}`);await new Promise(r=>setTimeout(r,400));
     if(scenario.plunger){await script('Plunger.Fire');await new Promise(r=>setTimeout(r,600));}
     if(scenario.startRaised){await script(`Sol${scenario.side==='left'?'L':'R'}Flipper 1`);await new Promise(r=>setTimeout(r,200));}
-    const command=scenario.plunger?'Plunger.Fire':scenario.nudgeAngle!==undefined?`Nudge ${scenario.nudgeAngle},${scenario.force}`:scenario.side?`Sol${scenario.side==='left'?'L':'R'}Flipper ${scenario.press===false?0:1}`:'';
+    if(scenario.gate){
+      scenario.runtimeOverrides={[`${scenario.gate}.Collidable`]:true,[`${scenario.gate}.Open`]:scenario.open};
+      await script(`${scenario.gate}.Collidable=True:${scenario.gate}.Open=False`);
+      await script(`Debug.Print "GATE_STATE|" & CLng(${scenario.gate}.Collidable) & ":" & CLng(${scenario.gate}.Open)`);
+      assert.deepEqual((await marker('GATE_STATE')).split(':').map(parseFloat),[-1,0]);
+    }
+    const command=scenario.gate?`${scenario.gate}.Open=${scenario.open?'True':'False'}`:scenario.plunger?'Plunger.Fire':scenario.nudgeAngle!==undefined?`Nudge ${scenario.nudgeAngle},${scenario.force}`:scenario.side?`Sol${scenario.side==='left'?'L':'R'}Flipper ${scenario.press===false?0:1}`:'';
     const inputMarker=`CONTACT_INPUT_${scenario.name}`;
     const input=`Debug.Print "${inputMarker}|" & GameTime:${command}`;
     let drive=command?(scenario.delay?`vpmtimer.addtimer ${scenario.delay},"${input.replaceAll('"','""')} '"`:input):'';
     if(exactDelay!==undefined&&scenario.side)drive=`RefDriveMarker="${inputMarker}":RefDriveSide=${scenario.side==='left'?1:2}:RefDrivePress=${scenario.press===false?0:1}:RefDriveAt=GameTime+${Number(exactDelay)}`;
     if(scenario.plunger)drive='Plunger.PullBack:'+drive;
+    const closeMarker=`CONTACT_GATE_CLOSE_${scenario.name}`;
+    if(scenario.closeDelay){const close=`Debug.Print "${closeMarker}|" & GameTime:${scenario.gate}.Open=False`;drive+=`:vpmtimer.addtimer ${scenario.closeDelay},"${close.replaceAll('"','""')} '"`;}
     const trace=recordTimers?'RefTrace="":Set RefTraceBall=RefBall:RefTraceUntil=GameTime+70:RefTraceOn=True:':'';
     await script(`${trace}RollingTimer.Enabled=False:RollingTimer.Enabled=True:${reset(scenario.x,scenario.y,scenario.vx,scenario.vy,scenario.z,scenario.vz)}:${drive?drive+':':''}Debug.Print "CONTACT_INIT|" & GameTime & ":" & RefBall.AngMomX & ":" & RefBall.AngMomY & ":" & RefBall.AngMomZ & ":" & RefBall.X & ":" & RefBall.Y & ":" & RefBall.Z`);
     const initial=(await marker('CONTACT_INIT')).split(':').map(parseFloat);assert.equal(initial.length,7);assert.deepEqual(initial.slice(1,4),[0,0,0],'native spin reset');
     for(const [actual,expected]of [[initial[4],scenario.x],[initial[5],scenario.y],[initial[6],scenario.z??25]])assert.ok(Math.abs(actual-expected)<.001,`native initial position ${actual} vs ${expected}`);
     const origin=initial[0],samples=[],rawSamples=[];
+    // The native UI retains only 120 log lines. Cache delayed input clocks as
+    // soon as they appear, before a long observation run rolls them out.
+    let inputAt,closeAt;
+    const captureInput=async()=>{
+      if(command&&inputAt===undefined&&await evaluate(`document.getElementById('log').textContent.includes(${JSON.stringify(inputMarker+'|')})`))inputAt=parseFloat(await marker(inputMarker));
+      if(scenario.closeDelay&&closeAt===undefined&&await evaluate(`document.getElementById('log').textContent.includes(${JSON.stringify(closeMarker+'|')})`))closeAt=parseFloat(await marker(closeMarker));
+    };
+    await captureInput();
     for(let i=0;i<(scenario.sampleCount??12);i++){
       const park=scenario.parkFromSample!==undefined&&i>=scenario.parkFromSample?reset(430,1500,0,0)+':':'';
-      const extra=scenario.spinner?` & ":" & CLng(${scenario.spinner}.CurrentAngle*1000000) & ":" & Score(CurrentPlayer) & ":" & LeftSpinnerCount(CurrentPlayer)`:scenario.plunger?' & ":" & Plunger.Position':'';
+      const mechanism=scenario.spinner??scenario.gate;
+      const extra=mechanism?` & ":" & CLng(${mechanism}.CurrentAngle*1000000) & ":" & Score(CurrentPlayer) & ":" & LeftSpinnerCount(CurrentPlayer)`:scenario.plunger?' & ":" & Plunger.Position':'';
       await script(park+'Debug.Print "CONTACT_SAMPLE|" & GameTime & ":" & RefBall.X & ":" & RefBall.Y & ":" & RefBall.Z & ":" & CLng(RefBall.VelX*1000000) & ":" & CLng(RefBall.VelY*1000000) & ":" & CLng(RefBall.VelZ*1000000) & ":" & CLng(RefBall.AngVelX*1000000) & ":" & CLng(RefBall.AngVelY*1000000) & ":" & CLng(RefBall.AngVelZ*1000000) & ":" & LeftFlipper.CurrentAngle & ":" & RightFlipper.CurrentAngle'+extra);
       const raw=await marker('CONTACT_SAMPLE');rawSamples.push(raw);
       const values=raw.split(':').map(parseFloat);assert.equal(values.length,columns.length);assert.ok(values.every(Number.isFinite));for(let k=4;k<10;k++)values[k]/=1000000;values[0]-=origin;samples.push(values);
-      if(scenario.spinner)values[12]/=1000000;
+      if(mechanism)values[12]/=1000000;
+      await captureInput();
       await new Promise(r=>setTimeout(r,5));
     }
-    const actualDelay=command?parseFloat(await marker(inputMarker))-origin:0;
+    const actualDelay=command?inputAt-origin:0;assert.ok(Number.isFinite(actualDelay),'observed native input clock');
+    if(scenario.gate)assert.equal(actualDelay,0,'gate command shares the initial-state clock');
     let timerTrace;
     if(recordTimers){
       await script('RefTraceOn=False:Debug.Print "TIMER_TRACE_LENGTH|" & Len(RefTrace)');
@@ -172,8 +200,9 @@ try{
       assert.ok(timerTrace.every(([name,ms,...fields])=>['ROLL','FLIP','STATE','SPIN'].includes(name)&&[ms,...fields].every(Number.isFinite)));
       assert.ok(timerTrace[0][1]<=10,'full trace must include the first timer callbacks');
     }
-    results.push({...scenario,initial,actualDelay,samples,rawSamples,...(timerTrace?{timerTrace}:{})});console.log(scenario.name,'input at',actualDelay,JSON.stringify(samples.at(-1)));
-    const suffix=probeKind==='spinners'&&selected?`spinners-${reference.instrumentation?.spinnerTraceColumns?'timing-':''}${reference.animationBallIsolation?'isolated-animation-':''}${selected}`:`${reference.geometryProbe?'geometry':probeKind==='contacts'?'contact':probeKind}-reference`;
+    const closing=scenario.closeDelay?{actualCloseDelay:closeAt-origin}:{};if(scenario.closeDelay)assert.ok(Number.isFinite(closing.actualCloseDelay)&&closing.actualCloseDelay>0,'observed native gate-close clock');
+    results.push({...scenario,initial,actualDelay,...closing,samples,rawSamples,...(timerTrace?{timerTrace}:{})});console.log(scenario.name,'input at',actualDelay,JSON.stringify(samples.at(-1)));
+    const suffix=['spinners','gates'].includes(probeKind)&&selected?`${probeKind}-${reference.instrumentation?.spinnerTraceColumns?'timing-':''}${reference.animationBallIsolation?'isolated-animation-':''}${selected}`:`${reference.geometryProbe?'geometry':probeKind==='contacts'?'contact':probeKind}-reference`;
     await writeFile(`${output}/vpx-${suffix}.json`,JSON.stringify({...reference,probeKind,runtimeOverrides,columns,cases:results},null,2));
   }
 }finally{socket.close();}

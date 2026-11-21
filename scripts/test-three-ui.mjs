@@ -52,16 +52,16 @@ try{
     const plates=await evaluate(`(()=>{
       const {game,view}=finniThree,render=view.renderer.render;let scene;
       try{view.renderer.render=function(s,c){scene=s;return render.call(this,s,c);};view.render(1);}finally{view.renderer.render=render;}
-      return game.spinners.map(spinner=>{
-        const plate=scene.getObjectByName(spinner.spec.name+'Plate');if(!plate)return {name:spinner.spec.name,missing:true};
+      return [...game.spinners,...game.gates.filter(g=>g.spec.is_visible)].map(spinner=>{
+        const plate=scene.getObjectByName(spinner.spec.name+(spinner.spec.kind==='Gate'?'Wire':'Plate'));if(!plate)return {name:spinner.spec.name,missing:true};
         const saved=spinner.angle,position=plate.position.clone();spinner.angle=0;view.render(1);const start=plate.quaternion.clone();
         spinner.angle=Math.PI/2;view.render(1);const rotation=start.angleTo(plate.quaternion),axleMovement=position.distanceTo(plate.position);
         spinner.angle=saved;view.render(1);return {name:plate.name,rotation,axleMovement};
       });
     })()`);
-    assert.equal(plates.length,2);
+    assert.equal(plates.length,4);
     for(const plate of plates){assert.equal(plate.missing,undefined);assert.ok(Math.abs(plate.rotation-Math.PI/2)<1e-6);assert.equal(plate.axleMovement,0);}
-    await writeFile(`${output}/spinner-plate-animation.json`,JSON.stringify(plates,null,2));console.log('PASS original spinner plate meshes rotate around fixed axles');
+    await writeFile(`${output}/mechanism-animation.json`,JSON.stringify(plates,null,2));console.log('PASS original spinner plates and gate wires rotate around fixed axles');
   }
   assert.deepEqual(errors,[]);assert.equal(requests.some(url=>/table\.vpx|vpinball\.(wasm|js)/.test(url)),false);
   await writeFile(`${output}/main-ui-startup.json`,JSON.stringify(measurements,null,2));

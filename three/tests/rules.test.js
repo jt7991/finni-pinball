@@ -5,6 +5,20 @@ import {createRules} from '../rules.js';
 const source=fs.readFileSync(new URL('../public/rules.vbs',import.meta.url),'utf8');
 const specs=JSON.parse(fs.readFileSync(new URL('../public/objects.json',import.meta.url)));
 const ball={x:500,y:1000,z:25,velx:0,vely:0,velz:0};
+test('native collection events receive member index and ActiveBall before optional individual events',()=>{
+  const eventSource=`Dim EventTrace
+Sub GateSounds_Hit(idx)
+ EventTrace=EventTrace & "group" & idx & ":" & ActiveBall.X & ";"
+End Sub
+Sub Gate002_Hit()
+ EventTrace=EventTrace & "single;"
+End Sub`;
+  for(const stop of [false,true]){
+    const r=createRules(eventSource,{objects:[{name:'Gate001',kind:'Gate'},{name:'Gate002',kind:'Gate'}],collections:[{name:'GateSounds',items:['Gate001','Gate002'],fire_events:true,stop_single_events:stop}]});
+    r.execute('EventTrace=""');r.hit('Gate002','Hit',new Proxy({x:321},{get:(target,key)=>target[String(key).toLowerCase()]}));
+    assert.equal(r.value('EventTrace'),'group1:321;'+(stop?'':'single;'));
+  }
+});
 function setup(){const r=createRules(source,specs,{createBall:()=>ball});r.init();r.key('start',true);for(let i=0;i<100;i++)r.tick(.02);return r;}
 test('original startup, four players, skill shot and DMD timers execute',()=>{
   const r=setup();assert.equal(r.value('CurrentPlayer'),1);assert.equal(r.value('BallsOnPlayfield'),1);

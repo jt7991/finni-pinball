@@ -8,6 +8,7 @@ import {ContactMesh} from './mesh-contact.js';
 import {dropTargetFront} from './target-contact.js';
 import {CabinetNudge} from './cabinet-nudge.js';
 import {Spinner} from './spinner.js';
+import {Gate} from './gate.js';
 
 export async function createFullGame(layout,specs,source,emit,media) {
   await RAPIER.init();
@@ -37,6 +38,7 @@ class FullGame extends Pinball {
       sound:(name,settings)=>media?.play(name,settings),stopSound:name=>media?.stop(name),
       shake:strength=>emit({type:'shake',strength}),
       message:text=>emit({type:'message',text}),mechanism:(name,k,v)=>this.mechanism(name,k,v),
+      mechanismValue:(name,key)=>{const gate=this.gates.find(g=>g.spec.name.toLowerCase()===name.toLowerCase());if(gate)return ({currentangle:gate.currentAngle,collidable:gate.enabled,open:gate.open})[key];},
       balls:()=>this.records.map(r=>r.proxy),...storage,
     });
     this.rules.init();
@@ -96,6 +98,18 @@ class FullGame extends Pinball {
       const a=-(spec.rotation??0)*Math.PI/180;
       collider=this.world.createCollider(RAPIER.ColliderDesc.cuboid((spec.length??80)*.005,.035,.3)
         .setTranslation(p.x,p.y,z+.3).setRotation({x:0,y:0,z:Math.sin(a/2),w:Math.cos(a/2)}).setSensor(true));
+      if(this.nativeFlipperContacts){
+        const gate=new Gate(spec,z,(event,value)=>event==='Hit'?this.rules?.hit(name,event,value):this.rules?.run(`${name}_${event}`,value));
+        gate.collider=collider;this.gates.push(gate);
+        if(spec.show_bracket){
+          // Brackets have no switch event. Query their exact native circles
+          // directly; an extra Rapier box sensor serves no physical purpose.
+          const bracket={handle:`gate-bracket:${name}`,isEnabled:()=>true};
+          const mesh=new ContactMesh({vertices:[],indices:[]}),angle=Math.fround(spec.rotation*Math.fround(Math.PI/180));
+          for(const sign of [-1,1]){const x=Math.fround(Math.fround(spec.center.x)+sign*Math.fround(Math.fround(Math.cos(angle))*Math.fround(spec.length*.5))),y=Math.fround(Math.fround(spec.center.y)+sign*Math.fround(Math.fround(Math.sin(angle))*Math.fround(spec.length*.5)));mesh.addCircle(point({x,y}),.0001,z,z+spec.height*.01);}
+          this.colliderLabels.set(bracket.handle,name+' bracket');this.registerMesh({collider:bracket,mesh,material:{elasticity:.3,elasticity_falloff:0,friction:.3,scatter:0,default_scatter:0,difficulty:0}});
+        }
+      }
     }
     if(spec.kind==='Kicker'&&['hellhouse','lock'].includes(key)){
       collider=this.world.createCollider(RAPIER.ColliderDesc.cylinder(.25,(spec.radius??30)*.01)
@@ -105,12 +119,14 @@ class FullGame extends Pinball {
       collider.setCollisionGroups(STATIC_GROUP);collider.setRestitution(surfaceRestitution(collider.restitution()));collider.setRestitutionCombineRule(RAPIER.CoefficientCombineRule.Multiply);
       this.colliderLabels.set(collider.handle,name);
       collider.setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS);
-      this.tags.set(collider.handle,{kind:spec.kind==='Spinner'?'spinner-body':this.targetFronts.has(key)?'target-body':'mechanism',name,spec});this.mechanisms.set(key,collider);
+      this.tags.set(collider.handle,{kind:spec.kind==='Spinner'?'spinner-body':spec.kind==='Gate'&&this.nativeFlipperContacts?'gate-body':this.targetFronts.has(key)?'target-body':'mechanism',name,spec});this.mechanisms.set(key,collider);
     }
   }
 
   mechanism(name,key,v) {
     const collider=this.mechanisms.get(name.toLowerCase());if(!collider)return;
+    const gate=this.gates.find(g=>g.spec.name.toLowerCase()===name.toLowerCase());
+    if(gate){if(key==='open')gate.setOpen(v);if(key==='collidable')gate.setCollidable(v);return;}
     if(key==='isdropped'){collider.setEnabled(!v);this.targetFronts.get(name.toLowerCase())?.setEnabled(!v);this.targetDrops.delete(name.toLowerCase());}
     if(key==='collidable')collider.setEnabled(!!v);
     // Gates stay sensors: per-ball direction decides whether their flap blocks.
@@ -227,7 +243,7 @@ class FullGame extends Pinball {
       const other=this.byCollider.get(a)===rec?this.byCollider.get(b):this.byCollider.get(a);
       if(other){if(started){const u=rec.body.linvel(),v=other.body.linvel();this.rules.run('OnBallBallCollision',rec.proxy,other.proxy,Math.hypot(u.x-v.x,u.y-v.y,u.z-v.z));}return;}
       const tag=this.tags.get(this.byCollider.has(a)?b:a);if(!tag)return;
-      if(tag.kind==='target-body'||tag.kind==='spinner-body')return;
+      if(tag.kind==='target-body'||tag.kind==='spinner-body'||tag.kind==='gate-body')return;
       if(!started){if(tag.spec?.kind==='Trigger'){if(tag.name.toLowerCase()==='swplungerrest')rec.inLane=false;this.rules.hit(tag.name,'UnHit',rec.proxy);}return;}
       if(tag.spec?.kind==='Trigger'){
         if(tag.name.toLowerCase()==='swplungerrest')rec.inLane=true;

@@ -5,7 +5,9 @@ const f=Math.fround;
 export class NativeBall {
   constructor(body){
     this.rapier=body;this.position=null;this.lastWorld=null;
+    this.eventPosition={x:-10000,y:-10000,z:-10000};this.eventDistance=0;
     this.body={translation:()=>this.translation(),setTranslation:(p,wake)=>this.setTranslation(p,wake),handle:body.handle};
+    this.body.acceptHitEvent=()=>this.acceptHitEvent();
     for(const method of ['linvel','setLinvel','angvel','setAngvel','mass','applyImpulse','applyTorqueImpulse','collider'])this.body[method]=(...args)=>body[method](...args);
     this.sync();
   }
@@ -19,6 +21,13 @@ export class NativeBall {
   publish(wake=true){const p=this.position;this.rapier.setTranslation({x:p.x*.01,y:(2115-p.y)*.01,z:p.z*.01},wake);this.lastWorld=this.rapier.translation();}
   displace(start,v,duration){
     const dt=f(duration*100);
-    this.position={x:f(start.x+f(v.x*dt)),y:f(start.y+f(-v.y*dt)),z:f(start.z+f(v.z*dt))};this.publish();
+    const dx=f(v.x*dt),dy=f(-v.y*dt),dz=f(v.z*dt);
+    this.eventDistance=f(this.eventDistance+f(f(f(dx*dx)+f(dy*dy))+f(dz*dz)));
+    this.position={x:f(start.x+dx),y:f(start.y+dy),z:f(start.z+dz)};this.publish();
+  }
+  acceptHitEvent(){
+    const p=this.sync(),last=this.eventPosition,dx=f(last.x-p.x),dy=f(last.y-p.y),dz=f(last.z-p.z);
+    if(this.eventDistance<.5&&f(f(f(dx*dx)+f(dy*dy))+f(dz*dz))<=.25)return false;
+    this.eventDistance=0;this.eventPosition={...p};return true;
   }
 }
