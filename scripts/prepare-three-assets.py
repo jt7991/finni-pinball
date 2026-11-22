@@ -143,6 +143,8 @@ for path in source_files:
         'is_dropped','state','state_u32','color','color2','intensity','blink_interval','blink_pattern','fade_speed_up','fade_speed_down','fader','visible','falloff_radius','falloff_power','is_bulb_light','bulb_modulate_vs_add','bulb_halo_height','is_image_mode','image','hit_event','threshold',
         'is_timer_enabled','timer_interval','surface','hit_height','width','length')}})
     specs[-1]['native_source_order']=source_order[path.name]
+    if kind=='Flasher':
+        specs[-1].update({k:item[k] for k in ('rot_x','rot_y','image_a','image_b','alpha','modulate_vs_add','add_blend','image_alignment','filter','filter_amount','light_map','depth_bias')})
     if kind in ('Spinner','Gate'):
         specs[-1].update({k:item[k] for k in ('damping','angle_max','angle_min','elasticity','friction','scatter','gravity_factor','two_way','show_bracket') if k in item})
     if kind=='Kicker':

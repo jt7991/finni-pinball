@@ -3,13 +3,14 @@
 // 195f214dd4849b8ef6113fd377258b78d0dec3bf. See VPX-Physics-NOTICE.txt.
 import {nativeIdentity,nativeInverse,nativeMultiply,nativeChain,nativeScale,nativeTranslate} from './native-matrix.js';
 import {nativeShaderArray} from './native-shader-state.js';
+import {nativeColor} from './light-animation.js';
 const f=Math.fround;
 export function nativeBallMatrices(camera){const worldView=nativeMultiply(nativeIdentity(),camera.view);return nativeShaderArray([...camera.view,...worldView,...nativeInverse(worldView),...nativeMultiply(worldView,camera.projection)]);}
 export function nativeBallOrientation(position,orientation,radius=25,stretch=[1,1]){
  const rotation=nativeIdentity();for(let row=0;row<3;row++)for(let column=0;column<3;column++)rotation[row*4+column]=orientation[column*3+row];
  return nativeShaderArray(nativeChain(rotation,nativeScale(f(f(radius)*f(stretch[0])),f(f(radius)*f(stretch[1])),f(f(radius)*f(stretch[1]))),nativeTranslate(position.x,position.y,position.z)));
 }
-const color=(value,intensity=1)=>{const c=typeof value==='string'?Number.parseInt(value.replace('#',''),16):Number(value)>>>0;return [f(f((c&255)*f(1/255))*intensity),f(f((c&65280)*f(1/65280))*intensity),f(f((c&16711680)*f(1/16711680))*intensity)];};
+const color=(value,intensity=1)=>{const c=nativeColor(value);return [f(f((c&255)*f(1/255))*intensity),f(f((c&65280)*f(1/65280))*intensity),f(f((c&16711680)*f(1/16711680))*intensity)];};
 export function nativeBallLightState(metadata,lighting,position,stateFor=()=>null,bulbScale=metadata.table.default_bulb_intensity_scale_on_ball){
  const globals=lighting.globals??lighting,positions=new Float32Array(40),emissions=new Float32Array(40);positions.set(globals.positions);emissions.set(globals.emissions);
  const nearest=metadata.lights.map((spec,index)=>{const dx=f(f(spec.center.x)-f(position.x)),dy=f(f(spec.center.y)-f(position.y)),dz=f(f(f(spec.mesh_radius)+f(spec.surface_height))-f(position.z));return{spec,index,distance:f(f(f(dx*dx)+f(dy*dy))+f(dz*dz))};}).sort((a,b)=>a.distance-b.distance);

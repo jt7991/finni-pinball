@@ -5,8 +5,9 @@ complete original basic geometry instead of the joined GLB: 682 meshes include
 558 main-view parts and 124 reflection-only wall bottoms. Six source flipper
 parts and 25 classic inserts retain their separate native paths. The original
 open wire ramp geometry, main arcade UI and lossless source artwork are retained.
-Flashers, the shared transmission/bloom temporary buffer, final whole-frame
-comparison and seven older physics comparisons are unfinished.
+Original halo and classic-light rendering, the shared transmission/bloom
+temporary buffer, final whole-frame comparison and seven older physics
+comparisons are unfinished. The full suite passes 156/163 tests.
 
 The actual scene now runs source planar reflections with D16 depth, native
 transmission, target/gate/spinner/trigger/bumper vertex updates and all 57
@@ -42,21 +43,36 @@ copies without changing any half-float bits. Presentation-time extrapolation,
 anti-stretch settings, trails and source dynamic light shadows still need
 separate native comparisons. Whole-frame VPX equivalence remains unverified.
 
-The next flasher component now has a complete independent ownership capture:
-all 63 source flashers map to one GPU draw each after revealing hidden variants,
-with every original visibility flag restored. `native-flasher-mesh.js` reproduces
-all 2,016 position/normal/UV fields bit for bit from authored control points,
-source rotation order and wrap/world UV rules. Its permanent native fixture
-contains source properties and independent GPU buffer digests. This module is
-not connected to the scene yet; shader, dynamic image bindings and opacity still
-need integration and comparison. The validated live build remains on the ball
-checkpoint while this work continues.
+All 63 source flashers now run in the scene. Their independent ownership capture
+reveals hidden variants and restores every original visibility flag.
+`native-flasher-mesh.js` reproduces all 2,016 position/normal/UV fields bit for bit
+from authored control points, source rotation order and wrap/world UV rules.
+Original compiled shaders match 1,008 camera fields, 945 ordinary uniform fields
+and 317,709 HDR RGB samples. GPU copies from the existing DMD atlas match 142,688
+RGBA bytes across 13 native uploads, including transparent RGB. Runtime assets
+contain fixed artwork and source image names, not captured camera/state packets.
+The original dispatch independently verifies 46 setter/getter conversions.
+
+The live transparent queue matches the complete 234-draw native sequence:
+63 flashers, 133 halos, 17 bulb glass parts, 17 bulb emission hulls and four wall
+parts. Source depth and authored submission order drive sorting; captured draw
+indices are test evidence only. Walls with an alpha top retain native dynamic
+classification even when their side draw disables GL blending. Twenty-five
+classic inserts belong to the native opaque pass despite additive GL blending;
+their complete pass integration remains unfinished.
+
+The restored bulb emission hulls use the original compiled LightShader and
+geometry in both main and reflected views. All 986 uniform fields and 171,462
+HDR RGB samples match 34 native packets. Halos are separate source-ordered draws
+with native zero-intensity early-outs; their existing approximate projection
+and missing ball shadows still need replacement. Cached and uncached rendering
+continues to match across all eight scenarios after these changes.
 
 The ownership audit covers 650 authored renderable objects. All 589 BasicShader
 draws in the independent frame with revealed sling variants have exactly one
 resolved owner. Twelve shared geometry digests are disambiguated by native
-world matrices. This covers the basic geometry pass; ball and flasher shader
-passes still need their own rendering work.
+world matrices. This covers the basic geometry pass; ball and flasher component
+evidence is described above. Final whole-frame comparison remains outstanding.
 
 Reference engine: `c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8`.
 Source revision: `195f214dd4849b8ef6113fd377258b78d0dec3bf`.

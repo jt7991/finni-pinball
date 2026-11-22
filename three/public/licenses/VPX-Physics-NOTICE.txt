@@ -113,6 +113,19 @@ directly; Rapier supplies body records and the optional integration fallback.
 Its source is included in
 the three/ directory alongside the build scripts and dependency manifest.
 
+native-flasher-mesh.js, native-flasher-state.js and native-flasher-render.js
+adapt source Flasher geometry, property conversions, uniforms and blending.
+native-render-order.js retains legacy transparent depth/submission ordering.
+native-bulb-emission.js retains Light::Render's bulb-hull emission and reflection
+pass. Published native-flashers shaders preserve the compiled original programs:
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/parts/flasher.cpp
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/parts/light.cpp
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/renderer/RenderDevice.cpp
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/renderer/RenderPass.cpp
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/renderer/RenderState.cpp
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/shaders/hlsl_glsl/FlasherShader.glfx
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/shaders/hlsl_glsl/LightShader.glfx
+
 See GPL-3.0.txt for the license. Preserve these notices and supply corresponding
 source when redistributing a combined build. Table artwork, audio, fonts and
 third-party libraries retain their separately documented rights and licenses.

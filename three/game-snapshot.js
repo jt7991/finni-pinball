@@ -1,15 +1,17 @@
 // The renderer receives data only. Physics bodies and interpreter objects stay
 // in the simulation thread; no functions or proxy objects cross the boundary.
 const fields=['state','visible','sidevisible','basevisible','capvisible','ringvisible','skirtvisible','showbracket','imagea','color','colorfull','rotx','roty','rotz','isdropped','sequenceactive','sequencestate','blinkinterval','blinkpattern','intensity','intensityscale','inplayintensity','inplayon'];
+const flasherFields=[...fields,'imageb','opacity','amount','filter','addblend','modulatevsadd','height'];
+const fieldsFor=(game,name)=>game.nativeParts.get(name)?.kind==='Flasher'?flasherFields:fields;
 const roots=['time','state','score','player','ballNumber','charge','inLane','tilted','gameState','held','physicsStats'];
-function objectState(object){
+function objectState(object,keys=fields){
   const state={};
-  for(const key of fields){const value=object[key];if(value===null||['string','number','boolean'].includes(typeof value))state[key]=value;}
+  for(const key of keys){const value=object[key];if(value===null||['string','number','boolean'].includes(typeof value))state[key]=value;}
   return state;
 }
-function objectChanges(object,previous){
+function objectChanges(object,previous,keys=fields){
   let changed;
-  for(const key of fields){const value=object[key];if((value===null||['string','number','boolean'].includes(typeof value))&&(!Object.hasOwn(previous,key)||!Object.is(value,previous[key]))){(changed??={})[key]=value;previous[key]=value;}}
+  for(const key of keys){const value=object[key];if((value===null||['string','number','boolean'].includes(typeof value))&&(!Object.hasOwn(previous,key)||!Object.is(value,previous[key]))){(changed??={})[key]=value;previous[key]=value;}}
   return changed;
 }
 export function describeGame(game){
@@ -20,7 +22,7 @@ export function describeGame(game){
     targetMotions:[...game.targetMotions].map(([name,m])=>[name,{offset:m.offset,revision:m.revision,collidable:m.collidable,drop:m.drop,rotZ:m.spec.rot_z}]),
     visualMotions:[...game.visualMotions].map(([name,m])=>[name,m.snapshot()]),
     specs:{objects:game.specs.objects.filter(s=>s.kind==='Light').map(s=>({...s,surface_height:game.surface(s)}))},
-    objects:[...game.rules.objects].map(([name,object])=>[name,objectState(object)]),
+    objects:[...game.rules.objects].map(([name,object])=>[name,objectState(object,fieldsFor(game,name))]),
   };
 }
 export function snapshotGame(game,names,queries,previousObjects){
@@ -34,7 +36,7 @@ export function snapshotGame(game,names,queries,previousObjects){
   snapshot.targets=[...game.targetMotions].map(([name,t])=>[name,t.offset,t.revision]);
   snapshot.visualMotions=[...game.visualMotions].map(([name,m])=>[name,m.snapshot()]);
   snapshot.plungerPosition=game.plunger.pos;
-  snapshot.objects=[...names].flatMap(name=>{const object=game.rules.objects.get(name);if(!object)return[];if(!previousObjects)return[[name,objectState(object)]];let previous=previousObjects.get(name);if(!previous){previous={};previousObjects.set(name,previous);}const changed=objectChanges(object,previous);return changed?[[name,changed]]:[];});
+  snapshot.objects=[...names].flatMap(name=>{const object=game.rules.objects.get(name);if(!object)return[];const keys=fieldsFor(game,name);if(!previousObjects)return[[name,objectState(object,keys)]];let previous=previousObjects.get(name);if(!previous){previous={};previousObjects.set(name,previous);}const changed=objectChanges(object,previous,keys);return changed?[[name,changed]]:[];});
   snapshot.values=[...queries].map(query=>[query,game.rules.value(query)]);
   return snapshot;
 }

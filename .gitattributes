@@ -11,3 +11,4 @@ three/public/native-actors/*.glsl -text -whitespace
 three/public/native-table/*.glsl -text -whitespace
 three/public/native-transmission/*.glsl -text -whitespace
 three/public/native-ball/*.glsl -text -whitespace
+three/public/native-flashers/*.glsl -text -whitespace

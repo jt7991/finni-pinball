@@ -40,6 +40,10 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--native-cache' in sys.argv:runner='test-native-cache-browser.mjs'
         if '--ball-render' in sys.argv:runner='test-native-ball-render-browser.mjs'
         if '--ball-live' in sys.argv:runner='test-native-ball-live-browser.mjs'
+        if '--flasher-render' in sys.argv:runner='test-native-flasher-render-browser.mjs'
+        if '--native-flasher-properties' in sys.argv:runner='probe-native-flasher-properties.mjs'
+        if '--bulb-emission' in sys.argv:runner='test-native-bulb-emission-browser.mjs'
+        if '--alpha-order' in sys.argv:runner='test-native-alpha-order-browser.mjs'
         subprocess.run(['node',str(ROOT/'scripts'/runner),f'http://127.0.0.1:{port}',
                         sys.argv[1] if len(sys.argv)>1 else 'http://127.0.0.1:5173/three/',str(OUT),*sys.argv[2:]],check=True,timeout=150)
     finally:

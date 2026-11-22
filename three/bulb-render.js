@@ -4,14 +4,16 @@
 // See public/licenses/VPX-Physics-NOTICE.txt.
 import * as THREE from 'three';
 import {nativeDragCurve} from './native-curve.js';
+import {nativeTransparentOrder} from './native-render-order.js';
 
 export function createBulbHalos(game,scene){
   const specs=game.specs.objects.filter(s=>s.kind==='Light'&&s.is_bulb_light&&!s.is_backglass&&s.drag_points?.length>=3),positions=[],indices=[],lamps=[];
   for(const spec of specs){
+    const start=positions.length/3;
     const polygon=nativeDragCurve(spec.drag_points,true,4,2).map(p=>new THREE.Vector2(p.x*.01,(2115-p.y)*.01)),triangles=THREE.ShapeUtils.triangulateShape(polygon,[]),index=lamps.length;
     const surface=spec.surface_height??game.surface?.(spec)??0;
     for(const triangle of triangles)for(const vertex of triangle){positions.push(polygon[vertex].x,polygon[vertex].y,surface+(spec.bulb_halo_height??0)*.01+.001);indices.push(index);}
-    lamps.push({spec,state:game.rules.objects.get(spec.name.toLowerCase()),surface});
+    lamps.push({spec,state:game.rules.objects.get(spec.name.toLowerCase()),surface,start,count:positions.length/3-start});
   }
   const data=new Float32Array(Math.max(1,lamps.length)*16),texture=new THREE.DataTexture(data,4,Math.max(1,lamps.length),THREE.RGBAFormat,THREE.FloatType);
   texture.needsUpdate=true;const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));geometry.setAttribute('lampIndex',new THREE.Float32BufferAttribute(indices,1));
@@ -23,10 +25,12 @@ void main(){float y=(lampIndex+.5)/lampCount;lowColor=texture2D(lampData,vec2(.1
 void main(){if(blendVisible.y==0.||lowColor.w==0.)discard;float len=length(tablePos-centerRange.xyz)*centerRange.w;float atten=pow(max(1.-len,.0001),fullColor.w);vec3 lcolor=mix(fullColor.xyz,lowColor.xyz,sqrt(len));float blend=blendVisible.x;gl_FragColor=vec4(lcolor*(-blend*atten*lowColor.w),1./blend-1.);}`,
     transparent:true,depthWrite:false,side:THREE.DoubleSide,blending:THREE.CustomBlending,blendEquation:THREE.ReverseSubtractEquation,blendSrc:THREE.SrcAlphaFactor,blendDst:THREE.OneMinusSrcColorFactor,
   });
-  const mesh=new THREE.Mesh(geometry,material);mesh.name='NativeBulbHalos';mesh.frustumCulled=false;mesh.renderOrder=1;scene.add(mesh);
+  material.polygonOffset=true;material.polygonOffsetFactor=0;material.polygonOffsetUnits=-1;
+  const meshes=lamps.map(lamp=>{const shape=lamps.length===1?geometry:new THREE.BufferGeometry();if(shape!==geometry)for(const [name,attribute]of Object.entries(geometry.attributes))shape.setAttribute(name,attribute);shape.setDrawRange(lamp.start,lamp.count);const mesh=new THREE.Mesh(shape,material);mesh.name='NativeBulbHalo:'+lamp.spec.name;mesh.frustumCulled=false;const height=Math.fround(Math.fround(lamp.surface*100)+Math.fround(lamp.spec.bulb_halo_height??0));mesh.userData.nativeTransparentOrder=nativeTransparentOrder(height,lamp.spec.depth_bias??0,lamp.spec.native_source_order,2);mesh.renderOrder=mesh.userData.nativeTransparentOrder[0];return mesh;});
+  const mesh=meshes.length===1?meshes[0]:new THREE.Group();if(mesh.isGroup)mesh.add(...meshes);mesh.name='NativeBulbHalos';scene.add(mesh);
   const color=(offset,value)=>{const c=Number(value)>>>0;data[offset]=(c&255)*Math.fround(1/255);data[offset+1]=(c&65280)*Math.fround(1/65280);data[offset+2]=(c&16711680)*Math.fround(1/16711680);};
-  return{mesh,texture,lamps,update(){
-    lamps.forEach(({spec,state,surface},i)=>{const offset=i*16;color(offset,state.color);data[offset+3]=Number(state.inplayintensity);color(offset+4,state.colorfull);data[offset+7]=spec.falloff_power??2;data[offset+8]=spec.center.x*.01;data[offset+9]=(2115-spec.center.y)*.01;data[offset+10]=surface+(spec.height??0)*.01;data[offset+11]=1/(Math.max(spec.falloff_radius??50,.1)*.01);data[offset+12]=Math.min(.9999,Math.max(.0001,spec.bulb_modulate_vs_add??.9));data[offset+13]=state.visible?1:0;});texture.needsUpdate=true;
+  return{mesh,meshes,texture,lamps,update(){
+    lamps.forEach(({spec,state,surface},i)=>{const offset=i*16;color(offset,state.color);data[offset+3]=Number(state.inplayintensity);color(offset+4,state.colorfull);data[offset+7]=spec.falloff_power??2;data[offset+8]=spec.center.x*.01;data[offset+9]=(2115-spec.center.y)*.01;data[offset+10]=surface+(spec.height??0)*.01;data[offset+11]=1/(Math.max(spec.falloff_radius??50,.1)*.01);data[offset+12]=Math.min(.9999,Math.max(.0001,spec.bulb_modulate_vs_add??.9));data[offset+13]=state.visible?1:0;meshes[i].visible=!!state.visible&&Number(state.inplayintensity)!==0&&((Number(state.color)|Number(state.colorfull))&0xffffff)!==0;});texture.needsUpdate=true;
   }};
 }
 

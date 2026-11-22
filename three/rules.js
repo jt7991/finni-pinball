@@ -7,6 +7,7 @@ import {createScriptRandom,registerScriptRandom} from './script-random.js';
 import {LightSequence,SEQ} from './light-sequence.js';
 import {LightAnimation,nativeColor} from './light-animation.js';
 import {runtimeNativeRandom} from './native-random.js';
+import {nativeFlasherLong} from './native-flasher-state.js';
 
 export const KEY={left:42,right:54,launch:28,start:2,action:57,nudgeLeft:44,nudgeForward:45,nudgeRight:53};
 const empty=()=>{};
@@ -55,6 +56,7 @@ export function createRules(source,specs,host={}) {
       isdropped:spec.is_dropped??false,open:false,rotx:spec.rot_and_tra?.[0]??0,roty:spec.rot_and_tra?.[1]??0,rotz:spec.rot_z??spec.rot_and_tra?.[2]??0,
       currentangle:0,startangle:0,endangle:0,transz:0,height:spec.height??50,sequenceactive:false,sequencestate:['Flasher','Primitive'].includes(spec.kind)?Number(spec.is_visible??true):spec.state??0,
       threshold:spec.threshold??0,force:spec.force??0,scatter:spec.scatter??0,hashitevent:spec.use_hit_event??spec.hit_event??false,hitthreshold:0,disabled:false,slingshotthreshold:spec.slingshot_threshold??0};
+    if(spec.kind==='Flasher'){const filter=spec.filter??'none';Object.assign(state,{color:nativeColor(spec.color??0xffffff),rotx:spec.rot_x??0,roty:spec.rot_y??0,imagea:spec.image_a??'',imageb:spec.image_b??'',opacity:spec.alpha??100,modulatevsadd:spec.modulate_vs_add??.9,addblend:spec.add_blend==='add',filter:filter[0].toUpperCase()+filter.slice(1),amount:spec.filter_amount??100});}
     const actions={
       createball:()=>host.createBall?.(name)??{x:state.x,y:state.y,z:25,velx:0,vely:0,velz:0},
       createsizedballwithmass:()=>host.createBall?.(name)??{x:state.x,y:state.y,z:25,velx:0,vely:0,velz:0},
@@ -74,7 +76,14 @@ export function createRules(source,specs,host={}) {
     };
     const proxy=new Proxy(state,{
       get(target,key){if(typeof key==='symbol')return target[key];const k=key.toLowerCase();if(lamp){const value=lamp.get(k);if(value!==undefined)return value;}if(spec.kind==='Plunger'&&k==='position')return host.plungerPosition?.()??0;if(liveProperties[spec.kind]?.has(k)){const value=host.mechanismValue?.(name,k);if(value!==undefined)return value;}return k in actions?actions[k]:target[k]??0;},
-      set(target,key,v){const k=String(key).toLowerCase();if(lamp?.set(k,v))return true;target[k]=lamp&&['color','colorfull'].includes(k)?nativeColor(v):v;
+      set(target,key,v){const k=String(key).toLowerCase();if(lamp?.set(k,v))return true;const previous=target[k];target[k]=lamp&&['color','colorfull'].includes(k)?nativeColor(v):v;
+        if(spec.kind==='Flasher'){
+          if(k==='color')target[k]=nativeColor(v);
+          else if(['opacity','amount'].includes(k))target[k]=Math.max(0,nativeFlasherLong(v));
+          else if(['rotx','roty','rotz','height','intensityscale','modulatevsadd'].includes(k))target[k]=Math.fround(Number(v));
+          else if(k==='filter'){const filter=String(v).toLowerCase();target[k]=['none','additive','overlay','multiply','screen'].includes(filter)?filter[0].toUpperCase()+filter.slice(1):previous;}
+          else if(['visible','addblend'].includes(k))target[k]=!!v;
+        }
         if(spec.kind==='LightSequencer'){
           const seq=sequences.get(lower);
           if(k==='updateinterval'){target[k]=Math.max(1,Math.trunc(v));if(seq)seq.updateInterval=target[k];}
