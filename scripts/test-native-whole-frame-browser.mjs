@@ -13,6 +13,7 @@ const traceReflection=process.argv.includes('--trace-reflection');
 if(tracePixel)assert.ok(tracePixel.length===2&&tracePixel.every(Number.isInteger));
 assert.match(captureName,/^[a-z0-9-]+$/);assert.match(reportName,/^[a-z0-9-]+$/);
 const directory=path.join(output,'native-whole-frame-'+captureName),fixture=JSON.parse(fs.readFileSync(path.join(directory,'input.json'))),assetsURL='/three/@fs/'+path.resolve(directory).replaceAll('\\','/')+'/',cacheEnabled=process.argv.includes('--cache');
+assert.equal(!!fixture.renderMode?.uniformAlignmentReference,process.argv.includes('--uniform-alignment-reference'),'Reference compatibility mode must be selected explicitly; never label a corrected WebGL reference as unchanged');
 if(requireExact){
  for(const name of ['initialReflection','previousHDR','priorAO','hdr','reflection','bloom','depth','final'])assert.ok(fixture.images[name],'Exact common-input comparison requires native '+name);
  if(nativePrepass){assert.equal(fixture.renderMode?.nativePrepass,true);assert.equal(fixture.renderMode.staticDisabled,false);assert.equal(fixture.renderMode.reflectedTransmissionObserved,true);const image=fixture.images.reflectionTransmission;assert.ok(image,'Original native dynamic-only reflection binds its actual dummy texture');assert.equal(image.width,1);assert.equal(image.height,1);assert.deepEqual(Array.from(fs.readFileSync(path.join(directory,image.file))),[0,0,0,0],'Original reflection transmission binding is black, not an omitted temporal input');}
@@ -45,6 +46,7 @@ try{
    saved.push([object,restore]);
   }
   for(const [name,motion]of game.targetMotions){const state=fixture.states[name];if(state){saved.push([motion,{offset:motion.offset,revision:motion.revision}]);motion.offset=motion.drop&&state.IsDropped?-52:0;motion.revision++;}}
+  for(const [name,pose]of Object.entries(fixture.mechanismPoses??{})){const motion=game.visualMotions.get(name);if(!motion)throw Error('Observed source mechanism is missing: '+name);saved.push([motion,Object.fromEntries(Object.keys(pose).map(key=>[key,motion[key]]))]);Object.assign(motion,pose);}
   const oldBalls=game.renderBalls,oldSubmission=game.submission,oldCabinet=game.cabinetOffset;game.renderBalls=fixture.balls;game.submission=undefined;game.cabinetOffset={x:0,y:0};
   const final=new THREE.WebGLRenderTarget(w,h,{type:THREE.UnsignedByteType,depthBuffer:false}),post=view.lightFrame.postprocess,update=post.update,render=post.render;post.update=()=>update.call(post,fixture.frameIndex);post.render=()=>render.call(post,final);
   const compare=(actual,expected,channels=4,rgb=true)=>{

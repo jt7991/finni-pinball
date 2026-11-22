@@ -523,3 +523,51 @@ into production or fitted. Production uses valid source lamp properties and
 keeps authored inserts enabled. These controlled frames do not establish
 uninterrupted gameplay parity, resolve the seven older physics failures, or
 certify physical-phone performance.
+
+## Classic-light pointer alignment diagnosis
+
+The rejected classic-light vectors now have a confirmed cause. The pinned
+ShaderState packs boolean fields into one byte and advances uniform offsets
+without float alignment. Read-only WASM import observation finds all 75 classic
+vector pointers at addresses congruent to1 modulo4. Emscripten's original
+`glUniform4fv` glue passes `HEAPF32,value>>2,count*4`, rounding each byte pointer
+down by one. All 75 uploaded vectors exactly match those preceding bytes.
+The 525 observed bulb-vector pointers are aligned and upload correctly.
+
+Reading the original bytes at the actual import pointer produces valid colors,
+intensity, light center and falloff. All 300 fields independently match the
+port's source-derived light properties. The unchanged rejected GPU vectors
+remain in their original fixtures. `native-classic-pointer.test.js` verifies
+the original CPU bits and the separate incorrect uploads; no runtime light
+values were fitted or replaced.
+
+`--uniform-alignment-reference` is an explicit reference compatibility mode.
+It copies float values from the original byte address into an aligned temporary
+array only when an actual native import pointer is unaligned. It changes no
+WASM memory, table, camera, draw state, physical state or clock. It is never
+loaded in production, and captures/comparisons must explicitly select and label
+this mode. Original unmodified-GPU controls and failure reports remain intact.
+
+With this compatibility bridge, a Balanced frame with all25inserts lit matches
+every HDR, reflection, bloom, final RGBA and depth value, including cold/reused
+buffers. A second independent Top-down frame changes all insert colors and
+sets intensity scale0.37; it also matches every value with the same strict
+gates. These are byte-alignment-corrected reference frames, not claims of
+unmodified-WASM WebGL equality or uninterrupted gameplay parity.
+
+The first Top-down attempt exposed incomplete shared mechanism inputs: the
+independently started port could reach the capture with bumper rings moving.
+The comparison now accepts actual native ring/skirt poses read directly from
+live CPU memory. Object discovery requires exact authored center/radius/height/
+orientation/ring parameters, a live circle pointer and six valid vtable entries;
+offsets are independently exercised by the existing compiled Bumper harness.
+No source pose is guessed or reset in production. That incomplete comparison
+and unsuccessful observer attempts remain separate diagnostics. The read-only
+memory snapshot supplies all nine bumper pose scalars for the passing frame.
+
+Reproduce with `--native-whole-frame --native-prepass --lit --all-inserts
+--observe-uniform-pointers --uniform-alignment-reference
+--observe-mechanism-poses --capture-name=unique`, prepare its shared inputs,
+then compare using `--whole-frame-render --native-prepass
+--uniform-alignment-reference --require-exact --compare-cache --cache`.
+Add `--camera-preset=topdown --classic-variant=fade-color` for the second case.
