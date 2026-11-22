@@ -44,6 +44,11 @@ function render(){
 }
 function release(){held.clear();physical.clear();pointers.clear();swipes.clear();paint();send();}
 function setAction(id,down,source){
+  // Start confirms the selected roster; it never adds a player during a game.
+  if(id==='start'){
+    if(down&&!$('waiting').hidden&&!$('play').disabled)$('play').click();
+    return;
+  }
   if(!connected)return;
   if(down&&(!$('waiting').hidden||$('initials-dialog').open||document.querySelector('.panel:popover-open')))return;
   const sources=held.get(id)||new Set();
@@ -221,12 +226,19 @@ const dmd=createDmd();
 // Dialogs and popovers restore focus to toolbar buttons. Return it to the
 // playfield so the next Start key reaches the game rather than a focused tool.
 function focusGame(){if(connected&&!$('initials-dialog').open&&!document.querySelector('.panel:popover-open'))$('canvas').focus({preventScroll:true});}
+function startSelectedGame(){
+  const players=Number($('player-count').value);
+  const count=Number.isInteger(players)&&players>=1&&players<=4?players:1;
+  // Enroll the entire roster synchronously, before the first-ball timer fires.
+  const start='Table1_KeyDown StartGameKey:Table1_KeyUp StartGameKey';
+  evaluate(`bFreePlay=True:${Array(count).fill(start).join(':')}`);
+}
 async function replay(){
   if($('play').disabled)return;
-  $('play').disabled=true;
+  $('play').disabled=true;$('player-count').disabled=true;
   await setFullscreen(true);
   release();
-  evaluate('bFreePlay=True:Table1_KeyDown StartGameKey:Table1_KeyUp StartGameKey');
+  startSelectedGame();
   if(!connected)return;
   $('waiting').hidden=true;replayVisible=false;focusGame();
 }
@@ -236,6 +248,7 @@ function updateReplay(playing,entering){
   release();replayVisible=true;
   document.querySelector('#waiting h2').textContent='Game over';
   document.querySelector('#waiting .start-content > p').textContent='Start a new game on this table.';
+  $('player-count').disabled=false;
   $('play').disabled=false;$('play').textContent='Play again';$('play').onclick=replay;
   $('loading').textContent='Ready to play again.';$('waiting').hidden=false;
 }
@@ -308,7 +321,7 @@ async function boot(){
     engine.FS.mkdirTree('/tables');engine.FS.writeFile('/tables/finni.vpx',new Uint8Array(table),{canOwn:true});table=null;
     $('progress').value=100;$('progress').hidden=true;$('loading').textContent='Table loaded.';$('play').disabled=false;$('play').textContent='Start game';$('status').textContent='Ready to play';
     $('play').onclick=async()=>{
-      enginePhase='Starting table';$('play').disabled=true;$('loading').textContent='Starting the table…';
+      enginePhase='Starting table';$('play').disabled=true;$('player-count').disabled=true;$('loading').textContent='Starting the table…';
       // Queue fullscreen from the click before SDL startup; SDL otherwise exits
       // fullscreen if it has already settled while the native window is created.
       void setFullscreen(true);
@@ -329,7 +342,7 @@ async function boot(){
         evaluate('Dim FinniDmdDigit, FinniDmdState : bFreePlay=True : For Each FinniDmdDigit In Digits : FinniDmdDigit.Visible=False : Next : digitgrid.Visible=False : DMDFlush : ShowTableInfo');
         connected=true;document.body.classList.add('playing');$('waiting').hidden=true;$('progress').hidden=true;$('status').textContent='Playing';document.title='Finni’s Big Day';paint();$('canvas').focus();
         views.apply();
-        evaluate('Table1_KeyDown StartGameKey:Table1_KeyUp StartGameKey');
+        startSelectedGame();
         enginePhase='Playing';
       }catch(error){fail(error);}
     };
