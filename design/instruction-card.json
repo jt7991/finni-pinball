@@ -1,0 +1,121 @@
+{
+  "title": "Finni’s Big Day!",
+  "quick_start": [
+    {
+      "title": "PICK A TASK",
+      "lines": [
+        "Shoot the lit scoop.",
+        "Flippers choose your task;",
+        "Launch or Action confirms."
+      ]
+    },
+    {
+      "title": "FOLLOW THE LIGHTS",
+      "lines": [
+        "Make the shots on the display.",
+        "Finish tasks to unlock more",
+        "party preparations."
+      ]
+    },
+    {
+      "title": "FRIENDSHIP MULTIBALL",
+      "lines": [
+        "Complete the right target bank.",
+        "Then lock 3 balls on the right",
+        "ramp to start multiball."
+      ]
+    },
+    {
+      "title": "CAKE TIME MULTIBALL",
+      "lines": [
+        "Clear the drop targets; hit Finni.",
+        "Follow the jackpot shots",
+        "to decorate the cake."
+      ]
+    }
+  ],
+  "quick_footer": "DISCO: spin the left spinner when no task is running.",
+  "sections": [
+    {
+      "title": "START A PARTY TASK",
+      "lines": [
+        "Shoot the scoop when lit. Use the flippers to",
+        "choose; confirm with Launch, Start or Action.",
+        "Follow the display and flashing shots. Complete",
+        "the left target bank to light another task."
+      ]
+    },
+    {
+      "title": "FRIENDSHIP MULTIBALL",
+      "lines": [
+        "Complete the right target bank to light Lock.",
+        "Lock 3 balls on the right ramp to gather friends.",
+        "Collect all 6 lit jackpots, then shoot the right",
+        "ramp for the super jackpot. Repeat for more!"
+      ]
+    },
+    {
+      "title": "CAKE TIME MULTIBALL",
+      "lines": [
+        "Clear the drop targets to reach Finni. Hit Finni",
+        "to start multiball: 2 hits first, more on later tries.",
+        "Frost at Finni, collect 5 lit-shot jackpots, then",
+        "spin the spinners before time runs out."
+      ]
+    },
+    {
+      "title": "DISCO LOOPS & MULTIBALL",
+      "lines": [
+        "Spin the left spinner while no task is running.",
+        "50 spins start timed Disco Loops; 100 start",
+        "Disco Multiball. During Disco Multiball,",
+        "shoot either ramp for super jackpots."
+      ]
+    },
+    {
+      "title": "PARTY SUPPLIES",
+      "lines": [
+        "Collect Kitchen Timer for extra task time;",
+        "Party Lights for double task points;",
+        "The Checklist for double task progress;",
+        "Party Favors for extra points on supported hits."
+      ]
+    },
+    {
+      "title": "ACTION & BONUS",
+      "lines": [
+        "Complete all 4 lower lanes to earn a power.",
+        "Use Action when lit: advance an active task",
+        "or collect points. Complete the 4 top lanes",
+        "to increase your end-of-ball bonus multiplier."
+      ]
+    },
+    {
+      "title": "MORE WAYS TO SCORE",
+      "lines": [
+        "Bumpers light Confetti shots: hit them to build",
+        "the Friendship jackpot. The right orbit collects",
+        "Snacks toward Supply Run Multiball. Follow",
+        "lit Supplies and Ribbons for more features."
+      ]
+    },
+    {
+      "title": "GET READY FOR PARTY TIME",
+      "lines": [
+        "Begin with 3 task choices. Win 3 tasks to open",
+        "all 6 preparations, including Hang the Piñata.",
+        "Win all 6 to unlock Party Time: a timed",
+        "multiball with a changing flashing shot."
+      ]
+    }
+  ],
+  "provenance": {
+    "source_card": "JP’s Deadpool v7 rulescard image, referenced by info.json table_rules as ![Rules](rulescard). No playfield object references that image.",
+    "verified_against": [
+      "party-tasks.json",
+      "finni-dmd-theme.json",
+      "current shipped script.vbs: StartChooseBattle, ChooseBattle, CheckDead, CheckPool, Lock_Hit, NinjaMBCheckHits, LilDPCheckHits, CheckDisco, BoomHit, CheckBonusX"
+    ],
+    "notes": "Concise apron summary plus full VPX rules image. No gameplay changes. Controls use action names rather than fixed browser keys."
+  }
+}

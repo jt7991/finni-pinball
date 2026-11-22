@@ -1,6 +1,6 @@
 """Install the approved comic hardware palette and readable table-wide fill."""
 from pathlib import Path
-import copy,json,math
+import copy,json,math,runpy
 from PIL import Image,ImageDraw
 
 def round_gi_outline(light):
@@ -35,7 +35,7 @@ def fill_light(template,spec):
 def install(extracted, palette_names, configuration):
     extracted=Path(extracted)
     images=json.loads((extracted/'images.json').read_text())
-    for name in ('plastics','plastics2','Cabinet_Sides','Cabinet_Sides black'):
+    for name in ('Cabinet_Sides','Cabinet_Sides black'):
         entry=next((e for e in images if e['name']==name),None)
         if not entry:continue
         source=next((extracted/'images').glob(name+'.*'))
@@ -99,6 +99,7 @@ def install(extracted, palette_names, configuration):
             items.append({'file_name':filename,'is_locked':False,'editor_layer':0,
                 'editor_layer_name':'Finni center illumination','editor_layer_visibility':True})
     (extracted/'gameitems.json').write_text(json.dumps(items,indent=2))
-    return {'cake_material_coordinates':cake,'balloon_material_coordinates':balloons,
+    plastics=runpy.run_path(str(Path(__file__).with_name('build-party-plastics.py')))['install'](extracted)
+    return {'party_plastics':plastics,'cake_material_coordinates':cake,'balloon_material_coordinates':balloons,
         'lighting':configuration['table_lighting'],'center_fill':configuration.get('center_fill',[]),'rounded_gi':rounded_gi,
         'collisions_and_mesh_vertices_unchanged':True}

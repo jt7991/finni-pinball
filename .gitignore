@@ -71,3 +71,6 @@ __pycache__/
 !/output/playfield-party-v13/
 /output/playfield-party-v13/*validation.json
 /output/playfield-party-v13/registration-overlay.png
+
+# Registered party plastic artwork and blank future instruction-card well.
+!/output/party-plastics/
