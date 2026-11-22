@@ -5,3 +5,5 @@ runtime/*.vpx filter=lfs diff=lfs merge=lfs -text
 three/public/*.bin binary
 three/public/arcade-background.svg -text
 three/public/fonts/** -text
+# Preserve the original compiled VPX shader bytes, including upstream whitespace.
+three/public/native-actors/*.glsl -text -whitespace
