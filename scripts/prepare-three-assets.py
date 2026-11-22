@@ -141,7 +141,7 @@ for path in source_files:
         'name','center','position','rot_z','rot_and_tra','rotation','radius','shape','drag_points',
         'height','height_bottom','height_top','is_collidable','is_enabled','is_visible','size','target_type','collection','update_interval','pos_x','pos_y','backglass','is_backglass',
         'is_dropped','state','state_u32','color','color2','intensity','blink_interval','blink_pattern','fade_speed_up','fade_speed_down','fader','visible','falloff_radius','falloff_power','is_bulb_light','bulb_modulate_vs_add','bulb_halo_height','is_image_mode','image','hit_event','threshold',
-        'is_timer_enabled','timer_interval','surface','hit_height','width','length')}})
+        'is_timer_enabled','timer_interval','surface','hit_height','width','length','anim_speed')}})
     specs[-1]['native_source_order']=source_order[path.name]
     if kind=='Flasher':
         specs[-1].update({k:item[k] for k in ('rot_x','rot_y','image_a','image_b','alpha','modulate_vs_add','add_blend','image_alignment','filter','filter_amount','light_map','depth_bias')})

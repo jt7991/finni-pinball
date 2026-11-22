@@ -1,0 +1,7 @@
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import {gunzipSync} from 'node:zlib';
+import {computeNativeCamera} from '../native-camera.js';import {nativeStaticJitter} from '../native-static-sampling.js';import {nativeModelMatrices} from '../primitive-transform.js';import {nativeIdentity} from '../native-matrix.js';import {nativeReflectionCamera} from '../native-reflection.js';
+const fixture=JSON.parse(gunzipSync(fs.readFileSync(new URL('fixtures/vpx-static-camera-native.json.gz',import.meta.url)))),bounds=JSON.parse(fs.readFileSync(new URL('../public/camera-bounds.json',import.meta.url))),table=JSON.parse(fs.readFileSync(new URL('../public/native-table/native-table.json',import.meta.url))),plane=table.parts.find(part=>part.probe).probe.plane;
+test('all128 static and reflected prerender camera packets match the original native GPU UBOs',()=>{
+ assert.equal(fixture.engineSHA256,'c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8');assert.equal(fixture.cases.length,256);const {width,height,camera:preset}=fixture.sourceUI;
+ for(const sample of fixture.cases){let camera=computeNativeCamera(bounds,width/height,preset,nativeStaticJitter(sample.sample,width,height));if(sample.reflection)camera=nativeReflectionCamera(camera,plane);const matrices=nativeModelMatrices(nativeIdentity(),camera),bits=Array.from(new Uint32Array(matrices.buffer));assert.deepEqual(bits,sample.matrixBits,(sample.reflection?'reflection':'static')+' sample '+sample.sample);}
+});

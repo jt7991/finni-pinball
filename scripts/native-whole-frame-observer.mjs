@@ -20,6 +20,7 @@ export function installNativeWholeFrameObserver(){
    const name=location(gl,program,'AO_scale_timeblur')!==null?'ambient_occlusion':fragment?.match(/\/\/ps_main_([^\s(]+)\(/)?.[1]??'geometry';
    const viewport=Array.from(gl.getParameter(gl.VIEWPORT)),target=targetId(gl);
    const row={method,args,name,target,viewport,scissorEnabled:gl.isEnabled(gl.SCISSOR_TEST),scissor:Array.from(gl.getParameter(gl.SCISSOR_BOX))};
+   if(location(gl,program,'tex_light_color')!==null)row.classicUniforms=Object.fromEntries(['lightColor_intensity','lightColor2_falloff_power','lightCenter_maxRange'].map(name=>[name,uniform(gl,program,name)]));
    const basic=gl.getUniformBlockIndex(program,'basicMatrixBlock'),ball=gl.getUniformBlockIndex(program,'ballMatrixBlock'),block=basic!==gl.INVALID_INDEX?basic:ball;
    if(block!==gl.INVALID_INDEX){
     const binding=gl.getActiveUniformBlockParameter(program,block,gl.UNIFORM_BLOCK_BINDING),buffer=gl.getIndexedParameter(gl.UNIFORM_BUFFER_BINDING,binding),previous=gl.getParameter(gl.UNIFORM_BUFFER_BINDING),size=gl.getActiveUniformBlockParameter(program,block,gl.UNIFORM_BLOCK_DATA_SIZE),values=new Float32Array(size/4);

@@ -57,6 +57,8 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--native-whole-frame' in sys.argv:runner='probe-native-whole-frame-browser.mjs'
         if '--whole-frame-render' in sys.argv:runner='test-native-whole-frame-browser.mjs'
         if '--flipper-assembly' in sys.argv:runner='test-native-flipper-assembly-browser.mjs'
+        if '--native-static-prepass' in sys.argv:runner='probe-native-static-prepass-browser.mjs'
+        if '--trigger-animation' in sys.argv:runner='test-trigger-animation-browser.mjs'
         subprocess.run(['node',str(ROOT/'scripts'/runner),f'http://127.0.0.1:{port}',
                         sys.argv[1] if len(sys.argv)>1 else 'http://127.0.0.1:5173/three/',str(OUT),*sys.argv[2:]],check=True,timeout=150)
     finally:

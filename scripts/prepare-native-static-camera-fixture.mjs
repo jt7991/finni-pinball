@@ -1,0 +1,8 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';import {gzipSync} from 'node:zlib';import {createHash} from 'node:crypto';
+const file=process.argv[2]??'.work/three-review/native-static-prepass-r5/capture.json',bytes=fs.readFileSync(file),capture=JSON.parse(bytes);assert.deepEqual(capture.errors,[]);assert.equal(capture.sourceUI.camera,'balanced');
+const averages=capture.averages.slice(-2);assert.equal(averages.length,2);const cases=[];
+for(const [pass,average]of averages.entries()){
+ const rows=capture.stages.filter(row=>row.name==='fb_mirror'&&row.target===average.source);assert.equal(rows.length,128);
+ for(const [order,row]of rows.entries()){assert.equal(row.firstMatrices.target,row.input);assert.deepEqual(row.firstMatrices.values.slice(0,16),[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]);assert.equal(row.firstMatrices.matrixBits.length,80,'Preserve native signed-zero bits before JSON serialization');cases.push({sample:127-order,reflection:pass===1,matrixBits:row.firstMatrices.matrixBits});}
+}
+fs.writeFileSync('three/tests/fixtures/vpx-static-camera-native.json.gz',gzipSync(JSON.stringify({engineSHA256:capture.engineSHA256,captureSHA256:createHash('sha256').update(bytes).digest('hex'),sourceUI:capture.sourceUI,cases,scope:'Actual source GPU UBOs associated through the mirror input texture, for all128 samples of the final selected Balanced static and reflection prerenders. Expected sample indices follow the source descending loop. No phase/offset fitting; native matrices remain comparison outputs only.'}),{level:9}));console.log(JSON.stringify({cases:cases.length,fields:cases.length*80}));
