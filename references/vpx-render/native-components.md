@@ -7,7 +7,7 @@ parts and 25 classic inserts retain their separate native paths. The original
 open wire ramp geometry, main arcade UI and lossless source artwork are retained.
 The shared transmission/bloom temporary buffer, final whole-frame comparison
 and seven older physics comparisons are unfinished. The full suite passes
-169/176 tests.
+171/178 tests.
 
 The actual scene now runs source planar reflections with D16 depth, native
 transmission, target/gate/spinner/trigger/bumper vertex updates and all 57
@@ -140,7 +140,7 @@ held poses, native matrix packets, and reference output pixels are never
 production assets. This component result does not establish full-frame parity.
 
 `three/native-postprocess.js` replaces the approximate final frame shader with
-the five original compiled programs: dynamic AO, bloom cutoff, horizontal and
+five active source passes: dynamic AO, bloom cutoff, horizontal and
 vertical 39x39 Gaussian blur, and Reinhard tone mapping with dither and the
 authored 256x16 color-grade LUT. AO retains two full-size R8 history targets;
 bloom uses the transmission targets at quarter resolution. The shifted cutoff
@@ -179,10 +179,52 @@ restoration correctly observes changing feedback, rather than isolating the
 cache. Production history is never frozen by this test change.
 
 Run `check-three.py NATIVE_URL --native-postprocess`, then
-`prepare-native-postprocess.mjs` and `publish-native-postprocess.mjs`. Run
+`prepare-native-postprocess.mjs`. Capture `--native-nudge-render` and run
+`prepare-native-nudge-render.mjs` before `publish-native-postprocess.mjs`. Run
 `check-three.py THREE_DEV_URL --postprocess-render` for the framebuffer check
 and `node --test three/tests/native-postprocess.test.js` for the retained
 clock, geometry and source-asset regressions.
+
+The runtime now carries cabinet displacement in native metres through the
+worker. `Renderer::SetScreenOffset` scales it by the pinned visual strength,
+rotates into viewport coordinates and shifts the final quad. Any nonzero
+source offset selects the original filtered Reinhard program, including its
+half-texel UV offset and linear frame sampler; a settled cabinet selects the
+original unfiltered program. The six compiled programs therefore still produce
+five active passes. Source clipping behavior and framebuffer history remain
+intact; the scene geometry and collision world are not translated by this path.
+
+The nudge observer discovers CabinetPhysics using its immutable mass, oscillator
+frequency, spring and damping fields, then validates vector layout and the
+native getter's exact return pointer. Vertex2D's alignas(8) padding is included.
+A typed WASM dispatch wrapper calls the original GetCabinetOffset and returns
+its pointer unchanged while reading the actual position and activation counter.
+It writes no body, RNG, timer or cabinet state. This proves the state used when
+VPX selects its screen offset, rather than substituting the later draw-time
+GameTime. The public-clock-only and rejected unaligned-ABI diagnostics remain
+separate from the accepted capture.
+
+The three directions retain 270 native cabinet states and 5,400 fullscreen
+vertex fields with zero differences. The shifted/filtered framebuffer check
+also matches all 5,452,005 intermediate/final channel values, using the observed
+cabinet counter and FrameIndex as explicit inputs. The prior output target is
+supplied once because a shifted quad can leave edge pixels uncovered. Captured
+positions, clock values and framebuffer data remain test evidence only.
+
+An actual worker-driven Nudge reproduces the same native displacement and real
+quad, selects the filtered pass, then returns to zero/unfiltered after the
+source ten-second activation interval. The ordinary unshifted comparison still
+passes unchanged. The reference INI leaves BallAntiStretch/BallTrail empty;
+the pinned Settings_properties.inl defaults are both false. NudgeStrength and
+KeyboardNudgeStrength default to one, with the CabModel mode selected. Those
+source defaults are recorded with their pinned Git blob digest.
+
+Run `node --test three/tests/native-nudge-render.test.js` and
+`check-three.py THREE_DEV_URL --nudged-postprocess`. The live worker check must
+pause through the actual Controls popover, since the page's frame loop owns its
+pause state. A stale long-running Vite module cache initially served the old
+snapshot without cabinetOffset; restarting only that worktree dev server fixed
+the diagnostic environment. Production builds contain the new snapshot field.
 
 ## Verified results
 

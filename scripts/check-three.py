@@ -49,6 +49,8 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--native-timer' in sys.argv:runner='probe-native-timer-browser.mjs'
         if '--native-postprocess' in sys.argv:runner='probe-native-postprocess-browser.mjs'
         if '--postprocess-render' in sys.argv:runner='test-native-postprocess-browser.mjs'
+        if '--native-nudge-render' in sys.argv:runner='probe-native-nudge-render-browser.mjs'
+        if '--nudged-postprocess' in sys.argv:runner='test-native-postprocess-browser.mjs'
         subprocess.run(['node',str(ROOT/'scripts'/runner),f'http://127.0.0.1:{port}',
                         sys.argv[1] if len(sys.argv)>1 else 'http://127.0.0.1:5173/three/',str(OUT),*sys.argv[2:]],check=True,timeout=150)
     finally:

@@ -39,6 +39,7 @@ test('real worker preserves every body, native RNG, authored rules, DMD, audio a
       assert.deepEqual(await remote.debug({action:'inspect'}),inspect(local));
       assert.deepEqual(remote.renderBalls,local.physicalRecords.map(rec=>{const native=local.nativeBall(rec.body);return{id:rec.body.handle,position:{...native.sync()},orientation:native.orientation.matrix.slice(),radius:25,locked:!!rec.held&&rec.held!=='lane',...rec.render};}),'all source ball positions, original orientation bits and visual properties cross the worker');
       assert.equal(remote.plungerPosition,local.plunger.pos,'native plunger position crosses the worker boundary');
+      assert.deepEqual(remote.cabinetOffset,local.cabinetNudge.nativeOffset,'native metre displacement crosses the worker boundary');
       for(const [name,motion]of local.visualMotions)assert.deepEqual(remote.visualMotions.get(name),motion.snapshot(),name+' visual frame state');
       for(const key of ['state','score','player','ballNumber','charge','inLane','tilted','gameState','held'])assert.deepEqual(remote[key],local[key],key);
       for(const name of digits)assert.equal(remote.rules.objects.get(name).imagea,local.rules.objects.get(name).imagea,name);
@@ -55,6 +56,7 @@ test('real worker preserves every body, native RNG, authored rules, DMD, audio a
     await input('launch',true);await advance(1000);await input('launch',false);await advance(750);
     await input('left',true);await input('right',true);await advance(40);await input('left',false);await advance(80);
     local.release();remote.release();await remote.flush();await compare();
+    await input('nudgeLeft',true);await advance(17);assert.notEqual(remote.cabinetOffset.x,0,'real input reaches native cabinet motion');await input('nudgeLeft',false);await advance(200);
     local.rules.run('AddMultiball',2);await remote.debug({action:'run',name:'AddMultiball',args:[2]});await advance(2500);
     assert.ok(remote.records.length>=2,'complete runtime creates overlapping physical balls');
     const target=remote.targetMotions.get('target010'),flipper=remote.flippers[0],digit=remote.rules.objects.get('digit001');

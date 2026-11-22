@@ -11,7 +11,7 @@ export class CabinetNudge {
   constructor(strength=1){
     this.strength=strength;this.impulses=[];this.activeMilliseconds=0;
     this.axes=[oscillator(9.3,.052),oscillator(5.8,.055)];
-    this.acceleration={x:0,y:0};this.offset={x:0,y:0};
+    this.acceleration={x:0,y:0};this.offset={x:0,y:0};this.nativeOffset={x:0,y:0};
   }
   nudge(angle,force){
     const a=f(f(angle)*f(Math.PI/180)),strength=f(f(f(force)*f(this.strength))*f(f(.5*f(9.80665))/2));
@@ -32,8 +32,9 @@ export class CabinetNudge {
       a.velocity=f(a.velocity+f(acceleration*seconds));a.position=f(a.position+f(a.velocity*seconds));accelerations.push(acceleration);
     }
     this.acceleration={x:accelerations[0],y:accelerations[1]};
-    this.offset={x:f(this.axes[0].position*3.5)*metersToWorld,y:-f(this.axes[1].position*2)*metersToWorld};
-    if(!this.activeMilliseconds){this.acceleration={x:0,y:0};this.offset={x:0,y:0};return {x:0,y:0,z:0};}
+    this.nativeOffset={x:f(this.axes[0].position*3.5),y:f(this.axes[1].position*2)};
+    this.offset={x:this.nativeOffset.x*metersToWorld,y:-this.nativeOffset.y*metersToWorld};
+    if(!this.activeMilliseconds){this.acceleration={x:0,y:0};this.offset={x:0,y:0};this.nativeOffset={x:0,y:0};return {x:0,y:0,z:0};}
     // Cabinet acceleration is horizontal; project the fictitious force onto
     // the inclined playfield. Static contacts still use gravity alone in VPX.
     const convert=a=>f(f(a*metresToVPU)*f(f(.01)*f(.01))),dx=f(f(.1)*convert(accelerations[0])),dy=f(f(.1)*convert(accelerations[1])),cos=f(Math.cos(slope)),sin=f(Math.sin(slope));

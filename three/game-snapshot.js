@@ -36,6 +36,7 @@ export function snapshotGame(game,names,queries,previousObjects){
   snapshot.targets=[...game.targetMotions].map(([name,t])=>[name,t.offset,t.revision]);
   snapshot.visualMotions=[...game.visualMotions].map(([name,m])=>[name,m.snapshot()]);
   snapshot.plungerPosition=game.plunger.pos;
+  snapshot.cabinetOffset={...game.cabinetNudge.nativeOffset};
   snapshot.objects=[...names].flatMap(name=>{const object=game.rules.objects.get(name);if(!object)return[];const keys=fieldsFor(game,name);if(!previousObjects)return[[name,objectState(object,keys)]];let previous=previousObjects.get(name);if(!previous){previous={};previousObjects.set(name,previous);}const changed=objectChanges(object,previous,keys);return changed?[[name,changed]]:[];});
   snapshot.values=[...queries].map(query=>[query,game.rules.value(query)]);
   return snapshot;
