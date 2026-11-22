@@ -410,7 +410,8 @@ https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3
 
 Four protocol regressions cover later physical motion with unchanged scheduled
 orientation, retained kicker removal, later births, read-only physical/RNG
-state, queued command ordering disposal during preparation, and queued game-over/replay. A real six-ball
+state, ordered command replies, disposal during preparation, and queued
+game-over/replay. A real six-ball
 GPU check verifies prepared matrices, newer worker bodies and the exact clock
 associated with that physical read. The fixed fallback profile and worker
 message latency do not establish hardware/VR presentation or physical-phone
