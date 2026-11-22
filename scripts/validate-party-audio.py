@@ -1,4 +1,4 @@
-"""Verify Finni speech coverage/PCM, effects, Funkorama, routing and untouched assets."""
+"""Verify Finni speech coverage/PCM, effects, the music trial, routing and untouched assets."""
 import hashlib
 import json
 import runpy
@@ -19,10 +19,13 @@ voice = json.loads((voice_dir / "voice-report.json").read_text())
 expected_lines = runpy.run_path(str(ROOT/'scripts/build-finni-callouts.py'))['lines']()[1]
 assert {name: spec['text'] for name, spec in voice['callouts'].items()} == expected_lines, 'Stale speech transcript'
 music = json.loads((audio / "music-trial-report.json").read_text())
-# BASS cannot load OGG files containing a video stream (including MP3 cover art).
-probe = subprocess.run([str(ROOT / '.tools/pydeps/imageio_ffmpeg/binaries/ffmpeg-win-x86_64-v9.0.2.exe'),
-                        '-hide_banner', '-i', str(audio / 'funkorama-trial.ogg')], capture_output=True, text=True)
-assert 'Audio: vorbis' in probe.stderr and 'Video:' not in probe.stderr, probe.stderr
+# BASS cannot load OGG files containing a video stream (including cover art).
+ffmpeg = runpy.run_path(str(ROOT / 'scripts/apply-music-trial.py'))['FF']
+for name in music['ids']:
+    entry = next(s for s in json.loads((table / 'sounds.json').read_text()) if s['name'].lower() == name)
+    probe = subprocess.run([ffmpeg, '-hide_banner', '-i', str(table / 'sounds' / (entry['name'] + '.ogg'))],
+                           capture_output=True, text=True)
+    assert 'Audio: vorbis' in probe.stderr and 'Video:' not in probe.stderr, probe.stderr
 replaced = {**report["effects"], **voice["callouts"], **dict.fromkeys(music["ids"])}
 before = json.loads((source / "sounds.json").read_text())
 after = json.loads((table / "sounds.json").read_text())
@@ -47,7 +50,7 @@ for new in after:
         continue
     name = lookup[key]
     if name in music["ids"]:
-        assert hashlib.sha256(file.read_bytes()).hexdigest() == music["installed_sha256"], name
+        assert hashlib.sha256(file.read_bytes()).hexdigest() == music["installed_sha256_by_id"][name], name
         continue
     # VPX may rewrite the WAV header on extraction; compare decoded PCM as well.
     with wave.open(str(file), "rb") as wav:
@@ -72,10 +75,10 @@ for new in after:
         assert np.max(np.abs(data)) < .71, name
 speech_names = {s["name"] for s in after if s["name"].startswith(("vo_", "quote")) or s["name"] in ("player", "nocredits")}
 assert speech_names == voice["callouts"].keys(), "Unreplaced speech slot"
-assert 'Funkorama' in json.loads((table / "info.json").read_text())["table_description"]
+assert music['direction'] in json.loads((table / 'info.json').read_text())['table_description']
 result = {"replacements": len(replaced),
           "finni_voice_slots": len(speech_names), "silent_voice_slots": sum(s["silent"] for s in voice["callouts"].values()),
-          "funkorama_slots": len(music["ids"]),
+          "music_trial_slots": len(music["ids"]),
           "original_music_preserved": sum(s["name"].lower().startswith("mu_") for s in before) - len(music["ids"]),
           "unchanged_sounds": len(after) - len(replaced),
           "script_identical_except_approved_scoop_and_story_presentation": True, "routing_and_levels_identical": True,

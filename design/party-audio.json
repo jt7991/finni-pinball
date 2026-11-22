@@ -56,5 +56,5 @@
     "fx_sensor": "switch",
     "fx_spinner": "spinner"
   },
-  "music_policy": "Restore original music, then apply the requested Funkorama regular-play trial from music-trial.json. Original disco and other mode music retained."
+  "music_policy": "Restore source music, then apply music-trial.json: silence legacy music and install the selected local multiball recordings when available."
 }

@@ -1,12 +1,54 @@
 {
-  "title": "Funkorama",
-  "artist": "Kevin MacLeod",
-  "source_url": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Funkorama.mp3",
-  "source_page": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100474",
-  "license": "CC BY 4.0",
-  "license_url": "https://creativecommons.org/licenses/by/4.0/",
-  "sha256": "6be229815d85a0b99382b944d31098b882702c04ac7ad899e44ab7f8ba89b5ad",
-  "source_file": "output/free-music-candidates/Funkorama.mp3",
-  "ids": ["mu_hellhouse1", "mu_hellhouse2", "mu_hellhouse3", "mu_hellhouse4", "mu_hellhouse5", "mu_gameover", "mu_sexymf", "mu_xforcesm", "mu_boom-dp-rap"],
-  "changes": "Re-encoded to stereo 32 kHz OGG and loudness normalized. Regular play and all title-screen selections use Funkorama, replacing the original title tracks including Deadpool rap. The fifth title choice is redirected from the shared multiball track to mu_hellhouse5. Original disco, mode and in-game multiball music retained."
+  "direction": "Effects and callouts during regular play; selected songs for Friendship and Cake Time multiballs only.",
+  "silent_ids": [
+    "mu_beserkerrage",
+    "mu_bonuscount",
+    "mu_boom-dp-rap",
+    "mu_discoloops",
+    "mu_discomb",
+    "mu_gameover",
+    "mu_hellhouse1",
+    "mu_hellhouse2",
+    "mu_hellhouse3",
+    "mu_hellhouse4",
+    "mu_hellhouse5",
+    "mu_juggernaut",
+    "mu_mechsuitmb",
+    "mu_megalodon",
+    "mu_mrsinister",
+    "mu_mystique",
+    "mu_sabretooth",
+    "mu_sauronmb",
+    "mu_shooterlane",
+    "mu_trex",
+    "mu_sexymf",
+    "mu_xforcesm"
+  ],
+  "tracks": [
+    {
+      "title": "September",
+      "artist": "Earth, Wind & Fire",
+      "mode": "Friendship Multiball",
+      "ids": [
+        "mu_ninjamb"
+      ],
+      "source_file": ".work/music-sources/september.mp3",
+      "source_url": "https://www.youtube.com/watch?v=Gs069dndIYk",
+      "sha256": "ca5826abf6c503fdd2bc39356556814cbaa9628348f66670dbf458925ae29cd4"
+    },
+    {
+      "title": "Don’t Stop ’Til You Get Enough",
+      "artist": "Michael Jackson",
+      "mode": "Cake Time",
+      "ids": [
+        "mu_multiball"
+      ],
+      "source_file": ".work/music-sources/dont-stop-til-you-get-enough.mp3",
+      "source_url": "https://www.youtube.com/watch?v=yURRmWtbTbo",
+      "sha256": "0356fdbed41227d18fe91a8713eb9b34b15e53267aad8329bdb9a266646ebe38",
+      "start_seconds": 16,
+      "edit": "Skip the quiet spoken opening so Cake Time starts with the full-band entrance."
+    }
+  ],
+  "missing_source_policy": "Silence pending multiball slots; never substitute legacy music."
 }
