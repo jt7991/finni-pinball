@@ -248,3 +248,26 @@ hit_event/threshold metadata. `prepare-three-event-metadata.py --source-dir
 EXTRACTED_GAMEITEMS` updates just that metadata for existing accepted assets,
 without regenerating geometry. The reference helper also zeroes scatter on the
 Rubber array when a diagnostic fixture declares allScatterZero.
+
+
+`vpx-spinner001-forward-native-state.json.gz` adds a complete independent
+Spinner001 strike/coast recording. All four balls' position, velocity, angular
+momentum and orientation match at every one of2970 physics frames; all11880
+body observations, both RNG streams, four rotations and source scores agree.
+Run `node --test three/tests/native-spinner-state.test.js`.
+
+Capture the pinned script/RNG-instrumented reference with `--native-contact
+--spinners --case=Spinner001-forward-12 --all-ball-state --ball-trails
+--rng-state --native-internals --plunger-state --script-rng-state
+--trace-ms=250 --no-state-trace`, then use
+`prepare-native-spinner-fixture.mjs CAPTURE OUTPUT.json.gz`. The compressed
+fixture retains the raw capture digest and strict complete-body/RNG gates.
+No measured state is injected after initialization.
+
+The ten recent trail slots and their native clock are essential diagnostic
+inputs. A capture without trails matched the measured ball but diverged in
+another ball's spin at21ms and physics RNG at132ms. Recording/restoring the
+actual history removes those differences without a physics implementation
+change. Old partial-state recordings and their seven failing suite gates
+remain unchanged; this additional complete recording does not declare them
+resolved or relax their limits.
