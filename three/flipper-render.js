@@ -5,13 +5,15 @@ import * as THREE from 'three';
 import {nativeFlipperMesh} from './flipper-mesh.js';
 import {nativeMaterialGLSL,nativeMaterialUniforms,nativeViewMatrix} from './classic-render.js';
 import {nativeFlipperWorld} from './flipper-transform.js';
+import {nativeModelMatrices} from './primitive-transform.js';
 const f=Math.fround,DEGREES=f(Math.PI/180);
-const vertex=`attribute vec3 nativePosition;attribute vec3 nativeNormal;uniform mat4 nativeWorldView;uniform mat3 nativeNormalView;varying vec2 tex01;varying vec3 worldPos;varying vec3 surfaceNormal;
-void main(){tex01=uv;worldPos=(nativeWorldView*vec4(nativePosition,1.)).xyz;surfaceNormal=normalize(nativeNormalView*nativeNormal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`;
+const vertex=`attribute vec3 nativePosition;attribute vec3 nativeNormal;uniform mat4 nativeWorldView;uniform mat3 nativeNormalView;uniform mat4 nativeWorldViewProj;uniform bool nativeProjectionEnabled;uniform int nativeLayer;varying vec2 tex01;varying vec3 worldPos;varying vec3 surfaceNormal;flat varying float nativeEye;
+layout(std140) uniform nativeBasicMatrixBlock{mat4 nativeModel;mat4 nativeCameraView[1];mat4 nativeModelView[1];mat3x4 nativeNormalMatrix[1];vec4 nativeNormalFiller[1];mat4 nativeModelViewProj[1];};
+void main(){tex01=uv;int eye=gl_InstanceID+nativeLayer;nativeEye=float(eye);if(nativeProjectionEnabled){vec4 pos=vec4(nativePosition,1.);worldPos=(nativeModelView[eye]*pos).xyz;surfaceNormal=normalize((nativeNormalMatrix[eye]*nativeNormal).xyz);gl_Position=nativeModelViewProj[eye]*pos;}else{worldPos=(nativeWorldView*vec4(nativePosition,1.)).xyz;surfaceNormal=normalize(nativeNormalView*nativeNormal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}}`;
 // The authored flippers are opaque, with no normal map, refraction, reflection
 // probe, ball-shadow light or transmission. Keep that native BasicShader path.
-const fragment=nativeMaterialGLSL+`uniform sampler2D tex_base_color;uniform vec4 staticColor_Alpha;varying vec2 tex01;varying vec3 worldPos;varying vec3 surfaceNormal;
-void main(){vec4 pixel=texture(tex_base_color,tex01);pixel.a*=cBase_Alpha.a;if(fDisableLighting_top_below.x<1.)pixel.xyz=clamp(pixel.xyz,0.,1.);vec3 diffuse=pixel.xyz*cBase_Alpha.xyz;vec3 glossy=is_metal?diffuse:(pixel.xyz*cGlossy_ImageLerp.w+(1.-cGlossy_ImageLerp.w))*cGlossy_ImageLerp.xyz*.08;vec3 specular=cClearcoat_EdgeAlpha.xyz*.08;float edge=is_metal?1.:Roughness_WrapL_Edge_Thickness.z;vec3 V=normalize(-worldPos),N=normalize(surfaceNormal);vec4 color=vec4(lightLoop(worldPos,N,V,diffuse,glossy,specular,edge,is_metal,0.),pixel.a);if(color.a<1.)color.a=GeometricOpacity(dot(N,V),color.a,cClearcoat_EdgeAlpha.w,Roughness_WrapL_Edge_Thickness.w);gl_FragColor=color*staticColor_Alpha;}`;
+const fragment=nativeMaterialGLSL+`uniform sampler2D tex_base_color;uniform vec4 staticColor_Alpha;varying vec2 tex01;varying vec3 worldPos;varying vec3 surfaceNormal;flat varying float nativeEye;
+void main(){vec4 pixel=texture(tex_base_color,tex01);pixel.a*=cBase_Alpha.a;if(fDisableLighting_top_below.x<1.)pixel.xyz=clamp(pixel.xyz,0.,1.);vec3 diffuse=pixel.xyz*cBase_Alpha.xyz;vec3 glossy=is_metal?diffuse:(pixel.xyz*cGlossy_ImageLerp.w+(1.-cGlossy_ImageLerp.w))*cGlossy_ImageLerp.xyz*.08;vec3 specular=cClearcoat_EdgeAlpha.xyz*.08;float edge=is_metal?1.:Roughness_WrapL_Edge_Thickness.z;vec3 V=normalize(-worldPos),N=normalize(surfaceNormal);vec4 color=vec4(lightLoop(worldPos,N,V,diffuse,glossy,specular,edge,is_metal,nativeEye),pixel.a);if(color.a<1.)color.a=GeometricOpacity(dot(N,V),color.a,cClearcoat_EdgeAlpha.w,Roughness_WrapL_Edge_Thickness.w);gl_FragColor=color*staticColor_Alpha;}`;
 
 export async function loadFlipperVisuals(base,anisotropy){
   const metadata=await(await fetch(base+'flipper-tops.json')).json(),buffer=await(await fetch(base+metadata.file)).arrayBuffer(),images=[...new Set(['flipperx',...metadata.parts.map(p=>p.spec.image)])],textures={};
@@ -19,7 +21,11 @@ export async function loadFlipperVisuals(base,anisotropy){
   return{metadata,buffer,textures};
 }
 export function createFlipperMaterial(spec,lighting,view,texture){
-  return new THREE.ShaderMaterial({uniforms:{...nativeMaterialUniforms(spec,lighting,view),nativeWorldView:{value:new THREE.Matrix4()},nativeNormalView:{value:new THREE.Matrix3()},tex_base_color:{value:texture},staticColor_Alpha:{value:new THREE.Vector4(1,1,1,1)}},vertexShader:vertex,fragmentShader:fragment});
+  // Retain native UBO packing and dynamic eye indexing: ordinary matrix uniforms
+  // changed vertex arithmetic in ANGLE, despite identical uploaded float bits.
+  const group=new THREE.UniformsGroup().setName('nativeBasicMatrixBlock').setUsage(THREE.DynamicDrawUsage);for(let i=0;i<5;i++)group.add(new THREE.Uniform(new THREE.Matrix4()));
+  const material=new THREE.ShaderMaterial({uniformsGroups:[group],uniforms:{...nativeMaterialUniforms(spec,lighting,view),nativeWorldView:{value:new THREE.Matrix4()},nativeNormalView:{value:new THREE.Matrix3()},nativeWorldViewProj:{value:new THREE.Matrix4()},nativeLayer:{value:0},nativeProjectionEnabled:{value:false},tex_base_color:{value:texture},staticColor_Alpha:{value:new THREE.Vector4(1,1,1,1)}},vertexShader:vertex,fragmentShader:fragment});material.userData.nativeMatrices=group;
+  material.onBeforeRender=(_renderer,_scene,camera)=>{material.uniforms.nativeProjectionEnabled.value=!!camera.userData.nativeCamera;};material.addEventListener('dispose',()=>group.dispose());return material;
 }
 function geometry(values,indices,offset=0,count=values.length/8,topSize){
   const positions=[],normals=[],uv=[],native=[],nativeNormals=[];
@@ -39,12 +45,14 @@ export function createFlipperVisuals(game,scene,lighting,assets){
     if(topPart){const p=topPart.spec;top=make(p.name,geometry(new Float32Array(assets.buffer,topPart.vertexByteOffset,topPart.vertices*8),new Uint16Array(assets.buffer,topPart.indexByteOffset,topPart.indices),0,topPart.vertices,p.size),p.material,p.image,p,game.rules.objects.get(p.name.toLowerCase()),flipper,true);}
     flippers.push({spec,base,rubber,top});
   }
-  const world=new THREE.Matrix4(),worldData=new Float32Array(16);
+  const world=new THREE.Matrix4(),normal=new THREE.Matrix4(),worldData=new Float32Array(16);
   return{view,parts,flippers,update(camera){nativeViewMatrix(view,camera);
     for(const part of parts){const {mesh,spec,state,flipper,top}=part,angle=top?f(f(state.rotz)*DEGREES):f(Math.PI/2-flipper.angle),position=top?spec.position:spec.center;
       mesh.visible=!!state.visible;mesh.position.set(position.x*.01,(2115-position.y)*.01,top?position.z*.01:0);mesh.rotation.z=Math.PI/2-angle;
       world.fromArray(nativeFlipperWorld(spec,angle,top,worldData));
-      const uniforms=mesh.material.uniforms;uniforms.nativeWorldView.value.multiplyMatrices(view,world);uniforms.nativeNormalView.value.getNormalMatrix(uniforms.nativeWorldView.value);
+      const uniforms=mesh.material.uniforms;
+      if(camera.userData.nativeCamera){const matrices=nativeModelMatrices(worldData,camera.userData.nativeCamera);uniforms.nativeWorldView.value.fromArray(matrices,32);normal.fromArray(matrices,48);uniforms.nativeNormalView.value.setFromMatrix4(normal);uniforms.nativeWorldViewProj.value.fromArray(matrices,64);for(let i=0;i<5;i++)mesh.material.userData.nativeMatrices.uniforms[i].value.fromArray(matrices,i*16);}
+      else{uniforms.nativeWorldView.value.multiplyMatrices(view,world);uniforms.nativeNormalView.value.getNormalMatrix(uniforms.nativeWorldView.value);}
     }
   }};
 }

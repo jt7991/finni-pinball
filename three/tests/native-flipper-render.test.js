@@ -2,7 +2,9 @@ import test from'node:test';import assert from'node:assert/strict';import fs fro
 import{nativeFlipperMesh}from'../flipper-mesh.js';
 import{nativeFlipperWorld}from'../flipper-transform.js';
 import{createFullGame}from'../full-game.js';
+import{nativeModelMatrices}from'../primitive-transform.js';import{computeNativeCamera}from'../native-camera.js';
 const json=name=>JSON.parse(fs.readFileSync(new URL('../public/'+name,import.meta.url))),fixture=JSON.parse(gunzipSync(fs.readFileSync(new URL('fixtures/vpx-flipper-render-native.json.gz',import.meta.url))));
+const matrixFixture=JSON.parse(gunzipSync(fs.readFileSync(new URL('fixtures/vpx-flipper-matrices-native.json.gz',import.meta.url)))),camera=computeNativeCamera(json('camera-bounds.json'),matrixFixture.camera.width/matrixFixture.camera.height,matrixFixture.camera.preset),matrixBits=world=>Array.from(new Uint32Array(nativeModelMatrices(world,camera).buffer));
 test('all native flipper base/rubber vertex bits and indices match independent compiled GPU buffers',()=>{
  assert.equal(fixture.engineSHA256,'c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8');
  const flippers=json('layout.json').items.filter(s=>s.kind==='Flipper');assert.equal(flippers.length,2);
@@ -21,8 +23,9 @@ test('authored Animate callbacks produce the native base and top poses at rest, 
    if(phase!=='rest'){g.input('left',phase==='raised');g.input('right',phase==='raised');for(let i=0;i<300;i++){g.step();if(i%17===16)g.prepareFrame();}g.prepareFrame();}
    for(const flipper of g.flippers){const spec=g.nativeParts.get(flipper.side+'flipper'),state=g.rules.objects.get(flipper.side+'flippertop'),top=tops.find(p=>p.spec.name===spec.name+'Top').spec;
     const body=fixture.poses[phase].find(d=>d.count===300&&Math.abs(d.world[12]-spec.center.x)<.01),cap=fixture.poses[phase].find(d=>d.count===462&&Math.abs(d.world[12]-spec.center.x)<.01);
-    assert.deepEqual(Array.from(nativeFlipperWorld(spec,flipper.nativeAngle)),body.world,phase+' '+spec.name+' body');
-    assert.equal(state.rotz,Math.fround(flipper.nativeAngle*Math.fround(180/Math.PI)));assert.deepEqual(Array.from(nativeFlipperWorld(top,Math.fround(state.rotz*Math.fround(Math.PI/180)),true)),cap.world,phase+' '+spec.name+' top');
+    const bodyWorld=nativeFlipperWorld(spec,flipper.nativeAngle);assert.deepEqual(Array.from(bodyWorld),body.world,phase+' '+spec.name+' body');
+    const bodySamples=matrixFixture.samples.filter(d=>d.phase===phase&&d.count===300&&Math.abs(d.world[12]-spec.center.x)<.01);assert.equal(bodySamples.length,2);for(const sample of bodySamples)assert.deepEqual(matrixBits(bodyWorld),sample.matrixBits,phase+' '+spec.name+' complete body/rubber shader matrix bits');
+    const topWorld=nativeFlipperWorld(top,Math.fround(state.rotz*Math.fround(Math.PI/180)),true);assert.equal(state.rotz,Math.fround(flipper.nativeAngle*Math.fround(180/Math.PI)));assert.deepEqual(Array.from(topWorld),cap.world,phase+' '+spec.name+' top');const topSample=matrixFixture.samples.find(d=>d.phase===phase&&d.count===462&&Math.abs(d.world[12]-spec.center.x)<.01);assert.ok(topSample);assert.deepEqual(matrixBits(topWorld),topSample.matrixBits,phase+' '+spec.name+' complete top shader matrix bits');
    }
   }
  }finally{g.dispose();}
