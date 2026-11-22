@@ -1,0 +1,1406 @@
+{
+  "captureSHA256": "ef805cfaab2e83a20f13f191899f585ed9648987e06ef91ac650cf7cc5441f65",
+  "engineSHA256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+  "helperSHA256": "f9fc36719ce372e538947a8d90504afae41cbbf6f9ac49c8695f954d0eda45fc",
+  "originalHelper": "Sub FlashForMs(MyLight, TotalPeriod, BlinkPeriod, FinalState) 'thanks gtxjoe for the first version\r\n\r\n    If TypeName(MyLight) = \"Light\" Then\r\n\r\n        If FinalState = 2 Then\r\n            FinalState = MyLight.State 'Keep the current light state\r\n        End If\r\n        MyLight.BlinkInterval = BlinkPeriod\r\n        MyLight.Duration 2, TotalPeriod, FinalState\r\n    ElseIf TypeName(MyLight) = \"Flasher\" Then\r\n\r\n        Dim steps\r\n\r\n        ' Store all blink information\r\n        steps = Int(TotalPeriod / BlinkPeriod + .5) 'Number of ON/OFF steps to perform\r\n        If FinalState = 2 Then                      'Keep the current flasher state\r\n            FinalState = ABS(MyLight.Visible)\r\n        End If\r\n        MyLight.UserValue = steps * 10 + FinalState 'Store # of blinks, and final state\r\n\r\n        ' Start blink timer and create timer subroutine\r\n        MyLight.TimerInterval = BlinkPeriod\r\n        MyLight.TimerEnabled = 0\r\n        MyLight.TimerEnabled = 1\r\n        ExecuteGlobal \"Sub \" & MyLight.Name & \"_Timer:\" & \"Dim tmp, steps, fstate:tmp=me.UserValue:fstate = tmp MOD 10:steps= tmp\\10 -1:Me.Visible = steps MOD 2:me.UserValue = steps *10 + fstate:If Steps = 0 then Me.Visible = fstate:Me.TimerEnabled=0:End if:End Sub\"\r\n    End If\r\nEnd Sub",
+  "diagnosticHelper": "Sub FlashForMs(MyLight, TotalPeriod, BlinkPeriod, FinalState) 'thanks gtxjoe for the first version\r\n\r\n    If TypeName(MyLight) = \"Light\" Then\r\n\r\n        If FinalState = 2 Then\r\n            FinalState = MyLight.State 'Keep the current light state\r\n        End If\r\n        MyLight.BlinkInterval = BlinkPeriod\r\n        MyLight.Duration 2, TotalPeriod, FinalState\r\n    ElseIf TypeName(MyLight) = \"Flasher\" Then\r\n\r\n        Dim steps\r\n\r\n        ' Store all blink information\r\n        steps = Int(TotalPeriod / BlinkPeriod + .5) 'Number of ON/OFF steps to perform\r\n        If FinalState = 2 Then                      'Keep the current flasher state\r\n            FinalState = ABS(MyLight.Visible)\r\n        End If\r\n        MyLight.UserValue = steps * 10 + FinalState 'Store # of blinks, and final state\r\n\r\n        ' Start blink timer and create timer subroutine\r\n        MyLight.TimerInterval = BlinkPeriod\r\n        MyLight.TimerEnabled = 0\r\n        MyLight.TimerEnabled = 1\r\n        ExecuteGlobal \"Sub \" & MyLight.Name & \"_Timer:\" & \"Dim tmp, steps, fstate:tmp=me.UserValue:fstate = tmp MOD 10:steps= tmp\\10 -1:Me.Visible = steps MOD 2:me.UserValue = steps *10 + fstate:If Steps = 0 then Me.Visible = fstate:Me.TimerEnabled=0:End if:RefFlashObserve \"\"timer\"\":End Sub\"\r\n    End If\r\nEnd Sub",
+  "scope": "Original authored arithmetic and native TimerEnabled/TimerInterval/Duration implementation. Diagnostic helper appends only a read-only logger to its generated callback; the otherwise unused diagnostic frame timer observes lamp states after native animation and issues the restart input at its first callback after the requested delay. Timer objects and light sequences explicitly isolated. No source clocks, seeds or output states fitted/replaced.",
+  "columns": {
+    "flasher": [
+      "absolute_ms",
+      "visible",
+      "uservalue",
+      "timerinterval",
+      "timerenabled"
+    ],
+    "light": [
+      "absolute_ms",
+      "state",
+      "blinkinterval",
+      "intensity",
+      "inplayon",
+      "frame_delta_ms"
+    ]
+  },
+  "cases": [
+    {
+      "name": "even steps final off",
+      "kind": "flasher",
+      "initial": 0,
+      "total": 300,
+      "period": 50,
+      "final": 0,
+      "events": [
+        {
+          "phase": "input",
+          "values": [
+            2276,
+            0,
+            60,
+            50,
+            1
+          ],
+          "ms": 0
+        },
+        {
+          "phase": "timer",
+          "values": [
+            2326,
+            1,
+            50,
+            50,
+            1
+          ],
+          "ms": 50
+        },
+        {
+          "phase": "timer",
+          "values": [
+            2376,
+            0,
+            40,
+            50,
+            1
+          ],
+          "ms": 100
+        },
+        {
+          "phase": "timer",
+          "values": [
+            2426,
+            1,
+            30,
+            50,
+            1
+          ],
+          "ms": 150
+        },
+        {
+          "phase": "timer",
+          "values": [
+            2476,
+            0,
+            20,
+            50,
+            1
+          ],
+          "ms": 200
+        },
+        {
+          "phase": "timer",
+          "values": [
+            2526,
+            1,
+            10,
+            50,
+            1
+          ],
+          "ms": 250
+        },
+        {
+          "phase": "timer",
+          "values": [
+            2576,
+            0,
+            0,
+            50,
+            0
+          ],
+          "ms": 300
+        }
+      ]
+    },
+    {
+      "name": "odd steps final on",
+      "kind": "flasher",
+      "initial": 1,
+      "total": 250,
+      "period": 50,
+      "final": 1,
+      "events": [
+        {
+          "phase": "input",
+          "values": [
+            2625,
+            1,
+            51,
+            50,
+            1
+          ],
+          "ms": 0
+        },
+        {
+          "phase": "timer",
+          "values": [
+            2675,
+            0,
+            41,
+            50,
+            1
+          ],
+          "ms": 50
+        },
+        {
+          "phase": "timer",
+          "values": [
+            2725,
+            1,
+            31,
+            50,
+            1
+          ],
+          "ms": 100
+        },
+        {
+          "phase": "timer",
+          "values": [
+            2775,
+            0,
+            21,
+            50,
+            1
+          ],
+          "ms": 150
+        },
+        {
+          "phase": "timer",
+          "values": [
+            2825,
+            1,
+            11,
+            50,
+            1
+          ],
+          "ms": 200
+        },
+        {
+          "phase": "timer",
+          "values": [
+            2875,
+            1,
+            1,
+            50,
+            0
+          ],
+          "ms": 250
+        }
+      ]
+    },
+    {
+      "name": "preserve off",
+      "kind": "flasher",
+      "initial": 0,
+      "total": 250,
+      "period": 50,
+      "final": 2,
+      "events": [
+        {
+          "phase": "input",
+          "values": [
+            2892,
+            0,
+            50,
+            50,
+            1
+          ],
+          "ms": 0
+        },
+        {
+          "phase": "timer",
+          "values": [
+            2942,
+            0,
+            40,
+            50,
+            1
+          ],
+          "ms": 50
+        },
+        {
+          "phase": "timer",
+          "values": [
+            2992,
+            1,
+            30,
+            50,
+            1
+          ],
+          "ms": 100
+        },
+        {
+          "phase": "timer",
+          "values": [
+            3042,
+            0,
+            20,
+            50,
+            1
+          ],
+          "ms": 150
+        },
+        {
+          "phase": "timer",
+          "values": [
+            3092,
+            1,
+            10,
+            50,
+            1
+          ],
+          "ms": 200
+        },
+        {
+          "phase": "timer",
+          "values": [
+            3142,
+            0,
+            0,
+            50,
+            0
+          ],
+          "ms": 250
+        }
+      ]
+    },
+    {
+      "name": "preserve on",
+      "kind": "flasher",
+      "initial": 1,
+      "total": 200,
+      "period": 50,
+      "final": 2,
+      "events": [
+        {
+          "phase": "input",
+          "values": [
+            3159,
+            1,
+            41,
+            50,
+            1
+          ],
+          "ms": 0
+        },
+        {
+          "phase": "timer",
+          "values": [
+            3209,
+            1,
+            31,
+            50,
+            1
+          ],
+          "ms": 50
+        },
+        {
+          "phase": "timer",
+          "values": [
+            3259,
+            0,
+            21,
+            50,
+            1
+          ],
+          "ms": 100
+        },
+        {
+          "phase": "timer",
+          "values": [
+            3309,
+            1,
+            11,
+            50,
+            1
+          ],
+          "ms": 150
+        },
+        {
+          "phase": "timer",
+          "values": [
+            3359,
+            1,
+            1,
+            50,
+            0
+          ],
+          "ms": 200
+        }
+      ]
+    },
+    {
+      "name": "round up",
+      "kind": "flasher",
+      "initial": 0,
+      "total": 225,
+      "period": 50,
+      "final": 0,
+      "events": [
+        {
+          "phase": "input",
+          "values": [
+            3393,
+            0,
+            50,
+            50,
+            1
+          ],
+          "ms": 0
+        },
+        {
+          "phase": "timer",
+          "values": [
+            3443,
+            0,
+            40,
+            50,
+            1
+          ],
+          "ms": 50
+        },
+        {
+          "phase": "timer",
+          "values": [
+            3493,
+            1,
+            30,
+            50,
+            1
+          ],
+          "ms": 100
+        },
+        {
+          "phase": "timer",
+          "values": [
+            3543,
+            0,
+            20,
+            50,
+            1
+          ],
+          "ms": 150
+        },
+        {
+          "phase": "timer",
+          "values": [
+            3593,
+            1,
+            10,
+            50,
+            1
+          ],
+          "ms": 200
+        },
+        {
+          "phase": "timer",
+          "values": [
+            3643,
+            0,
+            0,
+            50,
+            0
+          ],
+          "ms": 250
+        }
+      ]
+    },
+    {
+      "name": "round down",
+      "kind": "flasher",
+      "initial": 1,
+      "total": 174,
+      "period": 50,
+      "final": 1,
+      "events": [
+        {
+          "phase": "input",
+          "values": [
+            3660,
+            1,
+            31,
+            50,
+            1
+          ],
+          "ms": 0
+        },
+        {
+          "phase": "timer",
+          "values": [
+            3710,
+            0,
+            21,
+            50,
+            1
+          ],
+          "ms": 50
+        },
+        {
+          "phase": "timer",
+          "values": [
+            3760,
+            1,
+            11,
+            50,
+            1
+          ],
+          "ms": 100
+        },
+        {
+          "phase": "timer",
+          "values": [
+            3810,
+            1,
+            1,
+            50,
+            0
+          ],
+          "ms": 150
+        }
+      ]
+    },
+    {
+      "name": "zero-step source edge",
+      "kind": "flasher",
+      "initial": 0,
+      "total": 20,
+      "period": 50,
+      "final": 0,
+      "stopAfterTicks": 4,
+      "events": [
+        {
+          "phase": "input",
+          "values": [
+            3827,
+            0,
+            0,
+            50,
+            1
+          ],
+          "ms": 0
+        },
+        {
+          "phase": "timer",
+          "values": [
+            3877,
+            1,
+            -10,
+            50,
+            1
+          ],
+          "ms": 50
+        },
+        {
+          "phase": "timer",
+          "values": [
+            3927,
+            0,
+            -20,
+            50,
+            1
+          ],
+          "ms": 100
+        },
+        {
+          "phase": "timer",
+          "values": [
+            3977,
+            1,
+            -30,
+            50,
+            1
+          ],
+          "ms": 150
+        },
+        {
+          "phase": "timer",
+          "values": [
+            4027,
+            0,
+            -40,
+            50,
+            1
+          ],
+          "ms": 200
+        }
+      ]
+    },
+    {
+      "name": "restart active",
+      "kind": "flasher",
+      "initial": 0,
+      "total": 300,
+      "period": 50,
+      "final": 0,
+      "restart": {
+        "delay": 73,
+        "total": 200,
+        "period": 40,
+        "final": 2
+      },
+      "events": [
+        {
+          "phase": "input",
+          "values": [
+            4060,
+            0,
+            60,
+            50,
+            1
+          ],
+          "ms": 0
+        },
+        {
+          "phase": "timer",
+          "values": [
+            4110,
+            1,
+            50,
+            50,
+            1
+          ],
+          "ms": 50
+        },
+        {
+          "phase": "restart",
+          "values": [
+            4142,
+            1,
+            51,
+            40,
+            1
+          ],
+          "ms": 82
+        },
+        {
+          "phase": "timer",
+          "values": [
+            4182,
+            0,
+            41,
+            40,
+            1
+          ],
+          "ms": 122
+        },
+        {
+          "phase": "timer",
+          "values": [
+            4222,
+            1,
+            31,
+            40,
+            1
+          ],
+          "ms": 162
+        },
+        {
+          "phase": "timer",
+          "values": [
+            4262,
+            0,
+            21,
+            40,
+            1
+          ],
+          "ms": 202
+        },
+        {
+          "phase": "timer",
+          "values": [
+            4302,
+            1,
+            11,
+            40,
+            1
+          ],
+          "ms": 242
+        },
+        {
+          "phase": "timer",
+          "values": [
+            4342,
+            1,
+            1,
+            40,
+            0
+          ],
+          "ms": 282
+        }
+      ]
+    },
+    {
+      "name": "lamp duration off",
+      "kind": "light",
+      "initial": 0,
+      "total": 225,
+      "period": 50,
+      "final": 0,
+      "events": [
+        {
+          "phase": "input",
+          "values": [
+            4361,
+            2,
+            50,
+            0,
+            1,
+            2
+          ],
+          "ms": 0
+        },
+        {
+          "phase": "frame",
+          "values": [
+            4376,
+            2,
+            50,
+            1.70000004768372,
+            1,
+            17
+          ],
+          "ms": 15
+        },
+        {
+          "phase": "frame",
+          "values": [
+            4392,
+            2,
+            50,
+            3.30000019073486,
+            1,
+            16
+          ],
+          "ms": 31
+        },
+        {
+          "phase": "frame",
+          "values": [
+            4409,
+            2,
+            50,
+            3.5,
+            1,
+            17
+          ],
+          "ms": 48
+        },
+        {
+          "phase": "frame",
+          "values": [
+            4426,
+            2,
+            50,
+            1.79999995231628,
+            0,
+            17
+          ],
+          "ms": 65
+        },
+        {
+          "phase": "frame",
+          "values": [
+            4442,
+            2,
+            50,
+            0.199999928474426,
+            0,
+            16
+          ],
+          "ms": 81
+        },
+        {
+          "phase": "frame",
+          "values": [
+            4459,
+            2,
+            50,
+            0,
+            0,
+            17
+          ],
+          "ms": 98
+        },
+        {
+          "phase": "frame",
+          "values": [
+            4476,
+            2,
+            50,
+            1.70000004768372,
+            1,
+            17
+          ],
+          "ms": 115
+        },
+        {
+          "phase": "frame",
+          "values": [
+            4492,
+            2,
+            50,
+            3.30000019073486,
+            1,
+            16
+          ],
+          "ms": 131
+        },
+        {
+          "phase": "frame",
+          "values": [
+            4509,
+            2,
+            50,
+            3.5,
+            1,
+            17
+          ],
+          "ms": 148
+        },
+        {
+          "phase": "frame",
+          "values": [
+            4526,
+            2,
+            50,
+            1.79999995231628,
+            0,
+            17
+          ],
+          "ms": 165
+        },
+        {
+          "phase": "frame",
+          "values": [
+            4542,
+            2,
+            50,
+            0.199999928474426,
+            0,
+            16
+          ],
+          "ms": 181
+        },
+        {
+          "phase": "frame",
+          "values": [
+            4559,
+            2,
+            50,
+            0,
+            0,
+            17
+          ],
+          "ms": 198
+        },
+        {
+          "phase": "frame",
+          "values": [
+            4576,
+            2,
+            50,
+            1.70000004768372,
+            1,
+            17
+          ],
+          "ms": 215
+        },
+        {
+          "phase": "frame",
+          "values": [
+            4592,
+            0,
+            50,
+            0.100000023841858,
+            0,
+            16
+          ],
+          "ms": 231
+        },
+        {
+          "phase": "frame",
+          "values": [
+            4609,
+            0,
+            50,
+            0,
+            0,
+            17
+          ],
+          "ms": 248
+        },
+        {
+          "phase": "frame",
+          "values": [
+            4626,
+            0,
+            50,
+            0,
+            0,
+            17
+          ],
+          "ms": 265
+        },
+        {
+          "phase": "frame",
+          "values": [
+            4642,
+            0,
+            50,
+            0,
+            0,
+            16
+          ],
+          "ms": 281
+        },
+        {
+          "phase": "frame",
+          "values": [
+            4659,
+            0,
+            50,
+            0,
+            0,
+            17
+          ],
+          "ms": 298
+        },
+        {
+          "phase": "frame",
+          "values": [
+            4676,
+            0,
+            50,
+            0,
+            0,
+            17
+          ],
+          "ms": 315
+        },
+        {
+          "phase": "frame",
+          "values": [
+            4693,
+            0,
+            50,
+            0,
+            0,
+            17
+          ],
+          "ms": 332
+        },
+        {
+          "phase": "frame",
+          "values": [
+            4709,
+            0,
+            50,
+            0,
+            0,
+            16
+          ],
+          "ms": 348
+        }
+      ]
+    },
+    {
+      "name": "lamp preserve on",
+      "kind": "light",
+      "initial": 1,
+      "total": 150,
+      "period": 40,
+      "final": 2,
+      "events": [
+        {
+          "phase": "input",
+          "values": [
+            4728,
+            2,
+            40,
+            3.5,
+            1,
+            2
+          ],
+          "ms": 0
+        },
+        {
+          "phase": "frame",
+          "values": [
+            4743,
+            2,
+            40,
+            3.5,
+            1,
+            17
+          ],
+          "ms": 15
+        },
+        {
+          "phase": "frame",
+          "values": [
+            4759,
+            2,
+            40,
+            3.5,
+            1,
+            16
+          ],
+          "ms": 31
+        },
+        {
+          "phase": "frame",
+          "values": [
+            4776,
+            2,
+            40,
+            1.79999995231628,
+            0,
+            17
+          ],
+          "ms": 48
+        },
+        {
+          "phase": "frame",
+          "values": [
+            4793,
+            2,
+            40,
+            0.0999999046325684,
+            0,
+            17
+          ],
+          "ms": 65
+        },
+        {
+          "phase": "frame",
+          "values": [
+            4809,
+            2,
+            40,
+            1.69999992847443,
+            1,
+            16
+          ],
+          "ms": 81
+        },
+        {
+          "phase": "frame",
+          "values": [
+            4826,
+            2,
+            40,
+            3.40000009536743,
+            1,
+            17
+          ],
+          "ms": 98
+        },
+        {
+          "phase": "frame",
+          "values": [
+            4843,
+            2,
+            40,
+            3.5,
+            1,
+            17
+          ],
+          "ms": 115
+        },
+        {
+          "phase": "frame",
+          "values": [
+            4859,
+            2,
+            40,
+            1.89999997615814,
+            0,
+            16
+          ],
+          "ms": 131
+        },
+        {
+          "phase": "frame",
+          "values": [
+            4876,
+            2,
+            40,
+            0.199999928474426,
+            0,
+            17
+          ],
+          "ms": 148
+        },
+        {
+          "phase": "frame",
+          "values": [
+            4893,
+            1,
+            40,
+            1.89999997615814,
+            1,
+            17
+          ],
+          "ms": 165
+        },
+        {
+          "phase": "frame",
+          "values": [
+            4909,
+            1,
+            40,
+            3.5,
+            1,
+            16
+          ],
+          "ms": 181
+        },
+        {
+          "phase": "frame",
+          "values": [
+            4926,
+            1,
+            40,
+            3.5,
+            1,
+            17
+          ],
+          "ms": 198
+        },
+        {
+          "phase": "frame",
+          "values": [
+            4943,
+            1,
+            40,
+            3.5,
+            1,
+            17
+          ],
+          "ms": 215
+        },
+        {
+          "phase": "frame",
+          "values": [
+            4959,
+            1,
+            40,
+            3.5,
+            1,
+            16
+          ],
+          "ms": 231
+        },
+        {
+          "phase": "frame",
+          "values": [
+            4976,
+            1,
+            40,
+            3.5,
+            1,
+            17
+          ],
+          "ms": 248
+        },
+        {
+          "phase": "frame",
+          "values": [
+            4993,
+            1,
+            40,
+            3.5,
+            1,
+            17
+          ],
+          "ms": 265
+        },
+        {
+          "phase": "frame",
+          "values": [
+            5009,
+            1,
+            40,
+            3.5,
+            1,
+            16
+          ],
+          "ms": 281
+        },
+        {
+          "phase": "frame",
+          "values": [
+            5026,
+            1,
+            40,
+            3.5,
+            1,
+            17
+          ],
+          "ms": 298
+        }
+      ]
+    },
+    {
+      "name": "lamp final on",
+      "kind": "light",
+      "initial": 0,
+      "total": 200,
+      "period": 60,
+      "final": 1,
+      "events": [
+        {
+          "phase": "input",
+          "values": [
+            5029,
+            2,
+            60,
+            0,
+            1,
+            3
+          ],
+          "ms": 0
+        },
+        {
+          "phase": "frame",
+          "values": [
+            5043,
+            2,
+            60,
+            1.70000004768372,
+            1,
+            17
+          ],
+          "ms": 14
+        },
+        {
+          "phase": "frame",
+          "values": [
+            5060,
+            2,
+            60,
+            3.40000009536743,
+            1,
+            17
+          ],
+          "ms": 31
+        },
+        {
+          "phase": "frame",
+          "values": [
+            5076,
+            2,
+            60,
+            3.5,
+            1,
+            16
+          ],
+          "ms": 47
+        },
+        {
+          "phase": "frame",
+          "values": [
+            5093,
+            2,
+            60,
+            1.79999995231628,
+            0,
+            17
+          ],
+          "ms": 64
+        },
+        {
+          "phase": "frame",
+          "values": [
+            5110,
+            2,
+            60,
+            0.0999999046325684,
+            0,
+            17
+          ],
+          "ms": 81
+        },
+        {
+          "phase": "frame",
+          "values": [
+            5126,
+            2,
+            60,
+            0,
+            0,
+            16
+          ],
+          "ms": 97
+        },
+        {
+          "phase": "frame",
+          "values": [
+            5143,
+            2,
+            60,
+            0,
+            0,
+            17
+          ],
+          "ms": 114
+        },
+        {
+          "phase": "frame",
+          "values": [
+            5160,
+            2,
+            60,
+            1.70000004768372,
+            1,
+            17
+          ],
+          "ms": 131
+        },
+        {
+          "phase": "frame",
+          "values": [
+            5176,
+            2,
+            60,
+            3.30000019073486,
+            1,
+            16
+          ],
+          "ms": 147
+        },
+        {
+          "phase": "frame",
+          "values": [
+            5193,
+            2,
+            60,
+            3.5,
+            1,
+            17
+          ],
+          "ms": 164
+        },
+        {
+          "phase": "frame",
+          "values": [
+            5210,
+            2,
+            60,
+            1.79999995231628,
+            0,
+            17
+          ],
+          "ms": 181
+        },
+        {
+          "phase": "frame",
+          "values": [
+            5226,
+            2,
+            60,
+            0.199999928474426,
+            0,
+            16
+          ],
+          "ms": 197
+        },
+        {
+          "phase": "frame",
+          "values": [
+            5243,
+            1,
+            60,
+            1.89999997615814,
+            1,
+            17
+          ],
+          "ms": 214
+        },
+        {
+          "phase": "frame",
+          "values": [
+            5260,
+            1,
+            60,
+            3.5,
+            1,
+            17
+          ],
+          "ms": 231
+        },
+        {
+          "phase": "frame",
+          "values": [
+            5276,
+            1,
+            60,
+            3.5,
+            1,
+            16
+          ],
+          "ms": 247
+        },
+        {
+          "phase": "frame",
+          "values": [
+            5293,
+            1,
+            60,
+            3.5,
+            1,
+            17
+          ],
+          "ms": 264
+        },
+        {
+          "phase": "frame",
+          "values": [
+            5310,
+            1,
+            60,
+            3.5,
+            1,
+            17
+          ],
+          "ms": 281
+        },
+        {
+          "phase": "frame",
+          "values": [
+            5326,
+            1,
+            60,
+            3.5,
+            1,
+            16
+          ],
+          "ms": 297
+        },
+        {
+          "phase": "frame",
+          "values": [
+            5343,
+            1,
+            60,
+            3.5,
+            1,
+            17
+          ],
+          "ms": 314
+        },
+        {
+          "phase": "frame",
+          "values": [
+            5360,
+            1,
+            60,
+            3.5,
+            1,
+            17
+          ],
+          "ms": 331
+        }
+      ]
+    }
+  ],
+  "errors": []
+}

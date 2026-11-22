@@ -19,7 +19,7 @@ const liveProperties={Gate:new Set(['currentangle','collidable','open','hitthres
 export function createRules(source,specs,host={}) {
   const engine=new VbsEngine({hostIntegration:false,maxExecutionTime:2000});
   const scriptRandom=createScriptRandom();registerScriptRandom(engine,scriptRandom);registerNativeTimer(engine);
-  const objects=new Map(),timers=new Map(),delays=[],flashes=new Map(),sequences=new Map(),lamps=new Map(),generatedEvents=new Map(),snapshotObjects=new WeakMap();
+  const objects=new Map(),timers=new Map(),delays=[],sequences=new Map(),lamps=new Map(),generatedEvents=new Map(),snapshotObjects=new WeakMap();
   const sequenceRandom=host.random??runtimeNativeRandom();
   const methods=new Set([...source.matchAll(/^\s*(?:Sub|Function)[ \t]+(\w+)/gmi)].map(m=>m[1].toLowerCase()));
   const functions=new Set([...source.matchAll(/^\s*Function[ \t]+(\w+)/gmi)].map(m=>m[1].toLowerCase()));
@@ -149,10 +149,22 @@ export function createRules(source,specs,host={}) {
     vpmtimer:{addtimer:schedule},ActiveBall:{},
     HostShake:strength=>host.shake?.(strength),
     HostFlash:(light,total,period,final)=>{
-      const spec=specs.objects.find(s=>s.name.toLowerCase()===String(light.name).toLowerCase());
+      const lower=String(light.name).toLowerCase(),spec=byName.get(lower);
       if(!spec||!['Light','Flasher'].includes(spec.kind))return;
-      const property=spec.kind==='Light'?'state':'visible',finish=Number(final)===2?light[property]:final;
-      flashes.set(light.name,{light,property,finish,end:time+Number(total)/1000,period:Math.max(.01,Number(period)/1000)});
+      // Preserve the authored FlashForMs helper, including relative timer
+      // restarts, rounded step counts and its zero-step edge behavior.
+      if(spec.kind==='Light'){
+        const finish=Number(final)===2?light.state:final;
+        light.blinkinterval=period;light.duration(2,total,finish);
+      }else{
+        const steps=Math.floor(Number(total)/Number(period)+.5),finish=Number(final)===2?Math.abs(Number(light.visible)):Number(final);
+        light.uservalue=steps*10+finish;light.timerinterval=period;light.timerenabled=false;light.timerenabled=true;
+        generatedEvents.set(`${lower}_timer`,()=>{
+          const tmp=Number(light.uservalue),fstate=tmp%10,steps=Math.trunc(tmp/10)-1;
+          light.visible=steps%2;light.uservalue=steps*10+fstate;
+          if(steps===0){light.visible=fstate;light.timerenabled=false;}
+        });
+      }
     },
   };
   const nativeFunctions=new Map(Object.entries(natives).filter(([,v])=>typeof v==='function').map(([name])=>[name.toLowerCase(),name]));
@@ -199,10 +211,6 @@ export function createRules(source,specs,host={}) {
       // Timer aliases are bound to their authored object when assets are
       // prepared. No host-object registration is needed on the hot 1ms path.
       t.at+=Math.max(.001,milliseconds/1000);run(t.handler);
-    }
-    for(const [name,f]of flashes){
-      if(time>=f.end){f.light[f.property]=f.finish;flashes.delete(name);}
-      else f.light[f.property]=Math.floor(time/f.period)%2;
     }
   }
   return {engine,objects,run,execute,value,tick,hit,schedule,scriptRandom,sequences,lamps,

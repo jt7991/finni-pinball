@@ -62,6 +62,7 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--static-render' in sys.argv:runner='test-native-static-render-browser.mjs'
         if '--production-worker-performance' in sys.argv:runner='benchmark-production-worker-browser.mjs'
         if '--native-colon-calls' in sys.argv:runner='probe-native-colon-calls.mjs'
+        if '--native-flash-timers' in sys.argv:runner='probe-native-flash-timers.mjs'
         subprocess.run(['node',str(ROOT/'scripts'/runner),f'http://127.0.0.1:{port}',
                         sys.argv[1] if len(sys.argv)>1 else 'http://127.0.0.1:5173/three/',str(OUT),*sys.argv[2:]],check=True,timeout=150)
     finally:
