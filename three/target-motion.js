@@ -4,7 +4,7 @@
 const f=Math.fround;
 export class TargetMotion {
   constructor(spec,collider,clock,emit){
-    this.spec=spec;this.collider=collider;this.clock=clock;this.emit=emit;
+    this.revision=0;this.spec=spec;this.collider=collider;this.clock=clock;this.emit=emit;
     this.drop=spec.target_type?.startsWith('drop')??true;
     this.dropped=!!spec.is_dropped;this.collidable=!!spec.is_collidable;this.fireEvents=!!spec.use_hit_event;this.visible=!!spec.is_visible;this.offset=this.drop&&this.dropped?-52:0;this.moving=false;this.down=!(this.drop&&this.dropped);this.hitPending=false;this.waitUntil=0;this.ball=null;
     this.refresh();
@@ -32,7 +32,7 @@ export class TargetMotion {
       this.offset=f(this.offset+f(step*milliseconds));
       if(this.down){if(this.offset>=13){this.offset=13;this.down=false;}}
       else if(this.offset<=0){this.offset=0;this.moving=false;}
-      this.emit('Animate',this.ball);return;
+      this.revision++;this.emit('Animate',this.ball);return;
     }
     let step=f(this.spec.drop_speed);if(this.down)step=-step;else if(this.clock()<this.waitUntil)step=0;
     this.offset=f(this.offset+f(step*milliseconds));
@@ -40,6 +40,6 @@ export class TargetMotion {
       const down=this.down;this.offset=down?-52:0;this.dropped=down;this.down=false;this.moving=false;this.refresh();
       if(this.fireEvents)this.emit(down?'Dropped':'Raised',this.ball);
     }
-    this.emit('Animate',this.ball);
+    this.revision++;this.emit('Animate',this.ball);
   }
 }

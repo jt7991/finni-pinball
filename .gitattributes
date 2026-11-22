@@ -7,3 +7,6 @@ three/public/arcade-background.svg -text
 three/public/fonts/** -text
 # Preserve the original compiled VPX shader bytes, including upstream whitespace.
 three/public/native-actors/*.glsl -text -whitespace
+
+three/public/native-table/*.glsl -text -whitespace
+three/public/native-transmission/*.glsl -text -whitespace

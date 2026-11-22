@@ -8,7 +8,7 @@ import {decodeNativeGeometry} from './native-geometry-codec.js';
 import {nativeMirrorNormalFactor} from './native-reflection.js';
 
 const filters={9728:THREE.NearestFilter,9729:THREE.LinearFilter,9984:THREE.NearestMipmapNearestFilter,9985:THREE.LinearMipmapNearestFilter,9986:THREE.NearestMipmapLinearFilter,9987:THREE.LinearMipmapLinearFilter},wraps={10497:THREE.RepeatWrapping,33071:THREE.ClampToEdgeWrapping,33648:THREE.MirroredRepeatWrapping};
-const stripVersion=source=>source.replace(/^#version[^\n]*\n/,'');
+const stripVersion=source=>source.replace(/^#version[^\n]*\n/,''),noAngles=[];
 export class NativeMatrixStream{
  constructor(renderer){this.renderer=renderer;this.gl=renderer.getContext();const gl=this.gl;this.binding=gl.getParameter(gl.MAX_UNIFORM_BUFFER_BINDINGS)-1;this.buffer=gl.createBuffer();this.indices=new WeakMap();gl.bindBuffer(gl.UNIFORM_BUFFER,this.buffer);gl.bufferData(gl.UNIFORM_BUFFER,320,gl.DYNAMIC_DRAW);gl.bindBuffer(gl.UNIFORM_BUFFER,null);}
  upload(material,matrices){const gl=this.gl,compiled=this.renderer.properties.get(material).currentProgram;if(!compiled)throw Error('Compile native materials before rendering');const program=compiled.program;let index=this.indices.get(program);if(index===undefined){index=gl.getUniformBlockIndex(program,'basicMatrixBlock');if(index===gl.INVALID_INDEX)throw Error('Native matrix block missing');this.indices.set(program,index);}gl.uniformBlockBinding(program,index,this.binding);gl.bindBufferBase(gl.UNIFORM_BUFFER,this.binding,this.buffer);gl.bindBuffer(gl.UNIFORM_BUFFER,this.buffer);gl.bufferSubData(gl.UNIFORM_BUFFER,0,matrices);gl.bindBuffer(gl.UNIFORM_BUFFER,null);}
@@ -46,7 +46,7 @@ export function createNativePrimitiveVisuals(renderer,scene,assets,lighting,{sta
   // explicitly if a newly exported part needs another rendering technique.
   if(state.frontFace!==2305||state.depthFunc!==515||state.cull&&![1028,1029].includes(state.cullFace)||state.blend&&(state.blendSrcRGB!==770||state.blendSrcAlpha!==770||state.blendDstRGB!==771||state.blendDstAlpha!==771||state.blendEquationRGB!==32774||state.blendEquationAlpha!==32774))throw Error('Unsupported native basic render state: '+spec.spec.name);
   const material=new THREE.RawShaderMaterial({glslVersion:THREE.GLSL3,uniforms,vertexShader:program.vertex,fragmentShader:program.fragment,side:state.cull?(state.cullFace===1028?THREE.BackSide:THREE.FrontSide):THREE.DoubleSide,depthWrite:state.depthWrite,depthFunc:THREE.LessEqualDepth,transparent:state.blend,blending:state.blend?THREE.CustomBlending:THREE.NoBlending,blendEquation:THREE.AddEquation,blendSrc:THREE.SrcAlphaFactor,blendDst:THREE.OneMinusSrcAlphaFactor});
-  const vertices=new Float32Array(assets.geometry,spec.vertexByteOffset,spec.vertices*8),interleaved=new THREE.InterleavedBuffer(vertices,8),geometry=new THREE.BufferGeometry(),position=new THREE.InterleavedBufferAttribute(interleaved,3,0);geometry.setAttribute('position',position);geometry.setAttribute('vPosition',position);geometry.setAttribute('vNormal',new THREE.InterleavedBufferAttribute(interleaved,3,3));geometry.setAttribute('tc',new THREE.InterleavedBufferAttribute(interleaved,2,6));geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(assets.geometry,spec.indexByteOffset,spec.indices),1));const mesh=new THREE.Mesh(geometry,material);mesh.name=spec.name??spec.spec.name;mesh.frustumCulled=false;mesh.renderOrder=spec.drawOrder;if(spec.spec.position)mesh.position.set(spec.spec.position.x*.01,(2115-spec.spec.position.y)*.01,spec.spec.position.z*.01);root.add(mesh);const part={spec:spec.spec,record:spec,mesh,material,baseSide:material.side,matrices:new Float32Array(80),state:stateFor(spec.spec.name),cameras:new WeakMap()};material.onBeforeRender=()=>stream.upload(material,part.matrices);parts.push(part);
+  const vertices=new Float32Array(assets.geometry,spec.vertexByteOffset,spec.vertices*8),interleaved=new THREE.InterleavedBuffer(vertices,8),geometry=new THREE.BufferGeometry(),position=new THREE.InterleavedBufferAttribute(interleaved,3,0);geometry.setAttribute('position',position);geometry.setAttribute('vPosition',position);geometry.setAttribute('vNormal',new THREE.InterleavedBufferAttribute(interleaved,3,3));geometry.setAttribute('tc',new THREE.InterleavedBufferAttribute(interleaved,2,6));geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(assets.geometry,spec.indexByteOffset,spec.indices),1));const mesh=new THREE.Mesh(geometry,material);mesh.name=spec.meshName??spec.name??spec.spec.name;mesh.frustumCulled=false;mesh.renderOrder=spec.drawOrder;if(spec.spec.position)mesh.position.set(spec.spec.position.x*.01,(2115-spec.spec.position.y)*.01,spec.spec.position.z*.01);root.add(mesh);const part={spec:spec.spec,record:spec,mesh,material,baseSide:material.side,matrices:new Float32Array(80),state:stateFor(spec.spec.name),cameras:new WeakMap()};material.onBeforeRender=()=>stream.upload(material,part.matrices);parts.push(part);
  }
  return{root,parts,stream,async prepare(camera){
   // Initially hidden parts still need a compiled program before a script makes
@@ -60,7 +60,7 @@ export function createNativePrimitiveVisuals(renderer,scene,assets,lighting,{sta
   const projection=nativeShaderArray(native.projection);
   for(const part of parts){const {state,spec,record}=part;part.material.uniforms.w_h_height.value.set(screen);part.material.uniforms.matProj.value.set(projection);
    part.mesh.renderOrder=native.reflection?(record.reflectionDrawOrder??record.drawOrder):record.drawOrder;
-   const angles=record.transform==='identity'?[]:[state?.rotx??spec.rot_and_tra[0],state?.roty??spec.rot_and_tra[1],state?.rotz??spec.rot_and_tra[2]];
+   const angles=record.transform==='identity'?noAngles:[state?.rotx??spec.rot_and_tra[0],state?.roty??spec.rot_and_tra[1],state?.rotz??spec.rot_and_tra[2]];
    let cached=part.cameras.get(native);
    if(!cached||angles.some((value,i)=>value!==cached.angles[i])){
     if(record.transform==='identity')identityMatrices??=nativeModelMatrices(nativeIdentity(),native);
@@ -71,6 +71,7 @@ export function createNativePrimitiveVisuals(renderer,scene,assets,lighting,{sta
    part.matrices.set(cached.matrices);
    if(record.transform==='identity'){
     part.mesh.visible=state?.[record.visibilityField]??record.defaultVisible;
+    if(spec.kind==='Bumper'||spec.kind==='Gate')part.mesh.visible=!!part.mesh.visible&&!!(state?.visible??spec.is_visible??true)&&(record.role!=='bracket'||!!(state?.showbracket??spec.show_bracket));
    }else{
     part.mesh.visible=!!(state?.visible??spec.is_visible)&&(!state?.sequenceactive||!!state.sequencestate);
    }

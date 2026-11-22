@@ -37,6 +37,8 @@ test('real worker preserves every body, native RNG, authored rules, DMD, audio a
     for(const name of digits)remote.rules.objects.get(name);await remote.flush();
     const compare=async()=>{
       assert.deepEqual(await remote.debug({action:'inspect'}),inspect(local));
+      assert.equal(remote.plungerPosition,local.plunger.pos,'native plunger position crosses the worker boundary');
+      for(const [name,motion]of local.visualMotions)assert.deepEqual(remote.visualMotions.get(name),motion.snapshot(),name+' visual frame state');
       for(const key of ['state','score','player','ballNumber','charge','inLane','tilted','gameState','held'])assert.deepEqual(remote[key],local[key],key);
       for(const name of digits)assert.equal(remote.rules.objects.get(name).imagea,local.rules.objects.get(name).imagea,name);
       assert.deepEqual(events,directEvents);assert.equal(sounds.length,directSounds.length);
@@ -73,6 +75,7 @@ test('real worker preserves every body, native RNG, authored rules, DMD, audio a
       for(const field of ['state','sequenceactive','sequencestate','inplayintensity','inplayon','intensityscale','blinkpattern','colorfull'])assert.equal(lamp[field],expected[field],`worker lamp ${field}`);
     }
     assert.equal(remote.rules.objects.get('li044'),lamp,'sequence snapshots retain the subscribed render object');
+    const bumper=remote.visualMotions.get('bumper1');local.rules.execute('Bumper1.PlayHit');await remote.rules.execute('Bumper1.PlayHit');await advance(17);assert.equal(remote.visualMotions.get('bumper1'),bumper,'render motion object stays stable');assert.ok(bumper.ringOffset<0,'source PlayHit depresses the native ring');await advance(200);
     const description=snapshotGame(local,new Set(digits),new Set(['bChooseBattle']));assert.doesNotThrow(()=>structuredClone(description));
   }finally{local.dispose();if(remote)await remote.dispose();else worker.terminate();}
 });

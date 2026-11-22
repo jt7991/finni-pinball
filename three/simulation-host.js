@@ -5,13 +5,14 @@ import {describeGame,snapshotGame} from './game-snapshot.js';
 // The same host runs in browser Workers and the Node protocol regression tests.
 export function createSimulationHost(send,{allowDebug=false,now=()=>performance.now()}={}){
   let game,paused=true,disposed=false,fatal=false,timer,queued=false,anchorWall=0,anchorTick=0,tick=0,lastPublish=0;
-  const names=new Set(),queries=new Set(['bChooseBattle']),effects=[];
-  const stats={ticks:0,physicsMs:0,maxChunkMs:0,lagMs:0,snapshotMs:0};
+  const names=new Set(),queries=new Set(['bChooseBattle']),effects=[],objectStates=new Map();
+  const stats={ticks:0,physicsMs:0,maxChunkMs:0,lagMs:0,snapshotMs:0,snapshots:0,snapshotObjectFields:0};
   const channel=new MessageChannel();
   function publish(){
     if(!game||disposed)return;
-    const start=now(),snapshot=snapshotGame(game,names,queries);
+    const start=now(),snapshot=snapshotGame(game,names,queries,objectStates);
     stats.snapshotMs+=now()-start;
+    stats.snapshots++;stats.snapshotObjectFields+=snapshot.objects.reduce((count,[,state])=>count+Object.keys(state).length,0);
     send({type:'snapshot',snapshot,effects:effects.splice(0),stats:{...stats},paused});lastPublish=now();
   }
   function fail(error){
@@ -50,7 +51,7 @@ export function createSimulationHost(send,{allowDebug=false,now=()=>performance.
     game=await createFullGame(assets.layout,assets.specs,assets.source,event=>effects.push({type:'event',event}),{
       play:(name,settings)=>effects.push({type:'play',name,settings}),stop:name=>effects.push({type:'stop',name}),
     },{storage,frameAnimations:true});
-    send({type:'ready',description:describeGame(game)});publish();
+    const description=describeGame(game);for(const [name,state]of description.objects)objectStates.set(name,{...state});send({type:'ready',description});publish();
   }
   function debug(command){
     if(!allowDebug)throw Error('Simulation inspection is unavailable in this build');

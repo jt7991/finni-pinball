@@ -532,6 +532,7 @@ export class Pinball {
         else if(event.mesh){
           if(event.mesh.bumper&&impactBody.native){
             if(event.mesh.collider.isEnabled())collideNativeBumper(impactBody,event.hit,event.mesh.bumper,event.mesh.material,RADIUS,this.random,()=>{
+              this.visualMotions?.get(event.mesh.bumper.name.toLowerCase())?.hit(impactBody.native.sync());
               if(this.rules)this.rules.hit(event.mesh.bumper.name,'Hit',event.r.proxy);
               else if(this.state==='playing'&&!this.tilted)this.award(100,'bumper');
             });

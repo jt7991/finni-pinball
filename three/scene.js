@@ -1,118 +1,48 @@
 import * as THREE from 'three';
-import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
-import {DRACOLoader} from 'three/addons/loaders/DRACOLoader.js';
 import {RADIUS} from './game-constants.js';
-import {applyTargetAnimation,targetAnimationAxis} from './target-render.js';
 import {createBulbHalos,createLightFrame} from './bulb-render.js';
 import {createClassicLights,loadNativeLighting} from './classic-render.js';
 import {createFlipperVisuals,loadFlipperVisuals} from './flipper-render.js';
 import {applyNativeCamera} from './camera-render.js';
+import {nativePrimitiveWorld} from './primitive-transform.js';
+import {nativeProbeArea} from './native-reflection.js';
 import {loadNativePrimitiveVisuals,createNativePrimitiveVisuals} from './native-basic-render.js';
+import {loadNativeMechanismAnimation,createNativeMechanismAnimation} from './native-mechanism-render.js';
+import {createNativeReflectionPass} from './reflection-render.js';
+import {createNativeOpaqueCache} from './native-opaque-cache.js';
+import {loadNativeTransmission,createNativeTransmission} from './transmission-render.js';
 
-export async function createView(canvas, game) {
-  const renderer=new THREE.WebGLRenderer({canvas,antialias:false,alpha:false,powerPreference:'high-performance'});
-  renderer.setClearColor(0x101b18);renderer.outputColorSpace=THREE.SRGBColorSpace;
-  const scene=new THREE.Scene();
-  const camera=new THREE.PerspectiveCamera();
-  scene.add(new THREE.HemisphereLight(0xe6f1ff,0x686578,2.6));
-  const key=new THREE.DirectionalLight(0xfff0d8,2.4);key.position.set(-5,-3,20);scene.add(key);
-  const fill=new THREE.DirectionalLight(0xc7dcff,1.3);fill.position.set(12,15,12);scene.add(fill);
-  const base=import.meta.env.BASE_URL;
-  const draco=new DRACOLoader().setDecoderPath(`${base}draco/`).setDecoderConfig({type:'wasm'}).setWorkerLimit(1);
-  const [floor,table,lighting,flipperAssets,cameraBounds,actorAssets]=await Promise.all([
-    new THREE.TextureLoader().loadAsync(`${base}playfield.webp`),
-    new GLTFLoader().setDRACOLoader(draco).loadAsync(`${base}table.glb`),
-    loadNativeLighting(base),
-    loadFlipperVisuals(base,renderer.capabilities.getMaxAnisotropy()),
-    fetch(`${base}camera-bounds.json`).then(response=>{if(!response.ok)throw Error('Native camera bounds unavailable');return response.json();}),
-    loadNativePrimitiveVisuals(`${base}native-actors/`,'native-actors.json'),
-  ]);
-  draco.dispose();
-  floor.colorSpace=THREE.SRGBColorSpace;floor.flipY=false;floor.anisotropy=renderer.capabilities.getMaxAnisotropy();
-  const board=new THREE.Mesh(new THREE.PlaneGeometry(9.52,21.15),new THREE.MeshBasicMaterial({map:floor}));
-  const boardUV=board.geometry.attributes.uv;for(let i=0;i<boardUV.count;i++)boardUV.setY(i,1-boardUV.getY(i));
-  board.position.set(4.76,10.575,-.005);scene.add(board);
-  table.scene.rotation.x=Math.PI/2;table.scene.scale.setScalar(.01/.00053975);
-  table.scene.position.y=21.15;
-  scene.add(table.scene);
-  const moving=[],replacedActors=[],actorNames=new Set(actorAssets.metadata.parts.map(part=>part.spec.name));
-  table.scene.traverse(obj=>{
-    if(actorNames.has(obj.name)){replacedActors.push(obj);return;}
-    const state=game.rules?.objects.get(obj.name.replace(/_Finni$/,'').replace(/(Plate|Wire)$/,'').toLowerCase());
-    if(state){
-      const mechanism=game.spinners?.find(s=>obj.name===s.spec.name+'Plate')??game.gates?.find(s=>obj.name===s.spec.name+'Wire'),angle=(mechanism?.spec.rotation??0)*Math.PI/180;
-      const target=game.targetMotions?.get(obj.name.toLowerCase());
-      moving.push({obj,state,position:obj.position.clone(),rotation:obj.rotation.clone(),quaternion:obj.quaternion.clone(),target,mechanism,axis:mechanism?new THREE.Vector3(Math.cos(angle),0,Math.sin(angle)):target&&!target.drop?targetAnimationAxis(target.rotZ??target.spec?.rot_z):null});
-    }
-  });
-  if(replacedActors.length!==actorNames.size||new Set(replacedActors.map(obj=>obj.name)).size!==actorNames.size)throw Error('Original actor geometry could not be replaced unambiguously');
-  for(const obj of replacedActors)obj.removeFromParent();
-  const retainedGeometry=new Set();table.scene.traverse(obj=>{if(obj.geometry)retainedGeometry.add(obj.geometry);});
-  for(const obj of replacedActors)obj.traverse(child=>{if(child.geometry&&!retainedGeometry.has(child.geometry))child.geometry.dispose();});
-  const nativeActors=createNativePrimitiveVisuals(renderer,scene,actorAssets,lighting,{stateFor:name=>game.rules.objects.get(name.toLowerCase())});
-  nativeActors.root.name='NativeActors';
-
-  const steel=new THREE.MeshStandardMaterial({color:0xb0bac6,metalness:.65,roughness:.32});
-  // Ramp collision strips are deliberately invisible. The accepted model supplies
-  // the open wire geometry; filling the strips would turn it into a solid chute.
-
-  const flipperVisuals=createFlipperVisuals(game,scene,lighting,flipperAssets);
-  const ball=new THREE.Mesh(new THREE.SphereGeometry(RADIUS,20,14),new THREE.MeshStandardMaterial({color:0xffffff,metalness:.7,roughness:.17}));
-  scene.add(ball);
-  // Baked contact shadows avoid a per-frame shadow-map pass on phones.
-  const shadowCanvas=document.createElement('canvas');shadowCanvas.width=64;shadowCanvas.height=64;
-  const context=shadowCanvas.getContext('2d'),gradient=context.createRadialGradient(32,32,3,32,32,32);
-  gradient.addColorStop(0,'rgba(0,0,0,.65)');gradient.addColorStop(1,'rgba(0,0,0,0)');
-  context.fillStyle=gradient;context.fillRect(0,0,64,64);
-  const shadow=new THREE.Mesh(new THREE.PlaneGeometry(.85,.85),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(shadowCanvas),transparent:true,depthWrite:false}));
-  scene.add(shadow);
-  const balls=[ball],shadows=[shadow];
-  const classicLights=createClassicLights(game,scene,floor,lighting);
-  const bulbHalos=createBulbHalos(game,scene),lightFrame=createLightFrame(renderer);
-  // A modest steel lip marks the scoop; capture/eject use the real sensor position.
-  const scoop=new THREE.Mesh(new THREE.TorusGeometry(.36,.055,6,24),steel);
-  scoop.position.set(game.scoop.x,game.scoop.y,.05);scene.add(scoop);
-  let cameraMode='balanced',quality='performance',shakeUntil=0,shakeStrength=0;
-  function resize() {
-    const width=canvas.clientWidth,height=canvas.clientHeight;
-    if(!width||!height){
-      // The main UI can collapse the playfield behind its start screen in a
-      // short window. Compile with the backing buffer's valid camera, then let
-      // ResizeObserver apply the visible playfield dimensions when it opens.
-      if(!camera.userData.nativeCamera)applyNativeCamera(camera,cameraBounds,Math.max(1,canvas.width)/Math.max(1,canvas.height),cameraMode);
-      return;
-    }
-    renderer.setPixelRatio(Math.min(devicePixelRatio,quality==='detailed'?2:1.25));
-    renderer.setSize(width,height,false);
-    lightFrame.resize();
-    const size=renderer.getDrawingBufferSize(new THREE.Vector2());
-    applyNativeCamera(camera,cameraBounds,size.x/size.y,cameraMode);
-  }
-  const observer=new ResizeObserver(resize);observer.observe(canvas);resize();
-  nativeActors.update(camera);await nativeActors.prepare(camera);
-  function render(alpha,previous) {
-    const records=game.records??[{body:game.ball,previous,held:game.capturedUntil?'scoop':null}];
-    while(balls.length<records.length){const mesh=ball.clone(),contact=shadow.clone();contact.material=shadow.material.clone();scene.add(mesh,contact);balls.push(mesh);shadows.push(contact);}
-    for(let i=0;i<balls.length;i++){
-      const mesh=balls[i],contact=shadows[i],rec=records[i];mesh.visible=!!rec&&(!rec.held||rec.held==='lane');contact.visible=mesh.visible;
-      if(!rec)continue;const p=rec.body.translation(),before=rec.previous??p;
-      mesh.position.set(before.x+(p.x-before.x)*alpha,before.y+(p.y-before.y)*alpha,before.z+(p.z-before.z)*alpha);
-      mesh.quaternion.copy(game.nativeDisplacements?game.nativeBall(rec.body).orientation.rotation():rec.body.rotation());contact.position.set(mesh.position.x,mesh.position.y,.015);contact.material.opacity=Math.max(.15,1-mesh.position.z/4);
-    }
-    for(const m of moving){
-      if(m.target)applyTargetAnimation(m.obj,m.target,m,m.axis);
-      else{m.obj.position.copy(m.position);if(m.state.isdropped)m.obj.position.y-=.04;}
-      if(m.state.sequenceactive){m.obj.visible=!!m.state.sequencestate;m.sequenceOverride=true;}
-      else if((m.target||m.sequenceOverride)&&m.state.visible!==undefined){m.obj.visible=!!m.state.visible;m.sequenceOverride=false;}
-      if(m.mechanism)m.obj.quaternion.setFromAxisAngle(m.axis,m.mechanism.angle).multiply(m.quaternion);
-      if(/discoball/i.test(m.obj.name))m.obj.rotation.y=m.rotation.y+Number(m.state.rotz)*Math.PI/180;
-      if(/LilHead|LilLeftArm|LilRightArm/.test(m.obj.name)){
-        m.obj.rotation.x=m.rotation.x-Number(m.state.rotx)*Math.PI/180;
-        m.obj.rotation.z=m.rotation.z-Number(m.state.roty)*Math.PI/180;
-      }
-    }
-    nativeActors.update(camera);flipperVisuals.update(camera);
-    classicLights.update(camera);bulbHalos.update();lightFrame.render(scene,camera);
-  }
-  return {renderer,scene,camera,cameraBounds,classicLights,bulbHalos,flipperVisuals,nativeActors,render,resize,shake(strength){shakeUntil=game.time+.8;shakeStrength=Number(strength)||1;},setCamera(value){cameraMode=value;resize();},setQuality(value){quality=value;resize();}};
+export async function createView(canvas,game){
+ const renderer=new THREE.WebGLRenderer({canvas,antialias:false,alpha:false,powerPreference:'high-performance'});renderer.setClearColor(0,0);renderer.outputColorSpace=THREE.SRGBColorSpace;
+ const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(),base=import.meta.env.BASE_URL;
+ // These lights serve the remaining standard ball material. Authored table,
+ // flipper and light shaders use their original native lighting inputs.
+ scene.add(new THREE.HemisphereLight(0xe6f1ff,0x686578,2.6));const key=new THREE.DirectionalLight(0xfff0d8,2.4);key.position.set(-5,-3,20);scene.add(key);const fill=new THREE.DirectionalLight(0xc7dcff,1.3);fill.position.set(12,15,12);scene.add(fill);
+ const [lighting,flipperAssets,cameraBounds,tableAssets,animationAssets,transmissionAssets]=await Promise.all([
+  loadNativeLighting(base),loadFlipperVisuals(base,renderer.capabilities.getMaxAnisotropy()),
+  fetch(base+'camera-bounds.json').then(response=>{if(!response.ok)throw Error('Native camera bounds unavailable');return response.json();}),
+  loadNativePrimitiveVisuals(base+'native-table/','native-table.json'),loadNativeMechanismAnimation(base),loadNativeTransmission(base+'native-transmission/'),
+ ]);
+ const floorRecord=tableAssets.metadata.parts.find(p=>p.spec.name==='playfield_mesh');if(!floorRecord?.probe)throw Error('Authored playfield probe unavailable');
+ const reflectionPass=createNativeReflectionPass(renderer,floorRecord.probe),nativeTransmission=createNativeTransmission(renderer,transmissionAssets,name=>game.rules.objects.get(name.toLowerCase()));
+ const nativeTable=createNativePrimitiveVisuals(renderer,scene,tableAssets,lighting,{stateFor:name=>game.rules.objects.get(name.toLowerCase()),transmissionTexture:nativeTransmission.texture,reflectionTexture:reflectionPass.texture});nativeTable.root.name='NativeTable';
+ const nativeMechanisms=createNativeMechanismAnimation(game,nativeTable,animationAssets),nativeCache=createNativeOpaqueCache(renderer,nativeTable),floorPart=nativeTable.parts.find(p=>p.spec.name==='playfield_mesh'),floor=floorPart.material.uniforms.tex_base_color.value;
+ const actorNames=new Set(['discoball','LilHead','LilLeftArm','LilRightArm','Primitive077']),nativeActors={parts:nativeTable.parts.filter(p=>actorNames.has(p.spec.name)),root:nativeTable.root};
+ const flipperVisuals=createFlipperVisuals(game,scene,lighting,flipperAssets),classicLights=createClassicLights(game,scene,floor,lighting),bulbHalos=createBulbHalos(game,scene),lightFrame=createLightFrame(renderer);
+ const ball=new THREE.Mesh(new THREE.SphereGeometry(RADIUS,20,14),new THREE.MeshStandardMaterial({color:0xffffff,metalness:.7,roughness:.17}));ball.name='PlayableBall';scene.add(ball);
+ const shadowCanvas=document.createElement('canvas');shadowCanvas.width=shadowCanvas.height=64;const context=shadowCanvas.getContext('2d'),gradient=context.createRadialGradient(32,32,3,32,32,32);gradient.addColorStop(0,'rgba(0,0,0,.65)');gradient.addColorStop(1,'rgba(0,0,0,0)');context.fillStyle=gradient;context.fillRect(0,0,64,64);
+ const shadow=new THREE.Mesh(new THREE.PlaneGeometry(.85,.85),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(shadowCanvas),transparent:true,depthWrite:false}));scene.add(shadow);const balls=[ball],shadows=[shadow];
+ let cameraMode='balanced',quality='performance',cacheEnabled=true,shakeUntil=0,shakeStrength=0;
+ function resizeTargets(){const size=renderer.getDrawingBufferSize(new THREE.Vector2());lightFrame.resize();reflectionPass.resize(size.x,size.y);nativeTransmission.resize(size.x,size.y);nativeCache.invalidate();}
+ function resize(){const width=canvas.clientWidth,height=canvas.clientHeight;if(!width||!height){if(!camera.userData.nativeCamera)applyNativeCamera(camera,cameraBounds,Math.max(1,canvas.width)/Math.max(1,canvas.height),cameraMode);resizeTargets();return;}renderer.setPixelRatio(Math.min(devicePixelRatio,quality==='detailed'?2:1.25));renderer.setSize(width,height,false);resizeTargets();const size=renderer.getDrawingBufferSize(new THREE.Vector2());applyNativeCamera(camera,cameraBounds,size.x/size.y,cameraMode);}
+ const observer=new ResizeObserver(resize);observer.observe(canvas);resize();nativeMechanisms.update();nativeTable.update(camera);nativeTransmission.update(camera);flipperVisuals.update(camera);await nativeTable.prepare(camera);await nativeTransmission.prepare();await renderer.compileAsync(scene,camera);
+ function render(alpha,previous){
+  const records=game.records??[{body:game.ball,previous,held:game.capturedUntil?'scoop':null}];while(balls.length<records.length){const mesh=ball.clone(),contact=shadow.clone();contact.material=shadow.material.clone();scene.add(mesh,contact);balls.push(mesh);shadows.push(contact);}
+  for(let i=0;i<balls.length;i++){const mesh=balls[i],contact=shadows[i],record=records[i];mesh.visible=!!record&&(!record.held||record.held==='lane');contact.visible=mesh.visible;if(!record)continue;const p=record.body.translation(),before=record.previous??p;mesh.position.set(before.x+(p.x-before.x)*alpha,before.y+(p.y-before.y)*alpha,before.z+(p.z-before.z)*alpha);mesh.quaternion.copy(game.nativeDisplacements?game.nativeBall(record.body).orientation.rotation():record.body.rotation());contact.position.set(mesh.position.x,mesh.position.y,.015);contact.material.opacity=Math.max(.15,1-mesh.position.z/4);}
+  nativeMechanisms.update();nativeTransmission.update(camera);nativeTransmission.render();
+  const hidden=[...classicLights.meshes,bulbHalos.mesh,...shadows].map(mesh=>[mesh,mesh.visible]);for(const [mesh]of hidden)mesh.visible=false;
+  try{reflectionPass.render(camera,(view,target)=>{nativeTable.update(view);flipperVisuals.update(view);nativeCache.render(scene,view,target,{enabled:cacheEnabled});},{area:nativeProbeArea(floorRecord.bounds,nativePrimitiveWorld(floorRecord.spec),camera.userData.nativeCamera)});}finally{for(const [mesh,value]of hidden)mesh.visible=value;}
+  nativeTable.update(camera);flipperVisuals.update(camera);classicLights.update(camera);bulbHalos.update();lightFrame.render(scene,camera,target=>nativeCache.render(scene,camera,target,{enabled:cacheEnabled}));
+ }
+ return{renderer,scene,camera,cameraBounds,nativeTable,nativeMechanisms,nativeCache,nativeTransmission,reflectionPass,nativeActors,classicLights,bulbHalos,flipperVisuals,lightFrame:{...lightFrame,resize:resizeTargets},render,resize,resizeTargets,setCacheEnabled(value){cacheEnabled=!!value;nativeCache.invalidate();},shake(strength){shakeUntil=game.time+.8;shakeStrength=Number(strength)||1;},setCamera(value){cameraMode=value;resize();},setQuality(value){quality=value;resize();}};
 }

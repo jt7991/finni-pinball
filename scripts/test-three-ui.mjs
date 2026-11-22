@@ -90,33 +90,34 @@ try{
     const animation=await evaluate(`(async()=>{
       const {game,view}=finniThree,scene=view.scene;
       if(game.workerSimulation){game.setPaused(true);await game.flush();}
-      view.render(1);
+      view.render(1);const raw=!!view.nativeMechanisms;
+      const read3=(attribute,index)=>[attribute.getX(index),attribute.getY(index),attribute.getZ(index)],dot=(a,b)=>a.reduce((sum,v,i)=>sum+v*b[i],0),subtract=(a,b)=>a.map((v,i)=>v-b[i]),axisFor=rotation=>{const r=rotation*Math.PI/180,a=[Math.cos(r),Math.sin(r),0],length=Math.hypot(...a);return a.map(v=>v/length);},project=(a,axis)=>{const d=dot(a,axis);return a.map((v,i)=>v-axis[i]*d);},angleBetween=(a,b,axis)=>{a=project(a,axis);b=project(b,axis);return Math.acos(Math.min(1,Math.max(-1,dot(a,b)/(Math.hypot(...a)*Math.hypot(...b)))));},farthest=(attribute,pivot,axis)=>{let best=-1,index=0;for(let i=0;i<attribute.count;i++){const radius=Math.hypot(...project(subtract(read3(attribute,i),pivot),axis));if(radius>best){best=radius;index=i;}}return index;};
       const parts=[...game.spinners,...game.gates.filter(g=>g.spec.is_visible)].map(spinner=>{
         const plate=scene.getObjectByName(spinner.spec.name+(spinner.spec.kind==='Gate'?'Wire':'Plate'));if(!plate)return {name:spinner.spec.name,missing:true};
-        const saved=spinner.angle,position=plate.position.clone();spinner.angle=0;view.render(1);const start=plate.quaternion.clone();
-        spinner.angle=Math.PI/2;view.render(1);const rotation=start.angleTo(plate.quaternion),axleMovement=position.distanceTo(plate.position);
-        spinner.angle=saved;view.render(1);return {name:plate.name,rotation,axleMovement};
+        const saved=spinner.angle,position=plate.position.clone();spinner.angle=0;view.render(1);const start=plate.quaternion.clone(),part=raw?view.nativeMechanisms.parts.find(p=>p.part.mesh===plate).part:null,axis=raw?axisFor(part.spec.rotation):null,pivot=raw?[part.spec.center.x,part.spec.center.y,part.spec.height+part.spec.surface_height]:null,attribute=raw?plate.geometry.getAttribute('vPosition'):null,index=raw?farthest(attribute,pivot,axis):0,startPoint=raw?subtract(read3(attribute,index),pivot):null;
+        spinner.angle=Math.PI/2;view.render(1);const endPoint=raw?subtract(read3(attribute,index),pivot):null,rotation=raw?angleBetween(startPoint,endPoint,axis):start.angleTo(plate.quaternion),axleMovement=position.distanceTo(plate.position),axialMovement=raw?Math.abs(dot(startPoint,axis)-dot(endPoint,axis)):0;
+        spinner.angle=saved;view.render(1);return {name:plate.name,rotation,axleMovement,axialMovement,raw};
       });
       const state=game.rules.objects.get('target010'),motion=game.targetMotions.get('target010'),mesh=scene.getObjectByName('Target010'),collidable=motion.collidable;
       const advance=async ticks=>{if(game.workerSimulation){await game.debug({action:'advance',ticks});await game.prepareFrame();}else for(let ms=0;ms<ticks;ms++)game.step();};
       const set=async statement=>{await game.rules.execute(statement);};
-      await set('Target010.Collidable=False');await advance(100);await set('Target010.IsDropped=False');await advance(100);view.render(1);const up=mesh.position.y;
-      await set('Target010.IsDropped=True');await advance(25);view.render(1);const middle={offset:motion.offset,delta:mesh.position.y-up};
-      await advance(40);view.render(1);const end={offset:motion.offset,delta:mesh.position.y-up};await set('Target010.Collidable='+ (collidable?'True':'False'));
+      await set('Target010.Collidable=False');await advance(100);await set('Target010.IsDropped=False');await advance(100);view.render(1);const readDrop=()=>raw?mesh.geometry.getAttribute('vPosition').getZ(0):mesh.position.y,up=readDrop();
+      await set('Target010.IsDropped=True');await advance(25);view.render(1);const middle={offset:motion.offset,delta:readDrop()-up};
+      await advance(40);view.render(1);const end={offset:motion.offset,delta:readDrop()-up};await set('Target010.Collidable='+ (collidable?'True':'False'));
       const specs=(await(await fetch(new URL('objects.json',location.href))).json()).objects,standups=[];
       for(const name of ['Target001','Target005','Target013']){
         const spec=specs.find(s=>s.name===name),target=game.targetMotions.get(name.toLowerCase()),node=scene.getObjectByName(name),pivot=node.position.clone(),geometry=node.geometry.uuid;
-        await set(name+'.Collidable=False:'+name+'.IsDropped=False');await advance(100);await advance(100);view.render(1);const rest=node.quaternion.clone();
+        await set(name+'.Collidable=False:'+name+'.IsDropped=False');await advance(100);await advance(100);view.render(1);const rest=node.quaternion.clone(),normal=raw?node.geometry.getAttribute('vNormal'):null,axis=raw?axisFor(spec.rot_z):null,normalIndex=raw?farthest(normal,[0,0,0],axis):0,restNormal=raw?read3(normal,normalIndex):null,readAngle=()=>raw?angleBetween(restNormal,read3(normal,normalIndex),axis):rest.angleTo(node.quaternion);
         await set(name+'.Visible=False:'+name+'.Collidable=True');
         const a=spec.rot_z*Math.PI/180,n={x:-Math.sin(a),y:Math.cos(a)},t={x:Math.cos(a),y:Math.sin(a)},front=Math.max(...spec.collision_mesh.vertices.map(v=>v[1]))*spec.size.y,record=game.records.find(r=>!r.held);
         if(!record)throw Error('Stand-up test requires an active playable ball');
         const place=async(z,tangent)=>game.debug({action:'place',ballHandle:record.body.handle,position:{x:(spec.position.x+n.x*(front+25.01)+t.x*tangent)*.01,y:(2115-(spec.position.y+n.y*(front+25.01)+t.y*tangent))*.01,z:z*.01},velocity:{x:-n.x*8,y:n.y*8,z:0}});
         const before=game.score;await place(45,spec.size.x*.4);await advance(17);view.render(1);const hidden={visible:node.visible,offset:target.offset,scoreDelta:game.score-before};
-        await set(name+'.Visible=True');await advance(17);view.render(1);const first={offset:target.offset,angle:rest.angleTo(node.quaternion)};
-        await advance(17);view.render(1);const peak={offset:target.offset,angle:rest.angleTo(node.quaternion)};
-        await advance(40);view.render(1);const settled={offset:target.offset,angle:rest.angleTo(node.quaternion)};
+        await set(name+'.Visible=True');await advance(17);view.render(1);const first={offset:target.offset,angle:readAngle()};
+        await advance(17);view.render(1);const peak={offset:target.offset,angle:readAngle()};
+        await advance(40);view.render(1);const settled={offset:target.offset,angle:readAngle()};
         let point;
-        if(name==='Target001'){const score=game.score;await place(25,0);await advance(17);view.render(1);point={offset:target.offset,angle:rest.angleTo(node.quaternion),scoreDelta:game.score-score};}
+        if(name==='Target001'){const score=game.score;await place(25,0);await advance(17);view.render(1);point={offset:target.offset,angle:readAngle(),scoreDelta:game.score-score};}
         standups.push({name,drop:target.drop,rotZ:target.rotZ,hidden,first,peak,settled,point,pivotMovement:pivot.distanceTo(node.position),sameGeometry:geometry===node.geometry.uuid});
       }
       await set(specs.filter(s=>s.kind==='LightSequencer').map(s=>s.name+'.StopPlay').join(':'));
@@ -143,7 +144,7 @@ try{
         game.input('left',down);game.input('right',down);await advance(ticks);view.render(1);
         view.flipperVisuals.flippers.forEach((part,i)=>{const state=game.rules.objects.get(part.spec.name.toLowerCase()+'top');flippers.push({name:part.spec.name,down,ticks,angle:game.flippers[i].angle,bodyAngle:part.base.rotation.z,topAngle:part.top.rotation.z,scriptTopAngle:state.rotz,pivotMovement:pivots[i].distanceTo(part.top.position)});});
       }
-      return {parts,target:{middle,end},standups,sequences:{off:sequenceOff,restored:sequenceRestored,blink:sequenceBlink},lamps:{count:view.bulbHalos.lamps.length,off,full,fading,blinkOff,blinkOn},classic:{count:view.classicLights.lamps.length,draws:view.classicLights.meshes.length,off:classicOff,on:classicOn,fading:classicFade},flippers};
+      return {raw,parts,target:{middle,end},standups,sequences:{off:sequenceOff,restored:sequenceRestored,blink:sequenceBlink},lamps:{count:view.bulbHalos.lamps.length,off,full,fading,blinkOff,blinkOn},classic:{count:view.classicLights.lamps.length,draws:view.classicLights.meshes.length,off:classicOff,on:classicOn,fading:classicFade},flippers};
     })()`);
     const plates=animation.parts;
     assert.equal(animation.lamps.count,133);assert.equal(animation.lamps.off.intensity,0);assert.equal(animation.lamps.full.intensity,90);assert.equal(animation.lamps.fading.intensity,Math.fround(90-Math.fround(Math.fround(.9)*17)));assert.equal(animation.lamps.blinkOff.on,false);assert.equal(animation.lamps.blinkOn.on,true);
@@ -158,11 +159,11 @@ try{
     assert.deepEqual(animation.sequences.blink,{script:1,locked:true,display:1});
     await writeFile(`${output}/light-sequence-animation.json`,JSON.stringify(animation.sequences,null,2));console.log('PASS native light sequence overrides, saved script state and worker render-frame blinking');
     assert.equal(plates.length,4);
-    for(const plate of plates){assert.equal(plate.missing,undefined);assert.ok(Math.abs(plate.rotation-Math.PI/2)<1e-6);assert.equal(plate.axleMovement,0);}
+    for(const plate of plates){assert.equal(plate.missing,undefined);assert.ok(Math.abs(plate.rotation-Math.PI/2)<(plate.raw?3e-5:1e-6));assert.equal(plate.axleMovement,0);assert.ok(plate.axialMovement<.001,'actual vertex motion preserves its native axle');}
     await writeFile(`${output}/mechanism-animation.json`,JSON.stringify(plates,null,2));console.log('PASS original spinner plates and gate wires rotate around fixed axles');
     assert.ok(animation.target.middle.offset<0&&animation.target.middle.offset>-52,'visible target moves progressively');
-    assert.ok(Math.abs(animation.target.middle.delta-animation.target.middle.offset*.00053975)<1e-8);
-    assert.equal(animation.target.end.offset,-52);assert.ok(Math.abs(animation.target.end.delta+52*.00053975)<1e-8,'native 52 VPU target travel');
+    assert.ok(Math.abs(animation.target.middle.delta-animation.target.middle.offset*(animation.raw?1:.00053975))<(animation.raw?.0001:1e-8));
+    assert.equal(animation.target.end.offset,-52);assert.ok(Math.abs(animation.target.end.delta+52*(animation.raw?1:.00053975))<(animation.raw?.0001:1e-8),'native 52 VPU target travel');
     await writeFile(`${output}/target-animation.json`,JSON.stringify(animation.target,null,2));console.log('PASS original drop-target mesh follows native animation travel');
     for(const target of animation.standups){
       assert.equal(target.drop,false);assert.equal(target.hidden.visible,false);assert.equal(target.hidden.offset,0);assert.ok(target.hidden.scoreDelta>0,'hidden physical face still scores');

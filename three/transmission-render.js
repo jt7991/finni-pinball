@@ -55,7 +55,7 @@ export function createNativeTransmission(renderer,assets,stateFor){
     }),pass=new THREE.Scene(),quad=new THREE.Mesh(quadGeometry,material);quad.frustumCulled=false;pass.add(quad);blurScenes.push(pass);blurMaterials.push(material);
   }
   let rectangles;
-  return{parts,targets,texture:targets[0].texture,get rectangles(){return rectangles;},resize(width,height){
+  return{parts,targets,texture:targets[0].texture,get rectangles(){return rectangles;},async prepare(){const proxies=new THREE.Scene();for(const part of parts){const proxy=new THREE.Mesh(part.mesh.geometry,part.material);proxy.frustumCulled=false;proxies.add(proxy);}await renderer.compileAsync(proxies,camera);for(const pass of blurScenes)await renderer.compileAsync(pass,camera);},resize(width,height){
     const w=Math.max(1,Math.floor(width/4)),h=Math.max(1,Math.floor(height/4));
     for(const target of targets)target.setSize(w,h);
     for(const material of blurMaterials)material.uniforms.w_h_height.value.set([f(1/w),f(1/h),1,1]);

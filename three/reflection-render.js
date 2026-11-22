@@ -7,7 +7,7 @@ import {nativeProbeScissor} from './native-reflection.js';
 
 export function createNativeReflectionPass(renderer,probe){
   if(probe.type!==0||probe.roughness!==0)throw Error('This native planar pass requires the authored zero-roughness probe');
-  const target=new THREE.WebGLRenderTarget(1,1,{type:THREE.HalfFloatType,minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,depthBuffer:true}),camera=new THREE.PerspectiveCamera();let source=null;
+  const target=new THREE.WebGLRenderTarget(1,1,{type:THREE.HalfFloatType,minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,depthTexture:new THREE.DepthTexture(1,1,THREE.UnsignedShortType)}),camera=new THREE.PerspectiveCamera();let source=null;
   return{target,texture:target.texture,camera,resize(width,height){target.setSize(Math.max(1,Math.floor(width)),Math.max(1,Math.floor(height)));},render(mainCamera,draw,{area}={}){
     if(mainCamera.userData.nativeCamera!==source){source=mainCamera.userData.nativeCamera;applyNativeReflectionCamera(camera,mainCamera,probe.plane);camera.userData.nativeCamera.reverseCullingByRenderer=true;}
     const gl=renderer.getContext(),previous=renderer.getRenderTarget(),clear=renderer.getClearColor(new THREE.Color()),alpha=renderer.getClearAlpha(),autoClear=renderer.autoClear,setMaterial=renderer.state.setMaterial,cull=gl.getParameter(gl.CULL_FACE_MODE),cullEnabled=gl.isEnabled(gl.CULL_FACE),frontFace=gl.getParameter(gl.FRONT_FACE),scissor=target.scissor.clone(),scissorTest=target.scissorTest;

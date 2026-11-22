@@ -1,0 +1,8 @@
+// Publish only runtime assets. Native observation packets stay in .work.
+import fs from 'node:fs';import path from 'node:path';import assert from 'node:assert/strict';import {createHash} from 'node:crypto';
+const source=process.argv[2]??'.work/native-table-renderer',output=process.argv[3]??'three/public/native-table',metadata=JSON.parse(fs.readFileSync(path.join(source,'native-table.json'))),files=new Set(['native-table.json',metadata.geometry.file]),sha=b=>createHash('sha256').update(b).digest('hex');assert.notEqual(path.resolve(source),path.resolve(output));assert.equal(metadata.parts.length,682);
+for(const part of metadata.parts){assert.ok(!part.pose&&!part.matrixBits);for(const key of ['matProj[0]','w_h_height','balls[0]'])assert.ok(!(key in part.uniforms),'No captured camera/ball uniforms');}
+assert.equal(sha(fs.readFileSync(path.join(source,metadata.geometry.file))),metadata.geometry.encodedSHA256);
+for(const program of Object.values(metadata.programs))for(const [file,hash]of [[program.vertex,program.vertexSHA256],[program.fragment,program.fragmentSHA256]]){assert.equal(sha(fs.readFileSync(path.join(source,file))),hash);files.add(file);}
+for(const texture of Object.values(metadata.textures))for(const level of texture.levels){assert.equal(sha(fs.readFileSync(path.join(source,level.file))),level.sha256);files.add(level.file);}
+fs.mkdirSync(output,{recursive:true});for(const file of files){assert.equal(path.basename(file),file);fs.copyFileSync(path.join(source,file),path.join(output,file));}assert.ok(!fs.existsSync(path.join(output,'reference.json')));console.log(JSON.stringify({parts:682,files:files.size,output}));

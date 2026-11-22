@@ -1,11 +1,28 @@
-# Native renderer component checkpoint
+# Native renderer integration checkpoint
 
-This is development evidence for the full port. The native renderer is now
-connected to `three/scene.js` for the fox head, arms, body, and disco ball. Their
-five separate GLB nodes are removed before adding the source geometry, so no
-duplicates remain. The joined static table still awaits complete replacement.
-Whole-table parity, reflection/bloom integration, and the remaining physics
-comparisons are unfinished.
+This is development evidence for the full port. `three/scene.js` now loads the
+complete original basic geometry instead of the joined GLB: 682 meshes include
+558 main-view parts and 124 reflection-only wall bottoms. Six source flipper
+parts and 25 classic inserts retain their separate native paths. The original
+open wire ramp geometry, main arcade UI and lossless source artwork are retained.
+The native ball material, flashers, shared transmission/bloom temporary buffer,
+final whole-frame comparison and seven older physics comparisons are unfinished.
+
+The actual scene now runs source planar reflections with D16 depth, native
+transmission, target/gate/spinner/trigger/bumper vertex updates and all 57
+source-generated plunger mesh frames. `native-opaque-cache.js` caches color and
+depth together and invalidates on camera, viewport, vertex, transform or
+visibility changes. Eight browser scenarios, including three real game balls,
+match uncached rendering across 28,679,040 HDR RGB samples, with no differences
+or GL errors. This is a cache equivalence test, not a whole-frame VPX comparison.
+
+Trigger and bumper animation matches 89 updates of the original compiled
+engine. All 154,240 observed skirt vertex fields and 269 original Float32 atan
+results match. The full table's 25 lossless images match 147,945,552 native GPU
+RGBA bytes. Original shader bytes and all source vertex/index bits are retained.
+The complete table mesh compresses from 12,630,508 to 3,142,237 bytes with gzip.
+The static server allows compression of this larger mesh; it does not lower
+texture quality or quantize geometry.
 
 The ownership audit covers 650 authored renderable objects. All 589 BasicShader
 draws in the independent frame with revealed sling variants have exactly one
@@ -36,7 +53,7 @@ again after decoding in the live scene.
 
 `scripts/test-native-actors-browser.mjs` drives the actual worker's script
 properties and reads the GPU uniform buffer immediately before each real scene
-draw. All 400 uploaded fields match independent VPX packets; visibility changes
+draw. All 800 uploaded main/reflection fields match independent VPX packets; visibility changes
 hide all five meshes and each source name occurs once. A default short-window
 case also covers the main UI's collapsed start-screen canvas. It uses the
 backing buffer camera until ResizeObserver receives visible dimensions.
@@ -168,8 +185,8 @@ native RGBA upload bytes also match after GPU upload.
 
 Use `--native-primitives --mechanism-geometry` for main-view checks and
 `--reflection-render --world-reflections` or `--mechanism-reflections` for the
-additional reflected geometry. The actual game still uses its accepted joined
-GLB until the complete replacement and animated vertex paths are connected.
+additional reflected geometry. These parts are now connected to the actual
+game with original animated vertex paths; the GLB is retained only for comparison.
 The native reflection flags exclude both textured flipper tops, while keeping
 the base/rubber parts; returning to the main camera restores both tops.
 
@@ -180,5 +197,5 @@ poses for each target match independently compiled Float32 position/normal
 values. The older JSON pose fixture loses signed zero, so that comparison
 normalizes zero signs only; the independent initial GPU digests do not.
 GenerateMesh and UpdateTarget(offset0) have distinct rounding orders, exposed
-by Target014 and preserved separately. This component is ready for the native
-mechanism renderer; the live GLB targets remain on the existing pivot mapping.
+by Target014 and preserved separately. Live native target meshes update through
+this path, including revision tracking for an initial zero-offset update.

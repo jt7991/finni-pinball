@@ -10,6 +10,7 @@ import {runtimeNativeRandom} from './native-random.js';
 
 export const KEY={left:42,right:54,launch:28,start:2,action:57,nudgeLeft:44,nudgeForward:45,nudgeRight:53};
 const empty=()=>{};
+const liveProperties={Gate:new Set(['currentangle','collidable','open','hitthreshold']),HitTarget:new Set(['isdropped','currentanimoffset','hitthreshold']),Trigger:new Set(['currentanimoffset']),Bumper:new Set(['threshold','force','scatter','hashitevent','collidable','currentringoffset','rotx','roty','enableskirtanimation','ringspeed','ringdropoffset']),Wall:new Set(['disabled','slingshotthreshold','hitthreshold']),Primitive:new Set(['hitthreshold'])};
 
 // Isolated JavaScript VBScript execution preserves the authored rules and numeric
 // semantics. No Visual Pinball, COM, native scripting host or global integration.
@@ -45,7 +46,7 @@ export function createRules(source,specs,host={}) {
       if(methods.has(lower+'_animate')||(eventGroups.get(lower)??[]).some(g=>g.collection.fire_events&&methods.has(g.collection.name.toLowerCase()+'_animate')))hit(name,'Animate',activeBall);
     }):null;
     const state={name,x:spec.center?.x??spec.position?.x??spec.pos_x??0,y:spec.center?.y??spec.position?.y??spec.pos_y??0,z:spec.position?.z??0,radius:spec.radius??0,
-      state:spec.state_u32??spec.state??0,visible:spec.is_visible??spec.visible??true,collidable:spec.is_collidable??true,
+      state:spec.state_u32??spec.state??0,visible:spec.kind==='Wall'?(spec.is_top_bottom_visible??true):(spec.is_visible??spec.visible??true),sidevisible:spec.is_side_visible??true,basevisible:spec.is_base_visible??true,capvisible:spec.is_cap_visible??true,ringvisible:spec.is_ring_visible??true,skirtvisible:spec.is_socket_visible??true,showbracket:spec.show_bracket??false,collidable:spec.is_collidable??true,
       enabled:spec.is_enabled??false,timerenabled:false,timerinterval:spec.timer_interval??100,
       interval:spec.timer_interval??100,blinkinterval:spec.blink_interval??125,intensity:spec.intensity??1,
       blinkpattern:spec.blink_pattern??'10',intensityscale:1,inplayintensity:0,inplayon:false,fadespeedup:spec.fade_speed_up??1,fadespeeddown:spec.fade_speed_down??1,
@@ -67,12 +68,12 @@ export function createRules(source,specs,host={}) {
       play:(code,tail=0,repeat=1,pause=0)=>sequences.get(lower)?.play(code,Number(tail),Number(repeat),Number(pause)),
       stopplay:()=>sequences.get(lower)?.stop(),
       stop:empty,initimpulsep:empty,random:empty,initexitsnd:empty,createevents:empty,
-      autofire:()=>host.autofire?.(),
+      autofire:()=>host.autofire?.(),playhit:()=>host.mechanism?.(name,'playhit',true),
       option:(_name,_min,_max,_step,def)=>def,
       getballs:()=>host.balls?.()??[],
     };
     const proxy=new Proxy(state,{
-      get(target,key){if(typeof key==='symbol')return target[key];const k=key.toLowerCase();if(lamp){const value=lamp.get(k);if(value!==undefined)return value;}if(spec.kind==='Plunger'&&k==='position')return host.plungerPosition?.()??0;if(spec.kind==='Gate'||spec.kind==='HitTarget'||spec.kind==='Bumper'||spec.kind==='Wall'||spec.kind==='Primitive'&&k==='hitthreshold'){const value=host.mechanismValue?.(name,k);if(value!==undefined)return value;}return k in actions?actions[k]:target[k]??0;},
+      get(target,key){if(typeof key==='symbol')return target[key];const k=key.toLowerCase();if(lamp){const value=lamp.get(k);if(value!==undefined)return value;}if(spec.kind==='Plunger'&&k==='position')return host.plungerPosition?.()??0;if(liveProperties[spec.kind]?.has(k)){const value=host.mechanismValue?.(name,k);if(value!==undefined)return value;}return k in actions?actions[k]:target[k]??0;},
       set(target,key,v){const k=String(key).toLowerCase();if(lamp?.set(k,v))return true;target[k]=lamp&&['color','colorfull'].includes(k)?nativeColor(v):v;
         if(spec.kind==='LightSequencer'){
           const seq=sequences.get(lower);
@@ -85,7 +86,7 @@ export function createRules(source,specs,host={}) {
           else timers.delete(timerKey);
         }
         if(k==='isdropped'||k==='collidable'||k==='open'||k==='enabled'&&['Trigger','Kicker'].includes(spec.kind))host.mechanism?.(name,k,v);
-        if(spec.kind==='Bumper'&&['threshold','force','scatter','hashitevent'].includes(k))host.mechanism?.(name,k,v);
+        if(spec.kind==='Bumper'&&['threshold','force','scatter','hashitevent','enableskirtanimation','ringspeed','ringdropoffset'].includes(k))host.mechanism?.(name,k,v);
         if(spec.kind==='Wall'&&['disabled','slingshotthreshold'].includes(k))host.mechanism?.(name,k,v);
         if(spec.kind==='HitTarget'&&['hashitevent','visible'].includes(k))host.mechanism?.(name,k,v);
         return true;},

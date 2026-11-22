@@ -44,22 +44,24 @@ export function connectSimulation(worker,init,emit=()=>{},media){
     result.p=state.p;result.q=state.rotation;return result;
   }
   function apply(snapshot){
-    const {ball,records,flippers,spinners,gates,targets,objects:states,values:queryValues,...root}=snapshot;
+    const {ball,records,flippers,spinners,gates,targets,visualMotions,objects:states,values:queryValues,...root}=snapshot;
     Object.assign(game,root);game.ball=body(ball);
     game.records=records.map(record=>({body:body(record),previous:record.previous,held:record.held,inLane:record.inLane}));
     const retained=new Set([ball.id,...records.map(r=>r.id)]);for(const id of bodies.keys())if(!retained.has(id))bodies.delete(id);
     flippers.forEach((angle,i)=>{game.flippers[i].angle=angle;});
     spinners.forEach((angle,i)=>{game.spinners[i].angle=angle;});gates.forEach((angle,i)=>{game.gates[i].angle=angle;});
-    for(const [name,offset]of targets)game.targetMotions.get(name).offset=offset;
+    for(const [name,offset,revision]of targets)Object.assign(game.targetMotions.get(name),{offset,revision});
+    for(const [name,state]of visualMotions)Object.assign(game.visualMotions.get(name),state);
     for(const [name,state]of states)Object.assign(Map.prototype.get.call(objects,name),state);
     for(const [query,value]of queryValues)values.set(query,value);
   }
   worker.onmessage=({data})=>{
     try{
       if(data.type==='ready'){
-        const {objects:states,targetMotions,...description}=data.description;Object.assign(game,description);
+        const {objects:states,targetMotions,visualMotions,...description}=data.description;Object.assign(game,description);
         for(const [name,state]of states)objects.set(name,state);
         game.targetMotions=new Map(targetMotions);
+        game.visualMotions=new Map(visualMotions);
       }else if(data.type==='snapshot'){
         apply(data.snapshot);game.runtimeStats=data.stats;game.simulationPaused=data.paused;
         // Publish the resulting score and state before delivering lifecycle events.
