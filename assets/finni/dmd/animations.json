@@ -15,7 +15,25 @@
       "d_title_anim11"
     ],
     "frame_ms": 160,
-    "effect": "sparkles"
+    "effect": "poses_wave"
+  },
+  "d_gameover": {
+    "frames": [
+      "d_gameover_anim00",
+      "d_gameover_anim01",
+      "d_gameover_anim02",
+      "d_gameover_anim03",
+      "d_gameover_anim04",
+      "d_gameover_anim05",
+      "d_gameover_anim06",
+      "d_gameover_anim07",
+      "d_gameover_anim08",
+      "d_gameover_anim09",
+      "d_gameover_anim10",
+      "d_gameover_anim11"
+    ],
+    "frame_ms": 160,
+    "effect": "poses_wave"
   },
   "d_finni_presents": {
     "frames": [
@@ -33,7 +51,7 @@
       "d_finni_presents_anim11"
     ],
     "frame_ms": 160,
-    "effect": "ribbons"
+    "effect": "poses_wrap"
   },
   "d_finni_presents_select": {
     "frames": [
@@ -51,7 +69,7 @@
       "d_finni_presents_select_anim11"
     ],
     "frame_ms": 160,
-    "effect": "selection"
+    "effect": "poses_wrap"
   },
   "d_finni_presents_done": {
     "frames": [
@@ -69,7 +87,7 @@
       "d_finni_presents_done_anim11"
     ],
     "frame_ms": 160,
-    "effect": "confetti"
+    "effect": "poses_wrap"
   },
   "d_finni_invitations": {
     "frames": [
@@ -141,7 +159,7 @@
       "d_finni_balloons_anim11"
     ],
     "frame_ms": 160,
-    "effect": "balloons"
+    "effect": "poses_pump"
   },
   "d_finni_balloons_select": {
     "frames": [
@@ -159,7 +177,7 @@
       "d_finni_balloons_select_anim11"
     ],
     "frame_ms": 160,
-    "effect": "selection"
+    "effect": "poses_pump"
   },
   "d_finni_balloons_done": {
     "frames": [
@@ -177,7 +195,7 @@
       "d_finni_balloons_done_anim11"
     ],
     "frame_ms": 160,
-    "effect": "confetti"
+    "effect": "poses_pump"
   },
   "d_finni_decorations": {
     "frames": [
@@ -195,7 +213,7 @@
       "d_finni_decorations_anim11"
     ],
     "frame_ms": 160,
-    "effect": "lights"
+    "effect": "poses_bunting"
   },
   "d_finni_decorations_select": {
     "frames": [
@@ -213,7 +231,7 @@
       "d_finni_decorations_select_anim11"
     ],
     "frame_ms": 160,
-    "effect": "selection"
+    "effect": "poses_bunting"
   },
   "d_finni_decorations_done": {
     "frames": [
@@ -231,7 +249,7 @@
       "d_finni_decorations_done_anim11"
     ],
     "frame_ms": 160,
-    "effect": "confetti"
+    "effect": "poses_bunting"
   },
   "d_finni_baking": {
     "frames": [
@@ -249,7 +267,7 @@
       "d_finni_baking_anim11"
     ],
     "frame_ms": 160,
-    "effect": "steam"
+    "effect": "poses_cookies"
   },
   "d_finni_baking_select": {
     "frames": [
@@ -267,7 +285,7 @@
       "d_finni_baking_select_anim11"
     ],
     "frame_ms": 160,
-    "effect": "selection"
+    "effect": "poses_cookies"
   },
   "d_finni_baking_done": {
     "frames": [
@@ -285,7 +303,7 @@
       "d_finni_baking_done_anim11"
     ],
     "frame_ms": 160,
-    "effect": "confetti"
+    "effect": "poses_cookies"
   },
   "d_finni_pinata": {
     "frames": [
@@ -303,7 +321,7 @@
       "d_finni_pinata_anim11"
     ],
     "frame_ms": 160,
-    "effect": "pinata"
+    "effect": "poses_pinata"
   },
   "d_finni_pinata_select": {
     "frames": [
@@ -321,7 +339,7 @@
       "d_finni_pinata_select_anim11"
     ],
     "frame_ms": 160,
-    "effect": "selection"
+    "effect": "poses_pinata"
   },
   "d_finni_pinata_done": {
     "frames": [
@@ -339,7 +357,7 @@
       "d_finni_pinata_done_anim11"
     ],
     "frame_ms": 160,
-    "effect": "confetti"
+    "effect": "poses_pinata"
   },
   "d_finni_party": {
     "frames": [
@@ -411,7 +429,7 @@
       "d_finni_cake_anim11"
     ],
     "frame_ms": 160,
-    "effect": "candles"
+    "effect": "poses_frosting"
   },
   "d_finni_toppings": {
     "frames": [
@@ -429,7 +447,7 @@
       "d_finni_toppings_anim11"
     ],
     "frame_ms": 160,
-    "effect": "candles"
+    "effect": "poses_frosting"
   },
   "d_finni_flourish": {
     "frames": [
@@ -447,7 +465,7 @@
       "d_finni_flourish_anim11"
     ],
     "frame_ms": 160,
-    "effect": "candles"
+    "effect": "poses_frosting"
   },
   "d_finni_frosting": {
     "frames": [
@@ -465,7 +483,7 @@
       "d_finni_frosting_anim11"
     ],
     "frame_ms": 160,
-    "effect": "candles"
+    "effect": "poses_frosting"
   },
   "d_finni_friendship": {
     "frames": [
@@ -609,7 +627,7 @@
       "d_finni_mystery_anim11"
     ],
     "frame_ms": 160,
-    "effect": "mystery"
+    "effect": "poses_wrap"
   },
   "d_finni_disco": {
     "frames": [
@@ -627,7 +645,7 @@
       "d_finni_disco_anim11"
     ],
     "frame_ms": 160,
-    "effect": "lights"
+    "effect": "poses_disco"
   },
   "d_finni_discomb": {
     "frames": [
@@ -645,7 +663,7 @@
       "d_finni_discomb_anim11"
     ],
     "frame_ms": 160,
-    "effect": "confetti"
+    "effect": "poses_disco"
   },
   "d_finni_timer": {
     "frames": [
@@ -717,7 +735,7 @@
       "d_finni_favors_anim11"
     ],
     "frame_ms": 160,
-    "effect": "sparkles"
+    "effect": "poses_wrap"
   },
   "d_ballsaved": {
     "frames": [
@@ -771,7 +789,7 @@
       "d_boom_anim11"
     ],
     "frame_ms": 160,
-    "effect": "mystery"
+    "effect": "poses_wrap"
   },
   "d_colossus": {
     "frames": [
@@ -825,7 +843,7 @@
       "d_domino_anim11"
     ],
     "frame_ms": 160,
-    "effect": "ribbons"
+    "effect": "poses_wrap"
   },
   "d_extraball": {
     "frames": [
@@ -1005,7 +1023,7 @@
       "d_mystery_anim11"
     ],
     "frame_ms": 160,
-    "effect": "mystery"
+    "effect": "poses_wrap"
   },
   "d_skillshot": {
     "frames": [

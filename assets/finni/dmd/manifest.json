@@ -1487,6 +1487,102 @@
       64
     ]
   },
+  "d_gameover_anim00": {
+    "file": "sprites/d_gameover_anim00.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_gameover_anim01": {
+    "file": "sprites/d_gameover_anim01.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_gameover_anim02": {
+    "file": "sprites/d_gameover_anim02.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_gameover_anim03": {
+    "file": "sprites/d_gameover_anim03.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_gameover_anim04": {
+    "file": "sprites/d_gameover_anim04.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_gameover_anim05": {
+    "file": "sprites/d_gameover_anim05.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_gameover_anim06": {
+    "file": "sprites/d_gameover_anim06.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_gameover_anim07": {
+    "file": "sprites/d_gameover_anim07.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_gameover_anim08": {
+    "file": "sprites/d_gameover_anim08.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_gameover_anim09": {
+    "file": "sprites/d_gameover_anim09.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_gameover_anim10": {
+    "file": "sprites/d_gameover_anim10.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_gameover_anim11": {
+    "file": "sprites/d_gameover_anim11.png",
+    "layout": "full",
+    "size": [
+      256,
+      64
+    ]
+  },
   "d_finni_presents_anim00": {
     "file": "sprites/d_finni_presents_anim00.png",
     "layout": "header",
