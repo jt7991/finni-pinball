@@ -5,16 +5,17 @@ complete original basic geometry instead of the joined GLB: 682 meshes include
 558 main-view parts and 124 reflection-only wall bottoms. Six source flipper
 parts and 25 classic inserts retain their separate native paths. The original
 open wire ramp geometry, main arcade UI and lossless source artwork are retained.
-Original classic-light rendering, the shared transmission/bloom
-temporary buffer, final whole-frame comparison and seven older physics
-comparisons are unfinished. The full suite passes 158/165 tests.
+The shared transmission/bloom temporary buffer, final whole-frame comparison
+and seven older physics comparisons are unfinished. The full suite passes
+159/166 tests.
 
 The actual scene now runs source planar reflections with D16 depth, native
 transmission, target/gate/spinner/trigger/bumper vertex updates and all 57
 source-generated plunger mesh frames. `native-opaque-cache.js` caches color and
 depth together and invalidates on camera, viewport, vertex, transform or
-visibility changes. Eight browser scenarios, including three real game balls,
-match uncached rendering across 28,679,040 HDR RGB samples, with no differences
+visibility changes. Twelve browser scenarios, including three real game balls
+and all 25 classic inserts lit in four cameras, match uncached rendering across
+43,018,560 HDR RGB samples, with no differences
 or GL errors. This is a cache equivalence test, not a whole-frame VPX comparison.
 
 Trigger and bumper animation matches 89 updates of the original compiled
@@ -58,8 +59,26 @@ The live transparent queue matches the complete 234-draw native sequence:
 parts. Source depth and authored submission order drive sorting; captured draw
 indices are test evidence only. Walls with an alpha top retain native dynamic
 classification even when their side draw disables GL blending. Twenty-five
-classic inserts belong to the native opaque pass despite additive GL blending;
-their complete pass integration remains unfinished.
+classic inserts now run in the native opaque pass despite additive GL blending.
+
+Their original compiled shader and 25 native lightmap meshes replace the
+approximate batched shader. All 2,000 matrix and 1,075 static material fields
+match native packets. One hundred controlled on/fade/color/hidden cases match
+504,300 HDR RGB samples; the combined 780x1532 component image matches 3,584,880.
+The pinned reference engine uploads invalid dynamic classic-light vectors,
+confirmed again by a fresh capture. The fixture retains those rejected fields;
+runtime state follows source Light properties and animation. Controlled valid
+inputs are shared only in the component comparison. Actual native dynamic
+insert-packet parity remains unproven.
+
+`native-samplers.js` uses GL sampler objects for per-draw filtering and wrapping,
+allowing one uploaded image per source texture. All 25 table images are present
+as 25 distinct live GPU textures. The old 27 parameter-specific copies consumed
+74,547,200 additional base-level bytes. Primitive, world, mechanism, reflected
+and playfield component references retain independent textures with the original
+sampler parameters; expected samples and zero-difference gates are unchanged.
+Older isolated mechanism assets gain authored source order for alpha ties;
+the reflected reference composite follows its independently captured draw order.
 
 The restored bulb emission hulls use the original compiled LightShader and
 geometry in both main and reflected views. All 986 uniform fields and 171,462

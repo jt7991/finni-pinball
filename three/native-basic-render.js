@@ -7,6 +7,7 @@ import {nativeShaderArray} from './native-shader-state.js';
 import {decodeNativeGeometry} from './native-geometry-codec.js';
 import {nativeMirrorNormalFactor} from './native-reflection.js';
 import {nativeTransparentOrder} from './native-render-order.js';
+import {nativeSamplersFor} from './native-samplers.js';
 
 const filters={9728:THREE.NearestFilter,9729:THREE.LinearFilter,9984:THREE.NearestMipmapNearestFilter,9985:THREE.LinearMipmapNearestFilter,9986:THREE.NearestMipmapLinearFilter,9987:THREE.LinearMipmapLinearFilter},wraps={10497:THREE.RepeatWrapping,33071:THREE.ClampToEdgeWrapping,33648:THREE.MirroredRepeatWrapping};
 const stripVersion=source=>source.replace(/^#version[^\n]*\n/,''),noAngles=[];
@@ -35,9 +36,9 @@ export function createNativePrimitiveVisuals(renderer,scene,assets,lighting,{sta
  if(assets.metadata.parts.some(p=>p.uniforms.doNormalMapping||p.uniforms.doRefractions))throw Error('Native normal maps and refraction probes need their rendering passes');
  if(assets.metadata.parts.some(p=>(p.probe||(p.uniforms.mirrorNormal_factor?.[3]??0)>0)&&(!reflectionTexture||!p.probe)))throw Error('Native reflections need an authored probe and its rendered texture');
  if(assets.metadata.parts.some(p=>(p.uniforms.lightCenter_doShadow?.[3]??0)>0))throw Error('Native ball shadows need current ball inputs');
- const stream=new NativeMatrixStream(renderer),parts=[],textures=new Map(),dummy=new THREE.DataTexture(new Uint8Array(4),1,1,THREE.RGBAFormat);dummy.needsUpdate=true;const root=new THREE.Group();root.name='NativePrimitives';scene.add(root);
+ const stream=new NativeMatrixStream(renderer),samplers=nativeSamplersFor(renderer),parts=[],textures=new Map(),dummy=new THREE.DataTexture(new Uint8Array(4),1,1,THREE.RGBAFormat);dummy.needsUpdate=true;const root=new THREE.Group();root.name='NativePrimitives';scene.add(root);
  const dynamicWalls=new Set(assets.metadata.parts.filter(p=>p.spec.kind==='Wall'&&p.renderState.blend).map(p=>p.spec.name));
- const baseTexture=record=>{const key=JSON.stringify(record);if(!textures.has(key))textures.set(key,createNativeBaseTexture(assets,record.id,record.sampler));return textures.get(key);};
+ const baseTexture=record=>{const key=String(record.id);if(!textures.has(key))textures.set(key,createNativeBaseTexture(assets,record.id,{10240:9729,10241:assets.metadata.textures[key].generatedMipmaps?9987:9729,10242:33071,10243:33071,34046:1}));return textures.get(key);};
  for(const spec of assets.metadata.parts){const program=assets.programs[spec.program],uniforms={};for(const [name,value]of Object.entries(spec.uniforms)){const key=name.replace(/\[0\]$/,'');uniforms[key]={value:Array.isArray(value)?new Float32Array(value):value};}
   uniforms.w_h_height={value:new Float32Array(4)};
   uniforms.matProj={value:new Float32Array(16)};
@@ -48,9 +49,9 @@ export function createNativePrimitiveVisuals(renderer,scene,assets,lighting,{sta
   // explicitly if a newly exported part needs another rendering technique.
   if(state.frontFace!==2305||state.depthFunc!==515||state.cull&&![1028,1029].includes(state.cullFace)||state.blend&&(state.blendSrcRGB!==770||state.blendSrcAlpha!==770||state.blendDstRGB!==771||state.blendDstAlpha!==771||state.blendEquationRGB!==32774||state.blendEquationAlpha!==32774))throw Error('Unsupported native basic render state: '+spec.spec.name);
   const material=new THREE.RawShaderMaterial({glslVersion:THREE.GLSL3,uniforms,vertexShader:program.vertex,fragmentShader:program.fragment,side:state.cull?(state.cullFace===1028?THREE.BackSide:THREE.FrontSide):THREE.DoubleSide,depthWrite:state.depthWrite,depthFunc:THREE.LessEqualDepth,transparent:legacyTransparent,blending:state.blend?THREE.CustomBlending:THREE.NoBlending,blendEquation:THREE.AddEquation,blendSrc:THREE.SrcAlphaFactor,blendDst:THREE.OneMinusSrcAlphaFactor});
-  const vertices=new Float32Array(assets.geometry,spec.vertexByteOffset,spec.vertices*8),interleaved=new THREE.InterleavedBuffer(vertices,8),geometry=new THREE.BufferGeometry(),position=new THREE.InterleavedBufferAttribute(interleaved,3,0);geometry.setAttribute('position',position);geometry.setAttribute('vPosition',position);geometry.setAttribute('vNormal',new THREE.InterleavedBufferAttribute(interleaved,3,3));geometry.setAttribute('tc',new THREE.InterleavedBufferAttribute(interleaved,2,6));geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(assets.geometry,spec.indexByteOffset,spec.indices),1));const mesh=new THREE.Mesh(geometry,material);mesh.name=spec.meshName??spec.name??spec.spec.name;mesh.frustumCulled=false;mesh.renderOrder=spec.drawOrder;if(spec.spec.position)mesh.position.set(spec.spec.position.x*.01,(2115-spec.spec.position.y)*.01,spec.spec.position.z*.01);root.add(mesh);const part={spec:spec.spec,record:spec,mesh,material,baseSide:material.side,matrices:new Float32Array(80),state:stateFor(spec.spec.name),cameras:new WeakMap()};material.onBeforeRender=()=>stream.upload(material,part.matrices);parts.push(part);
+  const vertices=new Float32Array(assets.geometry,spec.vertexByteOffset,spec.vertices*8),interleaved=new THREE.InterleavedBuffer(vertices,8),geometry=new THREE.BufferGeometry(),position=new THREE.InterleavedBufferAttribute(interleaved,3,0);geometry.setAttribute('position',position);geometry.setAttribute('vPosition',position);geometry.setAttribute('vNormal',new THREE.InterleavedBufferAttribute(interleaved,3,3));geometry.setAttribute('tc',new THREE.InterleavedBufferAttribute(interleaved,2,6));geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(assets.geometry,spec.indexByteOffset,spec.indices),1));const mesh=new THREE.Mesh(geometry,material);mesh.name=spec.meshName??spec.name??spec.spec.name;mesh.frustumCulled=false;mesh.renderOrder=spec.drawOrder;if(spec.spec.position)mesh.position.set(spec.spec.position.x*.01,(2115-spec.spec.position.y)*.01,spec.spec.position.z*.01);root.add(mesh);const part={spec:spec.spec,record:spec,mesh,material,baseSide:material.side,matrices:new Float32Array(80),state:stateFor(spec.spec.name),cameras:new WeakMap()};material.onBeforeRender=()=>stream.upload(material,part.matrices);part.releaseSamplers=samplers.register(material,Object.fromEntries(Object.entries(spec.textures).map(([name,binding])=>[name,binding.sampler])));parts.push(part);
  }
- return{root,parts,stream,async prepare(camera){
+ return{root,parts,stream,textures,baseTexture,samplers,async prepare(camera){
   // Initially hidden parts still need a compiled program before a script makes
   // them visible. Compile visible proxies without changing game visibility.
   const compilationScene=new THREE.Scene();
@@ -83,5 +84,5 @@ export function createNativePrimitiveVisuals(renderer,scene,assets,lighting,{sta
    if(part.material.uniforms.tex_reflection)part.material.uniforms.tex_reflection.value=native.reflection?dummy:reflectionTexture??dummy;
    if(record.probe)part.material.uniforms.mirrorNormal_factor.value.set(cached.mirror??[0,0,0,0]);
   }
- },dispose(){for(const part of parts){part.mesh.geometry.dispose();part.material.dispose();}for(const texture of textures.values())texture.dispose();dummy.dispose();stream.dispose();scene.remove(root);}};
+ },dispose(){for(const part of parts){part.releaseSamplers();part.mesh.geometry.dispose();part.material.dispose();}for(const texture of textures.values())texture.dispose();dummy.dispose();stream.dispose();scene.remove(root);}};
 }

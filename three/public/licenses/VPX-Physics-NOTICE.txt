@@ -113,6 +113,13 @@ directly; Rapier supplies body records and the optional integration fallback.
 Its source is included in
 the three/ directory alongside the build scripts and dependency manifest.
 
+native-classic-state.js and native-classic-render.js retain Light::Render,
+Shader::SetMaterial and original classic-light geometry/compiled shader.
+native-samplers.js separates source per-draw sampler state from image storage:
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/renderer/Sampler.cpp
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/renderer/Shader.cpp
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/shaders/hlsl_glsl/ClassicLightShader.glfx
+
 native-flasher-mesh.js, native-flasher-state.js and native-flasher-render.js
 adapt source Flasher geometry, property conversions, uniforms and blending.
 native-render-order.js retains legacy transparent depth/submission ordering.

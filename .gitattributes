@@ -13,3 +13,4 @@ three/public/native-transmission/*.glsl -text -whitespace
 three/public/native-ball/*.glsl -text -whitespace
 three/public/native-flashers/*.glsl -text -whitespace
 three/public/native-halos/*.glsl -text -whitespace
+three/public/native-classic/*.glsl -text -whitespace
