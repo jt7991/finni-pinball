@@ -3,8 +3,9 @@ import {STEP} from './game-constants.js';
 import {describeGame,snapshotGame} from './game-snapshot.js';
 
 // The same host runs in browser Workers and the Node protocol regression tests.
-export function createSimulationHost(send,{allowDebug=false,now=()=>performance.now()}={}){
+export function createSimulationHost(send,{allowDebug=false,now=()=>performance.now(),wallNow=()=>Date.now()}={}){
   let game,paused=true,disposed=false,fatal=false,timer,queued=false,anchorWall=0,anchorTick=0,tick=0,lastPublish=0;
+  const epochMilliseconds=wallNow();let lastPhysicsMilliseconds=epochMilliseconds;
   const names=new Set(),queries=new Set(['bChooseBattle']),effects=[],objectStates=new Map();
   const stats={ticks:0,physicsMs:0,maxChunkMs:0,lagMs:0,snapshotMs:0,snapshots:0,snapshotObjectFields:0};
   const channel=new MessageChannel();
@@ -13,7 +14,7 @@ export function createSimulationHost(send,{allowDebug=false,now=()=>performance.
     const start=now(),snapshot=snapshotGame(game,names,queries,objectStates);
     stats.snapshotMs+=now()-start;
     stats.snapshots++;stats.snapshotObjectFields+=snapshot.objects.reduce((count,[,state])=>count+Object.keys(state).length,0);
-    send({type:'snapshot',snapshot,effects:effects.splice(0),stats:{...stats},paused});lastPublish=now();
+    send({type:'snapshot',snapshot,effects:effects.splice(0),stats:{...stats},paused,presentationClock:{epochMilliseconds,lastPhysicsMilliseconds}});lastPublish=now();
   }
   function fail(error){
     fatal=true;paused=true;clearTimeout(timer);send({type:'fatal',message:error.message,stack:error.stack});
@@ -24,7 +25,7 @@ export function createSimulationHost(send,{allowDebug=false,now=()=>performance.
     try{
       const start=now(),due=anchorTick+Math.floor((start-anchorWall)/(STEP*1000));
       for(let count=0;tick<due&&count<4;count++){
-        const before=now();game.step();stats.physicsMs+=now()-before;tick++;stats.ticks++;
+        const before=now();lastPhysicsMilliseconds=wallNow();game.step();stats.physicsMs+=now()-before;tick++;stats.ticks++;
         if(now()-start>=4)break;
       }
       stats.maxChunkMs=Math.max(stats.maxChunkMs,now()-start);
@@ -58,7 +59,7 @@ export function createSimulationHost(send,{allowDebug=false,now=()=>performance.
     if(command.action==='advance'){
       if(!paused)throw Error('Pause before advancing the simulation');
       if(!Number.isSafeInteger(command.ticks)||command.ticks<0||command.ticks>100000)throw Error('Invalid tick count');
-      for(let i=0;i<command.ticks;i++){game.step();tick++;stats.ticks++;}return;
+      for(let i=0;i<command.ticks;i++){lastPhysicsMilliseconds=wallNow();game.step();tick++;stats.ticks++;}return;
     }
     if(command.action==='value')return game.rules.value(command.expression);
     if(command.action==='run')return game.rules.run(command.name,...(command.args??[]));

@@ -12,6 +12,13 @@ shaders and original ball mesh in public/native-ball/ derive from:
 https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/parts/ball.cpp
 https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/shaders/hlsl_glsl/BallShader.glfx
 https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/meshes/ballMesh.h
+ball-presentation.js retains Ball::Render's submission callback,
+RenderDevice::GetPredictedDisplayDelay and the pinned WebGL/SDL timing profile:
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/renderer/Renderer.cpp
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/renderer/Window.cpp
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/renderer/RenderDevice.cpp
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/physics/physicsengine.cpp
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/core/player.h
 native-camera.js, native-camera-bounds.js, native-matrix.js, primitive-transform.js
 and native-shader-state.js adapt the same
 revision's ViewSetup::ComputeMVP/FitCameraToVertices, Matrix3D, and the

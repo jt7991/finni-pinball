@@ -6,6 +6,7 @@ import {createFullGame} from '../full-game.js';
 import {connectSimulation} from '../game-runtime.js';
 import {snapshotGame} from '../game-snapshot.js';
 import {nativeRandom} from '../native-random.js';
+import {createSimulationHost} from '../simulation-host.js';
 
 const assets=()=>({layout:JSON.parse(fs.readFileSync(new URL('../public/layout.json',import.meta.url))),specs:JSON.parse(fs.readFileSync(new URL('../public/objects.json',import.meta.url))),source:fs.readFileSync(new URL('../public/rules.vbs',import.meta.url),'utf8')});
 function workerAdapter(){
@@ -17,6 +18,10 @@ function workerAdapter(){
 function inspect(game){return {time:game.time,random:game.random.getState(),scriptRandom:game.rules.scriptRandom.getState(),bodies:game.physicalRecords.map(rec=>{
   const native=game.nativeBall(rec.body);native.syncAngular();return {held:rec.held,position:{...native.sync()},velocity:{...rec.body.linvel()},momentum:{...native.angularMomentum},orientation:Array.from(native.orientation.matrix)};
 })};}
+
+test('presentation timestamps record actual physical-step wall time and remain unchanged by snapshot publication',async()=>{
+ let wall=5000;const messages=[],host=createSimulationHost(message=>messages.push(message),{allowDebug:true,now:()=>0,wallNow:()=>wall});try{await host.receive({type:'init',assets:assets()});assert.deepEqual(messages.filter(m=>m.type==='snapshot').at(-1).presentationClock,{epochMilliseconds:5000,lastPhysicsMilliseconds:5000});wall=5007;await host.receive({type:'debug',action:'advance',ticks:1,id:1});let message=messages.filter(m=>m.type==='snapshot').at(-1);assert.deepEqual(message.presentationClock,{epochMilliseconds:5000,lastPhysicsMilliseconds:5007});assert.equal(message.snapshot.time,.001);wall=7000;await host.receive({type:'barrier',id:2});message=messages.filter(m=>m.type==='snapshot').at(-1);assert.deepEqual(message.presentationClock,{epochMilliseconds:5000,lastPhysicsMilliseconds:5007});assert.equal(message.paused,true);}finally{await host.receive({type:'dispose',id:3});}
+});
 
 test('real worker preserves every body, native RNG, authored rules, DMD, audio and control order',async()=>{
   const fixture=assets(),events=[],directEvents=[],sounds=[],directSounds=[];
@@ -37,7 +42,8 @@ test('real worker preserves every body, native RNG, authored rules, DMD, audio a
     for(const name of digits)remote.rules.objects.get(name);await remote.flush();
     const compare=async()=>{
       assert.deepEqual(await remote.debug({action:'inspect'}),inspect(local));
-      assert.deepEqual(remote.renderBalls,local.physicalRecords.map(rec=>{const native=local.nativeBall(rec.body);return{id:rec.body.handle,position:{...native.sync()},orientation:native.orientation.matrix.slice(),radius:25,locked:!!rec.held&&rec.held!=='lane',...rec.render};}),'all source ball positions, original orientation bits and visual properties cross the worker');
+      assert.deepEqual(remote.renderBalls,local.physicalRecords.map(rec=>{const native=local.nativeBall(rec.body),v=rec.body.linvel(),f=Math.fround;return{id:rec.body.handle,position:{...native.sync()},velocity:{x:f(v.x),y:f(-v.y),z:f(v.z)},orientation:native.orientation.matrix.slice(),radius:25,locked:!!rec.held&&rec.held!=='lane',...rec.render};}),'all source ball positions, velocities, original orientation bits and visual properties cross the worker');
+      assert.ok(Number.isInteger(remote.presentationClock.epochMilliseconds));assert.ok(remote.presentationClock.lastPhysicsMilliseconds>=remote.presentationClock.epochMilliseconds);
       assert.equal(remote.plungerPosition,local.plunger.pos,'native plunger position crosses the worker boundary');
       assert.deepEqual(remote.cabinetOffset,local.cabinetNudge.nativeOffset,'native metre displacement crosses the worker boundary');
       for(const [name,motion]of local.visualMotions)assert.deepEqual(remote.visualMotions.get(name),motion.snapshot(),name+' visual frame state');

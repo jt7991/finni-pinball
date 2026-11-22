@@ -5,9 +5,9 @@ complete original basic geometry instead of the joined GLB: 682 meshes include
 558 main-view parts and 124 reflection-only wall bottoms. Six source flipper
 parts and 25 classic inserts retain their separate native paths. The original
 open wire ramp geometry, main arcade UI and lossless source artwork are retained.
-The shared transmission/bloom temporary buffer, final whole-frame comparison
-and seven older physics comparisons are unfinished. The full suite passes
-171/178 tests.
+The shared transmission/bloom temporary buffer follows the source reuse path.
+The final whole-frame comparison and seven older physics comparisons remain
+unfinished. The full suite passes 175/182 tests.
 
 The actual scene now runs source planar reflections with D16 depth, native
 transmission, target/gate/spinner/trigger/bumper vertex updates and all 57
@@ -40,9 +40,9 @@ bobble balls under the apron. A six-ball browser check reads actual GL uniforms
 and verifies each ball's orientation/color, source visibility and reflection
 eligibility. Ball parts share one compiled material and stream their state per
 draw; new balls do not need fresh shader compilation. The previous HDR frame
-copies without changing any half-float bits. Presentation-time extrapolation,
-anti-stretch settings, trails and source dynamic light shadows still need
-separate native comparisons. Whole-frame VPX equivalence remains unverified.
+copies without changing any half-float bits. Submission-time ball calculation
+is now checked separately below. Hardware presentation timing, anti-stretch,
+trails and whole-frame VPX equivalence remain unverified.
 
 All 63 source flashers now run in the scene. Their independent ownership capture
 reveals hidden variants and restores every original visibility flag.
@@ -89,7 +89,8 @@ native packets match 4,081 uniform fields and 670,719 HDR RGB samples. Captured
 attract-mode colors and ball positions are explicit shared component inputs;
 they are excluded from runtime assets. A live six-ball check reads all seven
 shadow draws and verifies exact creation-order positions and hidden-ball
-omission. Presentation-time extrapolation still needs a separate comparison.
+omission. Ball submission timing is checked separately below; synchronized
+shadow/body submission timing remains unverified.
 Cached and uncached rendering continues to match across all eight scenarios.
 
 The ownership audit covers 650 authored renderable objects. All 589 BasicShader
@@ -362,3 +363,38 @@ normalizes zero signs only; the independent initial GPU digests do not.
 GenerateMesh and UpdateTarget(offset0) have distinct rounding orders, exposed
 by Target014 and preserved separately. Live native target meshes update through
 this path, including revision tracking for an initial zero-offset update.
+
+Ball submission timing now has independent native evidence in
+`vpx-ball-presentation-native.json.gz`. The capture wrapper calls the original
+pinned function2531 (table index6514) unchanged and observes actual SDL clock
+imports, physical position/velocity, scheduled rotation/scale, last-step time
+and the resulting ShaderState matrix. It performs no body, clock or RNG writes.
+The three captures cover moving balls, a locked kicker ball and a defocused
+window: 192 callbacks / 3,072 matrix fields match bit for bit. All 189 GPU
+uploads retained within the complete callback observation window independently
+match an observed native callback result (3,024 fields).
+
+`ball-presentation.js` follows the source Float32 arithmetic, including
+velocity units, locked-ball height and GLES matrix clamping. The pinned SDL
+backend falls back to integer Date milliseconds and a 1 MHz counter. Source
+Window/RenderDevice defaults supply adaptive sync, 60 Hz and a zero initial
+present reference. The worker records actual wall time at the start of each
+physical step; publishing a snapshot does not advance that timestamp. The
+renderer reads its own current wall clock twice as the native callback does.
+Pausing/defocusing disables the correction. No recorded phase, lag, body state
+or orientation is shipped as runtime data.
+
+Reproduce with `scripts/check-three.py http://127.0.0.1:50826/
+--native-ball-presentation`, adding `--locked` or `--defocused` for the other
+captures; then run `node scripts/prepare-native-ball-presentation.mjs`.
+`node --test three/tests/ball-presentation.test.js` checks the native fixture.
+`scripts/check-three.py http://127.0.0.1:5173/three/ --ball-presentation`
+checks actual six-ball GPU uploads, active/paused behavior, worker timestamps
+and unchanged physical body state.
+
+Scope remains limited: the live renderer corrects the latest received snapshot.
+Native VPX can run physics after capturing rotation and before submitting the
+later position. That full scheduling/body-read sequence remains unfinished.
+The fixed source fallback profile does not establish hardware/VR presentation
+parity. Older physics failures, dynamic native insert packets and synchronized
+whole-frame equivalence remain open.

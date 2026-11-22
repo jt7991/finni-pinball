@@ -124,8 +124,8 @@ async function drawFrame(now){
   // VPX updates target motion and its rule events in PrepareFrame. Wait for
   // that ordered worker snapshot before drawing the corresponding frame.
   await game.prepareFrame();
-  // Render the most recently completed native tick. The worker never skips
-  // physics ticks to satisfy a display frame, or predicts through collisions.
+  // Keep physical stepping complete. Ball submission applies the source
+  // render-only velocity correction; it never changes collision state.
   view.render(1);display?.draw();
   if(game.gameState)leaderboard?.state(game.gameState);
   $('score').textContent=game.score.toLocaleString();$('ball-number').textContent=game.ballNumber||'—';

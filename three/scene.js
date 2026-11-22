@@ -17,6 +17,7 @@ import {createNativeBulbEmission} from './native-bulb-emission.js';
 import {loadNativeHalos,createNativeHalos} from './native-halo-render.js';
 import {loadNativeClassic,createNativeClassic} from './native-classic-render.js';
 import {loadNativePostprocess} from './native-postprocess.js';
+import {createBallPresentationClock} from './ball-presentation.js';
 
 export async function createView(canvas,game){
  const renderer=new THREE.WebGLRenderer({canvas,antialias:false,alpha:false,powerPreference:'high-performance'});renderer.setClearColor(0,0);renderer.outputColorSpace=THREE.SRGBColorSpace;
@@ -38,7 +39,8 @@ export async function createView(canvas,game){
  const nativeMechanisms=createNativeMechanismAnimation(game,nativeTable,animationAssets),nativeCache=createNativeOpaqueCache(renderer,nativeTable);
  const actorNames=new Set(['discoball','LilHead','LilLeftArm','LilRightArm','Primitive077']),nativeActors={parts:nativeTable.parts.filter(p=>actorNames.has(p.spec.name)),root:nativeTable.root};
  const flipperVisuals=createFlipperVisuals(game,scene,lighting,flipperAssets),classicLights=createNativeClassic(renderer,scene,classicAssets,lighting,nativeTable,name=>game.rules.objects.get(name.toLowerCase())),bulbHalos=createNativeHalos(scene,haloAssets,name=>game.rules.objects.get(name.toLowerCase())),lightFrame=createLightFrame(renderer,postprocessAssets,nativeTransmission.targets);
- const nativeBalls=createNativeBallVisuals(renderer,scene,ballAssets,lighting,{previousFrame:lightFrame.previous.texture,stateFor:name=>game.rules.objects.get(name.toLowerCase())});
+ const ballClock=createBallPresentationClock(()=>({paused:game.simulationPaused!==false,clock:game.presentationClock}));
+ const nativeBalls=createNativeBallVisuals(renderer,scene,ballAssets,lighting,{previousFrame:lightFrame.previous.texture,submissionClock:ballClock,stateFor:name=>game.rules.objects.get(name.toLowerCase())});
  const nativeFlashers=createNativeFlasherVisuals(renderer,scene,flasherAssets,{stateFor:name=>game.rules.objects.get(name.toLowerCase())});
  const nativeBulbEmission=createNativeBulbEmission(scene,nativeTable,transmissionAssets.programs.bulb,name=>game.rules.objects.get(name.toLowerCase()));
  const ballStates=()=>((game.renderBalls??[]).map(ball=>{const c=ball.color>>>0,f=Math.fround;return{...ball,color:[f((c&255)*f(1/255)),f((c&65280)*f(1/65280)),f((c&16711680)*f(1/16711680)),1],reflectionEnabled:ball.reflectionenabled,forceReflection:ball.forcereflection,bulbScale:ball.bulbintensityscale,reflectionStrength:ball.playfieldreflectionscale};}));

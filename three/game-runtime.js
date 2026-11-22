@@ -63,7 +63,7 @@ export function connectSimulation(worker,init,emit=()=>{},media){
         game.targetMotions=new Map(targetMotions);
         game.visualMotions=new Map(visualMotions);
       }else if(data.type==='snapshot'){
-        apply(data.snapshot);game.runtimeStats=data.stats;game.simulationPaused=data.paused;
+        apply(data.snapshot);game.runtimeStats=data.stats;game.simulationPaused=data.paused;game.presentationClock=data.presentationClock;
         // Publish the resulting score and state before delivering lifecycle events.
         for(const effect of data.effects){
           if(effect.type==='event')emit(effect.event);
