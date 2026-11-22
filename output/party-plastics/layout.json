@@ -1,0 +1,13 @@
+{
+  "table_size": [
+    952,
+    2115
+  ],
+  "instruction_card": {
+    "x": 60,
+    "y": 1955,
+    "width": 310,
+    "height": 120
+  },
+  "description": "Quick-start card on the lower-left apron; full rules use the native VPX rulescard image."
+}

@@ -1,6 +1,6 @@
 # fin-ball
 
-Finni's Big Day is a party-themed visual reskin of JP Salas's Deadpool VPX table. The approved direction is the bright comic **party preparation** playfield, revision 13: Finni and friends wrap presents, send invitations, pump balloons, hang decorations, bake cookies and prepare for Party Time. It uses registered insert windows, detailed illustrated task objects, navy plastics, a bright pink cake, saturated pink/blue/yellow balloon bumpers, and the existing stainless four-wire ramp and fox sculpture. The four bonus items are Kitchen Timer, Party Lights, The Checklist and Party Favors. General lighting includes neutral ambient fill so the navy playfield remains readable.
+Finni's Big Day is a party-themed visual reskin of JP Salas's Deadpool VPX table. The approved direction is the bright comic **party preparation** playfield, revision 13: Finni and friends wrap presents, send invitations, pump balloons, hang decorations, bake cookies and prepare for Party Time. It uses registered insert windows, detailed illustrated task objects, illustrated navy party plastics, a bright pink cake, saturated pink/blue/yellow balloon bumpers, and the existing stainless four-wire ramp and fox sculpture. The four bonus items are Kitchen Timer, Party Lights, The Checklist and Party Favors. General lighting includes neutral ambient fill so the navy playfield remains readable.
 
 The design choices, preserved gameplay and remaining work are recorded in [design/decisions.md](design/decisions.md). [design/current-assets.json](design/current-assets.json) selects the current playfield and its hardware/lighting appearance, revision 13.
 
@@ -14,7 +14,7 @@ The design choices, preserved gameplay and remaining work are recorded in [desig
 - [Model/layout source](output/vpx-v1/finni-table-layout-source.blend): the saved checkpoint containing the accepted short-muzzle, flat-nose fox and source table layout. The hardware builder applies the current replacements to this checkpoint.
 - [Fox atlas](output/vpx-v1/finni-fox-atlas.png): shared texture for the four separately animated fox parts.
 
-Revision 13 includes the clean illustrated background, detailed object atlases and registered object layer. Older style studies are superseded. The hardware builder installs the selected navy/pink/vibrant appearance and ambient lighting through `scripts/apply-comic-appearance.py`.
+Revision 13 includes the clean illustrated background, detailed object atlases and registered object layer. The raised plastics and apron use registered bunting, ribbons, gifts, balloons and confetti from `output/party-plastics/`. A concise quick-start card fills the lower-left apron holder; its bounds are recorded in `output/party-plastics/layout.json`. A full Finni rules image replaces Deadpool’s native `rulescard`, retaining VPX’s `![Rules](rulescard)` table-rules reference. Both cards are generated from `design/instruction-card.json`. `scripts/build-party-plastics.py --source <extracted-table>` rebuilds the editable SVGs and textures, and the comic appearance installer applies them during regular builds. Older style studies are superseded. The hardware builder installs the selected navy/pink/vibrant appearance and ambient lighting through `scripts/apply-comic-appearance.py`.
 
 ## Local build
 
