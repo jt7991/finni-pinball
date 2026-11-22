@@ -19,7 +19,7 @@ const liveProperties={Gate:new Set(['currentangle','collidable','open','hitthres
 export function createRules(source,specs,host={}) {
   const engine=new VbsEngine({hostIntegration:false,maxExecutionTime:2000});
   const scriptRandom=createScriptRandom();registerScriptRandom(engine,scriptRandom);registerNativeTimer(engine);
-  const objects=new Map(),timers=new Map(),delays=[],flashes=new Map(),sequences=new Map(),lamps=new Map(),generatedEvents=new Map();
+  const objects=new Map(),timers=new Map(),delays=[],flashes=new Map(),sequences=new Map(),lamps=new Map(),generatedEvents=new Map(),snapshotObjects=new WeakMap();
   const sequenceRandom=host.random??runtimeNativeRandom();
   const methods=new Set([...source.matchAll(/^\s*(?:Sub|Function)[ \t]+(\w+)/gmi)].map(m=>m[1].toLowerCase()));
   const functions=new Set([...source.matchAll(/^\s*Function[ \t]+(\w+)/gmi)].map(m=>m[1].toLowerCase()));
@@ -75,6 +75,7 @@ export function createRules(source,specs,host={}) {
       option:(_name,_min,_max,_step,def)=>def,
       getballs:()=>host.balls?.()??[],
     };
+    const snapshotInfo={revision:0,lamp:!!lamp,live:liveProperties[spec.kind],keys:new WeakMap()};
     const proxy=new Proxy(state,{
       get(target,key){if(typeof key==='symbol')return target[key];const k=key.toLowerCase();if(lamp){const value=lamp.get(k);if(value!==undefined)return value;}if(spec.kind==='Plunger'&&k==='position')return host.plungerPosition?.()??0;if(liveProperties[spec.kind]?.has(k)){const value=host.mechanismValue?.(name,k);if(value!==undefined)return value;}return k in actions?actions[k]:target[k]??0;},
       set(target,key,v){const k=String(key).toLowerCase();if(lamp?.set(k,v))return true;const previous=target[k];target[k]=lamp&&['color','colorfull'].includes(k)?nativeColor(v):v;
@@ -99,12 +100,13 @@ export function createRules(source,specs,host={}) {
         if(spec.kind==='Bumper'&&['threshold','force','scatter','hashitevent','enableskirtanimation','ringspeed','ringdropoffset'].includes(k))host.mechanism?.(name,k,v);
         if(spec.kind==='Wall'&&['disabled','slingshotthreshold'].includes(k))host.mechanism?.(name,k,v);
         if(spec.kind==='HitTarget'&&['hashitevent','visible'].includes(k))host.mechanism?.(name,k,v);
+        if(!Object.is(previous,target[k]))snapshotInfo.revision++;
         return true;},
       has(target,key){return typeof key==='string'&&(key.toLowerCase() in target||key.toLowerCase() in actions);},
       ownKeys(target){return [...new Set([...Reflect.ownKeys(target),...Object.keys(actions)])];},
       getOwnPropertyDescriptor(target,key){return {enumerable:true,configurable:true,writable:true,value:proxy[key]};},
     });
-    if(lamp)lamps.set(lower,lamp);
+    snapshotObjects.set(proxy,snapshotInfo);if(lamp)lamps.set(lower,lamp);
     objects.set(lower,proxy);engine.addObject(name,proxy);return proxy;
   }
   for(const spec of specs.objects)object(spec);
@@ -204,6 +206,13 @@ export function createRules(source,specs,host={}) {
     }
   }
   return {engine,objects,run,execute,value,tick,hit,schedule,scriptRandom,sequences,lamps,
+    snapshotRevision(object,keys){
+      const info=snapshotObjects.get(object);if(!info||info.lamp)return;
+      let live=info.keys.get(keys);if(live===undefined){live=keys.some(key=>info.live?.has(key));info.keys.set(keys,live);}
+      // Native mechanism getters and animated lamps can change without an
+      // object setter. They must still be read on every publication.
+      return live?undefined:info.revision;
+    },
     init(){run('Table1_Init');execute('bFreePlay=True:BallsPerGame=3:SongVolume=0.2');},
     key(action,down){run(down?'Table1_KeyDown':'Table1_KeyUp',KEY[action]);},
     get time(){return time;},get timers(){return timers;},get delays(){return delays;},

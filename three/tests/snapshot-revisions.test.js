@@ -1,0 +1,13 @@
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import {createFullGame} from '../full-game.js';import {snapshotGame} from '../game-snapshot.js';
+const json=name=>JSON.parse(fs.readFileSync(new URL('../public/'+name+'.json',import.meta.url)));
+test('worker property revision reuse preserves complete snapshots and independently changing native getters',async()=>{
+ const game=await createFullGame(json('layout'),json('objects'),fs.readFileSync(new URL('../public/rules.vbs',import.meta.url),'utf8'),()=>{},undefined,{frameAnimations:true}),names=new Set(game.rules.objects.keys()),queries=new Set(['bChooseBattle']),previous=new Map(),expectedPrevious=new Map(),revision=game.rules.snapshotRevision;
+ const compare=()=>{const actual=structuredClone(snapshotGame(game,names,queries,previous));game.rules.snapshotRevision=undefined;let expected;try{expected=structuredClone(snapshotGame(game,names,queries,expectedPrevious));}finally{game.rules.snapshotRevision=revision;}assert.deepEqual(actual,expected);return actual;};
+ try{compare();assert.equal(compare().objects.length,0);game.start();for(let i=0;i<2100;i++)game.step();game.prepareFrame();compare();
+  game.rules.execute('Primitive077.RotX=17:Primitive077.Visible=False:digit001.ImageA="d_7":LightShootAgain.IntensityScale=0.37');let snapshot=compare();assert.ok(snapshot.objects.some(([name,state])=>name==='primitive077'&&state.rotx===17&&state.visible===false));assert.ok(snapshot.objects.some(([name,state])=>name==='digit001'&&state.imagea==='d_7'));
+  for(let i=0;i<17;i++)game.step();game.prepareFrame();compare();Object.assign(game.visualMotions.get('bumper1'),{rotx:5,roty:-3});game.targetMotions.get('target010').setDropped(true);snapshot=compare();assert.ok(snapshot.objects.some(([name,state])=>name==='bumper1'&&state.rotx===5&&state.roty===-3));assert.ok(snapshot.objects.some(([name,state])=>name==='target010'&&state.isdropped===1));
+  const other=new Map();assert.deepEqual(snapshotGame(game,names,queries,other).objects,snapshotGame(game,names,queries).objects);compare();
+  previous.delete('primitive077');expectedPrevious.delete('primitive077');assert.ok(compare().objects.some(([name,state])=>name==='primitive077'&&Object.hasOwn(state,'visible')),'cleared consumer state receives a full object again');
+  previous.set('primitive077',{});expectedPrevious.set('primitive077',{});assert.ok(compare().objects.some(([name,state])=>name==='primitive077'&&Object.hasOwn(state,'visible')),'replaced consumer state receives a full object again');
+ }finally{game.rules.snapshotRevision=revision;game.dispose();}
+});

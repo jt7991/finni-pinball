@@ -4,6 +4,9 @@ const fields=['state','visible','sidevisible','basevisible','capvisible','ringvi
 const flasherFields=[...fields,'imageb','opacity','amount','filter','addblend','modulatevsadd','height'];
 const fieldsFor=(game,name)=>game.nativeParts.get(name)?.kind==='Flasher'?flasherFields:fields;
 const roots=['time','state','score','player','ballNumber','charge','inLane','tilted','gameState','held','physicsStats'];
+// Cache only object-property reads, separately for each delta consumer. Live
+// getters remain uncached; physical steps and publication cadence are unchanged.
+const objectRevisions=new WeakMap();
 // A prepared native draw holds its Ball reference even if physics removes it
 // before submission. Never query a deleted Rapier body for that final state.
 export function snapshotSubmissionBall(game,record){
@@ -37,6 +40,7 @@ export function describeGame(game){
   };
 }
 export function snapshotGame(game,names,queries,previousObjects){
+  let revisions;if(previousObjects){revisions=objectRevisions.get(previousObjects);if(!revisions){revisions=new Map();objectRevisions.set(previousObjects,revisions);}}
   const snapshot=Object.fromEntries(roots.map(key=>[key,game[key]]));
   const bodyState=body=>({id:body.handle,p:{...body.translation()},rotation:game.nativeDisplacements?game.nativeBall(body).orientation.rotation():{...body.rotation()}});
   snapshot.ball=bodyState(game.ball);
@@ -48,7 +52,19 @@ export function snapshotGame(game,names,queries,previousObjects){
   snapshot.visualMotions=[...game.visualMotions].map(([name,m])=>[name,m.snapshot()]);
   snapshot.plungerPosition=game.plunger.pos;
   snapshot.cabinetOffset={...game.cabinetNudge.nativeOffset};
-  snapshot.objects=[...names].flatMap(name=>{const object=game.rules.objects.get(name);if(!object)return[];const keys=fieldsFor(game,name);if(!previousObjects)return[[name,objectState(object,keys)]];let previous=previousObjects.get(name);if(!previous){previous={};previousObjects.set(name,previous);}const changed=objectChanges(object,previous,keys);return changed?[[name,changed]]:[];});
+  snapshot.objects=[];
+  for(const name of names){
+    const object=game.rules.objects.get(name);if(!object)continue;
+    const keys=fieldsFor(game,name);
+    if(!previousObjects){snapshot.objects.push([name,objectState(object,keys)]);continue;}
+    let previous=previousObjects.get(name);
+    const revision=game.rules.snapshotRevision?.(object,keys),last=revisions.get(name);
+    if(revision!==undefined&&last?.object===object&&last.keys===keys&&last.revision===revision&&last.previous===previous)continue;
+    if(!previous){previous={};previousObjects.set(name,previous);}
+    const changed=objectChanges(object,previous,keys);
+    if(revision!==undefined)revisions.set(name,{object,keys,revision,previous});
+    if(changed)snapshot.objects.push([name,changed]);
+  }
   snapshot.values=[...queries].map(query=>[query,game.rules.value(query)]);
   return snapshot;
 }
