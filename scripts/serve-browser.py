@@ -92,6 +92,7 @@ class Handler(SimpleHTTPRequestHandler):
                   '/player-preview.png': ROOT / 'browser/player-preview.png',
                   '/dmd-atlas.png': ROOT / '.work/browser-assets/dmd-atlas.png',
                   '/dmd-atlas.json': ROOT / '.work/browser-assets/dmd-atlas.json',
+                  '/dmd-animations.json': ROOT / '.work/browser-assets/dmd-animations.json',
                   '/table.vpx': self.table_path,
                   '/chewy.ttf': ROOT / 'assets/fonts/chewy/Chewy-Regular.ttf'}
         for name in ('voice.html', 'voice.css', 'voice.js', 'voice-audio.js', 'voice-lines.json'):

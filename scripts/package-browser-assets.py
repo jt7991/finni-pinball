@@ -49,6 +49,7 @@ def package(output, copy_table=True):
         x+=w;row=max(row,h)
     atlas.crop((0,0,atlas_width,y+row)).save(output/'dmd-atlas.png',optimize=True)
     (output/'dmd-atlas.json').write_text(json.dumps(metadata),encoding='utf-8')
+    shutil.copy2(ROOT/'assets/finni/dmd/animations.json',output/'dmd-animations.json')
     if copy_table:shutil.copy2(table,output/'Finni-Big-Day.vpx')
     return output
 
