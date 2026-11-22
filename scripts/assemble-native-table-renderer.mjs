@@ -15,7 +15,7 @@ for(const [directory,file,group]of sources){const metadata=JSON.parse(fs.readFil
   // defined position/normal/index bytes, never those allocator leftovers.
   if(spec.kind==='Gate'&&(!main.length||spec.is_reflection_enabled&&!reflected.length)){const key=semantic(vertex,index),find=reflection=>capture.draws.filter(d=>(d.matrices[26]<0)===reflection&&d.matrixBits.slice(0,16).every((v,i)=>v===expectedWorld[i])&&semanticKeys[d.mesh]===key);main=find(false);reflected=find(true);}
   assert.equal(main.length,record.reflectionOnly?0:1,record.name??spec.name+' main association');assert.equal(reflected.length,record.probe||spec.is_reflection_enabled===false?0:1,(record.name??spec.name)+' reflection association');
-  if(main.length)record.drawOrder=capture.draws.indexOf(main[0]);if(reflected.length)record.reflectionDrawOrder=capture.draws.indexOf(reflected[0]);
+  if(main.length)record.drawOrder=capture.draws.indexOf(main[0]);if(reflected.length){record.reflectionDrawOrder=capture.draws.indexOf(reflected[0]);record.reflectionTransmission=reflected[0].textures.tex_base_transmission.id!==0;}
   if(group==='mechanism'){
    record.role=spec.kind==='Gate'?(record.vertices===184?'bracket':'wire'):spec.kind==='Bumper'?(record.vertices===482?'skirt':'ring'):'body';
    record.meshName=spec.kind==='Gate'?spec.name+(record.role==='bracket'?'Bracket':'Wire'):spec.kind==='Spinner'?spec.name+'Plate':spec.kind==='Bumper'?spec.name+(record.role==='skirt'?'Skirt':'Ring'):spec.name;

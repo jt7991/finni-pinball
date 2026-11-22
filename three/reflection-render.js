@@ -16,10 +16,11 @@ export function createNativeReflectionPass(renderer,probe){
     renderer.state.setMaterial=(material,frontFaceCW)=>{setMaterial(material,frontFaceCW);if(material.side!==THREE.DoubleSide)renderer.state.setCullFace(THREE.CullFaceFront);};
     try{
       renderer.autoClear=false;renderer.setClearColor(0,0);
-      // VPX clears the entire probe, then clips its draw pass to the receiver's
-      // projected bounds. Clearing only that rectangle leaves stale reflections.
-      target.scissorTest=false;renderer.setRenderTarget(target);renderer.clear(true,true,false);
-      if(area){const rectangle=nativeProbeScissor(area,target.width,target.height);target.scissor.fromArray(rectangle);target.scissorTest=true;renderer.setRenderTarget(target);if(!rectangle[2]||!rectangle[3])return;}
+      // ApplyAreaOfInterest clips the whole native pass, including its clear.
+      // Pixels outside that rectangle retain the preceding probe contents.
+      target.scissorTest=!!area;
+      if(area){const rectangle=nativeProbeScissor(area,target.width,target.height);target.scissor.fromArray(rectangle);if(!rectangle[2]||!rectangle[3])return;}
+      renderer.setRenderTarget(target);renderer.clear(true,true,false);
       draw(camera,target);
     }
     finally{

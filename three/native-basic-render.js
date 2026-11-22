@@ -82,6 +82,7 @@ export function createNativePrimitiveVisuals(renderer,scene,assets,lighting,{sta
    if(native.reflection){if(spec.is_reflection_enabled===false||record.probe)part.mesh.visible=false;part.material.side=native.reverseCullingByRenderer?part.baseSide:part.baseSide===THREE.DoubleSide?THREE.DoubleSide:part.baseSide===THREE.BackSide?THREE.FrontSide:THREE.BackSide;}
    else{part.material.side=part.baseSide;if(record.reflectionOnly)part.mesh.visible=false;}
    if(part.material.uniforms.tex_reflection)part.material.uniforms.tex_reflection.value=native.reflection?dummy:reflectionTexture??dummy;
+   if(part.material.uniforms.tex_base_transmission)part.material.uniforms.tex_base_transmission.value=native.reflection&&record.reflectionTransmission===false?dummy:transmissionTexture??dummy;
    if(record.probe)part.material.uniforms.mirrorNormal_factor.value.set(cached.mirror??[0,0,0,0]);
   }
  },dispose(){for(const part of parts){part.releaseSamplers();part.mesh.geometry.dispose();part.material.dispose();}for(const texture of textures.values())texture.dispose();dummy.dispose();stream.dispose();scene.remove(root);}};

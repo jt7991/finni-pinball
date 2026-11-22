@@ -43,7 +43,9 @@ export async function createView(canvas,game){
  const nativeTable=createNativePrimitiveVisuals(renderer,scene,tableAssets,lighting,{stateFor:name=>game.rules.objects.get(name.toLowerCase()),transmissionTexture:nativeTransmission.texture,reflectionTexture:reflectionPass.texture});nativeTable.root.name='NativeTable';
  const nativeMechanisms=createNativeMechanismAnimation(game,nativeTable,animationAssets);
  const actorNames=new Set(['discoball','LilHead','LilLeftArm','LilRightArm','Primitive077']),nativeActors={parts:nativeTable.parts.filter(p=>actorNames.has(p.spec.name)),root:nativeTable.root};
- const nativeCache=createNativeOpaqueCache(renderer,nativeTable,{liveParts:nativeActors.parts});
+ // The balloon primitive is submitted after the animated bumper skirts and
+ // can share their D16 depth. Keep that ordering when composing the cache.
+ const nativeCache=createNativeOpaqueCache(renderer,nativeTable,{liveParts:[...nativeActors.parts,...nativeTable.parts.filter(part=>part.spec.name==='FinniBalloons')]});
  const flipperVisuals=createFlipperVisuals(game,scene,lighting,flipperAssets),classicLights=createNativeClassic(renderer,scene,classicAssets,lighting,nativeTable,name=>game.rules.objects.get(name.toLowerCase())),bulbHalos=createNativeHalos(scene,haloAssets,name=>game.rules.objects.get(name.toLowerCase())),lightFrame=createLightFrame(renderer,postprocessAssets,nativeTransmission.targets);
  const ballClock=createBallPresentationClock(()=>({paused:game.presentationPaused??(game.simulationPaused!==false),clock:game.submission?.presentationClock??game.presentationClock}));
  const nativeBalls=createNativeBallVisuals(renderer,scene,ballAssets,lighting,{previousFrame:lightFrame.previous.texture,submissionClock:ballClock,submissionBodyFor:ball=>{if(!game.submission)return ball;const body=game.submission.bodies.get(ball.id);if(!body)throw Error('Prepared ball is missing from submission');return body;},stateFor:name=>game.rules.objects.get(name.toLowerCase())});
@@ -57,9 +59,10 @@ export async function createView(canvas,game){
  function render(alpha,previous){
   const balls=ballStates();nativeBalls.beginSubmission(balls);
   try{
-  nativeMechanisms.update();nativeTransmission.update(camera);nativeTransmission.render();
+  nativeMechanisms.update();nativeTransmission.update(camera);
   const hidden=[...classicLights.meshes,bulbHalos.mesh,nativeFlashers.root].map(mesh=>[mesh,mesh.visible]);for(const [mesh]of hidden)mesh.visible=false;
   try{reflectionPass.render(camera,(view,target)=>{nativeTable.update(view);flipperVisuals.update(view);nativeBalls.update(view,balls);nativeBulbEmission.update(view);nativeCache.render(scene,view,target,{enabled:cacheEnabled});},{area:nativeProbeArea(floorRecord.bounds,nativePrimitiveWorld(floorRecord.spec),camera.userData.nativeCamera)});}finally{for(const [mesh,value]of hidden)mesh.visible=value;}
+  nativeTransmission.render();
   nativeTable.update(camera);flipperVisuals.update(camera);nativeBalls.update(camera,balls);nativeFlashers.update(camera);nativeBulbEmission.update(camera);classicLights.update(camera);bulbHalos.update(camera,balls);lightFrame.render(scene,camera,target=>nativeCache.render(scene,camera,target,{enabled:cacheEnabled}),game.cabinetOffset);
   }finally{nativeBalls.endSubmission();}
  }

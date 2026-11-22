@@ -25,6 +25,7 @@ export function installNativeWholeFrameObserver(){
     const binding=gl.getActiveUniformBlockParameter(program,block,gl.UNIFORM_BLOCK_BINDING),buffer=gl.getIndexedParameter(gl.UNIFORM_BUFFER_BINDING,binding),previous=gl.getParameter(gl.UNIFORM_BUFFER_BINDING),size=gl.getActiveUniformBlockParameter(program,block,gl.UNIFORM_BLOCK_DATA_SIZE),values=new Float32Array(size/4);
     try{gl.bindBuffer(gl.UNIFORM_BUFFER,buffer);gl.getBufferSubData(gl.UNIFORM_BUFFER,gl.getIndexedParameter(gl.UNIFORM_BUFFER_START,binding),values);}finally{gl.bindBuffer(gl.UNIFORM_BUFFER,previous);}
     row.matrixKind=basic!==gl.INVALID_INDEX?'basic':'ball';row.matrices=Array.from(values);
+    if(values[26]<0)image(gl,'initialReflection',target);
     if(row.matrixKind==='basic'){
      row.transmissionActive=location(gl,program,'tex_base_transmission')!==null;
      row.transmissionTexture=samplerId(gl,program,'tex_base_transmission');
@@ -56,6 +57,15 @@ export function installNativeWholeFrameObserver(){
  };
  const p=WebGL2RenderingContext.prototype;
  const clear=p.clear;p.clear=function(mask){if(data.armed&&!data.done&&!busy)data.clears.push({target:targetId(this),mask,color:Array.from(this.getParameter(this.COLOR_CLEAR_VALUE)),depth:this.getParameter(this.DEPTH_CLEAR_VALUE),scissorEnabled:this.isEnabled(this.SCISSOR_TEST),scissor:Array.from(this.getParameter(this.SCISSOR_BOX))});return clear.call(this,mask);};
+ for(const method of ['clearBufferfv','clearBufferiv','clearBufferuiv','clearBufferfi']){
+  const original=p[method];p[method]=function(...args){
+   if(data.armed&&!data.done&&!busy){busy=true;try{
+    const target=targetId(this);data.clears.push({method,target,args:args.map(value=>ArrayBuffer.isView(value)?Array.from(value):value),scissorEnabled:this.isEnabled(this.SCISSOR_TEST),scissor:Array.from(this.getParameter(this.SCISSOR_BOX))});
+    if(args[0]===this.COLOR)image(this,'priorClear'+target,target);
+   }catch(error){data.errors.push(error.message);}finally{busy=false;}}
+   return original.apply(this,args);
+  };
+ }
  for(const method of ['drawElements','drawElementsInstanced','drawRangeElements','drawArrays','drawArraysInstanced']){
   const raw=p[method];p[method]=function(...args){const row=before(this,method,args),result=raw.apply(this,args);if(row?.finalTone){busy=true;try{data.images.final=io.readColor(this,row.target);data.done=true;data.armed=false;}catch(error){data.errors.push(error.message);}finally{busy=false;}}return result;};
  }
