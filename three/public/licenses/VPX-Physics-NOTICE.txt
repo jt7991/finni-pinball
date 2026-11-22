@@ -139,3 +139,11 @@ https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3
 See GPL-3.0.txt for the license. Preserve these notices and supply corresponding
 source when redistributing a combined build. Table artwork, audio, fonts and
 third-party libraries retain their separately documented rights and licenses.
+
+native-postprocess.js and the compiled programs in public/native-postprocess/
+retain Renderer::UpdateAmbientOcclusion, UpdateBloom and SetupTonemapping,
+native fullscreen strips, radical-inverse frame jitter, AO history, shared
+bloom/transmission buffers, dithering and the authored color-grade LUT:
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/renderer/Renderer.cpp
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/shaders/hlsl_glsl/FBShader.glfx
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/core/def.h

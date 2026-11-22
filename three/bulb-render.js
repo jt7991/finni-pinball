@@ -5,6 +5,7 @@
 import * as THREE from 'three';
 import {nativeDragCurve} from './native-curve.js';
 import {nativeTransparentOrder} from './native-render-order.js';
+import {createNativePostprocess} from './native-postprocess.js';
 
 export function createBulbHalos(game,scene){
   const specs=game.specs.objects.filter(s=>s.kind==='Light'&&s.is_bulb_light&&!s.is_backglass&&s.drag_points?.length>=3),positions=[],indices=[],lamps=[];
@@ -34,14 +35,9 @@ void main(){if(blendVisible.y==0.||lowColor.w==0.)discard;float len=length(table
   }};
 }
 
-export function createLightFrame(renderer){
-  const target=new THREE.WebGLRenderTarget(1,1,{type:THREE.HalfFloatType,depthTexture:new THREE.DepthTexture(1,1,THREE.UnsignedShortType)}),scene=new THREE.Scene(),camera=new THREE.Camera();
+export function createLightFrame(renderer,assets,sharedTargets){
+  const target=new THREE.WebGLRenderTarget(1,1,{type:THREE.HalfFloatType,depthTexture:new THREE.DepthTexture(1,1,THREE.UnsignedShortType)});
   const previous=new THREE.WebGLRenderTarget(1,1,{type:THREE.HalfFloatType,depthBuffer:false,minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter});let historyEnabled=true;
-  const material=new THREE.ShaderMaterial({uniforms:{frame:{value:target.texture},depth:{value:target.depthTexture}},depthTest:false,depthWrite:false,
-    vertexShader:'varying vec2 uvFrame;void main(){uvFrame=uv;gl_Position=vec4(position.xy,0.,1.);}',
-    fragmentShader:`uniform sampler2D frame;uniform sampler2D depth;varying vec2 uvFrame;void main(){vec3 result=texture2D(frame,uvFrame).rgb;float d=texture2D(depth,uvFrame).r;if(d!=0.&&d!=1.){float l=min(dot(result,vec3(.176204,.812985,.0108109)),1000.);result*=((l*.25+1.)/(l+1.));}gl_FragColor=vec4(clamp(result,0.,1.),1.);
-#include <colorspace_fragment>
-}`});
-  const quad=new THREE.Mesh(new THREE.PlaneGeometry(2,2),material);quad.frustumCulled=false;scene.add(quad);
-  return{target,previous,setHistoryEnabled(value){historyEnabled=!!value;},resize(){const size=renderer.getDrawingBufferSize(new THREE.Vector2());target.setSize(size.x,size.y);previous.setSize(size.x,size.y);const before=renderer.getRenderTarget(),clear=renderer.getClearColor(new THREE.Color()),alpha=renderer.getClearAlpha();try{renderer.setRenderTarget(previous);renderer.setClearColor(0,0);renderer.clear(true,false,false);}finally{renderer.setRenderTarget(before);renderer.setClearColor(clear,alpha);}},render(world,view,draw){renderer.setRenderTarget(target);if(draw)draw(target);else renderer.render(world,view);if(historyEnabled)renderer.copyTextureToTexture(target.texture,previous.texture);renderer.setRenderTarget(null);renderer.render(scene,camera);}};
+  const postprocess=createNativePostprocess(renderer,assets,target,sharedTargets);let frameIndex=0;
+  return{target,previous,postprocess,setHistoryEnabled(value){historyEnabled=!!value;},prepare:()=>postprocess.prepare(),resize(){const size=renderer.getDrawingBufferSize(new THREE.Vector2());target.setSize(size.x,size.y);previous.setSize(size.x,size.y);postprocess.resize(size.x,size.y);const before=renderer.getRenderTarget(),clear=renderer.getClearColor(new THREE.Color()),alpha=renderer.getClearAlpha();try{renderer.setRenderTarget(previous);renderer.setClearColor(0,0);renderer.clear(true,false,false);}finally{renderer.setRenderTarget(before);renderer.setClearColor(clear,alpha);}},render(world,view,draw){renderer.setRenderTarget(target);if(draw)draw(target);else renderer.render(world,view);if(historyEnabled)renderer.copyTextureToTexture(target.texture,previous.texture);postprocess.update(++frameIndex);postprocess.render();renderer.setRenderTarget(null);}};
 }

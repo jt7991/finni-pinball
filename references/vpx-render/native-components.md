@@ -7,7 +7,7 @@ parts and 25 classic inserts retain their separate native paths. The original
 open wire ramp geometry, main arcade UI and lossless source artwork are retained.
 The shared transmission/bloom temporary buffer, final whole-frame comparison
 and seven older physics comparisons are unfinished. The full suite passes
-166/173 tests.
+169/176 tests.
 
 The actual scene now runs source planar reflections with D16 depth, native
 transmission, target/gate/spinner/trigger/bumper vertex updates and all 57
@@ -130,13 +130,56 @@ backing buffer camera until ResizeObserver receives visible dimensions.
 original 19x19 Gaussian shader programs. It derives camera matrices, light
 vectors, and scissor rectangles from the authored data. It preserves the blur
 temporary buffer outside the area of interest, matching `DrawBulbLightBuffer`
-and `RenderPass::Execute`. The complete frame pipeline must share this buffer
-with bloom, as VPX does.
+and `RenderPass::Execute`. The live frame pipeline now shares these same two
+buffers with bloom, as VPX does. Bloom's full-target writes become the next
+frame's retained transmission blur history.
 
 The transmission comparison explicitly supplies the captured previous blur
 buffer and live colors as test inputs. Previous buffer contents, live colors,
 held poses, native matrix packets, and reference output pixels are never
 production assets. This component result does not establish full-frame parity.
+
+`three/native-postprocess.js` replaces the approximate final frame shader with
+the five original compiled programs: dynamic AO, bloom cutoff, horizontal and
+vertical 39x39 Gaussian blur, and Reinhard tone mapping with dither and the
+authored 256x16 color-grade LUT. AO retains two full-size R8 history targets;
+bloom uses the transmission targets at quarter resolution. The shifted cutoff
+UVs, original fullscreen strip vertices, per-draw sampler objects, Float32 frame
+jitter and GLES minimum-magnitude upload rule are preserved.
+
+An isolated native observer records intermediate buffers without replacing any
+native draw. A separate depth-sampling shader saves/restores GL state and uses
+an explicit complete nearest sampler. The first depth-reader attempt inherited
+an incomplete texture sampler and returned zeros; that diagnostic is rejected.
+The accepted capture asserts nontrivial depth. One pre-existing GL error before
+observation is retained separately, as in the earlier component captures.
+
+`FrameIndex` is read synchronously through native ScriptGlobalTable at actual
+AO/tonemap draws. There is no phase search or inversion of jitter values. The
+committed fixture checks 64 uploaded vectors over 32 consecutive observed
+frames, original fullscreen vertices, and shader/noise/LUT hashes. Native frame
+indices are explicit component inputs; production increments its own rendering
+counter before postprocessing, following Player::PrepareFrame.
+
+The five-pass browser comparison has zero differences across 1,194,960 AO
+values, 672,165 bloom/blur HDR values and 3,584,880 final RGB bytes. The actual
+native HDR/depth frame and previous AO history are supplied once; no computed
+intermediate output is corrected. This proves postprocessing equivalence on
+that supplied frame, not complete live-scene or presentation-time equivalence.
+Only immutable shader programs and static AO noise/LUT texels are published;
+captured frame/depth/history/output images remain outside production assets.
+
+The twelve cached/uncached scene comparisons retain all 43,018,560 sampled
+values and their zero-difference gates. Each cache mode now receives identical
+incoming bloom/transmission history. Comparing successive frames without this
+restoration correctly observes changing feedback, rather than isolating the
+cache. Production history is never frozen by this test change.
+
+Run `check-three.py NATIVE_URL --native-postprocess`, then
+`prepare-native-postprocess.mjs` and `publish-native-postprocess.mjs`. Run
+`check-three.py THREE_DEV_URL --postprocess-render` for the framebuffer check
+and `node --test three/tests/native-postprocess.test.js` for the retained
+clock, geometry and source-asset regressions.
 
 ## Verified results
 

@@ -1,0 +1,12 @@
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import {createHash} from 'node:crypto';import {gunzipSync} from 'node:zlib';import {nativePostprocessJitter,nativeFullscreenGeometry} from '../native-postprocess.js';import {nativeShaderArray} from '../native-shader-state.js';
+const fixture=JSON.parse(gunzipSync(fs.readFileSync(new URL('fixtures/vpx-postprocess-native.json.gz',import.meta.url)))),sha=b=>createHash('sha256').update(b).digest('hex');
+test('AO and dither jitter match 64 native uploads with independently observed FrameIndex values',()=>{
+ assert.equal(fixture.engineSHA256,'c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8');assert.equal(fixture.clockSamples.length,64);let clamped=0;
+ for(const sample of fixture.clockSamples){const jitter=nativePostprocessJitter(sample.frame),actual=Array.from(nativeShaderArray(sample.name==='ambient_occlusion'?jitter.ao:[jitter.dither,jitter.dither]));assert.deepEqual(actual,sample.w_h_height.slice(2),sample.name+' frame '+sample.frame);if(sample.name!=='ambient_occlusion'&&jitter.dither!==actual[0])clamped++;}assert.ok(clamped>0,'Native GLES minimum-magnitude upload is exercised');
+});
+test('fullscreen geometry retains native strip vertices and exact shifted bloom UVs',()=>{
+ const bloom=fixture.stages.find(s=>s.name==='fb_bloom'),full=fixture.stages.at(-1);for(const stage of [bloom,full]){const geometry=stage===bloom?nativeFullscreenGeometry(full.viewport[2],full.viewport[3]):nativeFullscreenGeometry();assert.deepEqual(Array.from(geometry.getAttribute('position').data.array),stage.vertices);assert.deepEqual(Array.from(geometry.index.array),[0,1,2,2,1,3]);geometry.dispose();}
+});
+test('published postprocess programs, AO noise and authored LUT retain independently captured native bytes',()=>{
+ const root=new URL('../public/native-postprocess/',import.meta.url),metadata=JSON.parse(fs.readFileSync(new URL('native-postprocess.json',root)));assert.deepEqual(metadata.settings,{toneMapper:'reinhard',colorGradeImage:'ColorGradeLUT256x16_1to1',bloomStrength:.3,aoScale:3,enableAO:true});assert.deepEqual(metadata.programs,fixture.programs);assert.deepEqual(metadata.textures,fixture.textures);for(const descriptor of [...Object.values(fixture.programs).flatMap(p=>[p.vertex,p.fragment]),...Object.values(fixture.textures)]){const bytes=fs.readFileSync(new URL(descriptor.file,root));assert.equal(bytes.length,descriptor.bytes);assert.equal(sha(bytes),descriptor.sha256,descriptor.file);}
+});
