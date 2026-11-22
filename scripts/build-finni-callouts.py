@@ -21,7 +21,7 @@ FF = ROOT / ".tools/pydeps/imageio_ffmpeg/binaries/ffmpeg-win-x86_64-v9.0.2.exe"
 sys.path.insert(0, str(ROOT / ".tools/voice-pydeps"))
 
 
-def lines():
+def lines(validate_source=True):
     config = json.loads((ROOT / "design/finni-callouts.json").read_text(encoding="utf-8"))
     result = dict(config["callouts"])
     for n in range(2, 7):
@@ -29,21 +29,30 @@ def lines():
         if n < 6:
             result[f"vo_{n}xbonus"] = f"{n} times bonus."
             result[f"vo_{n}xplayfield"] = f"{n} times playfield."
-    for prefix, count, bank in (("quote", 42, "random_quotes"), ("vo_lildp", 44, "toy_reactions")):
-        assert set(config[bank]) == {str(n) for n in range(1, count + 1)}, f"Incomplete {bank}"
-        assert all(text.strip() for text in config[bank].values()), f"Silent {bank} slot"
-        assert len(set(config[bank].values())) == count, f"Repeated {bank} line"
-        for n in range(1, count + 1):
-            result[f"{prefix}{n}"] = config[bank][str(n)]
+    quotes = config["random_quotes"]
+    assert set(quotes) == {str(n) for n in range(1, 43)}, "Incomplete random quotes"
+    assert len(set(quotes.values())) == 42 and all(t.strip() for t in quotes.values())
+    result.update({f"quote{n}": text for n, text in quotes.items()})
+    reactions = config["toy_reactions"]
+    assert len(reactions) == 12 and len(set(reactions.values())) == 12
+    assert all(text.strip() for text in reactions.values()), "Silent toy reaction"
+    canonical = {f"vo_lildp{n}": text for n, text in reactions.items()}
+    aliases = config["recording_aliases"]
+    assert not (aliases.keys() & canonical.keys()), "Aliased canonical reaction"
+    assert canonical.keys() | aliases.keys() == {f"vo_lildp{n}" for n in range(1, 45)}
+    assert set(aliases.values()) <= canonical.keys(), "Unknown recording alias target"
+    result.update(canonical)
+    result.update({slot: canonical[target] for slot, target in aliases.items()})
     # These two IDs are referenced by the source script but missing from its sound bank.
     result["vo_enterinitials"] = "Enter your initials."
     result["vo_nocredits"] = result["nocredits"]
-    source_names = {s["name"] for s in json.loads((SOURCE / "sounds.json").read_text())
-                    if s["name"].startswith(("vo_", "quote")) or s["name"] in ("player", "nocredits")}
-    effects = json.loads((ROOT / "design/party-audio.json").read_text())["effects"]
-    source_names.difference_update(effects)
-    assert source_names <= result.keys(), f"Unmapped source speech: {source_names - result.keys()}"
-    assert result.keys() - source_names == {"vo_enterinitials", "vo_nocredits"} | ADDED_STORY_IDS | ADDED_EVENT_IDS
+    if validate_source:
+        source_names = {s["name"] for s in json.loads((SOURCE / "sounds.json").read_text())
+                        if s["name"].startswith(("vo_", "quote")) or s["name"] in ("player", "nocredits")}
+        effects = json.loads((ROOT / "design/party-audio.json").read_text())["effects"]
+        source_names.difference_update(effects)
+        assert source_names <= result.keys(), f"Unmapped source speech: {source_names - result.keys()}"
+        assert result.keys() - source_names == {"vo_enterinitials", "vo_nocredits"} | ADDED_STORY_IDS | ADDED_EVENT_IDS
     return config, result
 
 

@@ -3,6 +3,7 @@ const $ = id => document.getElementById(id);
 let decoded, result, renderedSettings, recorder, stream, timer, clock, recording = false, busy = false;
 let token = '', member, page = 1, settings = {...PRESETS.party};
 const urls = new Map();
+let cast, gameLines = {}, lineRoles = {};
 function message(id, text, error = false) { $(id).textContent = text; $(id).classList.toggle('error', error); }
 function replaceAudio(id, blob) {
   if (urls.has(id)) URL.revokeObjectURL(urls.get(id));
@@ -12,9 +13,10 @@ function controls() {
   $('render').disabled = !decoded || busy || recording;
   $('download').disabled = !result || busy || recording;
   $('submit').disabled = !result || !token || busy || recording;
-  $('upload').disabled = busy || recording;
-  $('record').disabled = busy;
-  for (const id of ['preset','pitch','compression','line','script']) $(id).disabled = busy || recording;
+  $('upload').disabled = !cast || busy || recording;
+  $('record').disabled = !cast || busy;
+  for (const id of ['preset','pitch','compression','line','script','role']) $(id).disabled = !cast || busy || recording;
+  for (const button of document.querySelectorAll('.cast-card button')) button.disabled = busy || recording;
 }
 function invalidate() {
   result = null; $('processed').pause(); $('processed').removeAttribute('src'); $('processed').load();
@@ -141,7 +143,7 @@ $('submit').addEventListener('click', async () => {
   busy = true; controls(); message('edit-status', 'Uploading both versions to the team library…');
   try {
     const data = new FormData(), id = $('line').value || 'custom';
-    for (const [key,value] of Object.entries({contributor:member.id,speaker:member.name || member.email,line_id:id,line_text:$('script').value.trim(),settings:JSON.stringify(renderedSettings),status:'pending'})) data.append(key,value);
+    for (const [key,value] of Object.entries({contributor:member.id,speaker:member.name || member.email,line_id:id,line_text:$('script').value.trim(),settings:JSON.stringify({...renderedSettings,role:$('role').value}),status:'pending'})) data.append(key,value);
     data.append('original', result.original, `${id}-original.wav`); data.append('processed', result.processed, `${id}-finni.wav`);
     await api('collections/voice_takes/records', {method:'POST',body:data});
     message('edit-status', 'Take submitted for review. Both versions are saved in the team library.');
@@ -164,7 +166,7 @@ async function loadLibrary(append = false) {
     if (!append) $('takes').replaceChildren();
     for (const take of records.items) {
       const row = element('article',''); row.className = 'take';
-      row.append(element('h3', `${take.line_id} · ${take.speaker}`), element('p', take.line_text));
+      row.append(element('h3', `${cast?.roles.find(role => role.id === take.settings?.role)?.name || 'Unassigned role'} · ${take.speaker} · ${take.line_id}`), element('p', take.line_text));
       row.append(element('p', `${take.status} · ${new Date(take.created).toLocaleString()} · ${take.settings.name || 'Custom sound'} · pitch ${take.settings.pitch}`));
       if (take.review_note) row.append(element('p', `Review: ${take.review_note}`));
       const players = element('div',''); players.className = 'take-players';
@@ -183,8 +185,61 @@ async function loadLibrary(append = false) {
   finally { $('refresh').disabled = false; $('more').disabled = false; }
 }
 $('refresh').addEventListener('click', () => loadLibrary()); $('more').addEventListener('click', () => loadLibrary(true));
-fetch('/voice-lines.json').then(response => { if (!response.ok) throw Error(); return response.json(); }).then(lines => {
-  for (const [id,text] of Object.entries(lines)) { const option = element('option', `${id} · ${text}`); option.value = id; $('line').append(option); }
-  $('line').addEventListener('change', () => { $('script').value = lines[$('line').value] || ''; });
-}).catch(() => message('record-status', 'Callout list unavailable. You can still enter a custom line.', true));
+function clearTake() {
+  decoded = null; result = null;
+  for (const id of ['original','processed']) {
+    $(id).pause(); $(id).removeAttribute('src'); $(id).load();
+    if (urls.has(id)) { URL.revokeObjectURL(urls.get(id)); urls.delete(id); }
+  }
+  $('waveform').getContext('2d').clearRect(0,0,$('waveform').width,$('waveform').height);
+  message('record-status', 'Up to 30 seconds per take.');
+  message('edit-status', 'Record or upload this line to get started.');
+  controls();
+}
+function chooseRole(id) {
+  const role = cast.roles.find(role => role.id === id);
+  $('role').value = id;
+  const ids = Object.keys(gameLines).filter(line => lineRoles[line] === id);
+  $('role-direction').textContent = `${role.direction} · ${ids.length} lines in this session`;
+  $('line').replaceChildren();
+  for (const line of ids) {
+    const option = element('option', `${gameLines[line]} · ${line}`); option.value = line; $('line').append(option);
+  }
+  const custom = element('option', 'Custom line for this role'); custom.value = ''; $('line').append(custom);
+  $('script').value = gameLines[$('line').value] || '';
+  clearTake();
+  $('preset').value = role.preset; $('preset').dispatchEvent(new Event('change'));
+}
+$('role').addEventListener('change', () => chooseRole($('role').value));
+$('line').addEventListener('change', () => {
+  $('script').value = gameLines[$('line').value] || ''; clearTake();
+});
+// A transcript edit requires a fresh take so existing audio cannot be relabeled.
+$('script').addEventListener('input', clearTake);
+Promise.all(['/voice-lines.json','/voice-cast.json'].map(async path => {
+  const response = await fetch(path); if (!response.ok) throw Error(); return response.json();
+})).then(([lines, config]) => {
+  for (const id of Object.keys(lines)) {
+    const matches = config.roles.filter(role => role.line_ids.includes(id) || role.prefixes.some(prefix => id.startsWith(prefix)));
+    if (matches.length > 1) throw Error(`Multiple voice roles for ${id}`);
+    lineRoles[id] = matches[0]?.id || config.default_role;
+  }
+  if (!config.roles.some(role => role.id === config.default_role)) throw Error('Unknown default voice role');
+  for (const role of config.roles) {
+    if (role.line_ids.some(id => !(id in lines))) throw Error(`Unknown game line in ${role.name}`);
+  }
+  cast = config; gameLines = lines;
+  $('role').replaceChildren();
+  for (const role of cast.roles) {
+    const count = Object.values(lineRoles).filter(id => id === role.id).length;
+    const workload = `${count} lines`;
+    const option = element('option', `${role.name} · ${workload}`); option.value = role.id; $('role').append(option);
+    const card = element('article',''); card.className = 'cast-card';
+    const button = element('button', `Record ${role.name}`); button.type = 'button';
+    button.addEventListener('click', () => { chooseRole(role.id); $('role').focus(); });
+    card.append(element('h3', role.name), element('p', role.summary), element('p', workload), button);
+    $('cast').append(card);
+  }
+  chooseRole(cast.roles[0].id); controls();
+}).catch(() => message('record-status', 'Recording roles could not load. Reload the page to try again.', true));
 controls();

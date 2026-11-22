@@ -95,7 +95,7 @@ class Handler(SimpleHTTPRequestHandler):
                   '/dmd-animations.json': ROOT / '.work/browser-assets/dmd-animations.json',
                   '/table.vpx': self.table_path,
                   '/chewy.ttf': ROOT / 'assets/fonts/chewy/Chewy-Regular.ttf'}
-        for name in ('voice.html', 'voice.css', 'voice.js', 'voice-audio.js', 'voice-lines.json'):
+        for name in ('voice.html', 'voice.css', 'voice.js', 'voice-audio.js', 'voice-lines.json', 'voice-cast.json'):
             routes['/' + name] = ROOT / 'browser' / name
         for name in ('PressStart2P-Regular.ttf', 'DMSans.ttf'):
             routes['/fonts/' + name] = ROOT / 'browser/fonts' / name
