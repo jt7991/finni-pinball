@@ -226,6 +226,13 @@ pause state. A stale long-running Vite module cache initially served the old
 snapshot without cabinetOffset; restarting only that worktree dev server fixed
 the diagnostic environment. Production builds contain the new snapshot field.
 
+`check-three.py PRODUCTION_URL --production-nudge` verifies actual keyboard Z
+input through the shipped shared UI, authored rules and worker, without a game
+debug hook or direct script/state injection. Phone and desktop viewport runs
+each observe 598 filtered frames, motion in both directions and natural return
+to the original unfiltered quad. These are desktop browser checks at those
+viewport sizes, not physical-phone certification.
+
 ## Verified results
 
 | Comparison | Cases / samples | Differences |
