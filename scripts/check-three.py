@@ -34,6 +34,7 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--native-primitives' in sys.argv:runner='test-native-primitives-browser.mjs'
         if '--transmission-render' in sys.argv:runner='test-transmission-render-browser.mjs'
         if '--native-textures' in sys.argv:runner='test-native-textures-browser.mjs'
+        if '--native-actors' in sys.argv:runner='test-native-actors-browser.mjs'
         subprocess.run(['node',str(ROOT/'scripts'/runner),f'http://127.0.0.1:{port}',
                         sys.argv[1] if len(sys.argv)>1 else 'http://127.0.0.1:5173/three/',str(OUT),*sys.argv[2:]],check=True,timeout=150)
     finally:

@@ -13,7 +13,7 @@ const directory=path.resolve(root,values.directory);
 if(values.build){const {build}=await import('vite');await build({root:path.join(root,'three'),configFile:path.join(root,'vite.config.js'),build:{outDir:directory}});}
 await stat(path.join(directory,'index.html'));
 const compressed=new Map();
-const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.vbs':'text/plain','.wasm':'application/wasm','.glb':'model/gltf-binary','.webp':'image/webp','.png':'image/png','.m4a':'audio/mp4','.ttf':'font/ttf'};
+const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.vbs':'text/plain','.glsl':'text/plain','.wasm':'application/wasm','.glb':'model/gltf-binary','.webp':'image/webp','.png':'image/png','.m4a':'audio/mp4','.ttf':'font/ttf'};
 const api={'/api/leaderboard':'/api/finni/leaderboard','/api/runs':'/api/finni/runs','/api/scores':'/api/finni/scores'};
 const voice=new Map(['/voice','/voice.html','/voice.css','/voice.js','/voice-audio.js','/voice-lines.json'].map(route=>[route,path.join(root,'browser',route==='/voice'?'voice.html':route.slice(1))]));
 voice.set('/chewy.ttf',path.join(root,'assets/fonts/chewy/Chewy-Regular.ttf'));
@@ -41,7 +41,7 @@ const server=http.createServer(async(req,res)=>{
     if(!voice.has(url.pathname)&&!file.startsWith(directory+path.sep)){res.writeHead(404);res.end();return;}
     const info=await stat(file);if(!info.isFile()){res.writeHead(404);res.end();return;}
     const ext=path.extname(file),headers={'Content-Type':mime[ext]||'application/octet-stream','X-Content-Type-Options':'nosniff','Cache-Control':'no-cache',Vary:'Accept-Encoding'};
-    if(/gzip/.test(req.headers['accept-encoding']||'')&&['.js','.css','.json','.vbs','.glb','.wasm','.html','.bin','.ttf','.svg'].includes(ext)&&info.size<8*1024*1024){
+    if(/gzip/.test(req.headers['accept-encoding']||'')&&['.js','.css','.json','.vbs','.glsl','.glb','.wasm','.html','.bin','.ttf','.svg'].includes(ext)&&info.size<8*1024*1024){
       const previous=compressed.get(file);let data=previous?.mtime===info.mtimeMs?previous.data:null;
       if(!data){data=gzipSync(await readFile(file));compressed.set(file,{data,mtime:info.mtimeMs});}
       res.writeHead(200,{...headers,'Content-Encoding':'gzip','Content-Length':data.length});res.end(req.method==='HEAD'?undefined:data);

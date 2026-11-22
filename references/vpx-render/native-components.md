@@ -1,7 +1,9 @@
 # Native renderer component checkpoint
 
-This is development evidence for the full port. The new modules are not yet
-connected to `three/scene.js`. The live build still uses the earlier renderer.
+This is development evidence for the full port. The native renderer is now
+connected to `three/scene.js` for the fox head, arms, body, and disco ball. Their
+five separate GLB nodes are removed before adding the source geometry, so no
+duplicates remain. The joined static table still awaits complete replacement.
 Whole-table parity, reflection/bloom integration, and the remaining physics
 comparisons are unfinished.
 
@@ -23,6 +25,21 @@ matrix packets. One streamed uniform buffer handles many parts without
 exhausting Three's uniform-group binding slots. Hidden parts are compiled using
 visible proxies before rules can reveal them. Screen dimensions update with
 the viewport. Unsupported probe/normal-map paths fail explicitly.
+
+`scripts/publish-native-render-parts.mjs` publishes selected verified parts and
+their required shaders/textures. Camera uniforms and captured ball positions
+are removed. Projection and screen uniforms come from the current camera.
+The native geometry codec uses integer prediction and byte planes without
+changing any float or index bits. For the five actors it reduces the gzipped
+geometry from 2,397,965 to 1,674,634 bytes. Production asset hashes are checked
+again after decoding in the live scene.
+
+`scripts/test-native-actors-browser.mjs` drives the actual worker's script
+properties and reads the GPU uniform buffer immediately before each real scene
+draw. All 400 uploaded fields match independent VPX packets; visibility changes
+hide all five meshes and each source name occurs once. A default short-window
+case also covers the main UI's collapsed start-screen canvas. It uses the
+backing buffer camera until ResizeObserver receives visible dimensions.
 
 `three/transmission-render.js` renders the eight transmitting bulbs and both
 original 19x19 Gaussian shader programs. It derives camera matrices, light

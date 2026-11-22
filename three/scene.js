@@ -7,6 +7,7 @@ import {createBulbHalos,createLightFrame} from './bulb-render.js';
 import {createClassicLights,loadNativeLighting} from './classic-render.js';
 import {createFlipperVisuals,loadFlipperVisuals} from './flipper-render.js';
 import {applyNativeCamera} from './camera-render.js';
+import {loadNativePrimitiveVisuals,createNativePrimitiveVisuals} from './native-basic-render.js';
 
 export async function createView(canvas, game) {
   const renderer=new THREE.WebGLRenderer({canvas,antialias:false,alpha:false,powerPreference:'high-performance'});
@@ -18,12 +19,13 @@ export async function createView(canvas, game) {
   const fill=new THREE.DirectionalLight(0xc7dcff,1.3);fill.position.set(12,15,12);scene.add(fill);
   const base=import.meta.env.BASE_URL;
   const draco=new DRACOLoader().setDecoderPath(`${base}draco/`).setDecoderConfig({type:'wasm'}).setWorkerLimit(1);
-  const [floor,table,lighting,flipperAssets,cameraBounds]=await Promise.all([
+  const [floor,table,lighting,flipperAssets,cameraBounds,actorAssets]=await Promise.all([
     new THREE.TextureLoader().loadAsync(`${base}playfield.webp`),
     new GLTFLoader().setDRACOLoader(draco).loadAsync(`${base}table.glb`),
     loadNativeLighting(base),
     loadFlipperVisuals(base,renderer.capabilities.getMaxAnisotropy()),
     fetch(`${base}camera-bounds.json`).then(response=>{if(!response.ok)throw Error('Native camera bounds unavailable');return response.json();}),
+    loadNativePrimitiveVisuals(`${base}native-actors/`,'native-actors.json'),
   ]);
   draco.dispose();
   floor.colorSpace=THREE.SRGBColorSpace;floor.flipY=false;floor.anisotropy=renderer.capabilities.getMaxAnisotropy();
@@ -33,8 +35,9 @@ export async function createView(canvas, game) {
   table.scene.rotation.x=Math.PI/2;table.scene.scale.setScalar(.01/.00053975);
   table.scene.position.y=21.15;
   scene.add(table.scene);
-  const moving=[];
+  const moving=[],replacedActors=[],actorNames=new Set(actorAssets.metadata.parts.map(part=>part.spec.name));
   table.scene.traverse(obj=>{
+    if(actorNames.has(obj.name)){replacedActors.push(obj);return;}
     const state=game.rules?.objects.get(obj.name.replace(/_Finni$/,'').replace(/(Plate|Wire)$/,'').toLowerCase());
     if(state){
       const mechanism=game.spinners?.find(s=>obj.name===s.spec.name+'Plate')??game.gates?.find(s=>obj.name===s.spec.name+'Wire'),angle=(mechanism?.spec.rotation??0)*Math.PI/180;
@@ -42,6 +45,12 @@ export async function createView(canvas, game) {
       moving.push({obj,state,position:obj.position.clone(),rotation:obj.rotation.clone(),quaternion:obj.quaternion.clone(),target,mechanism,axis:mechanism?new THREE.Vector3(Math.cos(angle),0,Math.sin(angle)):target&&!target.drop?targetAnimationAxis(target.rotZ??target.spec?.rot_z):null});
     }
   });
+  if(replacedActors.length!==actorNames.size||new Set(replacedActors.map(obj=>obj.name)).size!==actorNames.size)throw Error('Original actor geometry could not be replaced unambiguously');
+  for(const obj of replacedActors)obj.removeFromParent();
+  const retainedGeometry=new Set();table.scene.traverse(obj=>{if(obj.geometry)retainedGeometry.add(obj.geometry);});
+  for(const obj of replacedActors)obj.traverse(child=>{if(child.geometry&&!retainedGeometry.has(child.geometry))child.geometry.dispose();});
+  const nativeActors=createNativePrimitiveVisuals(renderer,scene,actorAssets,lighting,{stateFor:name=>game.rules.objects.get(name.toLowerCase())});
+  nativeActors.root.name='NativeActors';
 
   const steel=new THREE.MeshStandardMaterial({color:0xb0bac6,metalness:.65,roughness:.32});
   // Ramp collision strips are deliberately invisible. The accepted model supplies
@@ -65,7 +74,14 @@ export async function createView(canvas, game) {
   scoop.position.set(game.scoop.x,game.scoop.y,.05);scene.add(scoop);
   let cameraMode='balanced',quality='performance',shakeUntil=0,shakeStrength=0;
   function resize() {
-    const width=canvas.clientWidth,height=canvas.clientHeight;if(!width||!height)return;
+    const width=canvas.clientWidth,height=canvas.clientHeight;
+    if(!width||!height){
+      // The main UI can collapse the playfield behind its start screen in a
+      // short window. Compile with the backing buffer's valid camera, then let
+      // ResizeObserver apply the visible playfield dimensions when it opens.
+      if(!camera.userData.nativeCamera)applyNativeCamera(camera,cameraBounds,Math.max(1,canvas.width)/Math.max(1,canvas.height),cameraMode);
+      return;
+    }
     renderer.setPixelRatio(Math.min(devicePixelRatio,quality==='detailed'?2:1.25));
     renderer.setSize(width,height,false);
     lightFrame.resize();
@@ -73,6 +89,7 @@ export async function createView(canvas, game) {
     applyNativeCamera(camera,cameraBounds,size.x/size.y,cameraMode);
   }
   const observer=new ResizeObserver(resize);observer.observe(canvas);resize();
+  nativeActors.update(camera);await nativeActors.prepare(camera);
   function render(alpha,previous) {
     const records=game.records??[{body:game.ball,previous,held:game.capturedUntil?'scoop':null}];
     while(balls.length<records.length){const mesh=ball.clone(),contact=shadow.clone();contact.material=shadow.material.clone();scene.add(mesh,contact);balls.push(mesh);shadows.push(contact);}
@@ -94,8 +111,8 @@ export async function createView(canvas, game) {
         m.obj.rotation.z=m.rotation.z-Number(m.state.roty)*Math.PI/180;
       }
     }
-    flipperVisuals.update(camera);
+    nativeActors.update(camera);flipperVisuals.update(camera);
     classicLights.update(camera);bulbHalos.update();lightFrame.render(scene,camera);
   }
-  return {renderer,scene,camera,cameraBounds,classicLights,bulbHalos,flipperVisuals,render,resize,shake(strength){shakeUntil=game.time+.8;shakeStrength=Number(strength)||1;},setCamera(value){cameraMode=value;resize();},setQuality(value){quality=value;resize();}};
+  return {renderer,scene,camera,cameraBounds,classicLights,bulbHalos,flipperVisuals,nativeActors,render,resize,shake(strength){shakeUntil=game.time+.8;shakeStrength=Number(strength)||1;},setCamera(value){cameraMode=value;resize();},setQuality(value){quality=value;resize();}};
 }

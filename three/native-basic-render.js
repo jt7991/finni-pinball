@@ -3,6 +3,8 @@
 import * as THREE from 'three';
 import {nativeIdentity} from './native-matrix.js';
 import {nativePrimitiveMatrices,nativeModelMatrices} from './primitive-transform.js';
+import {nativeShaderArray} from './native-shader-state.js';
+import {decodeNativeGeometry} from './native-geometry-codec.js';
 
 const filters={9728:THREE.NearestFilter,9729:THREE.LinearFilter,9984:THREE.NearestMipmapNearestFilter,9985:THREE.LinearMipmapNearestFilter,9986:THREE.NearestMipmapLinearFilter,9987:THREE.LinearMipmapLinearFilter},wraps={10497:THREE.RepeatWrapping,33071:THREE.ClampToEdgeWrapping,33648:THREE.MirroredRepeatWrapping};
 const stripVersion=source=>source.replace(/^#version[^\n]*\n/,'');
@@ -12,7 +14,9 @@ export class NativeMatrixStream{
  dispose(){this.gl.deleteBuffer(this.buffer);}
 }
 export async function loadNativePrimitiveVisuals(base,metadataFile='native-primitives.json'){
- const read=async file=>{const response=await fetch(base+file);if(!response.ok)throw Error('Native render asset unavailable: '+file);return response;},metadata=await(await read(metadataFile)).json(),geometry=await(await read(metadata.geometry.file)).arrayBuffer(),programs={},pixels={};
+ const read=async file=>{const response=await fetch(base+file);if(!response.ok)throw Error('Native render asset unavailable: '+file);return response;},metadata=await(await read(metadataFile)).json(),packed=await(await read(metadata.geometry.file)).arrayBuffer(),programs={},pixels={};
+ if(metadata.geometry.encoding&&metadata.geometry.encoding!=='delta-byteplanes-v1')throw Error('Unsupported native geometry encoding');
+ const geometry=metadata.geometry.encoding?decodeNativeGeometry(packed,metadata.parts):packed;
  await Promise.all(Object.entries(metadata.programs).map(async([id,p])=>{programs[id]={vertex:stripVersion(await(await read(p.vertex)).text()),fragment:stripVersion(await(await read(p.fragment)).text())};}));
  await Promise.all(Object.entries(metadata.textures).map(async([id,spec])=>{
   if(spec.encoding==='webp-lossless'){
@@ -27,10 +31,13 @@ export function createNativeBaseTexture(assets,id,sampler){
 export function createNativePrimitiveVisuals(renderer,scene,assets,lighting,{stateFor=()=>null,transmissionTexture}={}){
  if(!transmissionTexture&&assets.metadata.parts.some(p=>p.uniforms.cBase_Alpha?.[3]<1&&p.uniforms.fDisableLighting_top_below?.[1]<1))throw Error('Native translucent primitives require a light transmission texture');
  if(assets.metadata.parts.some(p=>p.uniforms.doNormalMapping||p.uniforms.doRefractions||(p.uniforms.mirrorNormal_factor?.[3]??0)>0))throw Error('Native normal maps and reflection/refraction probes need their rendering passes');
+ if(assets.metadata.parts.some(p=>(p.uniforms.lightCenter_doShadow?.[3]??0)>0))throw Error('Native ball shadows need current ball inputs');
  const stream=new NativeMatrixStream(renderer),parts=[],textures=new Map(),dummy=new THREE.DataTexture(new Uint8Array(4),1,1,THREE.RGBAFormat);dummy.needsUpdate=true;const root=new THREE.Group();root.name='NativePrimitives';scene.add(root);
  const baseTexture=record=>{const key=JSON.stringify(record);if(!textures.has(key))textures.set(key,createNativeBaseTexture(assets,record.id,record.sampler));return textures.get(key);};
  for(const spec of assets.metadata.parts){const program=assets.programs[spec.program],uniforms={};for(const [name,value]of Object.entries(spec.uniforms)){const key=name.replace(/\[0\]$/,'');uniforms[key]={value:Array.isArray(value)?new Float32Array(value):value};}
   uniforms.w_h_height={value:new Float32Array(4)};
+  uniforms.matProj={value:new Float32Array(16)};
+  uniforms.balls={value:new Float32Array(32)};
   for(const [name,record]of Object.entries(spec.textures)){let texture=dummy;if(name==='tex_base_color')texture=baseTexture(record);else if(name==='tex_env')texture=lighting.textures.environment;else if(name==='tex_diffuse_env')texture=lighting.textures.irradiance;else if(name==='tex_base_transmission')texture=transmissionTexture??dummy;uniforms[name]={value:texture};}
   const state=spec.renderState;
   // These are the native states supported by this basic material path. Fail
@@ -48,13 +55,14 @@ export function createNativePrimitiveVisuals(renderer,scene,assets,lighting,{sta
  },update(camera,viewport=renderer.getDrawingBufferSize(new THREE.Vector2())){
   const native=camera.userData.nativeCamera;if(!native)throw Error('Native basic renderer needs the authored camera');let identityMatrices;
   const screen=new Float32Array([1/(viewport.width??viewport.x),1/(viewport.height??viewport.y),0,0]);
-  for(const part of parts){const {state,spec,record}=part;part.material.uniforms.w_h_height.value.set(screen);
+  const projection=nativeShaderArray(native.projection);
+  for(const part of parts){const {state,spec,record}=part;part.material.uniforms.w_h_height.value.set(screen);part.material.uniforms.matProj.value.set(projection);
    if(record.transform==='identity'){
     part.mesh.visible=state?.[record.visibilityField]??record.defaultVisible;
     if(part.camera!==native){identityMatrices??=nativeModelMatrices(nativeIdentity(),native);part.matrices.set(identityMatrices);part.camera=native;}
    }else{
     const angles=[state?.rotx??spec.rot_and_tra[0],state?.roty??spec.rot_and_tra[1],state?.rotz??spec.rot_and_tra[2]];
-    part.mesh.visible=state?.visible??spec.is_visible;
+    part.mesh.visible=!!(state?.visible??spec.is_visible)&&(!state?.sequenceactive||!!state.sequencestate);
     if(part.camera!==native||!part.angles||angles.some((v,i)=>v!==part.angles[i])){part.matrices.set(nativePrimitiveMatrices(spec,state,native));part.camera=native;part.angles=angles;}
    }
   }
