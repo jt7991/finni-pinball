@@ -18,6 +18,7 @@ import {loadNativeHalos,createNativeHalos} from './native-halo-render.js';
 import {loadNativeClassic,createNativeClassic} from './native-classic-render.js';
 import {loadNativePostprocess} from './native-postprocess.js';
 import {createBallPresentationClock} from './ball-presentation.js';
+import {nativeColor} from './light-animation.js';
 
 export async function createView(canvas,game){
  const renderer=new THREE.WebGLRenderer({canvas,antialias:false,alpha:false,powerPreference:'high-performance'});renderer.setClearColor(0,0);renderer.outputColorSpace=THREE.SRGBColorSpace;
@@ -33,11 +34,16 @@ export async function createView(canvas,game){
   loadNativeClassic(base+'native-classic/'),
   loadNativePostprocess(base+'native-postprocess/'),
  ]);
+ // DrawBackground clears HDR with normalized authored bytes, without an
+ // sRGB conversion. Reflection and transmission passes select their own black.
+ const backdrop=nativeColor(lighting.metadata.backdropColor),f=Math.fround;
+ renderer.setClearColor(new THREE.Color(f((backdrop&255)/255),f(((backdrop>>>8)&255)/255),f(((backdrop>>>16)&255)/255)),1);
  const floorRecord=tableAssets.metadata.parts.find(p=>p.spec.name==='playfield_mesh');if(!floorRecord?.probe)throw Error('Authored playfield probe unavailable');
  const reflectionPass=createNativeReflectionPass(renderer,floorRecord.probe),nativeTransmission=createNativeTransmission(renderer,transmissionAssets,name=>game.rules.objects.get(name.toLowerCase()));
  const nativeTable=createNativePrimitiveVisuals(renderer,scene,tableAssets,lighting,{stateFor:name=>game.rules.objects.get(name.toLowerCase()),transmissionTexture:nativeTransmission.texture,reflectionTexture:reflectionPass.texture});nativeTable.root.name='NativeTable';
- const nativeMechanisms=createNativeMechanismAnimation(game,nativeTable,animationAssets),nativeCache=createNativeOpaqueCache(renderer,nativeTable);
+ const nativeMechanisms=createNativeMechanismAnimation(game,nativeTable,animationAssets);
  const actorNames=new Set(['discoball','LilHead','LilLeftArm','LilRightArm','Primitive077']),nativeActors={parts:nativeTable.parts.filter(p=>actorNames.has(p.spec.name)),root:nativeTable.root};
+ const nativeCache=createNativeOpaqueCache(renderer,nativeTable,{liveParts:nativeActors.parts});
  const flipperVisuals=createFlipperVisuals(game,scene,lighting,flipperAssets),classicLights=createNativeClassic(renderer,scene,classicAssets,lighting,nativeTable,name=>game.rules.objects.get(name.toLowerCase())),bulbHalos=createNativeHalos(scene,haloAssets,name=>game.rules.objects.get(name.toLowerCase())),lightFrame=createLightFrame(renderer,postprocessAssets,nativeTransmission.targets);
  const ballClock=createBallPresentationClock(()=>({paused:game.presentationPaused??(game.simulationPaused!==false),clock:game.submission?.presentationClock??game.presentationClock}));
  const nativeBalls=createNativeBallVisuals(renderer,scene,ballAssets,lighting,{previousFrame:lightFrame.previous.texture,submissionClock:ballClock,submissionBodyFor:ball=>{if(!game.submission)return ball;const body=game.submission.bodies.get(ball.id);if(!body)throw Error('Prepared ball is missing from submission');return body;},stateFor:name=>game.rules.objects.get(name.toLowerCase())});

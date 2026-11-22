@@ -161,3 +161,7 @@ https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3
 The native visual-nudge path also retains Renderer::SetScreenOffset and the
 filtered Reinhard tone-map variant. Native presentation defaults derive from:
 https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/core/Settings_properties.inl
+
+The authored HDR backdrop uses Renderer::DrawBackground and RenderCommand's
+direct normalized-byte clear color, retaining its original linear values:
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/renderer/RenderCommand.cpp

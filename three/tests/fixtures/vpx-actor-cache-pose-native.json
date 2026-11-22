@@ -1,0 +1,36 @@
+{
+  "engineSHA256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+  "sourceCaptureSHA256": "2294a6f2ea657c30c0acffbedcc2ae7c1ba56fcd3d42224df75d4fcabb777cde",
+  "sourceRevision": "195f214dd4849b8ef6113fd377258b78d0dec3bf",
+  "viewport": {
+    "width": 780,
+    "height": 1532
+  },
+  "states": {
+    "LilHead": {
+      "Visible": true,
+      "RotX": -1.078125,
+      "RotY": 1.205558776855,
+      "RotZ": 0
+    },
+    "LilLeftArm": {
+      "Visible": true,
+      "RotX": -1.0791015625,
+      "RotY": -0.659194946289,
+      "RotZ": 0
+    },
+    "LilRightArm": {
+      "Visible": true,
+      "RotX": 1.077880859375,
+      "RotY": -0.669250488281,
+      "RotZ": 0
+    },
+    "Primitive077": {
+      "Visible": true,
+      "RotX": 0,
+      "RotY": 0,
+      "RotZ": 0
+    }
+  },
+  "scope": "Observed native frozen assembly properties. Cache equivalence compares its own independently rendered uncached frame; no expected color or fitted pose is derived from the cache."
+}

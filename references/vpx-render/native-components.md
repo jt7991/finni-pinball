@@ -13,9 +13,9 @@ The actual scene now runs source planar reflections with D16 depth, native
 transmission, target/gate/spinner/trigger/bumper vertex updates and all 57
 source-generated plunger mesh frames. `native-opaque-cache.js` caches color and
 depth together and invalidates on camera, viewport, vertex, transform or
-visibility changes. Twelve browser scenarios, including three real game balls
+visibility changes. Fourteen browser scenarios, including three real game balls
 and all 25 classic inserts lit in four cameras, match uncached rendering across
-43,018,560 HDR RGB samples, with no differences
+60,942,960 HDR RGB samples, with no differences
 or GL errors. This is a cache equivalence test, not a whole-frame VPX comparison.
 
 Trigger and bumper animation matches 89 updates of the original compiled
@@ -428,3 +428,53 @@ input. A pre-callback ShaderState orientation is a zero placeholder in this
 build, so it supplies no evidence of the earlier physical position. This
 diagnostic establishes why the stages must stay separate; it does not recover
 the earlier native physical position or prove synchronized whole-frame output.
+
+The first whole-table control uses the original native renderer at780x1532,
+with all timers disabled through GetElementByName, sequencers stopped, bulb
+lights on, classic inserts explicitly hidden, and physics defocused. It
+observes3,041 properties on733 objects and four physical ball poses, plus
+previous HDR, AO and filtered transmission-buffer history. Four additional
+requests address FinniStreamerRamp, an unused port placeholder absent from the
+native table; it has neither a native mesh nor a collider. No rendered object's
+missing input is silently accepted. Original GPU pixels remain expected outputs,
+never production textures or per-pass corrections.
+
+This exposed the authored backdrop missing from both the port's scene clear
+and its opaque cache. Renderer::DrawBackground uses m_colorbackdrop and
+RenderCommand normalizes its ARGB bytes directly before clearing; it applies
+no sRGB conversion. native-lighting.json now includes the authored #090f22.
+The cache retains the caller's clear color/alpha and invalidates when either
+changes. The observed native RGBA16F background matches all four channels.
+
+The same control exposed one D16 depth tie between LilRightArm and its fixed
+torso Primitive077. Rendering the torso from the cache reversed their original
+order and changed three HDR channels, then684 bloom and28 final channels.
+The existing actor assembly descriptor now keeps all its parts in the live pass.
+With identical scene/history inputs, cached and uncached HDR, reflection,
+bloom and final RGBA now agree exactly. The observed native pose is retained
+in vpx-actor-cache-pose-native.json. All original twelve cache scenarios remain;
+new clear-state and full-resolution actor cases raise the total to14 and
+60,942,960 compared HDR RGB values.
+
+For control-r3, the authored background reduces native-versus-port HDR
+differences from712,650 to14,463 of3,584,880 channels. Final RGB differences
+fall from739,889 to17,224. The remaining3,336 depth pixels and81,016 reflected
+RGB differences are retained, not accepted as parity. These are a frozen,
+unlit-classic control with selected shared history; ordinary lit scenes,
+unobserved mechanism poses and remaining temporal dependencies still need
+comparison. In particular, native reflection draws precede transmitted light
+and use both null and prior shared-buffer bindings. The live pass sequence
+has not been changed to guess at those dependencies.
+
+Reproduce a new control with:
+
+```powershell
+python scripts/check-three.py http://127.0.0.1:50826/ --native-whole-frame --capture-name=control-next
+node scripts/prepare-native-whole-frame.mjs .work/three-review/native-whole-frame-control-next
+python scripts/check-three.py http://127.0.0.1:5173/three/ --whole-frame-render --capture-name=control-next --report-name=current --compare-cache
+```
+
+Use this workspace's bundled Python on Windows if python is not installed.
+The capture refuses to overwrite existing evidence. Whole-frame diagnostics
+assert the native background and cache equivalence; they report all remaining
+scene differences without presenting them as a passing whole-scene comparison.
