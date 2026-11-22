@@ -7,7 +7,7 @@ parts and 25 classic inserts retain their separate native paths. The original
 open wire ramp geometry, main arcade UI and lossless source artwork are retained.
 The shared transmission/bloom temporary buffer follows the source reuse path.
 The final whole-frame comparison and seven older physics comparisons remain
-unfinished. The full suite passes 175/182 tests.
+unfinished. The full suite passes 179/186 tests.
 
 The actual scene now runs source planar reflections with D16 depth, native
 transmission, target/gate/spinner/trigger/bumper vertex updates and all 57
@@ -392,12 +392,30 @@ captures; then run `node scripts/prepare-native-ball-presentation.mjs`.
 checks actual six-ball GPU uploads, active/paused behavior, worker timestamps
 and unchanged physical body state.
 
-Scope remains limited: the live renderer corrects the latest received snapshot.
-Native VPX can run physics after capturing rotation and before submitting the
-later position. That full scheduling/body-read sequence remains unfinished.
-The fixed source fallback profile does not establish hardware/VR presentation
-parity. Older physics failures, dynamic native insert packets and synchronized
-whole-frame equivalence remain open.
+The render protocol now separates preparation from the later physical read.
+`prepareSubmissionFrame` retains the scheduled ball identities and holds
+incoming scene snapshots while the worker returns newer position/velocity
+data and its corresponding actual last-step clock. Scene and ball rotation,
+visibility, reflection eligibility and light state stay prepared. Removed balls
+retain their final state, matching source Ball references; later births wait
+for the next frame. Replies remain queued with their snapshots so a resolved
+command cannot expose unapplied state. Disposal releases the hold.
+
+Native `RenderFrame::Execute` runs all begin-of-frame callbacks before GPU
+passes. The live renderer now computes separate reflected/main ball submission
+matrices at that point, then uploads them unchanged at their actual draws.
+The pinned source file has Git blob SHA1
+`b95ced53e012d12f8b8f98a7e9374db4c61a0379`:
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/renderer/RenderFrame.cpp
+
+Four protocol regressions cover later physical motion with unchanged scheduled
+orientation, retained kicker removal, later births, read-only physical/RNG
+state, queued command ordering disposal during preparation, and queued game-over/replay. A real six-ball
+GPU check verifies prepared matrices, newer worker bodies and the exact clock
+associated with that physical read. The fixed fallback profile and worker
+message latency do not establish hardware/VR presentation or physical-phone
+input timing. Older physics failures, dynamic native insert packets and
+synchronized whole-frame equivalence remain open.
 
 A further read-only capture exposes the current physical orientation at the
 original callback, separately from its captured rotation/scale. All64 callbacks
@@ -408,4 +426,4 @@ Capture with `--spin --output-name=native-ball-scheduled-rotation.json`, then ru
 input. A pre-callback ShaderState orientation is a zero placeholder in this
 build, so it supplies no evidence of the earlier physical position. This
 diagnostic establishes why the stages must stay separate; it does not recover
-that earlier position or implement full frame scheduling.
+the earlier native physical position or prove synchronized whole-frame output.

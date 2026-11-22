@@ -123,10 +123,10 @@ async function drawFrame(now){
   game.setPaused(paused);
   // VPX updates target motion and its rule events in PrepareFrame. Wait for
   // that ordered worker snapshot before drawing the corresponding frame.
-  await game.prepareFrame();
-  // Keep physical stepping complete. Ball submission applies the source
-  // render-only velocity correction; it never changes collision state.
-  view.render(1);display?.draw();
+  await game.prepareSubmissionFrame();
+  // Hold prepared visual state while submitting later physical ball data.
+  // Physics keeps running; queued snapshots become visible after the draw.
+  try{view.render(1);display?.draw();}finally{game.finishSubmissionFrame();}
   if(game.gameState)leaderboard?.state(game.gameState);
   $('score').textContent=game.score.toLocaleString();$('ball-number').textContent=game.ballNumber||'—';
   const power=Math.round(game.charge/1.2*100);

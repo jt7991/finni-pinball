@@ -15,17 +15,19 @@ export async function createRuntimeGame(base,emit,media){
 
 export function connectSimulation(worker,init,emit=()=>{},media){
   let next=0,initialized=false,resolveReady,rejectReady,paused=true,subscriptionsQueued=false;
+  let preparingFrame=false,closing=false,frameHold;
   const pending=new Map(),bodies=new Map(),names=new Set(),queries=new Set(['bChooseBattle']),values=new Map();
   const ready=new Promise((resolve,reject)=>{resolveReady=resolve;rejectReady=reject;});
   const game={workerSimulation:true,nativeDisplacements:true,error:null,records:[],targetMotions:new Map(),runtimeStats:{},time:0};
   function fail(error){
     game.error=error;if(!initialized)rejectReady(error);
+    frameHold=undefined;game.submission=undefined;
     for(const entry of pending.values())entry.reject(error);pending.clear();
     worker.terminate();
   }
   function post(message){if(game.error)throw game.error;worker.postMessage(message);}
-  function request(message){return new Promise((resolve,reject)=>{
-    const id=++next;pending.set(id,{resolve,reject});
+  function request(message,{holdAfterResponse=false}={}){return new Promise((resolve,reject)=>{
+    const id=++next;pending.set(id,{resolve,reject,holdAfterResponse});
     try{post({...message,id});}catch(error){pending.delete(id);reject(error);}
   });}
   function subscribe(){
@@ -55,8 +57,14 @@ export function connectSimulation(worker,init,emit=()=>{},media){
     for(const [name,state]of states)Object.assign(Map.prototype.get.call(objects,name),state);
     for(const [query,value]of queryValues)values.set(query,value);
   }
-  worker.onmessage=({data})=>{
+  function receive(data){
     try{
+      // Preserve the scheduled scene while the ordered body-only read runs.
+      // Replies wait with their snapshots, so callers never observe a stale
+      // scene after a command promise has resolved.
+      if(frameHold&&(data.type==='snapshot'||data.type==='response'&&data.id!==frameHold.responseId)){
+        frameHold.messages.push(data);return;
+      }
       if(data.type==='ready'){
         const {objects:states,targetMotions,visualMotions,...description}=data.description;Object.assign(game,description);
         for(const [name,state]of states)objects.set(name,state);
@@ -74,18 +82,40 @@ export function connectSimulation(worker,init,emit=()=>{},media){
         if(!initialized){initialized=true;resolveReady(game);}
       }else if(data.type==='response'){
         const entry=pending.get(data.id);if(!entry)return;pending.delete(data.id);
+        if(entry.holdAfterResponse&&!data.error)frameHold={messages:[],responseId:null};
         data.error?entry.reject(Error(data.error)):entry.resolve(data.result);
       }else if(data.type==='fatal')fail(Error(data.message));
     }catch(error){fail(error);}
-  };
+  }
+  worker.onmessage=({data})=>receive(data);
   worker.onerror=event=>fail(Error(event.message||'Simulation worker failed'));
   worker.onmessageerror=()=>fail(Error('Simulation data could not be read'));
   game.start=()=>post({type:'start'});game.input=(action,down)=>post({type:'input',action,down});game.release=()=>{if(!game.error)post({type:'release'});};
   game.setPaused=value=>{if(paused!==value){paused=value;if(!game.error)post({type:'pause',value});}};
   game.flush=()=>request({type:'barrier'});
   game.prepareFrame=()=>request({type:'frame'});
+  Object.defineProperty(game,'presentationPaused',{get:()=>paused});
+  game.finishSubmissionFrame=()=>{
+    const held=frameHold;frameHold=undefined;game.submission=undefined;
+    if(held&&!game.error)for(const data of held.messages)receive(data);
+  };
+  game.prepareSubmissionFrame=async()=>{
+    if(closing)throw Error('Simulation is closing');
+    if(preparingFrame||frameHold)throw Error('A render frame is already pending');
+    preparingFrame=true;
+    try{
+      const prepared=await request({type:'frame',retainSubmission:true},{holdAfterResponse:true});
+      if(closing)throw Error('Simulation is closing');
+      frameHold.responseId=next+1;
+      const submission=await request({type:'submission',frame:prepared.frame});
+      if(closing)throw Error('Simulation is closing');
+      game.submission={...submission,bodies:new Map(submission.balls.map(ball=>[ball.id,ball]))};
+      return game.submission;
+    }catch(error){game.finishSubmissionFrame();throw error;}
+    finally{preparingFrame=false;}
+  };
   game.nativeBall=body=>({orientation:{rotation:()=>body.rotation()}});
   game.debug=command=>request({type:'debug',...command});
-  game.dispose=async()=>{try{await request({type:'dispose'});}finally{worker.terminate();}};
+  game.dispose=async()=>{closing=true;game.finishSubmissionFrame();try{await request({type:'dispose'});}finally{worker.terminate();}};
   post({type:'init',...init});return ready;
 }

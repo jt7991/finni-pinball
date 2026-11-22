@@ -232,6 +232,7 @@ class FullGame extends Pinball {
     // Native COM references remain readable after DestroyBall removes a body
     // from physics. Rules may still hold ActiveBall during the same callback.
     rec.lastState=Object.fromEntries(['x','y','z','velx','vely','velz','angmomx','angmomy','angmomz','angvelx','angvely','angvelz'].map(key=>[key,rec.proxy[key]]));
+    rec.lastRenderLocked=!!rec.held&&rec.held!=='lane';
     rec.removed=true;this.physicalRecords.splice(this.physicalRecords.indexOf(rec),1);for(const kicker of this.kickers)kicker.release(rec);
     const list=rec.isToy?this.toyRecords:this.records;this.byCollider.delete(rec.collider.handle);list.splice(list.indexOf(rec),1);
     for(const [key,value]of this.captures)if(value===rec)this.captures.delete(key);

@@ -4,6 +4,17 @@ const fields=['state','visible','sidevisible','basevisible','capvisible','ringvi
 const flasherFields=[...fields,'imageb','opacity','amount','filter','addblend','modulatevsadd','height'];
 const fieldsFor=(game,name)=>game.nativeParts.get(name)?.kind==='Flasher'?flasherFields:fields;
 const roots=['time','state','score','player','ballNumber','charge','inLane','tilted','gameState','held','physicsStats'];
+// A prepared native draw holds its Ball reference even if physics removes it
+// before submission. Never query a deleted Rapier body for that final state.
+export function snapshotSubmissionBall(game,record){
+  const f=Math.fround;
+  if(record.removed){
+    const state=record.lastState;
+    return{id:record.body.handle,position:{x:f(state.x),y:f(state.y),z:f(state.z)},velocity:{x:f(state.velx),y:f(state.vely),z:f(state.velz)},radius:f(record.proxy.radius),locked:record.lastRenderLocked};
+  }
+  const native=game.nativeBall(record.body),velocity=record.body.linvel();
+  return{id:record.body.handle,position:{...native.sync()},velocity:{x:f(velocity.x),y:f(-velocity.y),z:f(velocity.z)},radius:f(record.proxy.radius),locked:!!record.held&&record.held!=='lane'};
+}
 function objectState(object,keys=fields){
   const state={};
   for(const key of keys){const value=object[key];if(value===null||['string','number','boolean'].includes(typeof value))state[key]=value;}
