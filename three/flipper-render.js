@@ -1,0 +1,50 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Native flipper meshes and BasicShader textured material, Visual Pinball
+// 195f214dd4849b8ef6113fd377258b78d0dec3bf; see VPX-Physics-NOTICE.txt.
+import * as THREE from 'three';
+import {nativeFlipperMesh} from './flipper-mesh.js';
+import {nativeMaterialGLSL,nativeMaterialUniforms,nativeViewMatrix} from './classic-render.js';
+import {nativeFlipperWorld} from './flipper-transform.js';
+const f=Math.fround,DEGREES=f(Math.PI/180);
+const vertex=`attribute vec3 nativePosition;attribute vec3 nativeNormal;uniform mat4 nativeWorldView;uniform mat3 nativeNormalView;varying vec2 tex01;varying vec3 worldPos;varying vec3 surfaceNormal;
+void main(){tex01=uv;worldPos=(nativeWorldView*vec4(nativePosition,1.)).xyz;surfaceNormal=normalize(nativeNormalView*nativeNormal);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`;
+// The authored flippers are opaque, with no normal map, refraction, reflection
+// probe, ball-shadow light or transmission. Keep that native BasicShader path.
+const fragment=nativeMaterialGLSL+`uniform sampler2D tex_base_color;uniform vec4 staticColor_Alpha;varying vec2 tex01;varying vec3 worldPos;varying vec3 surfaceNormal;
+void main(){vec4 pixel=texture(tex_base_color,tex01);pixel.a*=cBase_Alpha.a;if(fDisableLighting_top_below.x<1.)pixel.xyz=clamp(pixel.xyz,0.,1.);vec3 diffuse=pixel.xyz*cBase_Alpha.xyz;vec3 glossy=is_metal?diffuse:(pixel.xyz*cGlossy_ImageLerp.w+(1.-cGlossy_ImageLerp.w))*cGlossy_ImageLerp.xyz*.08;vec3 specular=cClearcoat_EdgeAlpha.xyz*.08;float edge=is_metal?1.:Roughness_WrapL_Edge_Thickness.z;vec3 V=normalize(-worldPos),N=normalize(surfaceNormal);vec4 color=vec4(lightLoop(worldPos,N,V,diffuse,glossy,specular,edge,is_metal,0.),pixel.a);if(color.a<1.)color.a=GeometricOpacity(dot(N,V),color.a,cClearcoat_EdgeAlpha.w,Roughness_WrapL_Edge_Thickness.w);gl_FragColor=color*staticColor_Alpha;}`;
+
+export async function loadFlipperVisuals(base,anisotropy){
+  const metadata=await(await fetch(base+'flipper-tops.json')).json(),buffer=await(await fetch(base+metadata.file)).arrayBuffer(),images=[...new Set(['flipperx',...metadata.parts.map(p=>p.spec.image)])],textures={};
+  await Promise.all(images.map(async name=>{const sampler=metadata.samplers[name],texture=await new THREE.TextureLoader().loadAsync(base+name+'.webp');texture.flipY=false;texture.colorSpace=THREE.SRGBColorSpace;texture.wrapS=sampler[10242]===10497?THREE.RepeatWrapping:THREE.ClampToEdgeWrapping;texture.wrapT=sampler[10243]===10497?THREE.RepeatWrapping:THREE.ClampToEdgeWrapping;texture.anisotropy=Math.min(anisotropy,sampler[34046]??1);textures[name]=texture;}));
+  return{metadata,buffer,textures};
+}
+export function createFlipperMaterial(spec,lighting,view,texture){
+  return new THREE.ShaderMaterial({uniforms:{...nativeMaterialUniforms(spec,lighting,view),nativeWorldView:{value:new THREE.Matrix4()},nativeNormalView:{value:new THREE.Matrix3()},tex_base_color:{value:texture},staticColor_Alpha:{value:new THREE.Vector4(1,1,1,1)}},vertexShader:vertex,fragmentShader:fragment});
+}
+function geometry(values,indices,offset=0,count=values.length/8,topSize){
+  const positions=[],normals=[],uv=[],native=[],nativeNormals=[];
+  for(let i=offset;i<offset+count*8;i+=8){const x=values[i],y=values[i+1],z=values[i+2];native.push(x,y,z);nativeNormals.push(values[i+3],values[i+4],values[i+5]);
+    positions.push(-y*(topSize?.y??1)*.01,-x*(topSize?.x??1)*.01,z*(topSize?.z??1)*.01);normals.push(-values[i+4],-values[i+3],values[i+5]);uv.push(values[i+6],values[i+7]);}
+  const reversed=[];for(let i=0;i<indices.length;i+=3)reversed.push(indices[i],indices[i+2],indices[i+1]);const result=new THREE.BufferGeometry();result.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));result.setAttribute('normal',new THREE.Float32BufferAttribute(normals,3));result.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));result.setAttribute('nativePosition',new THREE.Float32BufferAttribute(native,3));result.setAttribute('nativeNormal',new THREE.Float32BufferAttribute(nativeNormals,3));result.setIndex(reversed);return result;
+}
+export function createFlipperVisuals(game,scene,lighting,assets){
+  const view=new THREE.Matrix4(),materials=new Map(lighting.metadata.materials.map(m=>[m.name,m])),parts=[],flippers=[];
+  const make=(name,shape,material,image,spec,state,flipper,top=false)=>{
+    const mesh=new THREE.Mesh(shape,createFlipperMaterial(materials.get(material),lighting,view,assets.textures[image]));mesh.name=name;scene.add(mesh);parts.push({mesh,spec,state,flipper,top});return mesh;
+  };
+  for(const flipper of game.flippers){
+    const spec=flipper.spec;if(!spec)throw Error('Authored flipper visual settings are missing');const generated=nativeFlipperMesh(spec,(spec.surface_height??0)*100),state=game.rules.objects.get(spec.name.toLowerCase());
+    const base=make(spec.name+':Base',geometry(generated.vertices,generated.indices,0,104),spec.material,spec.image,spec,state,flipper),rubber=spec.rubber_thickness>0?make(spec.name+':Rubber',geometry(generated.vertices,generated.indices,832,104),spec.rubber_material,spec.image,spec,state,flipper):null;
+    const topPart=assets.metadata.parts.find(p=>p.spec.name===spec.name+'Top');let top;
+    if(topPart){const p=topPart.spec;top=make(p.name,geometry(new Float32Array(assets.buffer,topPart.vertexByteOffset,topPart.vertices*8),new Uint16Array(assets.buffer,topPart.indexByteOffset,topPart.indices),0,topPart.vertices,p.size),p.material,p.image,p,game.rules.objects.get(p.name.toLowerCase()),flipper,true);}
+    flippers.push({spec,base,rubber,top});
+  }
+  const world=new THREE.Matrix4(),worldData=new Float32Array(16);
+  return{view,parts,flippers,update(camera){nativeViewMatrix(view,camera);
+    for(const part of parts){const {mesh,spec,state,flipper,top}=part,angle=top?f(f(state.rotz)*DEGREES):f(Math.PI/2-flipper.angle),position=top?spec.position:spec.center;
+      mesh.visible=!!state.visible;mesh.position.set(position.x*.01,(2115-position.y)*.01,top?position.z*.01:0);mesh.rotation.z=Math.PI/2-angle;
+      world.fromArray(nativeFlipperWorld(spec,angle,top,worldData));
+      const uniforms=mesh.material.uniforms;uniforms.nativeWorldView.value.multiplyMatrices(view,world);uniforms.nativeNormalView.value.getNormalMatrix(uniforms.nativeWorldView.value);
+    }
+  }};
+}

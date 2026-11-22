@@ -34,6 +34,11 @@ try{
     await call('Page.navigate',{url:base});await wait('document.getElementById("play")?.textContent==="Start game"');
     await wait('window.testDraws>0');
     const measurement={viewport:name,coldStartupMs:Date.now()-started,transferredBytes:pageTransferred+workerTransferred,pageTargetTransferredBytes:pageTransferred,workerTargetsTransferredBytes:workerTransferred,pageTargetJSHeapBytes:await evaluate('performance.memory?.usedJSHeapSize??null')};measurements.push(measurement);console.log('STARTUP',JSON.stringify(measurement));
+    await wait('[...document.querySelectorAll(".start-content img")].every(image=>image.complete&&image.naturalWidth>0)');await evaluate('document.fonts.ready');
+    assert.equal(await evaluate('getComputedStyle(document.body).fontFamily.includes("DM Sans")&&getComputedStyle(document.querySelector(".start-content h2")).fontFamily.includes("Pixel")'),true,'main arcade fonts load');
+    assert.equal(await evaluate('document.documentElement.scrollWidth<=innerWidth&&document.documentElement.scrollHeight<=innerHeight'),true,`${name} start screen no overflow`);
+    measurement.startScreenReadyMs=Date.now()-started;measurement.startScreenTransferredBytes=pageTransferred+workerTransferred;
+    await writeFile(`${output}/main-ui-start-${name}.png`,Buffer.from((await call('Page.captureScreenshot',{format:'png'})).data,'base64'));console.log('START_SCREEN',JSON.stringify({viewport:name,readyMs:measurement.startScreenReadyMs,transferredBytes:measurement.startScreenTransferredBytes}));
     await evaluate('document.getElementById("play").click()');
     await wait('document.body.classList.contains("ball-in-plunger")');
     assert.equal(await evaluate('document.documentElement.scrollWidth<=innerWidth&&document.documentElement.scrollHeight<=innerHeight'),true,`${name} no overflow`);
@@ -133,7 +138,12 @@ try{
       // only by discrete rule events, so this isolates the worker/render handoff.
       const classic=view.classicLights.lamps.findIndex(l=>l.spec.name==='li075'),classicLamp=game.rules.objects.get('li075'),readClassic=()=>({intensity:classicLamp.inplayintensity,texture:view.classicLights.texture.image.data[classic*16+3]});
       await set('li075.State=0');await advance(1000);view.render(1);const classicOff=readClassic();await set('li075.State=1');await advance(17);view.render(1);const classicOn=readClassic();await set('li075.State=0');await advance(17);view.render(1);const classicFade=readClassic();
-      return {parts,target:{middle,end},standups,sequences:{off:sequenceOff,restored:sequenceRestored,blink:sequenceBlink},lamps:{count:view.bulbHalos.lamps.length,off,full,fading,blinkOff,blinkOn},classic:{count:view.classicLights.lamps.length,draws:view.classicLights.meshes.length,off:classicOff,on:classicOn,fading:classicFade}};
+      const flippers=[],pivots=view.flipperVisuals.flippers.map(p=>p.top.position.clone());game.input('left',false);game.input('right',false);await advance(300);
+      for(const [down,ticks]of [[true,5],[false,5],[true,17],[false,17],[true,34],[true,100],[false,17],[false,150]]){
+        game.input('left',down);game.input('right',down);await advance(ticks);view.render(1);
+        view.flipperVisuals.flippers.forEach((part,i)=>{const state=game.rules.objects.get(part.spec.name.toLowerCase()+'top');flippers.push({name:part.spec.name,down,ticks,angle:game.flippers[i].angle,bodyAngle:part.base.rotation.z,topAngle:part.top.rotation.z,scriptTopAngle:state.rotz,pivotMovement:pivots[i].distanceTo(part.top.position)});});
+      }
+      return {parts,target:{middle,end},standups,sequences:{off:sequenceOff,restored:sequenceRestored,blink:sequenceBlink},lamps:{count:view.bulbHalos.lamps.length,off,full,fading,blinkOff,blinkOn},classic:{count:view.classicLights.lamps.length,draws:view.classicLights.meshes.length,off:classicOff,on:classicOn,fading:classicFade},flippers};
     })()`);
     const plates=animation.parts;
     assert.equal(animation.lamps.count,133);assert.equal(animation.lamps.off.intensity,0);assert.equal(animation.lamps.full.intensity,90);assert.equal(animation.lamps.fading.intensity,Math.fround(90-Math.fround(Math.fround(.9)*17)));assert.equal(animation.lamps.blinkOff.on,false);assert.equal(animation.lamps.blinkOn.on,true);
@@ -141,6 +151,8 @@ try{
     await writeFile(`${output}/lamp-render-animation.json`,JSON.stringify(animation.lamps,null,2));console.log('PASS native lamp fades, custom blink patterns and HDR bulb data');
     assert.equal(animation.classic.count,25);assert.equal(animation.classic.draws,1);assert.equal(animation.classic.off.intensity,0);assert.ok(animation.classic.on.intensity>0);assert.ok(animation.classic.fading.intensity<animation.classic.on.intensity);for(const sample of ['off','on','fading'])assert.equal(animation.classic[sample].texture,animation.classic[sample].intensity);assert.deepEqual(await evaluate('window.testShaderErrors'),[]);
     await writeFile(`${output}/classic-render-animation.json`,JSON.stringify(animation.classic,null,2));console.log('PASS native classic inserts receive worker fades in one textured draw');
+    assert.equal(animation.flippers.length,16);for(const sample of animation.flippers){const nativeAngle=Math.fround(Math.PI/2-sample.angle);assert.equal(sample.scriptTopAngle,Math.fround(nativeAngle*Math.fround(180/Math.PI)),'native Animate callback reaches the top');assert.equal(sample.bodyAngle,Math.PI/2-nativeAngle);assert.equal(sample.topAngle,Math.PI/2-Math.fround(Math.fround(sample.scriptTopAngle)*Math.fround(Math.PI/180)));assert.equal(sample.pivotMovement,0);}assert.ok(new Set(animation.flippers.map(s=>s.angle)).size>4);
+    await writeFile(`${output}/flipper-render-animation.json`,JSON.stringify(animation.flippers,null,2));console.log('PASS native flipper bases and textured tops follow worker taps, holds and releases at fixed pivots');
     assert.deepEqual(animation.sequences.off,{script:2,locked:true,display:0});
     assert.deepEqual(animation.sequences.restored,{script:1,locked:false});
     assert.deepEqual(animation.sequences.blink,{script:1,locked:true,display:1});

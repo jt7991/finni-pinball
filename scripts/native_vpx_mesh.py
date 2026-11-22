@@ -37,7 +37,7 @@ def transformed(mesh,item):
         a,b,c=mesh['indices'][i:i+3];indices.extend([a,c,b])
     return {'vertices':vertices,'indices':indices,'native_edges':True}
 
-def read_meshes(path):
+def read_meshes(path,render=False):
     result={}
     with olefile.OleFileIO(path) as table:
         for path in table.listdir():
@@ -54,9 +54,11 @@ def read_meshes(path):
             count=struct.unpack('<I',tags[b'M3VN'])[0]
             if len(raw)!=count*32:raise ValueError(f'Unexpected native vertex stride {path}')
             vertices=[struct.unpack_from('<3f',raw,i*32) for i in range(count)]
+            render_bytes=raw if render else None
             raw=zlib.decompress(tags[b'M3CI']) if b'M3CI' in tags else tags[b'M3DI']
             count_indices=struct.unpack('<I',tags[b'M3FN'])[0];fmt='I' if count>65535 else 'H'
             if len(raw)!=count_indices*struct.calcsize(fmt):raise ValueError(f'Unexpected native index stride {path}')
             indices=list(struct.unpack('<'+fmt*count_indices,raw));name=tags[b'NAME'][4:].decode('utf-16le')
             result[name]={'vertices':vertices,'indices':indices}
+            if render:result[name]['render_bytes']=render_bytes
     return result

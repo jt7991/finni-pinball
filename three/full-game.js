@@ -16,6 +16,7 @@ import {Kicker} from './kicker.js';
 import {nativeSurfaceHeight} from './native-ramp.js';
 import {nativePitchFactor} from './native-sound.js';
 import {nativeTargetEvent} from './native-target-event.js';
+import {FlipperAnimation} from './flipper-animation.js';
 
 export async function createFullGame(layout,specs,source,emit,media,options={}) {
   await RAPIER.init();
@@ -54,7 +55,8 @@ class FullGame extends Pinball {
       mechanismValue:(name,key)=>{const lower=name.toLowerCase(),hit=this.nativeHitObjects.get(lower);if(hit&&key==='hitthreshold')return hit.currentHitThreshold;const target=this.targetMotions.get(lower);if(target)return ({isdropped:target.dropped?1:0,currentanimoffset:target.offset})[key];const gate=this.gates.find(g=>g.spec.name.toLowerCase()===lower);if(gate)return ({currentangle:gate.currentAngle,collidable:gate.enabled,open:gate.open})[key];const sling=this.nativeSlingshots.get(lower);if(sling){const value=({disabled:sling.disabled,slingshotthreshold:sling.threshold})[key];if(value!==undefined)return value;}const bumper=this.nativeBumpers.get(lower);if(bumper)return ({threshold:bumper.bumper.threshold,force:bumper.bumper.force,scatter:bumper.bumper.scatter,hashitevent:bumper.bumper.hit_event,collidable:bumper.collider.isEnabled()})[key];},
       balls:()=>this.physicalRecords.map(r=>r.proxy),random:()=>this.random(),tableSize:{width:layout.width,height:layout.height},...storage,
     });
-    this.frameMechanisms=[...this.targetMotions.values(),...this.rules.sequences.values(),...this.rules.lamps.values()].sort((a,b)=>(a.spec.native_source_order??0)-(b.spec.native_source_order??0));
+    const flipperAnimations=this.flippers.map(flipper=>{const spec=this.nativeParts.get(this.colliderLabels.get(flipper.collider.handle).toLowerCase());return new FlipperAnimation(spec,()=>flipper.nativeAngle??Math.fround(Math.PI/2-flipper.angle),()=>this.rules.hit(spec.name,'Animate'));});
+    this.frameMechanisms=[...flipperAnimations,...this.targetMotions.values(),...this.rules.sequences.values(),...this.rules.lamps.values()].sort((a,b)=>(a.spec.native_source_order??0)-(b.spec.native_source_order??0));
     this.rules.init();
     this.rules.execute('bFreePlay=True:BallsPerGame=3');
     this.sync();

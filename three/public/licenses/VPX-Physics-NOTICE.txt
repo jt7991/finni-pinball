@@ -68,6 +68,20 @@ are included under references/vpx-render. The corresponding capture observer
 and exporter are scripts/probe-native-lighting-browser.mjs and
 scripts/export-native-lighting.mjs. The native compiled fragment verifies
 same-GPU output independently with controlled valid lamp inputs.
+flipper-mesh.js and flipper-mesh-data.js preserve GenerateBaseMesh/ApplyFix,
+authored base/rubber dimensions, normals and UVs. flipper-animation.js retains
+the per-frame Animate event; flipper-transform.js and flipper-render.js map
+the original base, rubber and textured top transforms and BasicShader lighting:
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/parts/flipper.cpp
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/meshes/flipperBase.h
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/shaders/hlsl_glsl/BasicShader.glfx
+The native GPU buffers independently verify every authored vertex bit, normal,
+UV and index, and the original compiled fragment verifies material output.
+flipper-tops.bin preserves the original table's Float32 top meshes. Their
+textures and flipperx.webp retain the table assets' existing rights.
+flipper-float-math.js adapts the Emscripten musl/Sun atan functions solely
+for source mesh math; see Sun-Float-Math-NOTICE.txt and the included reference
+sources under references/vpx-render.
 native-flipper-contact.js includes HitFlipper::Collide event timing and speed
 arguments. full-game.js also preserves Flipper::get_CurrentAngle conversion:
 https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/parts/flipper.cpp

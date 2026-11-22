@@ -29,7 +29,8 @@ varying vec2 tex0;varying vec3 worldPos;varying vec3 tablePos;varying vec3 lampN
 flat varying vec4 lightColor_intensity;flat varying vec4 lightColor2_falloff_power;flat varying vec4 lightCenter_maxRange;flat varying vec2 enabled;
 void main(){float y=(lampIndex+.5)/lampCount;lightColor_intensity=texture2D(lampData,vec2(.125,y));lightColor2_falloff_power=texture2D(lampData,vec2(.375,y));lightCenter_maxRange=texture2D(lampData,vec2(.625,y));enabled=texture2D(lampData,vec2(.875,y)).xy;
 tablePos=nativePosition;worldPos=(matView[0]*vec4(nativePosition,1.)).xyz;lampNormal=(matView[0]*vec4(0.,0.,1.,0.)).xyz;tex0=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}`;
-const fragment=prefix+es(helperSource)+es(materialSource)+`
+export const nativeMaterialGLSL=prefix+es(helperSource)+es(materialSource);
+const fragment=nativeMaterialGLSL+`
 varying vec2 tex0;varying vec3 worldPos;varying vec3 tablePos;varying vec3 lampNormal;
 flat varying vec4 lightColor_intensity;flat varying vec4 lightColor2_falloff_power;flat varying vec4 lightCenter_maxRange;flat varying vec2 enabled;
 void main(){if(enabled.x==0.||(enabled.y!=0.&&lightColor_intensity.w==0.))discard;
@@ -42,6 +43,12 @@ gl_FragColor=color;}`;
 
 export const classicShader={vertex,fragment};
 export function colorVector(value,alpha=0){const c=nativeColor(value);return new THREE.Vector4(f((c&255)*f(1/255)),f((c&65280)*f(1/65280)),f((c&16711680)*f(1/16711680)),f(alpha));}
+export function nativeMaterialUniforms(spec,lighting,view){
+  const globals=lighting.metadata.globals,vector=a=>new THREE.Vector4(...a),pairs=a=>[vector(a.slice(0,4)),vector(a.slice(4,8))];
+  return{matView:{value:[view]},tex_env:{value:lighting.textures.environment},tex_diffuse_env:{value:lighting.textures.irradiance},is_metal:{value:spec.type==='metal'},basicLightPos:{value:pairs(globals.positions)},basicLightEmission:{value:pairs(globals.emissions)},cAmbient_LightRange:{value:vector(globals.ambientRange)},fenvEmissionScale_TexWidth:{value:new THREE.Vector2(...globals.envScaleWidth)},fDisableLighting_top_below:{value:new THREE.Vector2(...globals.disableLighting)},cBase_Alpha:{value:colorVector(spec.base_color,spec.opacity_active?spec.opacity:1)},cGlossy_ImageLerp:{value:colorVector(spec.type==='metal'?0:spec.glossy_color,spec.type==='metal'?0:spec.glossy_image_lerp)},cClearcoat_EdgeAlpha:{value:colorVector(spec.clearcoat_color,spec.edge_alpha)},Roughness_WrapL_Edge_Thickness:{value:new THREE.Vector4(f(2**f(f(10*f(spec.roughness))+1)),f(spec.wrap_lighting),f(spec.edge),f(spec.thickness))}};
+}
+const tableToThree=new THREE.Matrix4().makeTranslation(0,21.15,0).multiply(new THREE.Matrix4().makeScale(.01,-.01,.01)),nativeUnits=new THREE.Matrix4().makeScale(100,100,100);
+export function nativeViewMatrix(view,camera){return view.copy(nativeUnits).multiply(camera.matrixWorldInverse).multiply(tableToThree);}
 export async function loadNativeLighting(base){
   const response=await fetch(base+'native-lighting.json');if(!response.ok)throw Error('Native lighting metadata unavailable');const metadata=await response.json(),textures={};
   await Promise.all(Object.entries(metadata.textures).map(async([name,spec])=>{
@@ -69,9 +76,8 @@ export function createClassicLights(game,scene,floor,lighting){
     const material=new THREE.ShaderMaterial({vertexShader:vertex,fragmentShader:fragment,uniforms:{lampData:{value:texture},lampCount:{value:Math.max(1,specs.length)},matView:{value:[view]},tex_env:{value:lighting.textures.environment},tex_diffuse_env:{value:lighting.textures.irradiance},tex_light_color:{value:floor},is_metal:{value:spec.type==='metal'},lightingOff:{value:group.imageMode},basicLightPos:{value:pairs(globals.positions)},basicLightEmission:{value:pairs(globals.emissions)},cAmbient_LightRange:{value:vector(globals.ambientRange)},fenvEmissionScale_TexWidth:{value:new THREE.Vector2(...globals.envScaleWidth)},fDisableLighting_top_below:{value:new THREE.Vector2(...globals.disableLighting)},cBase_Alpha:{value:colorVector(spec.base_color,spec.opacity_active?spec.opacity:1)},cGlossy_ImageLerp:{value:colorVector(spec.type==='metal'?0:spec.glossy_color,spec.glossy_image_lerp)},cClearcoat_EdgeAlpha:{value:colorVector(spec.clearcoat_color,spec.edge_alpha)},Roughness_WrapL_Edge_Thickness:{value:new THREE.Vector4(f(2**f(f(10*f(spec.roughness))+1)),f(spec.wrap_lighting),f(spec.edge),f(spec.thickness))}},transparent:true,depthWrite:false,side:THREE.DoubleSide,blending:THREE.CustomBlending,blendEquation:THREE.AddEquation,blendSrc:THREE.OneFactor,blendDst:THREE.OneFactor});
     const mesh=new THREE.Mesh(geometry,material);mesh.name='NativeClassicLights:'+name;mesh.frustumCulled=false;mesh.renderOrder=0;scene.add(mesh);meshes.push(mesh);
   }
-  const conversion=new THREE.Matrix4().makeTranslation(0,21.15,0).multiply(new THREE.Matrix4().makeScale(.01,-.01,.01)),units=new THREE.Matrix4().makeScale(100,100,100);
   return{meshes,lamps,texture,view,update(camera){
-    view.copy(units).multiply(camera.matrixWorldInverse).multiply(conversion);
+    nativeViewMatrix(view,camera);
     for(const [index,{spec,state,surface,skipOff}]of lamps.entries()){
       const offset=index*16,low=colorVector(state.color,state.inplayintensity),full=colorVector(state.colorfull,spec.falloff_power??2);low.toArray(data,offset);full.toArray(data,offset+4);data[offset+8]=spec.center.x;data[offset+9]=spec.center.y;data[offset+10]=f(f(surface*100)+f(spec.height??0));data[offset+11]=f(1/Math.max(spec.falloff_radius??50,.1));data[offset+12]=state.visible&&(!skipOff||((nativeColor(state.color)|nativeColor(state.colorfull))&0xffffff))?1:0;data[offset+13]=skipOff?1:0;
     }texture.needsUpdate=true;

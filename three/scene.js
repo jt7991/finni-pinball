@@ -5,6 +5,7 @@ import {RADIUS} from './game-constants.js';
 import {applyTargetAnimation,targetAnimationAxis} from './target-render.js';
 import {createBulbHalos,createLightFrame} from './bulb-render.js';
 import {createClassicLights,loadNativeLighting} from './classic-render.js';
+import {createFlipperVisuals,loadFlipperVisuals} from './flipper-render.js';
 
 export async function createView(canvas, game) {
   const renderer=new THREE.WebGLRenderer({canvas,antialias:false,alpha:false,powerPreference:'high-performance'});
@@ -16,10 +17,11 @@ export async function createView(canvas, game) {
   const fill=new THREE.DirectionalLight(0xc7dcff,1.3);fill.position.set(12,15,12);scene.add(fill);
   const base=import.meta.env.BASE_URL;
   const draco=new DRACOLoader().setDecoderPath(`${base}draco/`).setDecoderConfig({type:'wasm'}).setWorkerLimit(1);
-  const [floor,table,lighting]=await Promise.all([
+  const [floor,table,lighting,flipperAssets]=await Promise.all([
     new THREE.TextureLoader().loadAsync(`${base}playfield.webp`),
     new GLTFLoader().setDRACOLoader(draco).loadAsync(`${base}table.glb`),
     loadNativeLighting(base),
+    loadFlipperVisuals(base,renderer.capabilities.getMaxAnisotropy()),
   ]);
   draco.dispose();
   floor.colorSpace=THREE.SRGBColorSpace;floor.flipY=false;floor.anisotropy=renderer.capabilities.getMaxAnisotropy();
@@ -40,23 +42,10 @@ export async function createView(canvas, game) {
   });
 
   const steel=new THREE.MeshStandardMaterial({color:0xb0bac6,metalness:.65,roughness:.32});
-  const cream=new THREE.MeshStandardMaterial({color:0xffe7b0,roughness:.38});
-  const pink=new THREE.MeshStandardMaterial({color:0xf42480,roughness:.42});
   // Ramp collision strips are deliberately invisible. The accepted model supplies
   // the open wire geometry; filling the strips would turn it into a solid chute.
 
-  const flippers=game.flippers.map(f=>{
-    const group=new THREE.Group();group.position.set(f.p.x,f.p.y,0);
-    const outline=new THREE.Shape();
-    const length=f.length;
-    outline.absarc(0,0,.205,Math.PI/2,Math.PI*1.5,false);
-    outline.lineTo(length,-.117);outline.absarc(length,0,.117,-Math.PI/2,Math.PI/2,false);outline.closePath();
-    const mesh=new THREE.Mesh(new THREE.ExtrudeGeometry(outline,{depth:.28,bevelEnabled:true,bevelThickness:.03,bevelSize:.02,bevelSegments:1,steps:1,curveSegments:12}),cream);
-    mesh.position.z=.08;group.add(mesh);
-    const top=new THREE.Mesh(new THREE.CapsuleGeometry(.08,length*.65,3,8),pink);
-    top.rotation.z=Math.PI/2;top.position.set(length*.5,0,.4);group.add(top);
-    scene.add(group);return group;
-  });
+  const flipperVisuals=createFlipperVisuals(game,scene,lighting,flipperAssets);
   const ball=new THREE.Mesh(new THREE.SphereGeometry(RADIUS,20,14),new THREE.MeshStandardMaterial({color:0xffffff,metalness:.7,roughness:.17}));
   scene.add(ball);
   // Baked contact shadows avoid a per-frame shadow-map pass on phones.
@@ -110,8 +99,8 @@ export async function createView(canvas, game) {
         m.obj.rotation.z=m.rotation.z-Number(m.state.roty)*Math.PI/180;
       }
     }
-    for(let i=0;i<flippers.length;i++)flippers[i].rotation.z=game.flippers[i].angle;
+    flipperVisuals.update(camera);
     classicLights.update(camera);bulbHalos.update();lightFrame.render(scene,camera);
   }
-  return {renderer,scene,classicLights,bulbHalos,render,resize,shake(strength){shakeUntil=game.time+.8;shakeStrength=Number(strength)||1;},setCamera(value){cameraMode=value;resize();},setQuality(value){quality=value;resize();}};
+  return {renderer,scene,classicLights,bulbHalos,flipperVisuals,render,resize,shake(strength){shakeUntil=game.time+.8;shakeStrength=Number(strength)||1;},setCamera(value){cameraMode=value;resize();},setQuality(value){quality=value;resize();}};
 }

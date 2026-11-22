@@ -10,7 +10,7 @@ function objectState(object){
 export function describeGame(game){
   const mechanism=m=>({spec:{name:m.spec.name,kind:m.spec.kind,rotation:m.spec.rotation,is_visible:m.spec.is_visible},angle:m.angle});
   return {
-    flippers:game.flippers.map(f=>({p:{...f.p},length:f.length,angle:f.angle})),
+    flippers:game.flippers.map(f=>{const spec=game.nativeParts.get(game.colliderLabels.get(f.collider.handle).toLowerCase());return{p:{...f.p},length:f.length,angle:f.angle,spec:{...spec,surface_height:game.surface(spec)}};}),
     scoop:{...game.scoop},spinners:game.spinners.map(mechanism),gates:game.gates.map(mechanism),
     targetMotions:[...game.targetMotions].map(([name,m])=>[name,{offset:m.offset,collidable:m.collidable,drop:m.drop,rotZ:m.spec.rot_z}]),
     specs:{objects:game.specs.objects.filter(s=>s.kind==='Light').map(s=>({...s,surface_height:game.surface(s)}))},
