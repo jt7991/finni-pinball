@@ -21,12 +21,27 @@ export function createSimulationHost(send,{allowDebug=false,now=()=>performance.
     fatal=true;paused=true;clearTimeout(timer);send({type:'fatal',message:error.message,stack:error.stack});
   }
   function enqueue(){if(!queued&&!disposed&&!paused&&!fatal){queued=true;channel.port2.postMessage(0);}}
+  const dueTick=time=>anchorTick+Math.floor((time-anchorWall)/(STEP*1000));
+  function stepPhysicsTick(){
+    const before=now();lastPhysicsMilliseconds=wallNow();game.step();stats.physicsMs+=now()-before;tick++;stats.ticks++;
+  }
+  function catchUpForRender(){
+    if(paused)return;
+    // VPX updates game logic before both preparation and submission. The pump
+    // can have work queued when a render command arrives. Consume that work
+    // through the entry-time target, without forcing ticks or chasing time
+    // spent in this update. The ordinary background pump still yields.
+    const start=now(),due=dueTick(start);
+    while(tick<due)stepPhysicsTick();
+    stats.maxChunkMs=Math.max(stats.maxChunkMs,now()-start);
+    stats.lagMs=Math.max(0,(due-tick)*STEP*1000);
+  }
   function pump(){
     queued=false;if(disposed||paused||fatal)return;
     try{
-      const start=now(),due=anchorTick+Math.floor((start-anchorWall)/(STEP*1000));
+      const start=now(),due=dueTick(start);
       for(let count=0;tick<due&&count<4;count++){
-        const before=now();lastPhysicsMilliseconds=wallNow();game.step();stats.physicsMs+=now()-before;tick++;stats.ticks++;
+        stepPhysicsTick();
         if(now()-start>=4)break;
       }
       stats.maxChunkMs=Math.max(stats.maxChunkMs,now()-start);
@@ -87,6 +102,7 @@ export function createSimulationHost(send,{allowDebug=false,now=()=>performance.
           case 'release':game.release();break;
           case 'pause':pause(message.value);break;
           case 'frame':
+            catchUpForRender();
             game.prepareFrame();game.sync();
             if(message.retainSubmission){
               if(retainedFrame)throw Error('A prepared frame is already awaiting submission');
@@ -96,6 +112,7 @@ export function createSimulationHost(send,{allowDebug=false,now=()=>performance.
             break;
           case 'submission':
             if(!retainedFrame||retainedFrame.id!==message.frame)throw Error('Prepared frame is unavailable');
+            catchUpForRender();
             result={frame:retainedFrame.id,balls:retainedFrame.records.map(record=>snapshotSubmissionBall(game,record)),paused,presentationClock:{epochMilliseconds,lastPhysicsMilliseconds}};
             retainedFrame=undefined;bodyReadOnly=true;
             break;
