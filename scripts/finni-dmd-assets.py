@@ -197,8 +197,15 @@ def build(label, font):
         motion.pop(unused,None)
     animations = runpy.run_path(str(ROOT/'scripts/finni-dmd-motion.py'))['build_frames'](sprites, layout, motion)
     (ART/'animations.json').write_text(json.dumps(animations,indent=2)+'\n')
-    source=json.loads((ROOT/'.work/deadpool-extracted/images.json').read_text())
-    source_names={e['name'].lower() for e in source if e['name'].lower().startswith(('d_','bk'))}
+    source_index=ROOT/'.work/deadpool-extracted/images.json'
+    if source_index.exists():
+        source=json.loads(source_index.read_text())
+        source_names={e['name'].lower() for e in source if e['name'].lower().startswith(('d_','bk'))}
+    else:
+        # DMD-only rebuilds can use the committed slot inventory without the
+        # original licensed table. Full table builds still validate its index.
+        source_names={name for name in json.loads((ART/'manifest.json').read_text())
+                      if '_anim' not in name}
     assert source_names <= sprites.keys(), 'Unmapped DMD assets: '+str(source_names-sprites.keys())
     out=ART/'sprites';out.mkdir(exist_ok=True)
     manifest={}

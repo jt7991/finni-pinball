@@ -1,0 +1,6 @@
+{
+  "size": [1536, 1024],
+  "columns": 6,
+  "row_edges": [0, 124, 252, 382, 507, 630, 740, 868, 1024],
+  "rows": ["wave", "wrap", "cookies", "frosting", "disco", "bunting", "pump", "pinata"]
+}
