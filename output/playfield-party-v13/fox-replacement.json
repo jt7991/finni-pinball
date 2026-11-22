@@ -1,0 +1,24 @@
+{
+  "change": "Replace the central fox with the first selected alternative; remove the drain fox, clipboard and pencil",
+  "generation": "Built-in ImageGen for local background reconstruction; deterministic composition of the exact approved transparent fox PNG",
+  "fox_reference": "center-fox-reference.png",
+  "background_reconstruction": "fox-removal-generated-background.png",
+  "reconstruction_mask": "fox-removal-mask.png",
+  "native_background_size": [
+    841,
+    1870
+  ],
+  "fox_placement": {
+    "left": 38,
+    "top": 740,
+    "width": 560,
+    "preserve_aspect_ratio": true
+  },
+  "composition": "Composite reconstructed background through the local removal mask over the existing background, then overlay the selected fox. Replace only the mission-aligned-party-environment image in each SVG. Re-render print and assembled floor while retaining original PNG pixels wherever the old and new SVG renders match.",
+  "preserved": "All other characters, headline, bottom title, task and supply illustrations, labels, lens layers, 58 insert masks, hardware and gameplay",
+  "verification": "Non-background SVG content matches byte-for-byte; PNG alpha channels unchanged; zero changed pixels outside the two local fox bands",
+  "insert_covers": {
+    "source": "cover-palette.json",
+    "change": "Saturated amber/cobalt lenses and neutral smoked-clear shared arrows; all 58 windows unchanged"
+  }
+}

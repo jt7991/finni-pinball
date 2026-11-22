@@ -10,6 +10,7 @@ import io
 import json
 import math
 import re
+import runpy
 import sys
 import xml.etree.ElementTree as ET
 
@@ -20,6 +21,7 @@ from PIL import Image, ImageChops, ImageFilter
 
 ART = ROOT/json.loads((ROOT/'design/current-assets.json').read_text())['playfield_directory']
 NS = '{http://www.w3.org/2000/svg}'
+visual_light = runpy.run_path(str(ROOT/'scripts/apply-finni-lighting.py'))['visual_light']
 tree = ET.parse(ART/'finni-playfield-base.svg').getroot()
 tasks = json.loads((ROOT/'design/party-tasks.json').read_text(encoding='utf-8'))['modes']
 mapping = {m['insert']: m for m in json.loads((ART/'mission-art-map.json').read_text(encoding='utf-8'))}
@@ -61,6 +63,7 @@ for path in paths:
     name = light['name']
     override = ART/'vpx-light-overrides'/(name+'.json')
     expected = json.loads(override.read_text())['Light'] if override.exists() else light
+    expected = visual_light(expected)
     if table:
         actual = json.loads((table/'gameitems'/('Light.'+name+'.json')).read_text())['Light']
         # The build themes lamp colors separately; registration must preserve

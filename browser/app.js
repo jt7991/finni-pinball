@@ -312,7 +312,7 @@ async function boot(){
     const probe=document.createElement('canvas').getContext('webgl2');
     if(!probe)throw Error('WebGL 2 is required. Enable graphics acceleration or try a current browser.');
     probe.getExtension('WEBGL_lose_context')?.loseContext();
-    const [factory, response]=await Promise.all([import('/engine/vpinball.js'),fetch('/table.vpx')]);
+    const [factory, response]=await Promise.all([import('/engine/vpinball.js'),fetch('/table.vpx?v=fox-inserts-20261122')]);
     if(!response.ok)throw Error('The Finni VPX table is missing. Build it first (see README).');
     let table=await response.arrayBuffer();enginePhase='Preparing engine';$('progress').value=55;$('loading').textContent='Preparing the VPX engine…';
     engine=await factory.default({canvas:$('canvas'),preRun:[module=>configureRenderer(module,{mobile:phoneLayout.matches,quality:graphics})],locateFile:path=>`/engine/${path}`,print:log,printErr:log,onAbort:fail,setStatus:text=>{if(text)$('loading').textContent=text;}});

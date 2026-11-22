@@ -33,7 +33,7 @@ body:not(.playing) .start-subtitle{display:none}body:not(.playing) .start-dmd{di
 body:not(.playing) .preview-cell{display:flex;justify-content:center;min-height:0;align-items:center}
 .preview-frame{height:100%;aspect-ratio:292/421;max-height:421px;max-width:100%;position:relative}
 .preview-frame::before,.preview-frame::after{content:'';position:absolute;inset:0 auto 0 0;width:14px;border:3px solid var(--cyan);border-right:0;pointer-events:none}.preview-frame::after{inset:0 0 0 auto;border:3px solid var(--cyan);border-left:0}
-.preview-crop{position:absolute;inset:0 7.192%;overflow:hidden;background:var(--bg)}.preview-crop img{position:absolute;left:0;top:-19.54%;width:100%;height:auto;display:block}
+.preview-crop{position:absolute;inset:0 7.192%;overflow:hidden;background:var(--bg)}.preview-crop img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 body:not(.playing) .start-state{margin:0;text-align:center;min-height:20px}body:not(.playing) #play{width:100%;min-width:0;margin:0}
 body:not(.playing) .toolbar{position:fixed;inset:max(20px,env(safe-area-inset-top)) 24px auto;z-index:5;height:44px;min-height:44px;padding:0;border:0;background:transparent;display:block;transform:none}
 body:not(.playing) .toolbar>h1,body:not(.playing) .toolbar>.scoreboard,body:not(.playing) .toolbar>.view-picker,body:not(.playing) .toolbar nav>button:not(#touch-help):not(#fullscreen){display:none}
