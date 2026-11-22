@@ -42,6 +42,16 @@ copies without changing any half-float bits. Presentation-time extrapolation,
 anti-stretch settings, trails and source dynamic light shadows still need
 separate native comparisons. Whole-frame VPX equivalence remains unverified.
 
+The next flasher component now has a complete independent ownership capture:
+all 63 source flashers map to one GPU draw each after revealing hidden variants,
+with every original visibility flag restored. `native-flasher-mesh.js` reproduces
+all 2,016 position/normal/UV fields bit for bit from authored control points,
+source rotation order and wrap/world UV rules. Its permanent native fixture
+contains source properties and independent GPU buffer digests. This module is
+not connected to the scene yet; shader, dynamic image bindings and opacity still
+need integration and comparison. The validated live build remains on the ball
+checkpoint while this work continues.
+
 The ownership audit covers 650 authored renderable objects. All 589 BasicShader
 draws in the independent frame with revealed sling variants have exactly one
 resolved owner. Twelve shared geometry digests are disambiguated by native
