@@ -2,9 +2,10 @@
 // Original native BasicShader programs and primitive transforms. See VPX-Physics-NOTICE.txt.
 import * as THREE from 'three';
 import {nativeIdentity} from './native-matrix.js';
-import {nativePrimitiveMatrices,nativeModelMatrices} from './primitive-transform.js';
+import {nativePrimitiveWorld,nativePrimitiveMatrices,nativeModelMatrices} from './primitive-transform.js';
 import {nativeShaderArray} from './native-shader-state.js';
 import {decodeNativeGeometry} from './native-geometry-codec.js';
+import {nativeMirrorNormalFactor} from './native-reflection.js';
 
 const filters={9728:THREE.NearestFilter,9729:THREE.LinearFilter,9984:THREE.NearestMipmapNearestFilter,9985:THREE.LinearMipmapNearestFilter,9986:THREE.NearestMipmapLinearFilter,9987:THREE.LinearMipmapLinearFilter},wraps={10497:THREE.RepeatWrapping,33071:THREE.ClampToEdgeWrapping,33648:THREE.MirroredRepeatWrapping};
 const stripVersion=source=>source.replace(/^#version[^\n]*\n/,'');
@@ -28,9 +29,10 @@ export async function loadNativePrimitiveVisuals(base,metadataFile='native-primi
 export function createNativeBaseTexture(assets,id,sampler){
  const spec=assets.metadata.textures[id],levels=assets.pixels[id];if(spec.pixelFormat!==6408||spec.pixelType!==5121)throw Error('Unsupported native base texture upload '+id);const texture=spec.encoding==='webp-lossless'?new THREE.Texture(levels):new THREE.DataTexture(new Uint8Array(levels[0].bytes),spec.width,spec.height,THREE.RGBAFormat,THREE.UnsignedByteType);texture.flipY=false;texture.colorSpace=spec.format===35907?THREE.SRGBColorSpace:THREE.NoColorSpace;texture.internalFormat=spec.format===35907?'SRGB8_ALPHA8':'RGBA8';texture.wrapS=wraps[sampler[10242]];texture.wrapT=wraps[sampler[10243]];texture.magFilter=filters[sampler[10240]];texture.minFilter=filters[sampler[10241]];texture.anisotropy=sampler[34046]??1;texture.generateMipmaps=spec.generatedMipmaps;if(Array.isArray(levels)&&levels.length>1){texture.mipmaps=levels.map(level=>({width:level.width,height:level.height,data:new Uint8Array(level.bytes)}));texture.generateMipmaps=false;}texture.needsUpdate=true;return texture;
 }
-export function createNativePrimitiveVisuals(renderer,scene,assets,lighting,{stateFor=()=>null,transmissionTexture}={}){
+export function createNativePrimitiveVisuals(renderer,scene,assets,lighting,{stateFor=()=>null,transmissionTexture,reflectionTexture}={}){
  if(!transmissionTexture&&assets.metadata.parts.some(p=>p.uniforms.cBase_Alpha?.[3]<1&&p.uniforms.fDisableLighting_top_below?.[1]<1))throw Error('Native translucent primitives require a light transmission texture');
- if(assets.metadata.parts.some(p=>p.uniforms.doNormalMapping||p.uniforms.doRefractions||(p.uniforms.mirrorNormal_factor?.[3]??0)>0))throw Error('Native normal maps and reflection/refraction probes need their rendering passes');
+ if(assets.metadata.parts.some(p=>p.uniforms.doNormalMapping||p.uniforms.doRefractions))throw Error('Native normal maps and refraction probes need their rendering passes');
+ if(assets.metadata.parts.some(p=>(p.probe||(p.uniforms.mirrorNormal_factor?.[3]??0)>0)&&(!reflectionTexture||!p.probe)))throw Error('Native reflections need an authored probe and its rendered texture');
  if(assets.metadata.parts.some(p=>(p.uniforms.lightCenter_doShadow?.[3]??0)>0))throw Error('Native ball shadows need current ball inputs');
  const stream=new NativeMatrixStream(renderer),parts=[],textures=new Map(),dummy=new THREE.DataTexture(new Uint8Array(4),1,1,THREE.RGBAFormat);dummy.needsUpdate=true;const root=new THREE.Group();root.name='NativePrimitives';scene.add(root);
  const baseTexture=record=>{const key=JSON.stringify(record);if(!textures.has(key))textures.set(key,createNativeBaseTexture(assets,record.id,record.sampler));return textures.get(key);};
@@ -38,13 +40,13 @@ export function createNativePrimitiveVisuals(renderer,scene,assets,lighting,{sta
   uniforms.w_h_height={value:new Float32Array(4)};
   uniforms.matProj={value:new Float32Array(16)};
   uniforms.balls={value:new Float32Array(32)};
-  for(const [name,record]of Object.entries(spec.textures)){let texture=dummy;if(name==='tex_base_color')texture=baseTexture(record);else if(name==='tex_env')texture=lighting.textures.environment;else if(name==='tex_diffuse_env')texture=lighting.textures.irradiance;else if(name==='tex_base_transmission')texture=transmissionTexture??dummy;uniforms[name]={value:texture};}
+  for(const [name,record]of Object.entries(spec.textures)){let texture=dummy;if(name==='tex_base_color')texture=baseTexture(record);else if(name==='tex_env')texture=lighting.textures.environment;else if(name==='tex_diffuse_env')texture=lighting.textures.irradiance;else if(name==='tex_base_transmission')texture=transmissionTexture??dummy;else if(name==='tex_reflection')texture=reflectionTexture??dummy;uniforms[name]={value:texture};}
   const state=spec.renderState;
   // These are the native states supported by this basic material path. Fail
   // explicitly if a newly exported part needs another rendering technique.
   if(state.frontFace!==2305||state.depthFunc!==515||state.cull&&![1028,1029].includes(state.cullFace)||state.blend&&(state.blendSrcRGB!==770||state.blendSrcAlpha!==770||state.blendDstRGB!==771||state.blendDstAlpha!==771||state.blendEquationRGB!==32774||state.blendEquationAlpha!==32774))throw Error('Unsupported native basic render state: '+spec.spec.name);
   const material=new THREE.RawShaderMaterial({glslVersion:THREE.GLSL3,uniforms,vertexShader:program.vertex,fragmentShader:program.fragment,side:state.cull?(state.cullFace===1028?THREE.BackSide:THREE.FrontSide):THREE.DoubleSide,depthWrite:state.depthWrite,depthFunc:THREE.LessEqualDepth,transparent:state.blend,blending:state.blend?THREE.CustomBlending:THREE.NoBlending,blendEquation:THREE.AddEquation,blendSrc:THREE.SrcAlphaFactor,blendDst:THREE.OneMinusSrcAlphaFactor});
-  const vertices=new Float32Array(assets.geometry,spec.vertexByteOffset,spec.vertices*8),interleaved=new THREE.InterleavedBuffer(vertices,8),geometry=new THREE.BufferGeometry(),position=new THREE.InterleavedBufferAttribute(interleaved,3,0);geometry.setAttribute('position',position);geometry.setAttribute('vPosition',position);geometry.setAttribute('vNormal',new THREE.InterleavedBufferAttribute(interleaved,3,3));geometry.setAttribute('tc',new THREE.InterleavedBufferAttribute(interleaved,2,6));geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(assets.geometry,spec.indexByteOffset,spec.indices),1));const mesh=new THREE.Mesh(geometry,material);mesh.name=spec.name??spec.spec.name;mesh.frustumCulled=false;mesh.renderOrder=spec.drawOrder;if(spec.spec.position)mesh.position.set(spec.spec.position.x*.01,(2115-spec.spec.position.y)*.01,spec.spec.position.z*.01);root.add(mesh);const part={spec:spec.spec,record:spec,mesh,material,matrices:new Float32Array(80),state:stateFor(spec.spec.name),camera:null,angles:null};material.onBeforeRender=()=>stream.upload(material,part.matrices);parts.push(part);
+  const vertices=new Float32Array(assets.geometry,spec.vertexByteOffset,spec.vertices*8),interleaved=new THREE.InterleavedBuffer(vertices,8),geometry=new THREE.BufferGeometry(),position=new THREE.InterleavedBufferAttribute(interleaved,3,0);geometry.setAttribute('position',position);geometry.setAttribute('vPosition',position);geometry.setAttribute('vNormal',new THREE.InterleavedBufferAttribute(interleaved,3,3));geometry.setAttribute('tc',new THREE.InterleavedBufferAttribute(interleaved,2,6));geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(assets.geometry,spec.indexByteOffset,spec.indices),1));const mesh=new THREE.Mesh(geometry,material);mesh.name=spec.name??spec.spec.name;mesh.frustumCulled=false;mesh.renderOrder=spec.drawOrder;if(spec.spec.position)mesh.position.set(spec.spec.position.x*.01,(2115-spec.spec.position.y)*.01,spec.spec.position.z*.01);root.add(mesh);const part={spec:spec.spec,record:spec,mesh,material,baseSide:material.side,matrices:new Float32Array(80),state:stateFor(spec.spec.name),cameras:new WeakMap()};material.onBeforeRender=()=>stream.upload(material,part.matrices);parts.push(part);
  }
  return{root,parts,stream,async prepare(camera){
   // Initially hidden parts still need a compiled program before a script makes
@@ -57,14 +59,25 @@ export function createNativePrimitiveVisuals(renderer,scene,assets,lighting,{sta
   const screen=new Float32Array([1/(viewport.width??viewport.x),1/(viewport.height??viewport.y),0,0]);
   const projection=nativeShaderArray(native.projection);
   for(const part of parts){const {state,spec,record}=part;part.material.uniforms.w_h_height.value.set(screen);part.material.uniforms.matProj.value.set(projection);
+   part.mesh.renderOrder=native.reflection?(record.reflectionDrawOrder??record.drawOrder):record.drawOrder;
+   const angles=record.transform==='identity'?[]:[state?.rotx??spec.rot_and_tra[0],state?.roty??spec.rot_and_tra[1],state?.rotz??spec.rot_and_tra[2]];
+   let cached=part.cameras.get(native);
+   if(!cached||angles.some((value,i)=>value!==cached.angles[i])){
+    if(record.transform==='identity')identityMatrices??=nativeModelMatrices(nativeIdentity(),native);
+    cached={angles,matrices:record.transform==='identity'?identityMatrices:nativePrimitiveMatrices(spec,state,native)};
+    if(record.probe&&!native.reflection)cached.mirror=nativeMirrorNormalFactor(record.transform==='identity'?nativeIdentity():nativePrimitiveWorld(spec,state),native,record.probe.plane,record.probe.strength);
+    part.cameras.set(native,cached);
+   }
+   part.matrices.set(cached.matrices);
    if(record.transform==='identity'){
     part.mesh.visible=state?.[record.visibilityField]??record.defaultVisible;
-    if(part.camera!==native){identityMatrices??=nativeModelMatrices(nativeIdentity(),native);part.matrices.set(identityMatrices);part.camera=native;}
    }else{
-    const angles=[state?.rotx??spec.rot_and_tra[0],state?.roty??spec.rot_and_tra[1],state?.rotz??spec.rot_and_tra[2]];
     part.mesh.visible=!!(state?.visible??spec.is_visible)&&(!state?.sequenceactive||!!state.sequencestate);
-    if(part.camera!==native||!part.angles||angles.some((v,i)=>v!==part.angles[i])){part.matrices.set(nativePrimitiveMatrices(spec,state,native));part.camera=native;part.angles=angles;}
    }
+   if(native.reflection){if(spec.is_reflection_enabled===false||record.probe)part.mesh.visible=false;part.material.side=native.reverseCullingByRenderer?part.baseSide:part.baseSide===THREE.DoubleSide?THREE.DoubleSide:part.baseSide===THREE.BackSide?THREE.FrontSide:THREE.BackSide;}
+   else{part.material.side=part.baseSide;if(record.reflectionOnly)part.mesh.visible=false;}
+   if(part.material.uniforms.tex_reflection)part.material.uniforms.tex_reflection.value=native.reflection?dummy:reflectionTexture??dummy;
+   if(record.probe)part.material.uniforms.mirrorNormal_factor.value.set(cached.mirror??[0,0,0,0]);
   }
  },dispose(){for(const part of parts){part.mesh.geometry.dispose();part.material.dispose();}for(const texture of textures.values())texture.dispose();dummy.dispose();stream.dispose();scene.remove(root);}};
 }

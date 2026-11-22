@@ -24,7 +24,7 @@ the original native attributes, texture/sampler states, and source-derived
 matrix packets. One streamed uniform buffer handles many parts without
 exhausting Three's uniform-group binding slots. Hidden parts are compiled using
 visible proxies before rules can reveal them. Screen dimensions update with
-the viewport. Unsupported probe/normal-map paths fail explicitly.
+the viewport. Unsupported normal-map/refraction paths fail explicitly. Authored planar probes require their rendered texture.
 
 `scripts/publish-native-render-parts.mjs` publishes selected verified parts and
 their required shaders/textures. Camera uniforms and captured ball positions
@@ -103,3 +103,82 @@ duplicate owner entries. Numeric draw IDs are local to each capture.
 
 These are isolated headless Edge checks, not physical-phone certification.
 The main UI stylesheet blobs and accepted open wire ramp GLB remain unchanged.
+
+
+## Planar reflection and playfield components
+
+The planar pass is implemented and independently checked, but is not yet wired
+into the running table. `native-reflection.js` follows native Float32 matrix,
+normal and projected-bounds calculations. `reflection-render.js` renders a
+full-resolution HDR/depth probe, reverses raster culling without changing
+material normal defines, and restores Three's cached GL state afterward.
+It clears the whole target before clipping draws to the receiver's projected
+local bounds. At the native 780 by 1532 test viewport that scissor is
+`33,75,713,1187`, matching the independently recorded GL state.
+
+`prepare-native-probes.py` reads authored RPRB/PLST records directly. The
+playfield strength is decoded from byte51 using the native Float32 multiply;
+it is `0.20000001788139343`. The playfield's original local mesh has293vertices
+and1017indices, and uses its authored size100 world matrix. Its vertices match
+the native GPU digest. Treating it as already transformed world geometry is
+incorrect.
+
+`prepare-native-reflection-fixture.mjs` emits separate independent reflected
+matrix/cull packets. All116 reflection-enabled primitives match9280 uploaded
+matrix fields; Screw013 and Screw018 remain excluded by source settings.
+The GPU comparison covers584988 individual RGB samples and151200 combined
+samples, with zero differences and no GL errors. It also verifies return to
+all independent main-view packets and restores the material setter/sides.
+
+`prepare-native-playfield-visuals.mjs` exports the local source-owned mesh,
+original reflection-capable shader and lossless playfield texture. Its isolated
+GPU check matches3584880 RGB samples,80 matrix fields and4 mirror fields.
+The native HDR reflection image is an explicit test input in a separate
+`reference-reflection.bin`; it must never become a production asset. This
+checks receiver geometry/material/sampling, not the whole reflected scene.
+
+Run `scripts/check-three.py` with `--reflection-render` or `--playfield-render`
+after preparing the respective `.work` assets. The CPU reflection fixture is
+checked by `three/tests/native-reflection.test.js`. Existing live actor GPU,
+118-primitive material, camera and flipper render regressions still pass.
+Full static geometry, animated mechanisms, ball/flasher shaders, the shared
+transmission/bloom pipeline and scene integration remain unfinished.
+
+
+## Reflected world and remaining basic geometry
+
+`prepare-native-reflected-world-visuals.mjs` adds124 original bottom wall caps
+to the366 verified world draws. It associates each cap with a source-owned top
+using the native Surface index-buffer relationship within one capture, and
+rejects ambiguous matches. Shaders and textures are matched across captures
+by content digests. The bottom caps are reflection-only. The434 enabled
+reflected world draws match2188662 individual and151200 combined RGB samples,
+all uploaded matrix fields, and the independent main-view return. All124 caps
+are hidden when the main camera returns. This is a component comparison with
+an explicit black transmission input, not a full reflected-table comparison.
+
+`prepare-native-mechanism-visuals.mjs` exports73 remaining source-owned basic
+draws: targets, gate brackets/wires, spinner plates, bulb/socket bodies,
+bumpers, trigger wires, plunger and procedural Primitive15. Main-view tests
+match368139 individual plus151200 combined RGB samples;72 reflected draws
+match363096 individual plus151200 combined samples. Matrix and screen fields
+match, with no shader or GL errors. These held-rest checks do not validate
+mechanism animation. The14 lossless images total490246bytes, and all8605696
+native RGBA upload bytes also match after GPU upload.
+
+Use `--native-primitives --mechanism-geometry` for main-view checks and
+`--reflection-render --world-reflections` or `--mechanism-reflections` for the
+additional reflected geometry. The actual game still uses its accepted joined
+GLB until the complete replacement and animated vertex paths are connected.
+The native reflection flags exclude both textured flipper tops, while keeping
+the base/rubber parts; returning to the main camera restores both tops.
+
+`native-target-render.js` reproduces original stand-up vertex updates using
+the unposed template from the pinned native header. All11 initial GPU buffers
+match byte-for-byte, including signed zeros and UVs. All four native animated
+poses for each target match independently compiled Float32 position/normal
+values. The older JSON pose fixture loses signed zero, so that comparison
+normalizes zero signs only; the independent initial GPU digests do not.
+GenerateMesh and UpdateTarget(offset0) have distinct rounding orders, exposed
+by Target014 and preserved separately. This component is ready for the native
+mechanism renderer; the live GLB targets remain on the existing pivot mapping.

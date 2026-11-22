@@ -48,7 +48,7 @@ export function createFlipperVisuals(game,scene,lighting,assets){
   const world=new THREE.Matrix4(),normal=new THREE.Matrix4(),worldData=new Float32Array(16);
   return{view,parts,flippers,update(camera){nativeViewMatrix(view,camera);
     for(const part of parts){const {mesh,spec,state,flipper,top}=part,angle=top?f(f(state.rotz)*DEGREES):f(Math.PI/2-flipper.angle),position=top?spec.position:spec.center;
-      mesh.visible=!!state.visible;mesh.position.set(position.x*.01,(2115-position.y)*.01,top?position.z*.01:0);mesh.rotation.z=Math.PI/2-angle;
+      mesh.visible=!!state.visible&&(!camera.userData.nativeCamera?.reflection||spec.is_reflection_enabled!==false);mesh.position.set(position.x*.01,(2115-position.y)*.01,top?position.z*.01:0);mesh.rotation.z=Math.PI/2-angle;
       world.fromArray(nativeFlipperWorld(spec,angle,top,worldData));
       const uniforms=mesh.material.uniforms;
       if(camera.userData.nativeCamera){const matrices=nativeModelMatrices(worldData,camera.userData.nativeCamera);uniforms.nativeWorldView.value.fromArray(matrices,32);normal.fromArray(matrices,48);uniforms.nativeNormalView.value.setFromMatrix4(normal);uniforms.nativeWorldViewProj.value.fromArray(matrices,64);for(let i=0;i<5;i++)mesh.material.userData.nativeMatrices.uniforms[i].value.fromArray(matrices,i*16);}

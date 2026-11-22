@@ -1,0 +1,4 @@
+// Independent source-owned native GPU buffer digests, never JS-generated output.
+import fs from 'node:fs';import assert from 'node:assert/strict';import {gzipSync} from 'node:zlib';
+const metadata=JSON.parse(fs.readFileSync('.work/native-mechanism-renderer/native-mechanisms.json')),parts=metadata.parts.filter(p=>p.spec.kind==='HitTarget'&&!p.spec.target_type.startsWith('drop')).map(p=>({spec:p.spec,vertices:p.vertices,vertexSHA256:p.sourceVertexSHA256}));assert.equal(parts.length,11);
+fs.writeFileSync('three/tests/fixtures/vpx-target-rest-gpu.json.gz',gzipSync(JSON.stringify({engineSHA256:metadata.engineSHA256,sourceTableSHA256:metadata.sourceTableSHA256,scope:'Source-owned native GPU vertex buffer digests, initial GenerateMesh (before animation). Distinct from UpdateTarget at offset0.',parts}),{level:9}));
