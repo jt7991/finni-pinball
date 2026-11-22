@@ -3,3 +3,5 @@ assets/finni/originals/** -text
 assets/fonts/** -text
 runtime/*.vpx filter=lfs diff=lfs merge=lfs -text
 three/public/*.bin binary
+three/public/arcade-background.svg -text
+three/public/fonts/** -text
