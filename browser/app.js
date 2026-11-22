@@ -24,7 +24,7 @@ try {
   if(saved && actions.every(([id])=>typeof saved.keys?.[id]==='string') && new Set(Object.values(saved.keys)).size===actions.length) settings={...settings,...saved};
 } catch {}
 let listening=null, connected=false, engine=null, hasPlayed=false, replayVisible=false, enginePhase='Loading game';
-const held=new Map(), physical=new Set(), pointers=new Map();
+const held=new Map(), physical=new Set(), pointers=new Map(), swipes=new Map();
 const message=text=>$('message').textContent=text;
 function save(){try{localStorage.setItem('finni-controls-v1',JSON.stringify(settings));}catch{message('Browser storage is unavailable. Settings apply for this session.');}}
 function label(code){return code.replace(/^Key|^Digit/,'').replace('ShiftLeft','Left Shift').replace('ShiftRight','Right Shift').replace('Arrow','');}
@@ -40,10 +40,9 @@ function render(){
   }
   $('latch').checked=settings.latch;$('showTouch').checked=settings.showTouch;$('touch').hidden=!settings.showTouch;
   $('flip-zones').hidden=!settings.showTouch;
-  $('nudge-zone').hidden=!settings.showTouch;
   $('control-hint').textContent=`${label(settings.keys.start)} start · ${label(settings.keys.action)} action · Hold ${label(settings.keys.launch)}, then release to launch`;
 }
-function release(){held.clear();physical.clear();pointers.clear();paint();send();}
+function release(){held.clear();physical.clear();pointers.clear();swipes.clear();paint();send();}
 function setAction(id,down,source){
   if(!connected)return;
   if(down&&(!$('waiting').hidden||$('initials-dialog').open||document.querySelector('.panel:popover-open')))return;
@@ -57,6 +56,7 @@ function setAction(id,down,source){
 }
 function paint(){document.querySelectorAll('[data-action]').forEach(b=>{const pressed=held.has(b.dataset.action);b.classList.toggle('pressed',pressed);b.setAttribute('aria-pressed',String(pressed));b.disabled=!connected;});}
 function finishPointer(event,cancelled=false){
+  swipes.delete(event.pointerId);
   const id=pointers.get(event.pointerId);
   if(!id)return;
   pointers.delete(event.pointerId);
@@ -77,6 +77,24 @@ for(const [id,name] of actions){
     e.preventDefault();
     try{button.setPointerCapture(e.pointerId);}catch{}
     pointers.set(e.pointerId,id);setAction(id,true,`pointer:${e.pointerId}`);
+    if(['touch','pen'].includes(e.pointerType)&&button.parentElement===$('flip-zones')&&held.has(id)){
+      swipes.set(e.pointerId,{x:e.clientX,y:e.clientY,nudged:false});
+    }
+  });
+  button.addEventListener('pointermove',e=>{
+    const swipe=swipes.get(e.pointerId);
+    if(!swipe||swipe.nudged)return;
+    const dx=e.clientX-swipe.x,dy=e.clientY-swipe.y;
+    // One directional nudge per contact; small thumb drift never nudges.
+    // Keep the original flipper captured and held throughout the gesture.
+    let action;
+    if(Math.abs(dx)>=24&&Math.abs(dx)>Math.abs(dy)*1.2)action=dx<0?'nudgeLeft':'nudgeRight';
+    else if(-dy>=24&&-dy>Math.abs(dx)*1.2)action='nudgeCenter';
+    else return;
+    swipe.nudged=true;
+    const source=`swipe:${e.pointerId}`;
+    setAction(action,true,source);
+    setAction(action,false,source);
   });
   button.addEventListener('pointerup',event=>finishPointer(event));
   for(const type of ['pointercancel','lostpointercapture'])button.addEventListener(type,event=>finishPointer(event,true));
@@ -96,13 +114,9 @@ $('apply-graphics').onclick=()=>{
 function placeFlippers(){
   release();
   const buttons=['left','right'].map(id=>document.querySelector(`[data-action=${id}]`));
-  const nudge=document.querySelector('[data-action=nudgeCenter]');
   if(phoneLayout.matches)buttons.forEach(button=>$('flip-zones').append(button));
   else buttons.reverse().forEach(button=>$('touch').prepend(button));
-  if(phoneLayout.matches)$('nudge-zone').append(nudge);
-  else $('nudges').insertBefore(nudge,document.querySelector('[data-action=nudgeRight]'));
   $('flip-zones').hidden=!settings.showTouch;
-  $('nudge-zone').hidden=!settings.showTouch;
 }
 phoneLayout.addEventListener('change',placeFlippers);
 window.addEventListener('resize',release);
@@ -122,7 +136,7 @@ window.addEventListener('keyup',e=>{if(!physical.delete(e.code))return;const act
 window.addEventListener('blur',release);document.addEventListener('visibilitychange',()=>{if(document.hidden)release();});
 window.addEventListener('pagehide',release);
 $('latch').onchange=e=>{release();settings.latch=e.target.checked;save();};
-$('showTouch').onchange=e=>{release();settings.showTouch=e.target.checked;save();render();$('flip-zones').hidden=!settings.showTouch;$('nudge-zone').hidden=!settings.showTouch;};
+$('showTouch').onchange=e=>{release();settings.showTouch=e.target.checked;save();render();$('flip-zones').hidden=!settings.showTouch;};
 $('reset').onclick=()=>{release();listening=null;settings={keys:{...defaults},latch:false,showTouch:true};save();render();message('Default controls restored.');};
 $('release').onclick=release;
 let toolbarTimer, screenMessageTimer, fullscreenPending=false;
@@ -272,7 +286,7 @@ function fail(error){
     }));}catch{}
     if(typeof error.stack==='string')log(error.stack);
   }
-  connected=false;held.clear();physical.clear();pointers.clear();applied.clear();paint();
+  connected=false;held.clear();physical.clear();pointers.clear();swipes.clear();applied.clear();paint();
   $('waiting').hidden=false;$('progress').hidden=true;
   $('loading').textContent=`${enginePhase}: ${detail}`;$('status').textContent='Game unavailable';
   $('play').disabled=false;$('play').textContent='Reload and retry';$('play').onclick=()=>location.reload();
@@ -307,6 +321,8 @@ async function boot(){
         // New game balls retain their chrome texture without the source
         // table's dense scratch overlay, which sparkles into a ghostly rim.
         evaluate('Table1.BallFrontDecal=""');
+        // Keep the original nudge physics without accumulating tilt penalties.
+        evaluate('Tilt=0:TiltSensitivity=0');
         // The native table now owns its decoded art/audio. Replay uses the
         // running player, so retaining the packed upload only wastes memory.
         engine.FS.unlink('/tables/finni.vpx');
