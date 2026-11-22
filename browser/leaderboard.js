@@ -1,5 +1,5 @@
-// Scores come from the real table. The server validates sessions and moderates
-// anomalies; it cannot prove that browser-side simulation was unmodified.
+// Scores come from the real table. The server validates sessions; it cannot
+// prove that browser-side simulation was unmodified.
 export function createLeaderboard(evaluate, release) {
   const $=id=>document.getElementById(id);
   let run=null, starting=null, wasPlaying=false, nativePrompt=false, collecting=false;
@@ -45,10 +45,9 @@ export function createLeaderboard(evaluate, release) {
     try{
       if(starting)await starting;
       if(!run)throw Error('No online session was available for this game. This score could not be saved.');
-      const result=await api('scores',{...run,scores:finalScores.map(entry=>({...entry,initials:names.get(entry.player)}))});
+      await api('scores',{...run,scores:finalScores.map(entry=>({...entry,initials:names.get(entry.player)}))});
       collecting=false;run=null;finalScores=[];$('initials-dialog').close();
       $('leaderboard-panel').showPopover();await refresh();
-      if(result.review)$('leaderboard-status').textContent='Score saved for review. It will appear after approval.';
     }catch(error){$('submit-status').textContent=error.message;$('save-score').disabled=false;$('save-score').textContent='Retry saving';}
   }
   $('initials').addEventListener('input',()=>{$('initials').value=$('initials').value.toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,3);});
