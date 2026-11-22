@@ -8,6 +8,7 @@ import {LightSequence,SEQ} from './light-sequence.js';
 import {LightAnimation,nativeColor} from './light-animation.js';
 import {runtimeNativeRandom} from './native-random.js';
 import {nativeFlasherLong} from './native-flasher-state.js';
+import {registerNativeTimer} from './script-timer.js';
 
 export const KEY={left:42,right:54,launch:28,start:2,action:57,nudgeLeft:44,nudgeForward:45,nudgeRight:53};
 const empty=()=>{};
@@ -17,7 +18,7 @@ const liveProperties={Gate:new Set(['currentangle','collidable','open','hitthres
 // semantics. No Visual Pinball, COM, native scripting host or global integration.
 export function createRules(source,specs,host={}) {
   const engine=new VbsEngine({hostIntegration:false,maxExecutionTime:2000});
-  const scriptRandom=createScriptRandom();registerScriptRandom(engine,scriptRandom);
+  const scriptRandom=createScriptRandom();registerScriptRandom(engine,scriptRandom);registerNativeTimer(engine);
   const objects=new Map(),timers=new Map(),delays=[],flashes=new Map(),sequences=new Map(),lamps=new Map(),generatedEvents=new Map();
   const sequenceRandom=host.random??runtimeNativeRandom();
   const methods=new Set([...source.matchAll(/^\s*(?:Sub|Function)[ \t]+(\w+)/gmi)].map(m=>m[1].toLowerCase()));

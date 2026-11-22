@@ -46,6 +46,7 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--alpha-order' in sys.argv:runner='test-native-alpha-order-browser.mjs'
         if '--halo-render' in sys.argv:runner='test-native-halo-render-browser.mjs'
         if '--native-classic' in sys.argv:runner='test-native-classic-render-browser.mjs'
+        if '--native-timer' in sys.argv:runner='probe-native-timer-browser.mjs'
         subprocess.run(['node',str(ROOT/'scripts'/runner),f'http://127.0.0.1:{port}',
                         sys.argv[1] if len(sys.argv)>1 else 'http://127.0.0.1:5173/three/',str(OUT),*sys.argv[2:]],check=True,timeout=150)
     finally:

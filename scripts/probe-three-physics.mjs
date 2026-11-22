@@ -18,6 +18,8 @@ const results=[];
 const multiball=process.argv.includes('--multiball');
 const nudged=process.argv.includes('--nudges');
 const runtimeRandom=process.argv.includes('--runtime-random');
+const physicsStateText=process.argv.find(a=>a.startsWith('--physics-state='))?.split('=')[1],physicsState=physicsStateText?.split(',').map(Number);
+if(physicsState&&(!runtimeRandom||!process.argv.includes('--full')||physicsState.length!==2||physicsState.some(word=>!Number.isInteger(word)||word<0||word>0xffffffff)))throw Error('Explicit initial physics state requires the full runtime and two uint32 words');
 const renderHz=Number(process.argv.find(a=>a.startsWith('--render-hz='))?.split('=')[1]??0);
 if(process.argv.some(a=>a.startsWith('--render-hz='))&&(!Number.isFinite(renderHz)||renderHz<1||renderHz>240||!process.argv.includes('--full')))throw Error('Controlled render cadence requires full runtime and 1..240 Hz');
 const observeAfterStall=Number(process.argv.find(a=>a.startsWith('--observe-after-stall='))?.split('=')[1]??0);
@@ -29,7 +31,7 @@ const ruleContext=g=>({
   pendingStatements:g.rules.delays.map(d=>({...d})),
 });
 const seedArgument=process.argv.find(a=>a.startsWith('--seed-start=')),firstSeed=Number(seedArgument?.split('=')[1]??0);
-const reportName=(process.argv.includes('--flippers')?'flippers':process.argv.includes('--full')?`full${multiball?'-multiball':''}`:'launches')+(nudged?'-nudges':'')+(runtimeRandom?'-runtime-random':'')+(observeAfterStall?`-observe${observeAfterStall}`:'')+(seedArgument?`-seed${firstSeed}`:'')+(renderHz?`-render${renderHz}`:'');
+const reportName=(process.argv.includes('--flippers')?'flippers':process.argv.includes('--full')?`full${multiball?'-multiball':''}`:'launches')+(nudged?'-nudges':'')+(runtimeRandom?'-runtime-random':'')+(observeAfterStall?`-observe${observeAfterStall}`:'')+(seedArgument?`-seed${firstSeed}`:'')+(renderHz?`-render${renderHz}`:'')+(physicsState?`-physics${physicsState.join('-')}`:'');
 if(process.argv.includes('--flippers')){
   for(const side of ['left','right'])for(const offset of [.35,.6,.85,1.05])for(const delay of [0,.02,.04,.06]){
     const g=await createGame(layout);g.start();g.launch();const f=g.flippers.find(f=>f.side===side),sign=side==='left'?1:-1;
@@ -51,6 +53,9 @@ if(process.argv.includes('--flippers')){
     const g=full?await createFullGame(layout,specs,source,()=>{},undefined,{frameAnimations:!!renderHz}):await createGame(layout);
     let renderFrames=0,nextRender=0;
     let randomState=seed+1243;const random=()=>{randomState=(Math.imul(randomState,1664525)+1013904223)>>>0;return randomState/4294967296;};
+    // One explicit observed input, never a searched seed. Wall-clock Timer and
+    // pre-initialization script history are not restored by this option.
+    if(physicsState)g.random.setState(...physicsState);
     const initialPhysicsRandom=runtimeRandom?g.random.getState():undefined;
     if(!runtimeRandom)g.random=random;
     g.start();if(full)g.rules.execute(`Randomize ${seed+1}`);

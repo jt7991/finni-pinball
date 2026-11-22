@@ -7,7 +7,7 @@ parts and 25 classic inserts retain their separate native paths. The original
 open wire ramp geometry, main arcade UI and lossless source artwork are retained.
 The shared transmission/bloom temporary buffer, final whole-frame comparison
 and seven older physics comparisons are unfinished. The full suite passes
-159/166 tests.
+166/173 tests.
 
 The actual scene now runs source planar reflections with D16 depth, native
 transmission, target/gate/spinner/trigger/bumper vertex updates and all 57

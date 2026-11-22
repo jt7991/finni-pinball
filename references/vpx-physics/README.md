@@ -271,3 +271,38 @@ actual history removes those differences without a physics implementation
 change. Old partial-state recordings and their seven failing suite gates
 remain unchanged; this additional complete recording does not declare them
 resolved or relax their limits.
+
+Four more complete captures cover camera-drop at its original pose, camera-drop
+with Camera1.RotY=90 and the unchanged baked collider, and raw left-tip and
+cradle-release flipper contacts. Each retains all four bodies, orientation,
+collision internals, ten trail slots, source clocks, rod state and both observed
+initial RNG streams. `prepare-native-complete-contact-fixtures.mjs` records the
+raw capture digest and creates the four `vpx-*-complete-native.json.gz` fixtures.
+Every body field and all eight rod fields match exactly at 300 consecutive
+physics boundaries per case; both RNG streams also remain continuous. The raw
+flipper cases retain their native animation-ball index 2 and explicit 14/100ms
+input delays. No measured state is injected after initialization.
+
+Use the native probe's complete-state flags above with `--trace-ms=300
+--capture-through-ms=300 --output-name=CAPTURE.json`. The explicit capture window
+continues observing after the normal public samples and rejects missing physics
+boundaries. `--ball-index=2` selects the native animation ball for raw flipper
+probes. The generator consumes separately named raw captures; the historical
+partial-state fixtures and their seven failing limits remain untouched.
+
+An intentionally changed, independently observed initial physics RNG state
+changes the new camera trajectory by over 1 VPU. This establishes sensitivity
+to omitted state; it does not recover a seed for the old recordings. Likewise,
+`probe-three-physics.mjs --physics-state=LOW,HIGH` supplies one explicit initial
+state for diagnosis, not a full replay: authored `Randomize Timer` calls still
+depend on the actual local wall clock and prior script history.
+
+`script-timer.js` fixes a separate production mismatch: the interpreter returned
+a Double-precision number labeled Single, whereas libwinevbs Global_Timer sums
+SYSTEMTIME components and then rounds through return_float. Nine independently
+captured native CSng conversions and their Randomize results verify the same
+conversion, including Float32 precision boundaries and midnight rounding. The
+native Timer's actual variant type is also observed. These component clocks
+never alter the reference system clock or replace the production wall clock.
+Run `node --test three/tests/script-timer.test.js`; refresh its native evidence
+with `check-three.py NATIVE_URL --native-timer`.

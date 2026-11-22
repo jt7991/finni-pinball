@@ -1,5 +1,6 @@
 script-random.js adapts Global_Rnd, Global_Randomize and the initial script
-context state from Wine/libwinevbs. Copyright 2011 Jacek Caban for CodeWeavers.
+context state from Wine/libwinevbs. script-timer.js adapts Global_Timer's
+local-time sum and Single return conversion. Copyright 2011 Jacek Caban for CodeWeavers.
 
 Source: vpinball/libwinevbs, b5503c581b7d0e6f4f1d84d604cf5e9372c940d7
 https://github.com/vpinball/libwinevbs/blob/b5503c581b7d0e6f4f1d84d604cf5e9372c940d7/wine/dlls/vbscript/global.c
@@ -19,3 +20,5 @@ The JavaScript adaptation uses a DataView to preserve the native Single and
 Double bit-pattern seeds, Math.imul for modulo-2^32 arithmetic, and per-script
 interpreter registration. The published VPX-engine recording in
 tests/fixtures/vpx-script-random.json verifies the algorithm and conversions.
+tests/fixtures/vpx-script-timer-native.json additionally verifies native Timer
+type, Single precision and its Randomize seed pipeline with explicit clocks.
