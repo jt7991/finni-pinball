@@ -398,3 +398,14 @@ later position. That full scheduling/body-read sequence remains unfinished.
 The fixed source fallback profile does not establish hardware/VR presentation
 parity. Older physics failures, dynamic native insert packets and synchronized
 whole-frame equivalence remain open.
+
+A further read-only capture exposes the current physical orientation at the
+original callback, separately from its captured rotation/scale. All64 callbacks
+retain a different earlier rotation (574 Float32 fields differ); their original
+submission matrices still match all1,024 fields using the scheduled rotation.
+Capture with `--spin --output-name=native-ball-scheduled-rotation.json`, then run
+`node scripts/analyze-native-ball-scheduling.mjs`. The explicit spin is a test
+input. A pre-callback ShaderState orientation is a zero placeholder in this
+build, so it supplies no evidence of the earlier physical position. This
+diagnostic establishes why the stages must stay separate; it does not recover
+that earlier position or implement full frame scheduling.
