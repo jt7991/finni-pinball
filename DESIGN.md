@@ -1,5 +1,9 @@
 # Browser player design
 
+Current player constraint (November 20, 2026): preserve the established layout and controls, including the small question-mark help button on mobile and desktop. The user rejected the permanent eight-button grid and the proposal to put compact controls around the table edges. Keep the table prominent and tools in help/settings; do not treat the Asteroids lettering exploration as permission for another control-layout redesign. Current performance work preserves the incumbent visual system and the table/DMD artwork described below. Use functional interface copy without slogans.
+
+The help popover gives keyboard instructions on desktop and the existing touch instructions on phones. Settings now include Automatic, Performance and Detailed graphics; applying a change restarts the game. Automatic uses Performance on phones, installing half-resolution rendering, a 2048-pixel texture cap and reduced lighting passes before native engine initialization. The packed table download is not retained after loading. These resource reductions do not establish physical-phone frame rates.
+
 The accepted table artwork is revision 13's bright comic party-preparation scene, with navy plastics, a pink cake and saturated balloon bumpers. Keep the expressive, playful energy and the detailed task illustrations. Ambient fill keeps the navy table readable. The exact insert coordinates and active-shot meaning remain authoritative.
 
 Space is the dedicated Action input and X is forward nudge; older saved bindings migrate without losing preferences. After a completed game, the existing start overlay offers **Play again**, starting a free-play game on the loaded engine. Native initials entry finishes first; score dialogs can be skipped even when the online leaderboard is unavailable. Closing a dialog returns focus to the canvas.

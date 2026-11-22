@@ -1,6 +1,6 @@
 import {createLeaderboard} from './leaderboard.js';
 import {createViews,createDmd} from './views.js';
-import {prepareRenderer} from './renderer.js';
+import {prepareRenderer,configureRenderer} from './renderer.js';
 const actions = [
   ['left','Left flipper','ShiftLeft'],['right','Right flipper','ShiftRight'],
   ['launch','Launch','Enter'],['start','Start','Digit1'],
@@ -68,6 +68,14 @@ for(const [id,name] of actions){
   (id.startsWith('nudge')?$('nudges'):$('touch')).append(button);
 }
 const phoneLayout=matchMedia('(max-width:650px), (pointer:coarse) and (max-width:1024px)');
+let graphics='auto';
+try{const saved=localStorage.getItem('finni-graphics-v1');if(['auto','performance','detailed'].includes(saved))graphics=saved;}catch{}
+$('graphics').value=graphics;
+$('apply-graphics').onclick=()=>{
+  release();
+  try{localStorage.setItem('finni-graphics-v1',$('graphics').value);}catch{message('Browser storage is unavailable. Graphics could not be saved.');return;}
+  location.reload();
+};
 function placeFlippers(){
   release();
   const buttons=['left','right'].map(id=>document.querySelector(`[data-action=${id}]`));
@@ -178,10 +186,10 @@ function updateReplay(playing,entering){
   if(playing){hasPlayed=true;if(replayVisible){$('waiting').hidden=true;replayVisible=false;}return;}
   if(!connected||!hasPlayed||entering||replayVisible)return;
   release();replayVisible=true;
-  document.querySelector('#waiting h2').textContent='Ready for another round?';
-  document.querySelector('#waiting .start-content > p').textContent='There’s still a party to get ready for.';
+  document.querySelector('#waiting h2').textContent='Game over';
+  document.querySelector('#waiting .start-content > p').textContent='Start a new game on this table.';
   $('play').disabled=false;$('play').textContent='Play again';$('play').onclick=replay;
-  $('loading').textContent='Your next game is ready.';$('waiting').hidden=false;
+  $('loading').textContent='Ready to play again.';$('waiting').hidden=false;
 }
 $('initials-dialog').addEventListener('close',focusGame);
 for(const panel of document.querySelectorAll('.panel'))panel.addEventListener('toggle',e=>{if(e.newState==='closed')focusGame();});
@@ -237,21 +245,27 @@ $('canvas').addEventListener('webglcontextlost',e=>{
 });
 async function boot(){
   try{
-    if(!document.createElement('canvas').getContext('webgl2'))throw Error('WebGL 2 is required. Enable graphics acceleration or try a current desktop browser.');
+    const probe=document.createElement('canvas').getContext('webgl2');
+    if(!probe)throw Error('WebGL 2 is required. Enable graphics acceleration or try a current browser.');
+    probe.getExtension('WEBGL_lose_context')?.loseContext();
     const [factory, response]=await Promise.all([import('/engine/vpinball.js'),fetch('/table.vpx')]);
     if(!response.ok)throw Error('The Finni VPX table is missing. Build it first (see README).');
-    const table=await response.arrayBuffer();enginePhase='Preparing engine';$('progress').value=55;$('loading').textContent='Preparing the VPX engine…';
-    engine=await factory.default({canvas:$('canvas'),locateFile:path=>`/engine/${path}`,print:log,printErr:log,onAbort:fail,setStatus:text=>{if(text)$('loading').textContent=text;}});
+    let table=await response.arrayBuffer();enginePhase='Preparing engine';$('progress').value=55;$('loading').textContent='Preparing the VPX engine…';
+    engine=await factory.default({canvas:$('canvas'),preRun:[module=>configureRenderer(module,{mobile:phoneLayout.matches,quality:graphics})],locateFile:path=>`/engine/${path}`,print:log,printErr:log,onAbort:fail,setStatus:text=>{if(text)$('loading').textContent=text;}});
     prepareRenderer(engine);
-    engine.FS.mkdirTree('/tables');engine.FS.writeFile('/tables/finni.vpx',new Uint8Array(table));
-    $('progress').value=100;$('progress').hidden=true;$('loading').textContent='Ready when you are.';$('play').disabled=false;$('play').textContent='Start game';$('status').textContent='Ready to play';
+    // MEMFS can own the download buffer; avoid a second ~166 MB copy on phones.
+    engine.FS.mkdirTree('/tables');engine.FS.writeFile('/tables/finni.vpx',new Uint8Array(table),{canOwn:true});table=null;
+    $('progress').value=100;$('progress').hidden=true;$('loading').textContent='Table loaded.';$('play').disabled=false;$('play').textContent='Start game';$('status').textContent='Ready to play';
     $('play').onclick=()=>{
       enginePhase='Starting table';$('play').disabled=true;$('loading').textContent='Starting the table…';
       try{
         const result=engine.ccall('vpinball_wasm_start','number',['string'],['/tables/finni.vpx']);
         if(result!==1)throw Error(`VPX could not start this table (code ${result}). See the engine log.`);
+        // The native table now owns its decoded art/audio. Replay uses the
+        // running player, so retaining the packed upload only wastes memory.
+        engine.FS.unlink('/tables/finni.vpx');
         evaluate('Dim FinniDmdDigit, FinniDmdState : bFreePlay=True : For Each FinniDmdDigit In Digits : FinniDmdDigit.Visible=False : Next : digitgrid.Visible=False : DMDFlush : ShowTableInfo');
-        connected=true;document.body.classList.add('playing');$('waiting').hidden=true;$('progress').hidden=true;$('status').textContent='Enjoy the party.';document.title='Finni’s Big Day';paint();$('canvas').focus();
+        connected=true;document.body.classList.add('playing');$('waiting').hidden=true;$('progress').hidden=true;$('status').textContent='Playing';document.title='Finni’s Big Day';paint();$('canvas').focus();
         views.apply();
         evaluate('Table1_KeyDown StartGameKey:Table1_KeyUp StartGameKey');
         enginePhase='Playing';
