@@ -28,7 +28,7 @@ body:not(.playing) #waiting{position:fixed;inset:0;z-index:3;padding:0;backgroun
 body:not(.playing) #waiting::before{content:'';position:absolute;inset:10px;border:2px solid #283355;pointer-events:none}
 body:not(.playing) .start-content{position:absolute;top:max(88px,env(safe-area-inset-top));bottom:max(28px,env(safe-area-inset-bottom));left:24px;right:24px;max-width:430px;margin:auto;display:grid;grid-template-columns:minmax(0,1fr);grid-template-rows:auto clamp(36px,7.1dvh,60px) minmax(40px,1fr) auto auto;gap:16px;min-height:0}
 body:not(.playing) .start-content h2{font-size:clamp(22px,8.97vw,35px);letter-spacing:-.035em;line-height:1.38;margin:0;text-align:center}
-body:not(.playing) .start-subtitle{display:none}body:not(.playing) .start-dmd{display:block;width:auto;max-width:100%;height:100%;justify-self:center;image-rendering:pixelated}
+body:not(.playing) .start-subtitle{display:none}body:not(.playing) .start-dmd{display:block;width:auto;max-width:100%;height:clamp(36px,7.1dvh,60px);min-height:0;object-fit:contain;justify-self:center;image-rendering:pixelated}
 body:not(.playing) .preview-cell{display:flex;justify-content:center;min-height:0;align-items:center}
 .preview-frame{height:100%;aspect-ratio:292/421;max-height:421px;max-width:100%;position:relative}
 .preview-frame::before,.preview-frame::after{content:'';position:absolute;inset:0 auto 0 0;width:14px;border:3px solid var(--cyan);border-right:0;pointer-events:none}.preview-frame::after{inset:0 0 0 auto;border:3px solid var(--cyan);border-left:0}
