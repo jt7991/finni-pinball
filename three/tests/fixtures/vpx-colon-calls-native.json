@@ -1,0 +1,50 @@
+{
+  "engineSHA256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+  "sourceRevision": "195f214dd4849b8ef6113fd377258b78d0dec3bf",
+  "captureSHA256": "b5c5dc837bd12bce0eb63de1c6ebaacf1a06cb86a40456f572c7284c92dae0d5",
+  "scope": "Original native VBScript evaluates each program and emits its counter. Names are prefixed only to isolate cases. No clock, RNG, body or render-state overrides.",
+  "cases": [
+    {
+      "name": "inline collection handler",
+      "body": "Sub Handler(idx):Mark:End Sub\nHandler 4",
+      "source": "Dim Count:Count=0\nSub Mark()\nCount=Count+1\nEnd Sub\nSub Handler(idx):Mark:End Sub\nHandler 4",
+      "expression": "Count",
+      "expected": 1
+    },
+    {
+      "name": "call followed by assignment",
+      "body": "Mark:Count=Count+10",
+      "source": "Dim Count:Count=0\nSub Mark()\nCount=Count+1\nEnd Sub\nMark:Count=Count+10",
+      "expression": "Count",
+      "expected": 11
+    },
+    {
+      "name": "single-line conditional",
+      "body": "If True Then Mark:Count=Count+10 Else Count=100",
+      "source": "Dim Count:Count=0\nSub Mark()\nCount=Count+1\nEnd Sub\nIf True Then Mark:Count=Count+10 Else Count=100",
+      "expression": "Count",
+      "expected": 11
+    },
+    {
+      "name": "colon-separated loop",
+      "body": "Dim idx\nFor idx=1 To 3:Mark:Next",
+      "source": "Dim Count:Count=0\nSub Mark()\nCount=Count+1\nEnd Sub\nDim idx\nFor idx=1 To 3:Mark:Next",
+      "expression": "Count",
+      "expected": 3
+    },
+    {
+      "name": "literal and comment colons",
+      "body": "Dim text\ntext=\"Mark:\":' Mark:\nMark:Count=Count+10",
+      "source": "Dim Count:Count=0\nSub Mark()\nCount=Count+1\nEnd Sub\nDim text\ntext=\"Mark:\":' Mark:\nMark:Count=Count+10",
+      "expression": "Count",
+      "expected": 11
+    },
+    {
+      "name": "discarded function result",
+      "body": "Function Value()\nCount=Count+1:Value=42\nEnd Function\nValue:Count=Count+10",
+      "source": "Dim Count:Count=0\nSub Mark()\nCount=Count+1\nEnd Sub\nFunction Value()\nCount=Count+1:Value=42\nEnd Function\nValue:Count=Count+10",
+      "expression": "Count",
+      "expected": 11
+    }
+  ]
+}

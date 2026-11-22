@@ -11,10 +11,24 @@ for(const scenario of fixture.cases){
   const g=await createFullGame(layout,objects,source,()=>{});
   g.random=referenceRandom();
   try{
+    const ruleAudit=process.argv.includes('--rule-audit')?[]:null,ruleNames=['bSkillShotReady','bBallInPlungerLane','bBallSaverReady','bBallSaverActive','bAutoPlunger','BallSaverTime','Song'];let ruleOrigin;
+    const ruleState=()=>Object.fromEntries(ruleNames.map(name=>[name,g.rules.value(name)]));
+    if(ruleAudit){const hit=g.rules.hit.bind(g.rules);g.rules.hit=(name,kind,...args)=>{if(ruleOrigin===undefined||kind==='Animate'&&!/plunger/i.test(name))return hit(name,kind,...args);const row={ms:Math.round(g.time*1000)-ruleOrigin,event:name+'_'+kind,before:ruleState(),scriptBefore:g.rules.scriptRandom.getState()};const result=hit(name,kind,...args);row.after=ruleState();row.scriptAfter=g.rules.scriptRandom.getState();ruleAudit.push(row);return result;};for(const method of ['rnd','randomize']){const original=g.rules.scriptRandom[method].bind(g.rules.scriptRandom);g.rules.scriptRandom[method]=argument=>{const before=g.rules.scriptRandom.getState(),result=original(argument);if(ruleOrigin!==undefined)ruleAudit.push({ms:Math.round(g.time*1000)-ruleOrigin,method,argument,before,after:g.rules.scriptRandom.getState()});return result;};}}
     g.start();for(let i=0;i<2/STEP;i++)g.step();let r=g.records[0];
     placeReferenceBall(g,r,{...scenario,vx:0,vy:0,vz:0});
     const timer=g.rules.objects.get('rollingtimer');timer.enabled=false;timer.enabled=true;
     r=restoreReferenceBalls(g,fixture,scenario,r);
+    if(ruleAudit){ruleOrigin=Math.round(g.time*1000);ruleAudit.push({ms:0,initialRules:ruleState()});}
+    let clockInputs=0;
+    if(scenario.scriptClocks){
+      const origin=Math.round(g.time*1000);
+      // Replay the independently observed external clock inputs, not RNG
+      // outputs. Production retains its actual local Timer implementation.
+      g.rules.engine._registerFunction('Timer',()=>{
+        const observed=scenario.scriptClocks[clockInputs++];assert.ok(observed,'native clock input exists for this call');assert.equal(observed.type,4);assert.equal(Math.round(g.time*1000)-origin,observed.ms,'Timer called at the independently recorded physics clock');
+        return {type:'Single',value:observed.value};
+      });
+    }
     if(scenario.initialPlungerPosition!==undefined&&!scenario.initialNativeInternals?.plunger){
       // The public native position is Float32; converting it back identifies
       // the rod's VPU coordinate at this snapshot, before PullBack zeros speed.
@@ -23,7 +37,19 @@ for(const scenario of fixture.cases){
       g.plunger.updateNativeShapes();
     }
     g.rules.execute('Plunger.PullBack');g.rules.schedule(scenario.actualDelay,'Plunger.Fire');
-    let elapsed=0;const samples=[],traceSamples=[];
+    let elapsed=0;const samples=[],traceSamples=[],animationAudit=[];
+    const animationFrames=scenario.animationFrames?new Map(scenario.animationFrames.map(row=>[row[0],row])):null;
+    if(animationFrames){
+      assert.ok(scenario.animationFrames.length,'native animation clocks recorded');
+      for(let i=1;i<scenario.animationFrames.length;i++)assert.equal(scenario.animationFrames[i][0]-scenario.animationFrames[i-1][0],scenario.animationFrames[i][1],'native frame-clock continuity');
+      g.frameAnimations=true;g.lastAnimationTime=Math.round(g.time*1000)+scenario.animationFrames[0][0]-scenario.animationFrames[0][1];
+    }
+    const prepareObservedFrame=ms=>{
+      const expected=animationFrames?.get(ms);if(!expected)return;
+      g.prepareFrame();
+      const names=fixture.instrumentation.animationFrameTrace.targets??['Target009','Target010','Target011'],targets=names.map(name=>g.targetMotions.get(name.toLowerCase())),actual=[ms,expected[1],...targets.map(target=>target.offset),...targets.map(target=>Number(target.dropped)),g.rules.value('Score(CurrentPlayer)')];
+      animationAudit.push({ms,expected,actual,errors:actual.slice(2).map((value,i)=>value-(i<3?Math.fround(expected[i+2]):expected[i+2]))});
+    };
     const traceRows=new Map((process.argv.includes('--trace')||fixture.traceRegression?scenario.timerTrace??[]:[]).filter(r=>r[0]==='STATE').map(row=>[row[1]-1,row]));
     const observeTrace=ms=>{
       const row=traceRows.get(ms);if(!row)return;
@@ -33,17 +59,22 @@ for(const scenario of fixture.cases){
       traceSamples.push({ms,expected,actual,positionError:error(0),velocityError:error(3),angularError:error(6)});
     };
     observeTrace(0);
+    const advanceTo=ms=>{for(let i=0;i<Math.round((ms-elapsed)/1000/STEP);i++){g.step();observeTrace(elapsed+i+1);prepareObservedFrame(elapsed+i+1);}elapsed=ms;};
     for(const expected of scenario.samples){
-      const ms=expected[0];for(let i=0;i<Math.round((ms-elapsed)/1000/STEP);i++){g.step();observeTrace(elapsed+i+1);}elapsed=ms;
+      const ms=expected[0];advanceTo(ms);
       const p=r.body.translation(),v=r.body.linvel(),w=r.body.angvel();
       const actual=[ms,p.x*100,2115-p.y*100,p.z*100,v.x,-v.y,v.z,-w.x/100,w.y/100,-w.z/100,...g.flippers.map(f=>90-f.angle*180/Math.PI),g.plunger.position];
       samples.push({expected,actual,positionError:Math.hypot(...actual.slice(1,4).map((n,i)=>n-expected[i+1])),velocityError:Math.hypot(...actual.slice(4,7).map((n,i)=>n-expected[i+4])),plungerError:Math.abs(actual[12]-expected[12])});
     }
+    if(fixture.nativeBodyRegression?.throughMilliseconds>elapsed)advanceTo(fixture.nativeBodyRegression.throughMilliseconds);
     const bodies=(g.nativeBodyAudit??[]).flatMap(frame=>frame.bodies),nativeBodySummary={frames:g.nativeBodyAudit?.length??0,bodies:bodies.length};
     for(const key of ['positionError','velocityError','momentumError','orientationError'])nativeBodySummary[key]=Math.max(0,...bodies.map(body=>body[key]??0));
     const nativePlungerSummary=summarizeNativePlunger(g.nativePlungerAudit);
     const report={name:scenario.name,actualDelay:scenario.actualDelay,maxPositionError:Math.max(...samples.map(r=>r.positionError)),maxVelocityError:Math.max(...samples.map(r=>r.velocityError)),maxPlungerError:Math.max(...samples.map(r=>r.plungerError)),maxNativeSpeed:Math.max(...samples.map(r=>Math.hypot(...r.expected.slice(4,6)))),maxModelSpeed:Math.max(...samples.map(r=>Math.hypot(...r.actual.slice(4,6)))),physicsStats:g.physicsStats,samples,...(traceRows.size?{traceSamples}:{}),...(g.nativeRandomAudit?{nativeRandomAudit:g.nativeRandomAudit,nativeBodySummary}:{}),...(nativePlungerSummary?{nativePlungerSummary}:{}),...(process.argv.includes('--body-audit')?{nativeBodyAudit:g.nativeBodyAudit,nativePlungerAudit:g.nativePlungerAudit}:{})};reports.push(report);
-    if(!process.argv.includes('--json'))console.log(JSON.stringify({...report,samples:undefined,traceSamples:undefined,nativeRandomAudit:undefined,nativeBodyAudit:undefined,nativePlungerAudit:undefined}));
+    if(animationFrames)Object.assign(report,{animationAudit,animationSummary:{frames:animationAudit.length,offsetError:Math.max(0,...animationAudit.flatMap(row=>row.errors.slice(0,3).map(Math.abs))),stateMismatches:animationAudit.filter(row=>row.errors.slice(3).some(Boolean)).length},nativeScriptRandomAudit:g.nativeScriptRandomAudit});
+    if(ruleAudit)report.ruleAudit=ruleAudit;
+    if(scenario.scriptClocks)report.scriptClockInputs=clockInputs;
+    if(!process.argv.includes('--json'))console.log(JSON.stringify({...report,samples:undefined,traceSamples:undefined,nativeRandomAudit:undefined,nativeBodyAudit:undefined,nativePlungerAudit:undefined,animationAudit:undefined,nativeScriptRandomAudit:undefined}));
   }finally{g.dispose();}
 }
 fs.writeFileSync(process.argv.find(a=>a.startsWith('--report='))?.slice(9)??'.work/three-review/vpx-plunger-comparison.json',JSON.stringify(reports,null,2));
@@ -72,5 +103,7 @@ if(process.argv.includes('--check'))for(const r of reports){
     for(const [key,value]of Object.entries(limit.observations??{}))assert.ok(r.nativePlungerSummary.observations[key]>=value,`${r.name} native plunger ${key} observation coverage`);
     for(const [key,value]of Object.entries(limit.errors))assert.ok(r.nativePlungerSummary.errors[key]<=value,`${r.name} native plunger ${key}: ${r.nativePlungerSummary.errors[key]}`);
   }
+  if(fixture.animationRegression){assert.equal(r.animationSummary.frames,fixture.animationRegression.frames);assert.equal(r.animationSummary.offsetError,0);assert.equal(r.animationSummary.stateMismatches,0);}
+  if(fixture.scriptClockRegression){assert.equal(r.scriptClockInputs,fixture.scriptClockRegression.calls);assert.equal(r.nativeScriptRandomAudit.length,fixture.nativeBodyRegression.frames);assert.ok(r.nativeScriptRandomAudit.every(row=>row.agrees));}
   assert.equal(r.physicsStats.substepBudgetExceeded,0);
 }
