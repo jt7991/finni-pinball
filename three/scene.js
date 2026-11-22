@@ -6,22 +6,24 @@ import {applyTargetAnimation,targetAnimationAxis} from './target-render.js';
 import {createBulbHalos,createLightFrame} from './bulb-render.js';
 import {createClassicLights,loadNativeLighting} from './classic-render.js';
 import {createFlipperVisuals,loadFlipperVisuals} from './flipper-render.js';
+import {applyNativeCamera} from './camera-render.js';
 
 export async function createView(canvas, game) {
   const renderer=new THREE.WebGLRenderer({canvas,antialias:false,alpha:false,powerPreference:'high-performance'});
   renderer.setClearColor(0x101b18);renderer.outputColorSpace=THREE.SRGBColorSpace;
   const scene=new THREE.Scene();
-  const camera=new THREE.OrthographicCamera(-6,6,12,-12,.1,200);
+  const camera=new THREE.PerspectiveCamera();
   scene.add(new THREE.HemisphereLight(0xe6f1ff,0x686578,2.6));
   const key=new THREE.DirectionalLight(0xfff0d8,2.4);key.position.set(-5,-3,20);scene.add(key);
   const fill=new THREE.DirectionalLight(0xc7dcff,1.3);fill.position.set(12,15,12);scene.add(fill);
   const base=import.meta.env.BASE_URL;
   const draco=new DRACOLoader().setDecoderPath(`${base}draco/`).setDecoderConfig({type:'wasm'}).setWorkerLimit(1);
-  const [floor,table,lighting,flipperAssets]=await Promise.all([
+  const [floor,table,lighting,flipperAssets,cameraBounds]=await Promise.all([
     new THREE.TextureLoader().loadAsync(`${base}playfield.webp`),
     new GLTFLoader().setDRACOLoader(draco).loadAsync(`${base}table.glb`),
     loadNativeLighting(base),
     loadFlipperVisuals(base,renderer.capabilities.getMaxAnisotropy()),
+    fetch(`${base}camera-bounds.json`).then(response=>{if(!response.ok)throw Error('Native camera bounds unavailable');return response.json();}),
   ]);
   draco.dispose();
   floor.colorSpace=THREE.SRGBColorSpace;floor.flipY=false;floor.anisotropy=renderer.capabilities.getMaxAnisotropy();
@@ -67,15 +69,8 @@ export async function createView(canvas, game) {
     renderer.setPixelRatio(Math.min(devicePixelRatio,quality==='detailed'?2:1.25));
     renderer.setSize(width,height,false);
     lightFrame.resize();
-    camera.position.set(4.76,cameraMode==='overhead'?10.575:cameraMode==='classic'?-18:-4,cameraMode==='overhead'?38:35);
-    camera.up.set(0,1,0);camera.lookAt(4.76,10.575,0);camera.updateMatrixWorld();
-    const corners=[];
-    for(const x of [-.15,9.67])for(const y of [cameraMode==='playfield'?1:-.1,21.35])for(const z of [0,1.8])corners.push(new THREE.Vector3(x,y,z).applyMatrix4(camera.matrixWorldInverse));
-    const bounds=new THREE.Box3().setFromPoints(corners),size=bounds.getSize(new THREE.Vector3());
-    const aspect=width/height,h=Math.max(size.y,size.x/aspect)*1.015;
-    const center=bounds.getCenter(new THREE.Vector3());
-    camera.left=center.x-h*aspect/2;camera.right=center.x+h*aspect/2;
-    camera.top=center.y+h/2;camera.bottom=center.y-h/2;camera.updateProjectionMatrix();
+    const size=renderer.getDrawingBufferSize(new THREE.Vector2());
+    applyNativeCamera(camera,cameraBounds,size.x/size.y,cameraMode);
   }
   const observer=new ResizeObserver(resize);observer.observe(canvas);resize();
   function render(alpha,previous) {
@@ -102,5 +97,5 @@ export async function createView(canvas, game) {
     flipperVisuals.update(camera);
     classicLights.update(camera);bulbHalos.update();lightFrame.render(scene,camera);
   }
-  return {renderer,scene,classicLights,bulbHalos,flipperVisuals,render,resize,shake(strength){shakeUntil=game.time+.8;shakeStrength=Number(strength)||1;},setCamera(value){cameraMode=value;resize();},setQuality(value){quality=value;resize();}};
+  return {renderer,scene,camera,cameraBounds,classicLights,bulbHalos,flipperVisuals,render,resize,shake(strength){shakeUntil=game.time+.8;shakeStrength=Number(strength)||1;},setCamera(value){cameraMode=value;resize();},setQuality(value){quality=value;resize();}};
 }

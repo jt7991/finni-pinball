@@ -2,6 +2,10 @@
 
 This branch replaces the Visual Pinball player with Three.js rendering, native-compatible JavaScript physics and an isolated JavaScript runtime for the complete authored table rules. Rapier supplies body records and an integration fallback. Playing does not download or launch VPX. The accepted open wire ramps remain visible; their physical collision strips are invisible.
 
+The four views now use VPX's authored perspective camera, replacing the approximate orthographic camera. `native-camera.js` retains the legacy fit, layback, scene scale, reflection-aware near/far planes and Float32 matrix operations. `camera-bounds.json` comes from the original wall/ramp/rubber properties and raw primitive mesh bounds; the source quirks are preserved. It contains no measured camera positions or fitted projection values. Main's current arcade UI and the accepted wire model remain unchanged.
+
+Twenty independent native GPU captures cover all four presets at four screen sizes and a rotated desktop session. Every view and geometry MVP matrix field matches bit for bit. The Three world-unit conversion projects 140 reference points within 0.001 pixel; this is a coordinate conversion check, not whole-frame pixel equivalence. The separately observed native refraction `matProj` uniform disagrees with the geometry UBO for Balanced and is retained in the fixture without being used as the geometry oracle. Run `node --test three/tests/native-camera.test.js` and `scripts/check-three.py http://127.0.0.1:5173/three/ --camera-render` for the matrix and 32 live camera/rotation checks. The full suite passes 139/146 tests, retaining the same seven older physics failures; full VPX parity remains unfinished.
+
 From the repository root, with Node 22 installed:
 
 ```powershell

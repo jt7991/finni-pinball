@@ -6,6 +6,12 @@ native-tree.js, native-dynamic-tree.js, native-ball-collision.js, native-random.
 native-rubber.js, native-target.js, native-target-event.js, native-bumper.js, native-slingshot.js, native-sound.js, kicker.js, impulse-plunger.js and playfield-contact.js is adapted from
 Visual Pinball, copyright its respective contributors, licensed GPLv3 or later.
 These derived modules are distributed under GPL-3.0-or-later.
+native-camera.js, native-camera-bounds.js and native-matrix.js adapt the same
+revision's ViewSetup::ComputeMVP/FitCameraToVertices, Matrix3D, and the
+Surface/Ramp/Rubber/Primitive GetBoundingVertices methods. The compiled camera
+inputs retain authored settings and source geometry bounds, not fitted matrices.
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/renderer/ViewSetup.cpp
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/math/matrix.cpp
 The target mesh source headers in references/vpx-physics/meshes are also GPLv3+;
 their generated collision geometry is included in public/objects.json.
 

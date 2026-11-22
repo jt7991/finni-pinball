@@ -7,6 +7,8 @@ import materialSource from './shaders/material.glsl?raw';
 import helperSource from './shaders/light-helpers.glsl?raw';
 import {nativeColor} from './light-animation.js';
 import {nativeDragCurve} from './native-curve.js';
+import {nativeViewMatrix} from './camera-render.js';
+export {nativeViewMatrix} from './camera-render.js';
 
 const f=Math.fround,es=source=>source.replace(/\bconst\s+/g,'').replace(/^#pragma[^\n]*$/gm,''),prefix=`
 #define GLSL
@@ -47,8 +49,6 @@ export function nativeMaterialUniforms(spec,lighting,view){
   const globals=lighting.metadata.globals,vector=a=>new THREE.Vector4(...a),pairs=a=>[vector(a.slice(0,4)),vector(a.slice(4,8))];
   return{matView:{value:[view]},tex_env:{value:lighting.textures.environment},tex_diffuse_env:{value:lighting.textures.irradiance},is_metal:{value:spec.type==='metal'},basicLightPos:{value:pairs(globals.positions)},basicLightEmission:{value:pairs(globals.emissions)},cAmbient_LightRange:{value:vector(globals.ambientRange)},fenvEmissionScale_TexWidth:{value:new THREE.Vector2(...globals.envScaleWidth)},fDisableLighting_top_below:{value:new THREE.Vector2(...globals.disableLighting)},cBase_Alpha:{value:colorVector(spec.base_color,spec.opacity_active?spec.opacity:1)},cGlossy_ImageLerp:{value:colorVector(spec.type==='metal'?0:spec.glossy_color,spec.type==='metal'?0:spec.glossy_image_lerp)},cClearcoat_EdgeAlpha:{value:colorVector(spec.clearcoat_color,spec.edge_alpha)},Roughness_WrapL_Edge_Thickness:{value:new THREE.Vector4(f(2**f(f(10*f(spec.roughness))+1)),f(spec.wrap_lighting),f(spec.edge),f(spec.thickness))}};
 }
-const tableToThree=new THREE.Matrix4().makeTranslation(0,21.15,0).multiply(new THREE.Matrix4().makeScale(.01,-.01,.01)),nativeUnits=new THREE.Matrix4().makeScale(100,100,100);
-export function nativeViewMatrix(view,camera){return view.copy(nativeUnits).multiply(camera.matrixWorldInverse).multiply(tableToThree);}
 export async function loadNativeLighting(base){
   const response=await fetch(base+'native-lighting.json');if(!response.ok)throw Error('Native lighting metadata unavailable');const metadata=await response.json(),textures={};
   await Promise.all(Object.entries(metadata.textures).map(async([name,spec])=>{

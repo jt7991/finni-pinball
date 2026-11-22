@@ -96,7 +96,7 @@ $('initials-dialog').addEventListener('close',()=>$('table').focus({preventScrol
 $('play').onclick=()=>{release();audio?.unlock();game?.start();};
 $('camera').value=read('camera','balanced');$('quality').value=read('quality','auto');
 if($('camera').value==='')$('camera').value='balanced';
-const cameraMode=()=>$('camera').value==='topdown'?'overhead':$('camera').value;
+const cameraMode=()=>$('camera').value;
 for(const name of ['camera','quality'])$(name).onchange=()=>{save(name,$(name).value);if(name==='camera')view?.setCamera(cameraMode());};
 $('apply-graphics').onclick=async()=>{release();save('quality',$('quality').value);try{await game?.flush();}catch{}location.reload();};
 $('sound').onclick=async()=>{

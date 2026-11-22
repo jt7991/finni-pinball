@@ -13,6 +13,7 @@ parser.add_argument('--source-root',type=Path,required=True)
 parser.add_argument('--port',type=int,default=8766)
 parser.add_argument('--table',type=Path,help='Optional controlled reference table; never changes the original.')
 parser.add_argument('--metadata',type=Path,help='Measurement metadata matching the controlled table hash.')
+parser.add_argument('--browser-root',type=Path,help='Optional isolated native UI snapshot; original assets remain read-only.')
 args=parser.parse_args()
 spec=importlib.util.spec_from_file_location('reference_server',args.source_root/'scripts/serve-browser.py')
 module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
@@ -21,6 +22,13 @@ metadata=json.loads(args.metadata.read_text()) if args.metadata else None
 if metadata and metadata['controlledSha256']!=hashlib.sha256(module.Handler.table_path.read_bytes()).hexdigest():
     raise RuntimeError('Controlled reference metadata does not match the served table')
 class Handler(module.Handler):
+    def translate_path(self,path):
+        if args.browser_root:
+            relative=path.split('?',1)[0].lstrip('/') or 'index.html'
+            candidate=(args.browser_root/relative).resolve()
+            if candidate.is_relative_to(args.browser_root.resolve()) and candidate.is_file():
+                return str(candidate)
+        return super().translate_path(path)
     def do_GET(self):
         if self.path=='/reference-metadata.json' and metadata:
             payload=json.dumps(metadata).encode()
