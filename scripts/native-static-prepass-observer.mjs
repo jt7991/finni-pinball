@@ -1,7 +1,7 @@
 // Observe the original startup prepass without changing its commands, matrices,
 // samples or inputs. Current-frame data is reference evidence only.
 export function installNativeStaticPrepassObserver(){
- const data=window.nativeStaticPrepass={stages:[],programs:[],averages:[],images:{},errors:[],priorErrors:[],done:false},io=window.nativePostprocess.io,p=WebGL2RenderingContext.prototype,programs=new WeakMap();
+ const data=window.nativeStaticPrepass={stages:[],programs:[],averages:[],images:{},samplesByInput:{},errors:[],priorErrors:[],done:false},io=window.nativePostprocess.io,p=WebGL2RenderingContext.prototype,programs=new WeakMap();
  let current,busy=false,lastMirrorTarget,mirrors=0,framebuffer;const sampledFramebuffers=new Map();
  const bind=p.bindFramebuffer;p.bindFramebuffer=function(target,object){const result=bind.call(this,target,object);if(!busy&&(target===this.FRAMEBUFFER||target===this.DRAW_FRAMEBUFFER))framebuffer=object;return result;};
  const descriptor=(gl,program)=>{
@@ -27,6 +27,7 @@ export function installNativeStaticPrepassObserver(){
    const row={name,program:current.index,target:target(gl),viewport:Array.from(gl.getParameter(gl.VIEWPORT)),w_h_height:uniform(gl,program,'w_h_height'),AO_scale_timeblur:uniform(gl,program,'AO_scale_timeblur'),blend:gl.isEnabled(gl.BLEND)};
    if(name==='fb_mirror'){
     row.input=sample(gl,program,'tex_fb_unfiltered');
+    data.samplesByInput[row.input]=(data.samplesByInput[row.input]??0)+1;
     const entry=[...sampledFramebuffers].find(([,packet])=>packet.target===row.input);if(entry){row.firstMatrices=entry[1];sampledFramebuffers.delete(entry[0]);}
     lastMirrorTarget=row.target;mirrors++;
    }
@@ -34,7 +35,7 @@ export function installNativeStaticPrepassObserver(){
     const input=sample(gl,program,'tex_fb_unfiltered')??sample(gl,program,'tex_fb_filtered'),ao=sample(gl,program,'tex_ao');
     data.images.accumulated=io.readColor(gl,input);data.images.ao=io.readColor(gl,ao);row.finalStatic=true;
    }
-   data.stages.push(row);return row;
+   row.scissorEnabled=gl.isEnabled(gl.SCISSOR_TEST);row.scissor=Array.from(gl.getParameter(gl.SCISSOR_BOX));data.stages.push(row);return row;
   }catch(error){data.errors.push(error.message);data.done=true;}finally{busy=false;}
  };
  const blit=p.blitFramebuffer;p.blitFramebuffer=function(...args){
@@ -42,7 +43,7 @@ export function installNativeStaticPrepassObserver(){
   const source=this.getParameter(this.READ_FRAMEBUFFER_BINDING)?io.textureId(this.getFramebufferAttachmentParameter(this.READ_FRAMEBUFFER,this.COLOR_ATTACHMENT0,this.FRAMEBUFFER_ATTACHMENT_OBJECT_NAME)):null,result=blit.apply(this,args);
   if(source===lastMirrorTarget&&(args[8]&this.COLOR_BUFFER_BIT)){busy=true;try{
    for(let error;(error=this.getError())!==this.NO_ERROR;)data.priorErrors.push({stage:'native accumulated color blit',error,source,target:target(this)});
-   const id=target(this),index=data.averages.length,key='average'+index;data.images[key]=io.readColor(this,id);data.averages.push({source,target:id,mirrorsSeen:mirrors,image:key,args});lastMirrorTarget=undefined;
+   const id=target(this),index=data.averages.length,key='average'+index,scissorEnabled=this.isEnabled(this.SCISSOR_TEST),scissor=Array.from(this.getParameter(this.SCISSOR_BOX));data.images[key]=io.readColor(this,id);data.averages.push({source,target:id,mirrorsSeen:mirrors,image:key,args,scissorEnabled,scissor});lastMirrorTarget=undefined;
    if(this.getFramebufferAttachmentParameter(this.DRAW_FRAMEBUFFER,this.DEPTH_ATTACHMENT,this.FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE)===this.TEXTURE){const depth=io.textureId(this.getFramebufferAttachmentParameter(this.DRAW_FRAMEBUFFER,this.DEPTH_ATTACHMENT,this.FRAMEBUFFER_ATTACHMENT_OBJECT_NAME));data.images[key+'Depth']=io.readDepth(this,depth);}
   }catch(error){data.errors.push(error.message);}finally{busy=false;}}
   return result;

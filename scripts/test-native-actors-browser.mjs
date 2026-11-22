@@ -1,3 +1,4 @@
+// Reference actor packets capture the native render-all mode; keep that mode explicit.
 // Exercise the production scene, worker subscriptions and actual pre-draw UBO
 // uploads against independent VPX packets. Fixture poses are test inputs only.
 import fs from 'node:fs';import assert from 'node:assert/strict';import {gunzipSync} from 'node:zlib';
@@ -14,7 +15,7 @@ try{
   for(let i=0;i<600;i++){if(await evaluate('!!window.finniThree'))break;await new Promise(r=>setTimeout(r,50));}
   assert.ok(await evaluate('!!window.finniThree'),JSON.stringify({page:await evaluate('({url:location.href,title:document.title,body:document.body.innerText.slice(0,500),status:document.getElementById("load-status")?.textContent})'),errors}));
   const result=await evaluate(`(async()=>{
-    const {game,view}=finniThree;game.setPaused(true);await game.flush();const {applyNativeCamera}=await import('/three/camera-render.js'),fixture=${JSON.stringify(fixture)},reflections=${JSON.stringify(reflectionFixture)},sequencers=${JSON.stringify(objects.filter(o=>o.kind==='LightSequencer').map(o=>o.name))},visual=view.nativeActors,renderer=view.renderer,gl=renderer.getContext(),result={names:visual.parts.map(p=>p.spec.name),duplicates:[],differentBits:0,uploadedFields:0,draws:[],assets:[],hidden:[],errors:[]};
+    const {game,view}=finniThree;view.setStaticPrerenderEnabled(false);game.setPaused(true);await game.flush();const {applyNativeCamera}=await import('/three/camera-render.js'),fixture=${JSON.stringify(fixture)},reflections=${JSON.stringify(reflectionFixture)},sequencers=${JSON.stringify(objects.filter(o=>o.kind==='LightSequencer').map(o=>o.name))},visual=view.nativeActors,renderer=view.renderer,gl=renderer.getContext(),result={names:visual.parts.map(p=>p.spec.name),duplicates:[],differentBits:0,uploadedFields:0,draws:[],assets:[],hidden:[],errors:[]};
     const integrated=!!view.reflectionPass,selected=visual.parts.map(p=>(integrated?reflections:fixture).samples.find(s=>s.spec.name===p.spec.name)),statements=['lilShakeTimer.Enabled=False','DiscoTimer.Enabled=False',...sequencers.map(n=>n+'.StopPlay')];
     for(const sample of selected){statements.push(sample.spec.name+'.Visible=True');for(const [i,key]of ['RotX','RotY','RotZ'].entries())statements.push(sample.spec.name+'.'+key+'='+(sample.pose?.[key.toLowerCase()]??sample.spec.rot_and_tra[i]));}
     await game.rules.execute(statements.join(':'));await game.flush();renderer.setPixelRatio(1);renderer.setSize(fixture.viewport.width,fixture.viewport.height,false);view.lightFrame?.resize();applyNativeCamera(view.camera,view.cameraBounds,fixture.viewport.width/fixture.viewport.height,fixture.preset);

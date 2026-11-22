@@ -24,7 +24,7 @@ try{
    const {mesh,spec,top}=part,geometry=mesh.geometry,uniforms=mesh.material.uniforms;
    geometry.setAttribute('vPosition',geometry.getAttribute('nativePosition'));geometry.setAttribute('vNormal',geometry.getAttribute('nativeNormal'));geometry.setAttribute('tc',geometry.getAttribute('uv'));
    const group=new THREE.UniformsGroup().setName('basicMatrixBlock');for(let i=0;i<5;i++)group.add(new THREE.Uniform(new THREE.Matrix4()));
-   const material=new THREE.RawShaderMaterial({glslVersion:THREE.GLSL3,uniforms:{...uniforms,doNormalMapping:{value:false},objectSpaceNormalMap:{value:false},doRefractions:{value:false},doReflections:{value:false},mirrorNormal_factor:{value:new THREE.Vector4()},lightCenter_doShadow:{value:new THREE.Vector4()},clip_plane:{value:new THREE.Vector4()}},uniformsGroups:[group],vertexShader:${JSON.stringify(shader(35633))},fragmentShader:${JSON.stringify(shader(35632))}});
+   const material=new THREE.RawShaderMaterial({glslVersion:THREE.GLSL3,side:mesh.material.side,uniforms:{...uniforms,doNormalMapping:{value:false},objectSpaceNormalMap:{value:false},doRefractions:{value:false},doReflections:{value:false},mirrorNormal_factor:{value:new THREE.Vector4()},lightCenter_doShadow:{value:new THREE.Vector4()},clip_plane:{value:new THREE.Vector4()}},uniformsGroups:[group],vertexShader:${JSON.stringify(shader(35633))},fragmentShader:${JSON.stringify(shader(35632))}});
    const actual=new THREE.Mesh(geometry,mesh.material),reference=new THREE.Mesh(geometry,material);actual.frustumCulled=reference.frustumCulled=false;actual.renderOrder=mesh.renderOrder;actualScene.add(actual);referenceScene.add(reference);parts.push({part,actual,reference,material,group,x:top?spec.position.x:spec.center.x});
   }
   const cases=[];

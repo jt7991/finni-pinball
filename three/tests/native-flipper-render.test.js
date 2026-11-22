@@ -16,6 +16,10 @@ test('original binary top meshes and textures retain independently observed nati
  for(const part of metadata.parts){const draw=fixture.tops.find(d=>Math.abs(d.blocks.basicMatrixBlock[12]-part.spec.position.x)<.01);assert.ok(draw,part.spec.name);assert.deepEqual(Array.from(new Uint32Array(buffer.buffer,buffer.byteOffset+part.vertexByteOffset,part.vertices*8)),draw.bits);assert.deepEqual(Array.from(new Uint16Array(buffer.buffer,buffer.byteOffset+part.indexByteOffset,part.indices)),draw.indices);}
  assert.equal(metadata.parts.length,2);assert.equal(createHash('sha256').update(fs.readFileSync(new URL('../public/flipperx.webp',import.meta.url))).digest('hex'),fixture.textureSHA256);
 });
+test('flipper texture filtering retains separately observed native anisotropic samplers',()=>{
+ const metadata=json('flipper-tops.json'),source=JSON.parse(fs.readFileSync(new URL('fixtures/vpx-flipper-samplers-native.json',import.meta.url)));assert.equal(source.engineSHA256,fixture.engineSHA256);assert.equal(source.observations.length,3);
+ for(const observation of source.observations){assert.deepEqual(metadata.samplers[observation.name],observation.parameters);assert.ok(observation.draws>0);assert.equal(observation.parameters[34046],16);}
+});
 test('authored Animate callbacks produce the native base and top poses at rest, held and returned',async()=>{
  const g=await createFullGame(json('layout.json'),json('objects.json'),fs.readFileSync(new URL('../public/rules.vbs',import.meta.url),'utf8'),()=>{},undefined,{frameAnimations:true});
  const tops=json('flipper-tops.json').parts;try{g.start();for(let i=0;i<2000;i++)g.step();g.prepareFrame();

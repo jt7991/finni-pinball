@@ -478,3 +478,48 @@ Use this workspace's bundled Python on Windows if python is not installed.
 The capture refuses to overwrite existing evidence. Whole-frame diagnostics
 assert the native background and cache equivalence; they report all remaining
 scene differences without presenting them as a passing whole-scene comparison.
+
+## Native prerender composition
+
+The later control-r6/r7 render-all comparisons match all color, alpha and depth
+outputs with common observed scene/body/history inputs. Their original gates
+remain intact and passing. That mode explicitly disables native prerendering
+and hides the 25 classic inserts in both scenes.
+
+Normal-mode static composition is now connected separately. Two unchanged
+startup captures retain the complete native static draw states: 493 main and
+563 reflected draws, associated uniquely through original GPU mesh hashes and
+authored world transforms. Source classification covers all 615 static parts.
+Runtime proxies share the original table geometry and GPU image storage, with
+the original source samplers. Neither camera packets nor expected images enter
+runtime assets. Independent Gaussian sample calculations and original shaders
+produce identical full-size RGBA16F accumulated colors and centered D16 depth.
+RenderProbe clips its final color blit to the computed playfield area, leaving
+the centered sample outside it; clipping every sample instead is incorrect.
+
+The ordinary frame now copies these static color/depth buffers and draws live
+objects. The static playfield contributes through its original additive
+reflection-only shader. Independent Balanced and Top-down captures retain the
+native prepass and supply actual scene/body/history inputs. With classic
+inserts explicitly hidden in both scenes, all HDR, reflection, bloom, final
+RGBA and depth values match exactly, including cold/reused-buffer comparisons.
+The source reflection pass in this mode binds an observed 1x1 black transmission
+texture; the strict comparison checks that actual binding rather than omitting
+an unobserved history input. Original render-all history requirements remain.
+
+A Top-down reflected flipper exposed one differing blue channel. Its original
+16x anisotropic sampler value had been omitted by an older observer, which used
+an invalid extension query; the runtime defaulted to 1x. A separate read-only
+capture records all three flipper image samplers from actual setter calls.
+Restoring those settings removes the difference without fitting pixels. Live
+flippers now reuse the complete original BasicShader program and source indices
+and cull state. Existing material, projection and assembly sample counts and
+zero-difference gates remain unchanged. The orthographic fallback material is
+checked separately from the live native-camera program.
+
+The enabled-insert normal-mode diagnostic remains different. The pinned native
+build's invalid classic-light uniforms are retained as evidence, never copied
+into production or fitted. Production uses valid source lamp properties and
+keeps authored inserts enabled. These controlled frames do not establish
+uninterrupted gameplay parity, resolve the seven older physics failures, or
+certify physical-phone performance.

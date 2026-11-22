@@ -165,3 +165,15 @@ https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3
 The authored HDR backdrop uses Renderer::DrawBackground and RenderCommand's
 direct normalized-byte clear color, retaining its original linear values:
 https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/renderer/RenderCommand.cpp
+
+native-static-render.js and native-static-sampling.js retain the static main
+and planar reflection accumulation passes, original Gaussian sample ROM,
+centered depth, clipped reflection color copy and reflection-only composition:
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/renderer/Renderer.cpp
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/renderer/RenderProbe.cpp
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/renderer/RenderPass.cpp
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/math/bluenoise.h
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/parts/primitive.cpp
+The compiled mirror and reflection-only shaders in public/native-static/
+derive from the original FBShader and BasicShader programs at that revision.
+Flipper rendering reuses the same original compiled BasicShader as the table.
