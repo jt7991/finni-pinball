@@ -1,4 +1,4 @@
-"""Apply approved scoop, lock-ramp, presentation, lighting and task-selection changes."""
+"""Apply approved scoop, lock-ramp, presentation, lighting, task-selection and music-routing changes."""
 import argparse
 import json
 import runpy
@@ -10,7 +10,7 @@ BALL_SAVED = b'DMD "_", CL(1, "BALL SAVED"), "_", eNone, eBlinkfast, eNone, 1000
 BALL_SAVED_VOICE = BALL_SAVED[:-2] + b'"vo_ballsaved"'
 
 
-def tuned_script(source, motion=True):
+def tuned_script(source, motion=True, music=True):
     tuning=json.loads((ROOT/'design/gameplay-tuning.json').read_text())['scoop']
     if source.count(ORIGINAL)!=1:
         raise ValueError('Expected exactly one original HellHouse kick; refusing an unknown source revision.')
@@ -27,13 +27,16 @@ def tuned_script(source, motion=True):
         display = runpy.run_path(str(ROOT/'scripts/finni-dmd-native-motion.py'))['animate_script'](display)
     lighting = runpy.run_path(str(ROOT/'scripts/apply-finni-lighting.py'))['lighting_script'](display)
     selected = runpy.run_path(str(ROOT/'scripts/apply-party-selection.py'))['selection_script'](lighting)
-    return runpy.run_path(str(ROOT/'scripts/apply-lock-ramp-tuning.py'))['ramp_script'](selected)
+    ramp = runpy.run_path(str(ROOT/'scripts/apply-lock-ramp-tuning.py'))['ramp_script'](selected)
+    return runpy.run_path(str(ROOT/'scripts/apply-multiball-music.py'))['music_script'](ramp) if music else ramp
 
 
 def install(extracted):
     source=(ROOT/'.work/deadpool-extracted/script.vbs').read_bytes()
     path=extracted/'script.vbs'
-    expected=tuned_script(source)
+    music = runpy.run_path(str(ROOT/'scripts/apply-multiball-music.py'))
+    current = music['restore_music'](path.read_bytes())
+    expected=tuned_script(source, music=False)
     # Preserve the prior presentation build as a recognized upgrade input.
     prior_selection = runpy.run_path(str(ROOT/'scripts/apply-finni-lighting.py'))['lighting_script'](
         runpy.run_path(str(ROOT/'scripts/apply-finni-dmd.py'))['dmd_script'](
@@ -51,15 +54,16 @@ def install(extracted):
     previous_dmd = expected.replace(b'TARGETS + LIT SHOTS', b'TARGETS / LIT SHOTS',1)
     first_pass=runpy.run_path(str(ROOT/'scripts/apply-finni-dmd.py'))['first_pass_script'](old_tasks)
     without_motion = runpy.run_path(str(ROOT/'scripts/finni-dmd-native-motion.py'))['restore_motion'](expected)
-    prior_motion = runpy.run_path(str(ROOT/'scripts/finni-dmd-native-motion.py'))['restore_motion'](path.read_bytes())
+    prior_motion = runpy.run_path(str(ROOT/'scripts/finni-dmd-native-motion.py'))['restore_motion'](current)
     prior_friendship = runpy.run_path(str(ROOT/'scripts/finni-dmd-native-motion.py'))['restore_friendship_events'](without_motion)
     prior_cake_task = expected.replace(b'COOKIES BAKED',b'CAKE BAKED').replace(b'COOKIE SUPER JACKPOT',b'BAKING SUPER JACKPOT').replace(b'COOKIE JACKPOT',b'BAKING JACKPOT')
     prior_ramp = runpy.run_path(str(ROOT/'scripts/apply-lock-ramp-tuning.py'))['restore_script'](expected)
-    current_without_ramp = runpy.run_path(str(ROOT/'scripts/apply-lock-ramp-tuning.py'))['restore_script'](path.read_bytes())
-    if current_without_ramp != prior_ramp and path.read_bytes() not in (source,previous,previous_story,previous_without_save_voice,old_tasks,previous_dmd,first_pass,previous_lighting,prior_selection,expected,without_motion,prior_cake_task,prior_ramp) and prior_motion not in (tuned_script(source,motion=False),prior_friendship):
+    current_without_ramp = runpy.run_path(str(ROOT/'scripts/apply-lock-ramp-tuning.py'))['restore_script'](current)
+    if current_without_ramp != prior_ramp and current not in (source,previous,previous_story,previous_without_save_voice,old_tasks,previous_dmd,first_pass,previous_lighting,prior_selection,expected,without_motion,prior_cake_task,prior_ramp) and prior_motion not in (tuned_script(source,motion=False,music=False),prior_friendship):
         raise ValueError('Working script has unrelated edits; refusing to overwrite them.')
-    path.write_bytes(expected)
-    return expected
+    result = music['music_script'](expected)
+    path.write_bytes(result)
+    return result
 
 
 if __name__=='__main__':

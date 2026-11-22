@@ -24,6 +24,7 @@ images = {p.stem:p for p in (roundtrip/'images').iterdir()}
 assert images['pf'].read_bytes() == (art/'finni-playfield-base.png').read_bytes()
 
 def gameplay(data, story=False):
+    data = runpy.run_path(str(ROOT/'scripts/apply-multiball-music.py'))['restore_music'](data)
     if story:
         data = re.sub(rb'^[ \t]+DMD [^\r\n]*"vo_caketime(?:toppings|finish|frosting)"\r\n', b'', data, flags=re.M)
     # DMD payloads and the renamed scoreboard image are presentation only.

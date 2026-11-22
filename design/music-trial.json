@@ -1,5 +1,5 @@
 {
-  "direction": "Effects and callouts during regular play; selected songs for Friendship and Cake Time multiballs only.",
+  "direction": "Friendship Multiball first, Cake Time second, then task music. Regular play and other side modes remain silent.",
   "silent_ids": [
     "mu_beserkerrage",
     "mu_bonuscount",
@@ -12,15 +12,8 @@
     "mu_hellhouse3",
     "mu_hellhouse4",
     "mu_hellhouse5",
-    "mu_juggernaut",
     "mu_mechsuitmb",
-    "mu_megalodon",
-    "mu_mrsinister",
-    "mu_mystique",
-    "mu_sabretooth",
-    "mu_sauronmb",
     "mu_shooterlane",
-    "mu_trex",
     "mu_sexymf",
     "mu_xforcesm"
   ],
@@ -48,7 +41,23 @@
       "sha256": "0356fdbed41227d18fe91a8713eb9b34b15e53267aad8329bdb9a266646ebe38",
       "start_seconds": 16,
       "edit": "Skip the quiet spoken opening so Cake Time starts with the full-band entrance."
+    },
+    {
+      "title": "Give Me the Night",
+      "artist": "George Benson",
+      "mode": "All seven party tasks",
+      "ids": [
+        "mu_juggernaut",
+        "mu_mystique",
+        "mu_sabretooth",
+        "mu_trex",
+        "mu_megalodon",
+        "mu_sauronmb",
+        "mu_mrsinister"
+      ],
+      "source_file": ".work/music-sources/give-me-the-night.mp3",
+      "sha256": "ab7a5390ff18b162a91b06852c48abe8bccd920a91dbb0d4f7a7676e985f5415"
     }
   ],
-  "missing_source_policy": "Silence pending multiball slots; never substitute legacy music."
+  "missing_source_policy": "Silence pending song slots; never substitute legacy music."
 }
