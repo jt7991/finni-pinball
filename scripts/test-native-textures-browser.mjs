@@ -12,7 +12,7 @@ try{
   const result=await evaluate(`(async()=>{
     const {game,view}=finniThree;game.setPaused(true);await game.flush();const {loadNativePrimitiveVisuals,createNativeBaseTexture}=await import('/three/native-basic-render.js'),assets=await loadNativePrimitiveVisuals(${JSON.stringify(assetsURL)},${JSON.stringify(metadataFile)}),renderer=view.renderer,gl=renderer.getContext(),result={textures:[],bytes:0,glErrors:[]};
     for(const [id,spec]of Object.entries(assets.metadata.textures)){
-      const binding=assets.metadata.parts.map(p=>p.textures.tex_base_color).find(t=>String(t?.id)===id);if(!binding)throw Error('Native texture has no source draw '+id);
+      const binding=assets.metadata.parts.flatMap(p=>Object.values(p.textures)).find(t=>String(t?.id)===id);if(!binding)throw Error('Native texture has no source draw '+id);
       const texture=createNativeBaseTexture(assets,id,binding.sampler);renderer.initTexture(texture);const fbo=gl.createFramebuffer(),previous=gl.getParameter(gl.READ_FRAMEBUFFER_BINDING),pixels=new Uint8Array(spec.width*spec.height*4);
       try{gl.bindFramebuffer(gl.READ_FRAMEBUFFER,fbo);gl.framebufferTexture2D(gl.READ_FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,renderer.properties.get(texture).__webglTexture,0);if(gl.checkFramebufferStatus(gl.READ_FRAMEBUFFER)!==gl.FRAMEBUFFER_COMPLETE)throw Error('Native image readback incomplete '+id);gl.readPixels(0,0,spec.width,spec.height,gl.RGBA,gl.UNSIGNED_BYTE,pixels);const error=gl.getError();if(error)result.glErrors.push({id,error});}
       finally{gl.bindFramebuffer(gl.READ_FRAMEBUFFER,previous);gl.deleteFramebuffer(fbo);texture.dispose();}

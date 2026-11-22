@@ -165,7 +165,7 @@ for spec in specs:
 for extra in appearance['extraObjects']:
     if extra.get('is_collidable',True):raise ValueError('Decorative extras cannot introduce colliders')
     specs.append(extra)
-(OUT/'objects.json').write_text(json.dumps({'objects':specs,'collections':json.loads((source.parent/'collections.json').read_text()),'sound_names':[entry['name'].lower() for entry in json.loads((source.parent/'sounds.json').read_text())]},separators=(',',':')))
+(OUT/'objects.json').write_text(json.dumps({'objects':specs,'ball_settings':{key:gamedata[key] for key in ('default_bulb_intensity_scale_on_ball','ball_playfield_reflection_strength','ball_decal_mode','ball_spherical_mapping','ball_image','ball_image_front')},'collections':json.loads((source.parent/'collections.json').read_text()),'sound_names':[entry['name'].lower() for entry in json.loads((source.parent/'sounds.json').read_text())]},separators=(',',':')))
 script=(source.parent/'script.vbs').read_text()
 # The game script is retained in full; only its native-host bootstrap is adapted.
 import re

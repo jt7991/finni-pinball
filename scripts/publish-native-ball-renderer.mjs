@@ -1,0 +1,7 @@
+// Publish runtime assets only. Camera, light and pose observations stay in .work.
+import fs from 'node:fs';import path from 'node:path';import assert from 'node:assert/strict';import {createHash} from 'node:crypto';
+const source=process.argv[2]??'.work/native-ball-renderer-lossless',output=process.argv[3]??'three/public/native-ball',metadata=JSON.parse(fs.readFileSync(path.join(source,'native-ball.json'))),files=new Set(['native-ball.json',metadata.geometry.file]),sha=b=>createHash('sha256').update(b).digest('hex');assert.notEqual(path.resolve(source),path.resolve(output));assert.equal(metadata.parts.length,1);assert.deepEqual(Object.keys(metadata.globals).sort(),['cAmbient_LightRange','fDisableLighting_top_below','fenvEmissionScale_TexWidth']);assert.equal(sha(fs.readFileSync(path.join(source,metadata.geometry.file))),metadata.geometry.sha256);
+for(const part of metadata.parts)assert.ok(!part.uniforms&&!part.pose&&!part.matrixBits);
+for(const program of Object.values(metadata.programs))for(const file of Object.values(program))files.add(file);
+for(const texture of Object.values(metadata.textures))for(const level of texture.levels){assert.equal(sha(fs.readFileSync(path.join(source,level.file))),level.sha256);files.add(level.file);}
+fs.mkdirSync(output,{recursive:true});for(const file of files){assert.equal(path.basename(file),file);fs.copyFileSync(path.join(source,file),path.join(output,file));}assert.ok(!fs.existsSync(path.join(output,'reference.json')));console.log(JSON.stringify({files:files.size,output}));

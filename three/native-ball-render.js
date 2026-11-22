@@ -1,0 +1,26 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Original compiled native ball shaders and lossless source geometry/textures.
+import * as THREE from 'three';
+import {NativeMatrixStream,createNativeBaseTexture} from './native-basic-render.js';
+import {nativeShaderArray,nativeShaderFloat} from './native-shader-state.js';
+import {nativeBallMatrices,nativeBallOrientation,nativeBallLightState} from './native-ball-render-state.js';
+export function createNativeBallVisuals(renderer,scene,assets,lighting,{previousFrame,stateFor=()=>null}={}){
+ if(!previousFrame)throw Error('Native balls require a previous-frame reflection texture');
+ const record=assets.metadata.parts[0],vertices=new THREE.InterleavedBuffer(new Float32Array(assets.geometry,record.vertexByteOffset,record.vertices*8),8),geometry=new THREE.BufferGeometry(),position=new THREE.InterleavedBufferAttribute(vertices,3,0);geometry.setAttribute('position',position);geometry.setAttribute('vPosition',position);geometry.setAttribute('vNormal',new THREE.InterleavedBufferAttribute(vertices,3,3));geometry.setAttribute('tex0',new THREE.InterleavedBufferAttribute(vertices,2,6));geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(assets.geometry,record.indexByteOffset,record.indices),1));
+ const stream=new NativeMatrixStream(renderer,{block:'ballMatrixBlock',floats:64}),parts=[],textures={};for(const [name,binding]of Object.entries(record.textures))textures[name]=createNativeBaseTexture(assets,binding.id,binding.sampler);
+ const table=assets.metadata.table,program=assets.programs.ball;let material;
+ function add(){
+  const uniforms={};for(const [name,value]of Object.entries(assets.metadata.globals))uniforms[name]={value:Float32Array.from(value)};
+  for(const [name,texture]of Object.entries(textures))uniforms[name]={value:texture};Object.assign(uniforms,{tex_ball_playfield:{value:previousFrame},orientation:{value:new Float32Array(16)},matProj:{value:new Float32Array(16)},layer:{value:0},ballLightPos:{value:new Float32Array(40)},ballLightEmission:{value:new Float32Array(40)},cBase_Alpha:{value:new Float32Array([1,1,1,1])},Roughness_WrapL_Edge_Thickness:{value:new Float32Array(4)},invTableRes_reflection:{value:nativeShaderArray([1/table.width,1/table.height,Math.max(0,Math.min(1,table.ball_playfield_reflection_strength)),0])},w_h_disableLighting:{value:new Float32Array(4)}});
+  if(!material){const state=record.renderState;material=new THREE.RawShaderMaterial({glslVersion:THREE.GLSL3,vertexShader:program.vertex,fragmentShader:program.fragment,uniforms,depthWrite:true,depthFunc:THREE.LessEqualDepth,side:state.cullFace===1028?THREE.BackSide:THREE.FrontSide,blending:THREE.NoBlending});material.onBeforeRender=(_renderer,_scene,_camera,_geometry,object)=>{const part=object.userData.nativeBallPart;for(const [name,u]of Object.entries(part.uniforms))if(ArrayBuffer.isView(u.value)&&material.uniforms[name].value!==u.value)material.uniforms[name].value.set(u.value);material.uniformsNeedUpdate=true;stream.upload(material,part.matrices);};}
+  const mesh=new THREE.Mesh(geometry,material),part={mesh,material,uniforms,matrices:new Float32Array(64),baseSide:record.renderState.cullFace===1028?THREE.BackSide:THREE.FrontSide};mesh.userData.nativeBallPart=part;mesh.name='NativeBall';mesh.frustumCulled=false;mesh.renderOrder=1000000;parts.push(part);scene.add(mesh);return part;
+ }
+ add();
+ return{parts,geometry,stream,add,update(camera,balls,{width,height}={}){
+  const native=camera.userData.nativeCamera;if(!native)throw Error('Native balls require the authored camera');const size=renderer.getDrawingBufferSize(new THREE.Vector2());width??=size.x;height??=size.y;while(parts.length<balls.length)add();const matrices=nativeBallMatrices(native),projection=nativeShaderArray(native.projection);
+  for(let i=0;i<parts.length;i++){
+   const part=parts[i],ball=balls[i];part.mesh.visible=!!ball&&ball.visible!==false&&(!native.reflection||ball.reflectionEnabled!==false&&(ball.forceReflection||!ball.locked&&ball.position.z<=ball.radius+3&&ball.position.z>=ball.radius-.1));if(!ball)continue;
+   const {uniforms}=part,lights=nativeBallLightState(assets.metadata,lighting.metadata,ball.position,stateFor,ball.bulbScale),position=ball.locked?{...ball.position,z:Math.fround(ball.position.z-ball.radius)}:ball.position;part.matrices.set(matrices);uniforms.matProj.value.set(projection);uniforms.orientation.value.set(nativeBallOrientation(position,ball.orientation,ball.radius));uniforms.w_h_disableLighting.value.set(nativeShaderArray([1.5/width,1.5/height,0,0]));uniforms.ballLightPos.value.set(lights.positions);uniforms.ballLightEmission.value.set(lights.emissions);uniforms.Roughness_WrapL_Edge_Thickness.value.set(lights.roughness);uniforms.cBase_Alpha.value.set(ball.color??[1,1,1,1]);uniforms.invTableRes_reflection.value[2]=nativeShaderFloat(Math.max(0,Math.min(1,Math.fround(Math.fround(table.ball_playfield_reflection_strength)*Math.fround(ball.reflectionStrength??1)))));part.material.side=native.reflection&&!native.reverseCullingByRenderer?(part.baseSide===THREE.BackSide?THREE.FrontSide:THREE.BackSide):part.baseSide;
+  }
+ },dispose(){for(const p of parts)scene.remove(p.mesh);material.dispose();geometry.dispose();for(const texture of Object.values(textures))texture.dispose();stream.dispose();}};
+}

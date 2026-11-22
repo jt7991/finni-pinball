@@ -5,8 +5,8 @@ complete original basic geometry instead of the joined GLB: 682 meshes include
 558 main-view parts and 124 reflection-only wall bottoms. Six source flipper
 parts and 25 classic inserts retain their separate native paths. The original
 open wire ramp geometry, main arcade UI and lossless source artwork are retained.
-The native ball material, flashers, shared transmission/bloom temporary buffer,
-final whole-frame comparison and seven older physics comparisons are unfinished.
+Flashers, the shared transmission/bloom temporary buffer, final whole-frame
+comparison and seven older physics comparisons are unfinished.
 
 The actual scene now runs source planar reflections with D16 depth, native
 transmission, target/gate/spinner/trigger/bumper vertex updates and all 57
@@ -23,6 +23,24 @@ RGBA bytes. Original shader bytes and all source vertex/index bits are retained.
 The complete table mesh compresses from 12,630,508 to 3,142,237 bytes with gzip.
 The static server allows compression of this larger mesh; it does not lower
 texture quality or quantize geometry.
+
+`native-ball-render.js` now runs in the actual scene. It uses the original
+181-vertex sphere, 960 indices, native scratch/environment textures, compiled
+ball shaders and a 256-byte matrix block. Eight independent main/reflection
+packets match all 512 block fields and 864 ordinary uniform fields. GPU output
+matches 101,400 HDR RGB samples; all 1,056,768 uploaded texture bytes match.
+The GPU component test supplies native orientations and a synthetic previous
+frame as explicit shared inputs. Neither is published as runtime data.
+
+Live rendering receives original Float32 orientation matrices and native
+positions for all physical balls through the worker, including the three
+bobble balls under the apron. A six-ball browser check reads actual GL uniforms
+and verifies each ball's orientation/color, source visibility and reflection
+eligibility. Ball parts share one compiled material and stream their state per
+draw; new balls do not need fresh shader compilation. The previous HDR frame
+copies without changing any half-float bits. Presentation-time extrapolation,
+anti-stretch settings, trails and source dynamic light shadows still need
+separate native comparisons. Whole-frame VPX equivalence remains unverified.
 
 The ownership audit covers 650 authored renderable objects. All 589 BasicShader
 draws in the independent frame with revealed sling variants have exactly one

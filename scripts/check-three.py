@@ -38,6 +38,8 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--reflection-render' in sys.argv:runner='test-native-reflection-browser.mjs'
         if '--playfield-render' in sys.argv:runner='test-native-playfield-browser.mjs'
         if '--native-cache' in sys.argv:runner='test-native-cache-browser.mjs'
+        if '--ball-render' in sys.argv:runner='test-native-ball-render-browser.mjs'
+        if '--ball-live' in sys.argv:runner='test-native-ball-live-browser.mjs'
         subprocess.run(['node',str(ROOT/'scripts'/runner),f'http://127.0.0.1:{port}',
                         sys.argv[1] if len(sys.argv)>1 else 'http://127.0.0.1:5173/three/',str(OUT),*sys.argv[2:]],check=True,timeout=150)
     finally:

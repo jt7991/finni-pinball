@@ -37,6 +37,7 @@ test('real worker preserves every body, native RNG, authored rules, DMD, audio a
     for(const name of digits)remote.rules.objects.get(name);await remote.flush();
     const compare=async()=>{
       assert.deepEqual(await remote.debug({action:'inspect'}),inspect(local));
+      assert.deepEqual(remote.renderBalls,local.physicalRecords.map(rec=>{const native=local.nativeBall(rec.body);return{id:rec.body.handle,position:{...native.sync()},orientation:native.orientation.matrix.slice(),radius:25,locked:!!rec.held&&rec.held!=='lane',...rec.render};}),'all source ball positions, original orientation bits and visual properties cross the worker');
       assert.equal(remote.plungerPosition,local.plunger.pos,'native plunger position crosses the worker boundary');
       for(const [name,motion]of local.visualMotions)assert.deepEqual(remote.visualMotions.get(name),motion.snapshot(),name+' visual frame state');
       for(const key of ['state','score','player','ballNumber','charge','inLane','tilted','gameState','held'])assert.deepEqual(remote[key],local[key],key);

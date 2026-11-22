@@ -196,10 +196,12 @@ class FullGame extends Pinball {
       .setCollisionGroups(this.nativeBallContacts?NATIVE_BALL_GROUP:BALL_GROUP).setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS),body);
     if(this.nativePositionUnits)this.nativeBall(body).body.setTranslation(p,true);
     const isToy=['he','la','ra'].includes(key),rec={body,collider,isToy,held:key,inLane:false,previous:{...p},cooldowns:new Map(),laneTime:this.time};
+    rec.render={visible:true,color:0xffffff,reflectionenabled:true,forcereflection:false,bulbintensityscale:Math.fround(this.specs.ball_settings?.default_bulb_intensity_scale_on_ball??.15),playfieldreflectionscale:1};
     rec.proxy=new Proxy({radius:25,mass:1,id:body.handle},{
       get:(target,key)=>{
         if(typeof key!=='string')return target[key];key=key.toLowerCase();
         if(rec.removed)return rec.lastState[key]??target[key]??0;
+        if(Object.hasOwn(rec.render,key))return rec.render[key];
         if(/^ang(mom|vel)[xyz]$/.test(key)){
           const axis=key.at(-1),sign=axis==='y'?1:-1;
           if(this.nativePositionUnits){const native=this.nativeBall(body);native.syncAngular();return key.startsWith('angmom')?native.angularMomentum[axis]:Math.fround(native.angularMomentum[axis]/native.inertia);}
@@ -210,6 +212,7 @@ class FullGame extends Pinball {
       },
       set:(_target,key,v)=>{key=String(key).toLowerCase();
         if(rec.removed){rec.lastState[key]=v;return true;}
+        if(Object.hasOwn(rec.render,key)){rec.render[key]=['visible','reflectionenabled','forcereflection'].includes(key)?!!v:Math.fround(Number(v));return true;}
         if(/^angmom[xyz]$/.test(key)){const axis=key.at(-1);if(this.nativePositionUnits){this.nativeBall(body).setAngularMomentum(axis,v);return true;}const w={...body.angvel()};w[axis]=v*(axis==='y'?1:-1)/(2.5*body.mass());body.setAngvel(w,true);return true;}
         if(/^angvel[xyz]$/.test(key))return true; // Deprecated read-only native properties.
         const positionBody=this.nativePositionUnits?this.nativeBall(body).body:body;

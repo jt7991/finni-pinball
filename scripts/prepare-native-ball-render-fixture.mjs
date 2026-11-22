@@ -1,0 +1,2 @@
+import fs from 'node:fs';import {gzipSync} from 'node:zlib';import assert from 'node:assert/strict';
+const reference=JSON.parse(fs.readFileSync('.work/native-ball-renderer/reference.json'));assert.equal(reference.engineSHA256,'c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8');assert.equal(reference.references.length,8);fs.writeFileSync('three/tests/fixtures/vpx-ball-render-native.json.gz',gzipSync(Buffer.from(JSON.stringify(reference))));
