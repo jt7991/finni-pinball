@@ -1,10 +1,10 @@
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 import {DRACOLoader} from 'three/addons/loaders/DRACOLoader.js';
-import {mergeGeometries} from 'three/addons/utils/BufferGeometryUtils.js';
 import {RADIUS} from './game-constants.js';
 import {applyTargetAnimation,targetAnimationAxis} from './target-render.js';
 import {createBulbHalos,createLightFrame} from './bulb-render.js';
+import {createClassicLights,loadNativeLighting} from './classic-render.js';
 
 export async function createView(canvas, game) {
   const renderer=new THREE.WebGLRenderer({canvas,antialias:false,alpha:false,powerPreference:'high-performance'});
@@ -16,13 +16,15 @@ export async function createView(canvas, game) {
   const fill=new THREE.DirectionalLight(0xc7dcff,1.3);fill.position.set(12,15,12);scene.add(fill);
   const base=import.meta.env.BASE_URL;
   const draco=new DRACOLoader().setDecoderPath(`${base}draco/`).setDecoderConfig({type:'wasm'}).setWorkerLimit(1);
-  const [floor,table]=await Promise.all([
+  const [floor,table,lighting]=await Promise.all([
     new THREE.TextureLoader().loadAsync(`${base}playfield.webp`),
     new GLTFLoader().setDRACOLoader(draco).loadAsync(`${base}table.glb`),
+    loadNativeLighting(base),
   ]);
   draco.dispose();
-  floor.colorSpace=THREE.SRGBColorSpace;floor.anisotropy=Math.min(4,renderer.capabilities.getMaxAnisotropy());
+  floor.colorSpace=THREE.SRGBColorSpace;floor.flipY=false;floor.anisotropy=renderer.capabilities.getMaxAnisotropy();
   const board=new THREE.Mesh(new THREE.PlaneGeometry(9.52,21.15),new THREE.MeshBasicMaterial({map:floor}));
+  const boardUV=board.geometry.attributes.uv;for(let i=0;i<boardUV.count;i++)boardUV.setY(i,1-boardUV.getY(i));
   board.position.set(4.76,10.575,-.005);scene.add(board);
   table.scene.rotation.x=Math.PI/2;table.scene.scale.setScalar(.01/.00053975);
   table.scene.position.y=21.15;
@@ -65,24 +67,8 @@ export async function createView(canvas, game) {
   const shadow=new THREE.Mesh(new THREE.PlaneGeometry(.85,.85),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(shadowCanvas),transparent:true,depthWrite:false}));
   scene.add(shadow);
   const balls=[ball],shadows=[shadow];
-  const lights=[];
+  const classicLights=createClassicLights(game,scene,floor,lighting);
   const bulbHalos=createBulbHalos(game,scene),lightFrame=createLightFrame(renderer);
-  if(game.specs){
-    const geometries=[];
-    for(const spec of game.specs.objects.filter(s=>s.kind==='Light'&&!s.is_bulb_light&&!s.is_backglass&&s.drag_points?.length>=3)){
-      const polygon=spec.drag_points.map(p=>new THREE.Vector2(p.x*.01,(2115-p.y)*.01));
-      const triangles=THREE.ShapeUtils.triangulateShape(polygon,[]),positions=[];
-      for(const triangle of triangles)for(const i of triangle)positions.push(polygon[i].x,polygon[i].y,.025);
-      const geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
-      geometry.setAttribute('color',new THREE.Float32BufferAttribute(new Float32Array(positions.length),3));
-      lights.push({state:game.rules.objects.get(spec.name.toLowerCase()),start:geometries.reduce((n,g)=>n+g.attributes.position.count,0),count:positions.length/3});
-      geometries.push(geometry);
-    }
-    if(geometries.length){
-      const geo=mergeGeometries(geometries),mesh=new THREE.Mesh(geo,new THREE.MeshBasicMaterial({vertexColors:true,transparent:true,opacity:.7,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}));
-      scene.add(mesh);lights.geometry=geo;geometries.forEach(g=>g.dispose());
-    }
-  }
   // A modest steel lip marks the scoop; capture/eject use the real sensor position.
   const scoop=new THREE.Mesh(new THREE.TorusGeometry(.36,.055,6,24),steel);
   scoop.position.set(game.scoop.x,game.scoop.y,.05);scene.add(scoop);
@@ -124,16 +110,8 @@ export async function createView(canvas, game) {
         m.obj.rotation.z=m.rotation.z-Number(m.state.roty)*Math.PI/180;
       }
     }
-    if(lights.geometry){
-      const attribute=lights.geometry.attributes.color;
-      for(const light of lights){
-        const brightness=light.state.visible?Number(light.state.inplayintensity)/Math.max(Number(light.state.intensity),.0001):0,color=Number(light.state.colorfull)>>>0;
-        for(let i=light.start;i<light.start+light.count;i++)attribute.setXYZ(i,brightness*(color&255)/255,brightness*((color>>8)&255)/255,brightness*((color>>16)&255)/255);
-      }
-      attribute.needsUpdate=true;
-    }
     for(let i=0;i<flippers.length;i++)flippers[i].rotation.z=game.flippers[i].angle;
-    bulbHalos.update();lightFrame.render(scene,camera);
+    classicLights.update(camera);bulbHalos.update();lightFrame.render(scene,camera);
   }
-  return {renderer,scene,bulbHalos,render,resize,shake(strength){shakeUntil=game.time+.8;shakeStrength=Number(strength)||1;},setCamera(value){cameraMode=value;resize();},setQuality(value){quality=value;resize();}};
+  return {renderer,scene,classicLights,bulbHalos,render,resize,shake(strength){shakeUntil=game.time+.8;shakeStrength=Number(strength)||1;},setCamera(value){cameraMode=value;resize();},setQuality(value){quality=value;resize();}};
 }

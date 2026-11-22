@@ -26,7 +26,7 @@ try{
   await call('Page.enable');await call('Runtime.enable');await call('Network.enable');await call('Emulation.setFocusEmulationEnabled',{enabled:true});
   await call('Target.setAutoAttach',{autoAttach:true,waitForDebuggerOnStart:true,flatten:true});
   await call('Network.setCacheDisabled',{cacheDisabled:true});
-  await call('Page.addScriptToEvaluateOnNewDocument',{source:`window.testDraws=0;for(const Context of [WebGLRenderingContext,WebGL2RenderingContext]){const draw=Context.prototype.drawElements;Context.prototype.drawElements=function(...args){window.testDraws++;return draw.apply(this,args);};}`});
+  await call('Page.addScriptToEvaluateOnNewDocument',{source:`window.testDraws=0;window.testShaderErrors=[];for(const Context of [WebGLRenderingContext,WebGL2RenderingContext]){const draw=Context.prototype.drawElements;Context.prototype.drawElements=function(...args){window.testDraws++;return draw.apply(this,args);};const compile=Context.prototype.compileShader;Context.prototype.compileShader=function(shader){compile.call(this,shader);if(!this.getShaderParameter(shader,this.COMPILE_STATUS))window.testShaderErrors.push(this.getShaderInfoLog(shader));};const link=Context.prototype.linkProgram;Context.prototype.linkProgram=function(program){link.call(this,program);if(!this.getProgramParameter(program,this.LINK_STATUS))window.testShaderErrors.push(this.getProgramInfoLog(program));};}`});
   for(const [width,height,name]of [[390,844,'phone'],[320,568,'small-phone'],[844,390,'landscape'],[1440,900,'desktop']]){
     await call('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:2,mobile:name!=='desktop'});
     await call('Emulation.setTouchEmulationEnabled',{enabled:name!=='desktop',maxTouchPoints:5});
@@ -76,6 +76,7 @@ try{
     await evaluate('document.getElementById("controls-panel").hidePopover()');
     if(name!=='desktop')await evaluate('document.getElementById("dismiss-touch-guide").click()');
     await writeFile(`${output}/main-ui-${name}.png`,Buffer.from((await call('Page.captureScreenshot',{format:'png'})).data,'base64'));
+    assert.deepEqual(await evaluate('window.testShaderErrors'),[],`${name} all shaders compile and link`);
     console.log('PASS',name,'main UI, real controls, launch and settings');
   }
   if(await evaluate('!!window.finniThree')){
@@ -128,12 +129,18 @@ try{
       const off=readLamp();await set('li044.State=1');await advance(17);view.render(1);const full=readLamp();
       await set('li044.State=0');await advance(17);view.render(1);const fading=readLamp();
       await set('li044.BlinkPattern="00101":li044.BlinkInterval=125:li044.State=2');await advance(17);view.render(1);const blinkOff=readLamp();await advance(125);view.render(1);const blinkOn=readLamp();
-      return {parts,target:{middle,end},standups,sequences:{off:sequenceOff,restored:sequenceRestored,blink:sequenceBlink},lamps:{count:view.bulbHalos.lamps.length,off,full,fading,blinkOff,blinkOn}};
+      // Pool lamps are rewritten by active mission timers; li075 is controlled
+      // only by discrete rule events, so this isolates the worker/render handoff.
+      const classic=view.classicLights.lamps.findIndex(l=>l.spec.name==='li075'),classicLamp=game.rules.objects.get('li075'),readClassic=()=>({intensity:classicLamp.inplayintensity,texture:view.classicLights.texture.image.data[classic*16+3]});
+      await set('li075.State=0');await advance(1000);view.render(1);const classicOff=readClassic();await set('li075.State=1');await advance(17);view.render(1);const classicOn=readClassic();await set('li075.State=0');await advance(17);view.render(1);const classicFade=readClassic();
+      return {parts,target:{middle,end},standups,sequences:{off:sequenceOff,restored:sequenceRestored,blink:sequenceBlink},lamps:{count:view.bulbHalos.lamps.length,off,full,fading,blinkOff,blinkOn},classic:{count:view.classicLights.lamps.length,draws:view.classicLights.meshes.length,off:classicOff,on:classicOn,fading:classicFade}};
     })()`);
     const plates=animation.parts;
     assert.equal(animation.lamps.count,133);assert.equal(animation.lamps.off.intensity,0);assert.equal(animation.lamps.full.intensity,90);assert.equal(animation.lamps.fading.intensity,Math.fround(90-Math.fround(Math.fround(.9)*17)));assert.equal(animation.lamps.blinkOff.on,false);assert.equal(animation.lamps.blinkOn.on,true);
     for(const sample of ['off','full','fading','blinkOff','blinkOn'])assert.equal(animation.lamps[sample].textureIntensity,animation.lamps[sample].intensity,'worker lamp output reaches the GPU data texture');
     await writeFile(`${output}/lamp-render-animation.json`,JSON.stringify(animation.lamps,null,2));console.log('PASS native lamp fades, custom blink patterns and HDR bulb data');
+    assert.equal(animation.classic.count,25);assert.equal(animation.classic.draws,1);assert.equal(animation.classic.off.intensity,0);assert.ok(animation.classic.on.intensity>0);assert.ok(animation.classic.fading.intensity<animation.classic.on.intensity);for(const sample of ['off','on','fading'])assert.equal(animation.classic[sample].texture,animation.classic[sample].intensity);assert.deepEqual(await evaluate('window.testShaderErrors'),[]);
+    await writeFile(`${output}/classic-render-animation.json`,JSON.stringify(animation.classic,null,2));console.log('PASS native classic inserts receive worker fades in one textured draw');
     assert.deepEqual(animation.sequences.off,{script:2,locked:true,display:0});
     assert.deepEqual(animation.sequences.restored,{script:1,locked:false});
     assert.deepEqual(animation.sequences.blink,{script:1,locked:true,display:1});

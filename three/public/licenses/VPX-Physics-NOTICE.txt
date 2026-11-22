@@ -56,6 +56,18 @@ compared against the original compiled native functions.
 bulb-render.js adapts bulb halo falloff/color/blending and the Reinhard curve:
 https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/shaders/hlsl_glsl/LightShader.glfx
 https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/shaders/hlsl_glsl/FBShader.fxh
+classic-render.js and shaders/ adapt textured insert lighting, the native
+material BRDF, environment lookups and OverlayHDR/ScreenHDR from:
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/shaders/hlsl_glsl/ClassicLightShader.glfx
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/shaders/hlsl_glsl/Material_GL.fxh
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/shaders/hlsl_glsl/Helpers.fxh
+environment.rgba16f.bin and irradiance.rgba8.bin preserve the native engine's
+uploaded environment and irradiance texels; native-lighting.json records
+their hashes, sampler configuration and source provenance. Reference shaders
+are included under references/vpx-render. The corresponding capture observer
+and exporter are scripts/probe-native-lighting-browser.mjs and
+scripts/export-native-lighting.mjs. The native compiled fragment verifies
+same-GPU output independently with controlled valid lamp inputs.
 native-flipper-contact.js includes HitFlipper::Collide event timing and speed
 arguments. full-game.js also preserves Flipper::get_CurrentAngle conversion:
 https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/parts/flipper.cpp
