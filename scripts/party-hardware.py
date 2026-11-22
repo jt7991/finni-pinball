@@ -126,15 +126,23 @@ def build_party_hardware(out, mat, forward, right):
         if socket:
             socket.data.materials.clear()
             socket.data.materials.append(violet)
-        # Rounded teardrop, knot and short ribbon: a balloon above each pop ring.
-        sphere(f'Party balloon {i}', (x, y, .050), (.026, .029, .016), material)
-        bpy.ops.mesh.primitive_cone_add(vertices=32, radius1=.004, radius2=.0015,
-                                       depth=.005, location=(x, y-.028, .048),
+        # Full crown and a drawn-in neck, readable from the playing camera.
+        # The old flattened ellipsoid read as a round bumper cap.
+        body = sphere(f'Party balloon {i}', (x, y+.004, .053), (.026, .036, .022), material)
+        for vertex in body.data.vertices:
+            along = vertex.co.y / .036
+            taper = .82 + .22 * along
+            vertex.co.x *= taper
+            vertex.co.z *= taper
+        body.data.update()
+        sphere(f'Party balloon tied neck {i}', (x, y-.032, .053), (.0025, .0035, .0025), material)
+        bpy.ops.mesh.primitive_cone_add(vertices=32, radius1=.0015, radius2=.0045,
+                                       depth=.006, location=(x, y-.037, .053),
                                        rotation=(math.pi/2, 0, 0))
         finish(bpy.context.object, f'Party balloon knot {i}', material)
         tube(f'Party balloon ribbon {i}',
-             [(x+.003*math.sin(t*math.pi*2), y-.030-t*.014, .044) for t in [j/24 for j in range(25)]],
-             .00065, cream)
+             [(x+.004*math.sin(t*math.pi*2), y-.040-t*.025, .052-t*.009)
+              for t in [j/40 for j in range(41)]], .0008, cream)
 
     # Remove blade silhouette, cutouts, sword guard and handle plastics.
     for name in ('Primitive042', 'Wall033Side', 'Wall033Top', 'Wall032Top',

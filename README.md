@@ -90,6 +90,8 @@ The current trial pairs warm female Finni callouts with Kevin MacLeod's **Funkor
 
 `design/party-audio.json` maps 52 effects to short pops, shuffles and chimes. `scripts/build-party-audio.py` generates stereo 32 kHz, 16-bit effect WAVs and resets source music before the requested music trial is applied. Mechanical sounds, existing playback IDs, routing, volume settings and rule logic remain intact. The main VPX builder generates/installs all audio and synchronizes the regular table's neighboring VBS with the source script.
 
+Balloon bumpers have tapered bodies, tied necks and curled ribbons. Their regular-hit cues (`sfx_sword1–3`) and task-hit cues (`sfx_hit1–3`) use a short rubbery balloon bop, without a reward chime. The task-hit IDs also serve other task shots, which share this sound. The underlying mechanical bumper contact remains audible.
+
 For an audio-only rebuild of an already built extraction:
 
 ```powershell
@@ -101,7 +103,7 @@ For an audio-only rebuild of an already built extraction:
 & .tools/vpxtool/vpxtool.exe audit output/live-vpx/Finni-Big-Day.vpx
 ```
 
-`output/finni-voice/finni-callouts-sampler.wav` auditions the voice alone, including the multiball stories, ball-save announcement and a selection of varied remarks/reactions. `output/party-audio/finni-audio-sampler.wav` auditions four effect families. Generated audio, speech cache and reports remain local; the committed scripts/configurations rebuild them. Validation checks every speech slot, full spoken coverage, PCM, levels, routing, source-script equality except for the approved scoop feed and multiball and main-task presentation, music attribution, and byte equality of all 81 untouched sounds. Pass an extracted round-trip directory to the validator to check the assembled table as well.
+`output/finni-voice/finni-callouts-sampler.wav` auditions the voice alone, including the multiball stories, ball-save announcement and a selection of varied remarks/reactions. `output/party-audio/finni-audio-sampler.wav` auditions five effect families, beginning with the balloon bop. Generated audio, speech cache and reports remain local; the committed scripts/configurations rebuild them. Validation checks every speech slot, full spoken coverage, PCM, levels, routing, source-script equality except for the approved scoop feed and multiball and main-task presentation, music attribution, and byte equality of all 81 untouched sounds. Pass an extracted round-trip directory to the validator to check the assembled table as well.
 
 ## Cookie baking task
 
