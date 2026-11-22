@@ -69,8 +69,35 @@ def master(mix, target_rms, peak_limit):
     return mix
 
 
+def mechanical_contact(kind, rng, variant=0):
+    """Damped, non-musical contacts; no rising pitch or sustained bell partials."""
+    seconds = {"switch": .065, "spinner": .045, "tap": .085,
+               "knock": .11, "rattle": .13}[kind]
+    t = np.arange(round(seconds * RATE)) / RATE
+    # Filtered noise supplies the transient and body instead of a pitched beep.
+    noise = rng.uniform(-1, 1, len(t))
+    width = {"switch": 17, "spinner": 11, "tap": 25, "knock": 35, "rattle": 21}[kind]
+    body = np.convolve(noise, np.hanning(width) / np.hanning(width).sum(), mode="same")
+    edge = np.convolve(noise, np.ones(7) / 7, mode="same")
+    decay = {"switch": 100, "spinner": 145, "tap": 80, "knock": 65, "rattle": 70}[kind]
+    sound = body * np.exp(-t * decay) + .18 * edge * np.exp(-t * 320)
+    if kind in ("switch", "spinner", "rattle"):
+        delay = round((.012 if kind == "rattle" else .007) * RATE)
+        sound[delay:] += .32 * sound[:-delay].copy()
+    sound *= np.minimum(t / .0008, 1) * np.minimum((seconds - t) / .008, 1)
+    mix = np.zeros((len(t), 2))
+    add(mix, sound, 0)
+    level = {"switch": .035, "spinner": .03, "tap": .05, "knock": .06, "rattle": .045}[kind]
+    # VPX spatializes table-speaker samples itself and requires mono input.
+    if kind in ("switch", "spinner"):
+        mix = mix[:, :1]
+    return master(mix, level * (1 + (variant % 3 - 1) * .04), .42)
+
+
 def effect(kind, variant=0):
     rng = np.random.default_rng(300 + variant)
+    if kind in ("switch", "spinner", "tap", "knock", "rattle"):
+        return mechanical_contact(kind, rng, variant)
     if kind == "balloon":
         # A struck, inflated balloon: short rubber resonance and a soft contact
         # transient, with no pitched reward chime or long shuffle tail.
@@ -86,8 +113,8 @@ def effect(kind, variant=0):
         mix = np.zeros((len(t), 2))
         add(mix, sound, 0)
         return master(mix, .095, .65)
-    notes = {"pop": [72 + variant % 5], "sparkle": [72, 76, 79],
-             "success": [72, 76, 79, 84], "power": [60, 67, 72, 76],
+    notes = {"pop": [72 + variant % 5], "sparkle": [55, 62, 67],
+             "success": [55, 59, 62, 67], "power": [48, 55, 60, 64],
              "shuffle": [67, 72]}[kind]
     mix = np.zeros((round((.27 if kind == "pop" else .9) * RATE), 2))
     if kind in ("pop", "shuffle"):
@@ -100,7 +127,7 @@ def effect(kind, variant=0):
 def write_wav(path, mix):
     pcm = np.round(np.clip(mix, -1, 1) * 32767).astype("<i2")
     with wave.open(str(path), "wb") as wav:
-        wav.setnchannels(2)
+        wav.setnchannels(mix.shape[1])
         wav.setsampwidth(2)
         wav.setframerate(RATE)
         wav.writeframes(pcm.tobytes())
@@ -112,30 +139,34 @@ def write_wav(path, mix):
 def build(destination):
     destination.mkdir(parents=True, exist_ok=True)
     config = json.loads((ROOT / "design/party-audio.json").read_text())
-    report = {"sample_rate": RATE, "channels": 2, "bits": 16, "music": {}, "effects": {}}
+    report = {"sample_rate": RATE, "channels": "mono table contacts; stereo backglass effects", "bits": 16, "music": {}, "effects": {}}
     for i, name in enumerate(config["effects"]):
         report["effects"][name] = write_wav(destination / (name + ".wav"), effect(config["effects"][name], i))
     # Audition the effect families; the table retains its original soundtrack.
     parts = []
-    for name in ("balloon", "pop", "sparkle", "power", "success"):
-        parts.extend((effect(name), np.zeros((RATE // 4, 2))))
+    for name in ("switch", "spinner", "tap", "knock", "rattle", "balloon", "sparkle", "power", "success"):
+        sound = effect(name)
+        if sound.shape[1] == 1:
+            sound = np.repeat(sound, 2, axis=1)
+        parts.extend((sound, np.zeros((RATE // 4, 2))))
     write_wav(destination / "finni-audio-sampler.wav", np.concatenate(parts))
     (destination / "audio-report.json").write_text(json.dumps(report, indent=2) + "\n")
     return report
 
 
-def install(table, audio_dir):
+def install(table, audio_dir, restore_music=True):
     """Replace assets only, retaining original script, IDs, routing and sound levels."""
     report = json.loads((audio_dir / "audio-report.json").read_text())
     replacements = report["effects"]
     metadata = json.loads((table / "sounds.json").read_text())
     # Restore source music even when updating an extraction with older generated cues.
     source = ROOT / ".work/deadpool-extracted"
-    originals = {entry["name"].lower(): entry for entry in json.loads((source / "sounds.json").read_text())}
-    source_files = {file.stem.lower(): file for file in (source / "sounds").iterdir()}
+    if restore_music:
+        originals = {entry["name"].lower(): entry for entry in json.loads((source / "sounds.json").read_text())}
+        source_files = {file.stem.lower(): file for file in (source / "sounds").iterdir()}
     for index, entry in enumerate(metadata):
         key = entry["name"].lower()
-        if key.startswith("mu_"):
+        if restore_music and key.startswith("mu_"):
             original = source_files[key]
             for old in (table / "sounds").iterdir():
                 if old.stem.lower() == key:
@@ -162,10 +193,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, default=ROOT / "output/party-audio")
     parser.add_argument("--install", type=Path, help="Extracted VPX directory to update")
+    parser.add_argument("--effects-only", action="store_true",
+                        help="Update effects in an existing build without resetting its music")
     args = parser.parse_args()
     report = build(args.output)
     if args.install:
-        print("Installed", install(args.install, args.output), "party sounds")
+        print("Installed", install(args.install, args.output, restore_music=not args.effects_only), "party sounds")
     print("PARTY_AUDIO_READY: original soundtrack retained;", len(report["effects"]), "party effects")
 
 

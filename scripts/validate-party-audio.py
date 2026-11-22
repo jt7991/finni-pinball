@@ -51,9 +51,10 @@ for new in after:
         continue
     # VPX may rewrite the WAV header on extraction; compare decoded PCM as well.
     with wave.open(str(file), "rb") as wav:
-        assert (wav.getframerate(), wav.getnchannels(), wav.getsampwidth()) == (32000, 2, 2), name
+        channels = 1 if name in ("fx_sensor", "fx_spinner") else 2
+        assert (wav.getframerate(), wav.getnchannels(), wav.getsampwidth()) == (32000, channels, 2), name
         frames = wav.readframes(wav.getnframes())
-        data = np.frombuffer(frames, dtype="<i2").reshape(-1, 2).astype(float) / 32768
+        data = np.frombuffer(frames, dtype="<i2").reshape(-1, channels).astype(float) / 32768
     generated_dir = voice_dir if name in voice["callouts"] else audio
     with wave.open(str(generated_dir / (name + ".wav")), "rb") as wav:
         assert frames == wav.readframes(wav.getnframes()), name
