@@ -71,6 +71,21 @@ def master(mix, target_rms, peak_limit):
 
 def effect(kind, variant=0):
     rng = np.random.default_rng(300 + variant)
+    if kind == "balloon":
+        # A struck, inflated balloon: short rubber resonance and a soft contact
+        # transient, with no pitched reward chime or long shuffle tail.
+        seconds = .16
+        t = np.arange(round(seconds * RATE)) / RATE
+        pitch = 1 + (variant % 3 - 1) * .045
+        phase = TAU * pitch * (115 * t + 2.8 * (1 - np.exp(-t * 48)))
+        rubber = (np.sin(phase) + .18 * np.sin(phase * 2.07)) * np.exp(-t * 32)
+        noise = rng.uniform(-1, 1, len(t))
+        contact = np.convolve(noise, np.ones(7) / 7, mode="same") * np.exp(-t * 160)
+        sound = (.75 * rubber + .3 * contact) * np.minimum(t / .0015, 1)
+        sound *= np.minimum((seconds - t) / .012, 1)
+        mix = np.zeros((len(t), 2))
+        add(mix, sound, 0)
+        return master(mix, .095, .65)
     notes = {"pop": [72 + variant % 5], "sparkle": [72, 76, 79],
              "success": [72, 76, 79, 84], "power": [60, 67, 72, 76],
              "shuffle": [67, 72]}[kind]
@@ -102,7 +117,7 @@ def build(destination):
         report["effects"][name] = write_wav(destination / (name + ".wav"), effect(config["effects"][name], i))
     # Audition the effect families; the table retains its original soundtrack.
     parts = []
-    for name in ("pop", "sparkle", "power", "success"):
+    for name in ("balloon", "pop", "sparkle", "power", "success"):
         parts.extend((effect(name), np.zeros((RATE // 4, 2))))
     write_wav(destination / "finni-audio-sampler.wav", np.concatenate(parts))
     (destination / "audio-report.json").write_text(json.dumps(report, indent=2) + "\n")
