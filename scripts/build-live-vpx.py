@@ -139,6 +139,7 @@ configuration=json.loads((ROOT/'design/current-assets.json').read_text())
 if configuration.get('appearance')=='comic-party-prep':
     appearance=runpy.run_path(str(ROOT/'scripts/apply-comic-appearance.py'))['install'](WORK,palette_names,configuration)
     (OUT/'appearance-report.json').write_text(json.dumps(appearance,indent=2))
+runpy.run_path(str(ROOT/'scripts/apply-finni-lighting.py'))['install_visuals'](WORK)
 # VPX can prefer a neighboring VBS over the embedded script. Keep it in sync.
 shutil.copyfile(WORK/'script.vbs',OUT/'Finni-Big-Day.vbs')
 # Source rules, lock collision geometry and the real bobble routine must survive.

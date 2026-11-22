@@ -16,6 +16,12 @@ The design choices, preserved gameplay and remaining work are recorded in [desig
 
 Revision 13 includes the clean illustrated background, detailed object atlases and registered object layer. The raised plastics and apron use registered bunting, ribbons, gifts, balloons and confetti from `output/party-plastics/`. A concise quick-start card fills the lower-left apron holder; its bounds are recorded in `output/party-plastics/layout.json`. A full Finni rules image replaces Deadpool’s native `rulescard`, retaining VPX’s `![Rules](rulescard)` table-rules reference. Both cards are generated from `design/instruction-card.json`. `scripts/build-party-plastics.py --source <extracted-table>` rebuilds the editable SVGs and textures, and the comic appearance installer applies them during regular builds. Older style studies are superseded. The hardware builder installs the selected navy/pink/vibrant appearance and ambient lighting through `scripts/apply-comic-appearance.py`.
 
+The current artwork replaces the large middle fox and removes the small drain fox,
+while preserving the surrounding illustration. Insert covers use deeper amber,
+cobalt and neutral smoked-clear finishes, with quieter GI and reduced bloom.
+The packaged table and start-screen preview include those changes; the extra
+comic label plates from the design studies are omitted.
+
 ## Local build
 
 ### Play directly in a browser

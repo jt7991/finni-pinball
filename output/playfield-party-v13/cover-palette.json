@@ -1,0 +1,23 @@
+{
+  "status": "Selected insert-cover palette",
+  "palette": {
+    "lens-amber": [
+      "#F5B000",
+      "#DA8400",
+      "#914300"
+    ],
+    "lens-green": [
+      "#259BFF",
+      "#0876DB",
+      "#073A86"
+    ],
+    "lens-milk": [
+      "#CFD5DA",
+      "#9BAAB5",
+      "#536675"
+    ]
+  },
+  "shared_shot_arrows": "smoked-clear neutral to retain dynamic shot colors",
+  "geometry_changed": false,
+  "lighting_changed": false
+}
