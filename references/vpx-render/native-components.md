@@ -146,6 +146,9 @@ authored 256x16 color-grade LUT. AO retains two full-size R8 history targets;
 bloom uses the transmission targets at quarter resolution. The shifted cutoff
 UVs, original fullscreen strip vertices, per-draw sampler objects, Float32 frame
 jitter and GLES minimum-magnitude upload rule are preserved.
+Two further live frames verify that the exact bloom temporary target becomes
+the next transmission pass's incoming history, including nonzero values outside
+the light scissor that remain bit-identical after the clipped blur.
 
 An isolated native observer records intermediate buffers without replacing any
 native draw. A separate depth-sampling shader saves/restores GL state and uses
