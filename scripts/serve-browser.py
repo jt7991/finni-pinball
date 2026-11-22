@@ -100,6 +100,10 @@ class Handler(SimpleHTTPRequestHandler):
         for name in ('PressStart2P-Regular.ttf', 'DMSans.ttf'):
             routes['/fonts/' + name] = ROOT / 'browser/fonts' / name
         routes['/voice'] = ROOT / 'browser/voice.html'
+        for name in ('manifest.json', 'favicon.svg', 'favicon.ico',
+                     'icons/icon-192.png', 'icons/icon-512.png',
+                     'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png'):
+            routes['/' + name] = ROOT / 'browser' / name
         for name in ('vpinball.js', 'vpinball.wasm', 'vpinball.data'):
             routes['/engine/' + name] = ENGINE / name
         return str(routes.get(path, ROOT / '.work/nonexistent-browser-route'))

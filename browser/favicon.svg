@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <title>Finni’s Big Day</title>
+  <rect width="128" height="128" rx="26" fill="#0c102a"/>
+  <path fill="#ff4b98" d="M14 57h4v4h4v4h-4v4h-4v-4h-4v-4h4zM107 20h4v4h4v4h-4v4h-4v-4h-4v-4h4z"/>
+  <path fill="#ed762f" d="m28 20 29 19h14l29-19-2 48-12 24-22 15-22-15-12-24z"/>
+  <path fill="#ffad63" d="m35 32 15 12-13 7zM93 32 78 44l13 7z"/>
+  <path fill="#fff2d6" d="m30 62 20 4 14 14 14-14 20-4-12 30-22 15-22-15z"/>
+  <path fill="#0c102a" d="M43 57h8v10h-8zM77 57h8v10h-8zM56 79h16l-3 8H59z"/>
+  <circle cx="96" cy="99" r="17" fill="#55d8ed"/>
+  <circle cx="96" cy="97" r="13" fill="#aabaca"/>
+  <circle cx="92" cy="93" r="8" fill="#e9f5ff"/>
+  <circle cx="89" cy="90" r="3" fill="#fff"/>
+</svg>

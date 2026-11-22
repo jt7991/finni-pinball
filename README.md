@@ -26,6 +26,10 @@ comic label plates from the design studies are omitted.
 
 ### Play directly in a browser
 
+To install the game, open its HTTPS URL and choose **Install app** in a supporting browser, or **Share → Add to Home Screen** on iPhone/iPad. The manifest launches the game in a standalone window with its own Finni fox icon. Localhost also supports installation for development. Installation still needs a connection to load the game; offline play is not bundled.
+
+`browser/favicon.svg` is the editable icon source. To rebuild its PNG app icons, Apple touch icon and ICO fallback, install Pillow and CairoSVG in a local Python environment and run `python scripts/build-app-icons.py`. Docker copies these files with the rest of `browser/`.
+
 After building `output/live-vpx/Finni-Big-Day.vpx`, run:
 
 ```powershell
