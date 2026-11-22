@@ -2,36 +2,32 @@
 version: 1
 slug: "browser-index-html"
 primary_target: "browser/index.html"
-related_targets: []
+related_targets: ["browser/arcade.css","browser/app.js","browser/views.js"]
 ---
 
-# Player
+# Player shell
 
-Mode: Experience
-Build path: code
-Current scope: mobile performance and the established player layout.
+Mode: Operate for loading, tools and scores; the unchanged game remains the Experience.
+Scope: whole player flow on phones and desktop. Code-first, selected Pixel Cabinet sketch.
 
 ## Direction contract
 
-Keep the previous table-first interface, touch zones, conditional Start/Launch/Action controls, DMD positioning and dismissible settings/high scores. Provide the small question-mark help button on both mobile and desktop. Help supplies touch instructions on phones and keyboard instructions on desktop. The user explicitly rejected the new permanent eight-button grid and the follow-up proposal for compact controls around the table edges. Do not implement another control-layout redesign under this performance task.
+THESIS: Pixel Cabinet brings filled 1980s raster lettering and saturated controls to the existing table-first player. No vector outlines, permanent button grid or slogans.
 
-Keep Balanced as the default camera and preserve saved choices. Keep mobile fullscreen reachable. Independent touches hold the lower-left/right flippers, with release on cancellation, focus loss and resizing. Preserve the actual VPX engine, rules, physics, art, full-color DMD, audio and voice studio.
+OWN-WORLD: midnight navy #0c102a, hot pink #ff4b98, cyan #55d8ed, yellow #ffdb4c and ivory #faf2da. Self-hosted Press Start 2P titles, DM Sans controls, square and stepped corners. The vivid native table and DMD stay intact.
 
-Functional copy only. No slogans, decorative quips or generated sayings. The user previously requested Asteroids-style angular lettering; the rejected grid implementation does not establish a new visual system. Preserve the incumbent styling for this change.
+STORY: load the real table, press Start game to enter fullscreen, play with two thumbs or keyboard, open compact help/settings/high scores, then replay the loaded engine.
 
-## FORM
+FIRST VIEWPORT: small help and fullscreen controls at the top corners; a centered two-line yellow/pink game name, original DMD title artwork, table preview with cyan brackets, readable loading state and one yellow Start action below. Phone composition follows .impeccable/mocks/decision/pixel80.html; desktop expands the preview beside the title and action. Signature interaction: a single stepped progress fill resolves into the Start action. Reduced motion stays static; no in-game UI animation.
 
-- Mode: Experience.
-- Build path: code-first, approved by the user.
-- Historical direction reference: seed:778eb93f11d124e2 (direction exploration, reroll 1, pick). Its button-grid implementation was rejected; the latest instruction restores the prior layout.
-- Pinned scope: iPhone and Android priority, original small help control on mobile and desktop, prior game controls, mobile fullscreen and multi-touch, Balanced default, functional copy, preserve table/DMD/gameplay/audio.
-- Signature interaction: simultaneous lower-left/right touch zones in the established player. Controls release on cancellation and focus loss.
-- Motion grammar: preserve table and DMD motion; no additional UI effects.
+FORM: picked Pixel Cabinet, grounded rank 1; seed:7b77ff808b8a832c, reroll 1. The user explicitly rejected Asteroids and selected pixel80 with code build path. Keep Balanced default, saved preferences, silent invisible flipper holds and release cleanup.
 
-## Performance work
+FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
 
-Install lighter native graphics settings before engine initialization. Avoid duplicating the packed table download, and release its virtual file after successful native loading. Graphics changes are reversible through Settings and restart the game. Report actual measurement scope and limitations, including the software GPU and repeated emulator disconnections. Desktop tests do not certify physical phone performance.
+## Validation
 
-## Verification
+Phone portrait/landscape, small phone, tablet and desktop; loading, failed loading, help, settings, high scores, initials and replay. Real engine integration and Android smoke test preserve fullscreen, two-thumb inputs and lighting fixes. Physical iPhone performance remains unverified. Merge documentation with existing table-art and DMD notes, as previously authorized by the user.
 
-Check phone portrait and landscape, small phones, tablet and desktop. Verify the small help control on both mobile and desktop, simultaneous flippers, input cleanup, fullscreen recovery, camera preferences, actual shader compilation, animated geometry and replay after upload cleanup.
+## Gameplay background refinement
+
+The user requested a funky background around the table, replacing the empty blue corners in Balanced view. Extend Pixel Cabinet with static pink zigzags, cyan orbital bands, violet stepped fields and sparse pixel confetti. Spare page space uses a bundled SVG; empty far-depth canvas pixels receive matching procedural geometry during the existing cache restore. Preserve real table geometry, lighting, DMD, cameras and the small help/fullscreen controls. No animation, extra controls or slogans. This local decorative extension keeps the established DESIGN.md and its tokens.

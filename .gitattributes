@@ -1,4 +1,7 @@
 # Keep downloaded originals and bundled font/license files byte-for-byte.
 assets/finni/originals/** -text
 assets/fonts/** -text
+browser/fonts/** -text
+# Preserve upstream license spacing and line endings.
+browser/fonts/*-OFL.txt -whitespace
 runtime/*.vpx filter=lfs diff=lfs merge=lfs -text

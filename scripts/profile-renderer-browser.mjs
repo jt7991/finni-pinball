@@ -29,8 +29,10 @@ try{
   await call('Page.navigate',{url:`${base}/?graphics-test=${quality}`});
   await wait('!!window.finni && !document.getElementById("play").disabled');
   const settings=await evaluate(`finni.engine.FS.readFile('/libsdl/VPinballX/10.8/VPinballX.ini',{encoding:'utf8'})`);
+  for(const [key,expected] of [['BallTrail',0],['ForceMotionBlurOff',1],['DisableLightingForBalls',1]])assert.equal(Number(settings.match(new RegExp('^'+key+'\\s*=\\s*(.*)$','m'))?.[1]),expected,`${quality}: ${key}`);
   if(quality==='performance'){
-   for(const text of ['AAFactor=0.5','MaxTexDimension=2048','DisableAO=1','PFReflection=0','ForceBloomOff=1'])assert.ok(settings.includes(text),text);
+   assert.equal(Number(settings.match(/^AAFactor\s*=\s*(.*)$/m)?.[1]),1,'Native internal resolution factor');
+   for(const text of ['MaxTexDimension=2048','DisableAO=1','PFReflection=0','ForceBloomOff=1'])assert.ok(settings.includes(text),text);
    assert.ok(await evaluate('document.getElementById("log").textContent.includes("Settings file was loaded")'),'Settings installed before native initialization');
   }
   const button=await evaluate(`(()=>{const r=document.getElementById('play').getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2}})()`);
@@ -40,7 +42,10 @@ try{
   const status=await evaluate(`(()=>{const c=document.getElementById('canvas'),gl=c.getContext('webgl2'),ext=gl.getExtension('WEBGL_debug_renderer_info');return {canvas:[c.width,c.height],renderer:gl.getParameter(ext.UNMASKED_RENDERER_WEBGL),uploadCount:renderProfile.uploads.length,uploadedTexels:renderProfile.uploads.reduce((a,[w,h])=>a+w*h,0),largestTexture:Math.max(...renderProfile.uploads.flat()),errors:renderProfile.errors,packedTableRetained:finni.engine.FS.analyzePath('/tables/finni.vpx').exists}})()`);
   assert.deepEqual(status.errors,[],'No shader errors');
   assert.equal(status.packedTableRetained,false,'Packed download released after native table loading');
-  if(quality==='performance')assert.ok(status.largestTexture<=2048,'Texture cap actually reaches GPU uploads');
+  if(quality==='performance'){
+   assert.ok(status.largestTexture<=2048,'Texture cap actually reaches GPU uploads');
+   assert.ok(status.canvas[0]<=724&&status.canvas[1]<=1054,'Final phone render buffer is capped before native initialization');
+  }
   const sample=await evaluate(`new Promise(resolve=>{let last;const frames=[];const start=performance.now();function tick(t){if(last!==undefined)frames.push(t-last);last=t;if(performance.now()-start<8000)requestAnimationFrame(tick);else{frames.sort((a,b)=>a-b);resolve({frames:frames.length,elapsedMs:performance.now()-start,fps:frames.length*1000/(performance.now()-start),p50Ms:frames[Math.floor(frames.length*.5)],p95Ms:frames[Math.floor(frames.length*.95)]})}}requestAnimationFrame(tick)})`);
   await writeFile(`${output}/${quality}.png`,Buffer.from((await call('Page.captureScreenshot',{format:'png'})).data,'base64'));
   results.push({quality,status,sample});
