@@ -116,6 +116,9 @@ the three/ directory alongside the build scripts and dependency manifest.
 native-flasher-mesh.js, native-flasher-state.js and native-flasher-render.js
 adapt source Flasher geometry, property conversions, uniforms and blending.
 native-render-order.js retains legacy transparent depth/submission ordering.
+native-halo-state.js and native-halo-render.js retain Light::Render's lightmap
+uniforms/geometry and Renderer's first-eight-visible-balls shadow upload.
+Published native-halos shaders preserve the original compiled LightShader.
 native-bulb-emission.js retains Light::Render's bulb-hull emission and reflection
 pass. Published native-flashers shaders preserve the compiled original programs:
 https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/parts/flasher.cpp

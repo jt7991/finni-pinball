@@ -5,9 +5,9 @@ complete original basic geometry instead of the joined GLB: 682 meshes include
 558 main-view parts and 124 reflection-only wall bottoms. Six source flipper
 parts and 25 classic inserts retain their separate native paths. The original
 open wire ramp geometry, main arcade UI and lossless source artwork are retained.
-Original halo and classic-light rendering, the shared transmission/bloom
+Original classic-light rendering, the shared transmission/bloom
 temporary buffer, final whole-frame comparison and seven older physics
-comparisons are unfinished. The full suite passes 156/163 tests.
+comparisons are unfinished. The full suite passes 158/165 tests.
 
 The actual scene now runs source planar reflections with D16 depth, native
 transmission, target/gate/spinner/trigger/bumper vertex updates and all 57
@@ -63,10 +63,15 @@ their complete pass integration remains unfinished.
 
 The restored bulb emission hulls use the original compiled LightShader and
 geometry in both main and reflected views. All 986 uniform fields and 171,462
-HDR RGB samples match 34 native packets. Halos are separate source-ordered draws
-with native zero-intensity early-outs; their existing approximate projection
-and missing ball shadows still need replacement. Cached and uncached rendering
-continues to match across all eight scenarios after these changes.
+HDR RGB samples match 34 native packets. All 133 halos now use their original
+lightmap vertex/index buffers, source matrix upload and compiled shader. Seven
+authored lights use the original raytraced-ball-shadow program. Independent
+native packets match 4,081 uniform fields and 670,719 HDR RGB samples. Captured
+attract-mode colors and ball positions are explicit shared component inputs;
+they are excluded from runtime assets. A live six-ball check reads all seven
+shadow draws and verifies exact creation-order positions and hidden-ball
+omission. Presentation-time extrapolation still needs a separate comparison.
+Cached and uncached rendering continues to match across all eight scenarios.
 
 The ownership audit covers 650 authored renderable objects. All 589 BasicShader
 draws in the independent frame with revealed sling variants have exactly one

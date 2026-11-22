@@ -131,7 +131,7 @@ try{
       const sequenceBlink={script:lamp.state,locked:lamp.sequenceactive,display:lamp.sequencestate};
       await set('LightSeqInserts.StopPlay');
       await set('li044.Intensity=90:li044.IntensityScale=1:li044.State=0');await advance(1000);view.render(1);
-      const index=view.bulbHalos.lamps.findIndex(l=>l.spec.name==='li044'),readLamp=()=>({intensity:lamp.inplayintensity,on:lamp.inplayon,textureIntensity:view.bulbHalos.texture.image.data[index*16+3]});
+      const index=view.bulbHalos.lamps.findIndex(l=>l.spec.name==='li044'),readLamp=()=>({intensity:lamp.inplayintensity,on:lamp.inplayon,textureIntensity:view.bulbHalos.parts[index].values.lightColor_intensity[3]});
       const off=readLamp();await set('li044.State=1');await advance(17);view.render(1);const full=readLamp();
       await set('li044.State=0');await advance(17);view.render(1);const fading=readLamp();
       await set('li044.BlinkPattern="00101":li044.BlinkInterval=125:li044.State=2');await advance(17);view.render(1);const blinkOff=readLamp();await advance(125);view.render(1);const blinkOn=readLamp();
@@ -148,7 +148,7 @@ try{
     })()`);
     const plates=animation.parts;
     assert.equal(animation.lamps.count,133);assert.equal(animation.lamps.off.intensity,0);assert.equal(animation.lamps.full.intensity,90);assert.equal(animation.lamps.fading.intensity,Math.fround(90-Math.fround(Math.fround(.9)*17)));assert.equal(animation.lamps.blinkOff.on,false);assert.equal(animation.lamps.blinkOn.on,true);
-    for(const sample of ['off','full','fading','blinkOff','blinkOn'])assert.equal(animation.lamps[sample].textureIntensity,animation.lamps[sample].intensity,'worker lamp output reaches the GPU data texture');
+    for(const sample of ['off','full','fading','blinkOff','blinkOn'])assert.equal(animation.lamps[sample].textureIntensity,animation.lamps[sample].intensity,'worker lamp output reaches the original LightShader uniform');
     await writeFile(`${output}/lamp-render-animation.json`,JSON.stringify(animation.lamps,null,2));console.log('PASS native lamp fades, custom blink patterns and HDR bulb data');
     assert.equal(animation.classic.count,25);assert.equal(animation.classic.draws,1);assert.equal(animation.classic.off.intensity,0);assert.ok(animation.classic.on.intensity>0);assert.ok(animation.classic.fading.intensity<animation.classic.on.intensity);for(const sample of ['off','on','fading'])assert.equal(animation.classic[sample].texture,animation.classic[sample].intensity);assert.deepEqual(await evaluate('window.testShaderErrors'),[]);
     await writeFile(`${output}/classic-render-animation.json`,JSON.stringify(animation.classic,null,2));console.log('PASS native classic inserts receive worker fades in one textured draw');
