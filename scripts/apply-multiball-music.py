@@ -65,14 +65,14 @@ Sub ChangeSong
     End If
     Select Case Battle(CurrentPlayer, 0)
         Case 0 'no battle active so play the standard songs or the multiball songs
-            If bMechSuitMBStarted Then
-                PlaySong "mu_mechsuitmb"
-            ElseIf bDiscoMBEnabled Then
+            If bDiscoMBEnabled Then
                 PlaySong "mu_discomb"
-            ElseIf bBerserker Then
-                PlaySong "mu_beserkerrage"
             ElseIf bDiscoLoopsEnabled Then
                 PlaySong "mu_discoloops"
+            ElseIf bMechSuitMBStarted Then
+                PlaySong "mu_mechsuitmb"
+            ElseIf bBerserker Then
+                PlaySong "mu_beserkerrage"
             Else 'play default music
                 PlaySong "mu_hellhouse" &Balls
             End If
@@ -93,6 +93,12 @@ Sub ChangeSong
     End Select
 End Sub
 
+""")),
+    (_vbs("""            Else 'play default music
+                PlaySong "mu_hellhouse" &Balls
+"""),
+     _vbs("""            Else 'play the regular-play track on every ball
+                PlaySong "mu_hellhouse1"
 """)),
     (_vbs("""    bLilDPMB = False
     LilDPTimer.Enabled = 0"""),

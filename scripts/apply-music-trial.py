@@ -1,4 +1,4 @@
-"""Silence background music and install locally supplied multiball songs."""
+"""Install selected mode music and silence unused music slots."""
 import argparse
 import hashlib
 import json
@@ -8,6 +8,20 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 FF = shutil.which('ffmpeg') or str(ROOT / '.tools/pydeps/imageio_ffmpeg/binaries/ffmpeg-win-x86_64-v9.0.2.exe')
+
+
+def encode_track(track, destination):
+    source = ROOT / track['source_file']
+    source_hash = hashlib.sha256(source.read_bytes()).hexdigest()
+    if track.get('sha256') and source_hash != track['sha256']:
+        raise ValueError(f"Music source checksum mismatch: {source}")
+    loudness = track.get('target_lufs', -20)
+    subprocess.run([FF, '-hide_banner', '-loglevel', 'error', '-y',
+                    '-ss', str(track.get('start_seconds', 0)), '-i', str(source),
+                    '-map', '0:a:0', '-vn', '-sn', '-dn',
+                    '-af', f'loudnorm=I={loudness}:TP=-2:LRA=9', '-ar', '32000', '-ac', '2',
+                    '-c:a', 'libvorbis', '-q:a', '5', str(destination)], check=True)
+    return source_hash
 
 
 def install(table):
@@ -32,16 +46,8 @@ def install(table):
         source = ROOT / track['source_file']
         converted = silent
         if source.is_file():
-            source_hash = hashlib.sha256(source.read_bytes()).hexdigest()
-            if track.get('sha256') and source_hash != track['sha256']:
-                raise ValueError(f"Music source checksum mismatch: {source}")
             converted = out / (track['ids'][0] + '-trial.ogg')
-            subprocess.run([FF, '-hide_banner', '-loglevel', 'error', '-y',
-                            '-ss', str(track.get('start_seconds', 0)), '-i', str(source),
-                            '-map', '0:a:0', '-vn', '-sn', '-dn',
-                            '-af', 'loudnorm=I=-20:TP=-2:LRA=9', '-ar', '32000', '-ac', '2',
-                            '-c:a', 'libvorbis', '-q:a', '5', str(converted)], check=True)
-            sources[track['ids'][0]] = source_hash
+            sources[track['ids'][0]] = encode_track(track, converted)
         else:
             pending.append(track)
         replacements.update(dict.fromkeys(track['ids'], converted))
@@ -49,6 +55,8 @@ def install(table):
         notes.append(f"{track['mode']}: {track['title']} — {track['artist']} ({status})")
         if track.get('source_url'):
             notes.append(track['source_url'])
+        if track.get('license'):
+            notes.append(f"{track['license']} — {track['license_url']}")
 
     sound_files = list((table / 'sounds').iterdir())
     for name, file in replacements.items():

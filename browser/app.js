@@ -90,12 +90,9 @@ for(const [id,name] of actions){
     const swipe=swipes.get(e.pointerId);
     if(!swipe||swipe.nudged)return;
     const dx=e.clientX-swipe.x,dy=e.clientY-swipe.y;
-    // One directional nudge per contact; small thumb drift never nudges.
-    // Keep the original flipper captured and held throughout the gesture.
-    let action;
-    if(Math.abs(dx)>=24&&Math.abs(dx)>Math.abs(dy)*1.2)action=dx<0?'nudgeLeft':'nudgeRight';
-    else if(-dy>=24&&-dy>Math.abs(dx)*1.2)action='nudgeCenter';
-    else return;
+    // Keep upward thumb movement on the flipper separate from forward nudges.
+    if(Math.abs(dx)<24||Math.abs(dx)<=Math.abs(dy)*1.2)return;
+    const action=dx<0?'nudgeLeft':'nudgeRight';
     swipe.nudged=true;
     const source=`swipe:${e.pointerId}`;
     setAction(action,true,source);
@@ -233,13 +230,32 @@ function startSelectedGame(){
   const start='Table1_KeyDown StartGameKey:Table1_KeyUp StartGameKey';
   evaluate(`bFreePlay=True:${Array(count).fill(start).join(':')}`);
 }
+function showStartingGame(){
+  $('play').disabled=true;
+  $('play').textContent='Starting game…';
+  $('play').setAttribute('aria-busy','true');
+  $('player-count').disabled=true;
+  $('loading').textContent='Getting the playfield ready…';
+}
+function paintBeforeStarting(){
+  // VPX starts synchronously. Leave a frame for the loading state to paint first.
+  return new Promise(resolve=>{
+    let frame;
+    const done=()=>{cancelAnimationFrame(frame);clearTimeout(timeout);resolve();};
+    const timeout=setTimeout(done,150); // Animation frames pause in background tabs.
+    frame=requestAnimationFrame(()=>{frame=requestAnimationFrame(done);});
+  });
+}
 async function replay(){
   if($('play').disabled)return;
-  $('play').disabled=true;$('player-count').disabled=true;
+  showStartingGame();
   await setFullscreen(true);
+  await paintBeforeStarting();
+  if(!connected)return;
   release();
   startSelectedGame();
   if(!connected)return;
+  $('play').removeAttribute('aria-busy');
   $('waiting').hidden=true;replayVisible=false;focusGame();
 }
 function updateReplay(playing,entering){
@@ -302,6 +318,7 @@ function fail(error){
   connected=false;held.clear();physical.clear();pointers.clear();swipes.clear();applied.clear();paint();
   $('waiting').hidden=false;$('progress').hidden=true;
   $('loading').textContent=`${enginePhase}: ${detail}`;$('status').textContent='Game unavailable';
+  $('play').removeAttribute('aria-busy');
   $('play').disabled=false;$('play').textContent='Reload and retry';$('play').onclick=()=>location.reload();
 }
 $('canvas').addEventListener('webglcontextlost',e=>{
@@ -312,7 +329,7 @@ async function boot(){
     const probe=document.createElement('canvas').getContext('webgl2');
     if(!probe)throw Error('WebGL 2 is required. Enable graphics acceleration or try a current browser.');
     probe.getExtension('WEBGL_lose_context')?.loseContext();
-    const [factory, response]=await Promise.all([import('/engine/vpinball.js'),fetch('/table.vpx?v=fox-inserts-20261122')]);
+    const [factory, response]=await Promise.all([import('/engine/vpinball.js'),fetch('/table.vpx?v=recorded-doorbell')]);
     if(!response.ok)throw Error('The Finni VPX table is missing. Build it first (see README).');
     let table=await response.arrayBuffer();enginePhase='Preparing engine';$('progress').value=55;$('loading').textContent='Preparing the VPX engine…';
     engine=await factory.default({canvas:$('canvas'),preRun:[module=>configureRenderer(module,{mobile:phoneLayout.matches,quality:graphics})],locateFile:path=>`/engine/${path}`,print:log,printErr:log,onAbort:fail,setStatus:text=>{if(text)$('loading').textContent=text;}});
@@ -321,11 +338,14 @@ async function boot(){
     engine.FS.mkdirTree('/tables');engine.FS.writeFile('/tables/finni.vpx',new Uint8Array(table),{canOwn:true});table=null;
     $('progress').value=100;$('progress').hidden=true;$('loading').textContent='Table loaded.';$('play').disabled=false;$('play').textContent='Start game';$('status').textContent='Ready to play';
     $('play').onclick=async()=>{
-      enginePhase='Starting table';$('play').disabled=true;$('player-count').disabled=true;$('loading').textContent='Starting the table…';
-      // Queue fullscreen from the click before SDL startup; SDL otherwise exits
-      // fullscreen if it has already settled while the native window is created.
-      void setFullscreen(true);
+      if($('play').disabled)return;
+      enginePhase='Starting table';showStartingGame();
       try{
+        await paintBeforeStarting();
+        if(document.body.classList.contains('engine-error'))return;
+        // Queue fullscreen and SDL startup together so SDL cannot exit an
+        // already settled fullscreen session while creating the native window.
+        void setFullscreen(true);
         const result=startTable(engine,'/tables/finni.vpx');
         if(result!==1)throw Error(`VPX could not start this table (code ${result}). See the engine log.`);
         // Legacy tables can import their own trail preference over the global
@@ -334,12 +354,13 @@ async function boot(){
         // New game balls retain their chrome texture without the source
         // table's dense scratch overlay, which sparkles into a ghostly rim.
         evaluate('Table1.BallFrontDecal=""');
-        // Keep the original nudge physics without accumulating tilt penalties.
+        // Zero sensitivity disables penalties from both nudges and mechanical tilt.
         evaluate('Tilt=0:TiltSensitivity=0');
         // The native table now owns its decoded art/audio. Replay uses the
         // running player, so retaining the packed upload only wastes memory.
         engine.FS.unlink('/tables/finni.vpx');
         evaluate('Dim FinniDmdDigit, FinniDmdState : bFreePlay=True : For Each FinniDmdDigit In Digits : FinniDmdDigit.Visible=False : Next : digitgrid.Visible=False : DMDFlush : ShowTableInfo');
+        $('play').removeAttribute('aria-busy');
         connected=true;document.body.classList.add('playing');$('waiting').hidden=true;$('progress').hidden=true;$('status').textContent='Playing';document.title='Finni’s Big Day';paint();$('canvas').focus();
         views.apply();
         startSelectedGame();

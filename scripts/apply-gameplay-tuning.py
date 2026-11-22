@@ -8,6 +8,27 @@ ROOT=Path(__file__).resolve().parents[1]
 ORIGINAL=b'HellHouse.kick 164, 30, 1'
 BALL_SAVED = b'DMD "_", CL(1, "BALL SAVED"), "_", eNone, eBlinkfast, eNone, 1000, True, ""'
 BALL_SAVED_VOICE = BALL_SAVED[:-2] + b'"vo_ballsaved"'
+TILT_CHANGES = (
+    (b'If keycode = MechanicalTilt Then Tilt = 16:CheckTilt',
+     b'If keycode = MechanicalTilt And TiltSensitivity > 0 Then Tilt = 16:CheckTilt'),
+    (b'    Tilt = Tilt + TiltSensitivity',
+     b'    If TiltSensitivity <= 0 Then Exit Sub\r\n    Tilt = Tilt + TiltSensitivity'),
+)
+
+
+def tilt_script(source):
+    source = restore_tilt(source)
+    for before, after in TILT_CHANGES:
+        if source.count(before) != 1:
+            raise ValueError('Expected one original tilt handler statement.')
+        source = source.replace(before, after, 1)
+    return source
+
+
+def restore_tilt(source):
+    for before, after in TILT_CHANGES:
+        source = source.replace(after, before)
+    return source
 
 
 def tuned_script(source, motion=True, music=True):
@@ -27,7 +48,7 @@ def tuned_script(source, motion=True, music=True):
         display = runpy.run_path(str(ROOT/'scripts/finni-dmd-native-motion.py'))['animate_script'](display)
     lighting = runpy.run_path(str(ROOT/'scripts/apply-finni-lighting.py'))['lighting_script'](display)
     selected = runpy.run_path(str(ROOT/'scripts/apply-party-selection.py'))['selection_script'](lighting)
-    ramp = runpy.run_path(str(ROOT/'scripts/apply-lock-ramp-tuning.py'))['ramp_script'](selected)
+    ramp = tilt_script(runpy.run_path(str(ROOT/'scripts/apply-lock-ramp-tuning.py'))['ramp_script'](selected))
     return runpy.run_path(str(ROOT/'scripts/apply-multiball-music.py'))['music_script'](ramp) if music else ramp
 
 
@@ -35,8 +56,8 @@ def install(extracted):
     source=(ROOT/'.work/deadpool-extracted/script.vbs').read_bytes()
     path=extracted/'script.vbs'
     music = runpy.run_path(str(ROOT/'scripts/apply-multiball-music.py'))
-    current = music['restore_music'](path.read_bytes())
-    expected=tuned_script(source, music=False)
+    current = restore_tilt(music['restore_music'](path.read_bytes()))
+    expected=restore_tilt(tuned_script(source, music=False))
     # Preserve the prior presentation build as a recognized upgrade input.
     prior_selection = runpy.run_path(str(ROOT/'scripts/apply-finni-lighting.py'))['lighting_script'](
         runpy.run_path(str(ROOT/'scripts/apply-finni-dmd.py'))['dmd_script'](
@@ -59,9 +80,9 @@ def install(extracted):
     prior_cake_task = expected.replace(b'COOKIES BAKED',b'CAKE BAKED').replace(b'COOKIE SUPER JACKPOT',b'BAKING SUPER JACKPOT').replace(b'COOKIE JACKPOT',b'BAKING JACKPOT')
     prior_ramp = runpy.run_path(str(ROOT/'scripts/apply-lock-ramp-tuning.py'))['restore_script'](expected)
     current_without_ramp = runpy.run_path(str(ROOT/'scripts/apply-lock-ramp-tuning.py'))['restore_script'](current)
-    if current_without_ramp != prior_ramp and current not in (source,previous,previous_story,previous_without_save_voice,old_tasks,previous_dmd,first_pass,previous_lighting,prior_selection,expected,without_motion,prior_cake_task,prior_ramp) and prior_motion not in (tuned_script(source,motion=False,music=False),prior_friendship):
+    if current_without_ramp != prior_ramp and current not in (source,previous,previous_story,previous_without_save_voice,old_tasks,previous_dmd,first_pass,previous_lighting,prior_selection,expected,without_motion,prior_cake_task,prior_ramp) and prior_motion not in (restore_tilt(tuned_script(source,motion=False,music=False)),prior_friendship):
         raise ValueError('Working script has unrelated edits; refusing to overwrite them.')
-    result = music['music_script'](expected)
+    result = music['music_script'](tilt_script(expected))
     path.write_bytes(result)
     return result
 

@@ -1,6 +1,6 @@
 """Synthesize Finni party effects, preserve source music and install them by existing VPX sound ID.
 
-Uses numpy bundled with Blender. No downloads, samples, voice synthesis or rule edits.
+Uses numpy bundled with Blender. Includes a recorded doorbell and retains the existing generated contacts.
 Generated effects stay local; this script and design/party-audio.json are the sources.
 """
 import argparse
@@ -98,6 +98,11 @@ def effect(kind, variant=0):
     rng = np.random.default_rng(300 + variant)
     if kind in ("switch", "spinner", "tap", "knock", "rattle"):
         return mechanical_contact(kind, rng, variant)
+    if kind == "doorbell":
+        with wave.open(str(ROOT / 'assets/finni/audio/doorbell.wav'), 'rb') as wav:
+            assert (wav.getframerate(), wav.getnchannels(), wav.getsampwidth()) == (RATE, 2, 2)
+            mix = np.frombuffer(wav.readframes(wav.getnframes()), dtype='<i2').reshape(-1, 2) / 32768
+        return master(mix, .085, .60)
     if kind == "balloon":
         # A struck, inflated balloon: short rubber resonance and a soft contact
         # transient, with no pitched reward chime or long shuffle tail.
@@ -144,7 +149,7 @@ def build(destination):
         report["effects"][name] = write_wav(destination / (name + ".wav"), effect(config["effects"][name], i))
     # Audition the effect families; the table retains its original soundtrack.
     parts = []
-    for name in ("switch", "spinner", "tap", "knock", "rattle", "balloon", "sparkle", "power", "success"):
+    for name in ("switch", "spinner", "tap", "knock", "rattle", "balloon", "doorbell", "sparkle", "power", "success"):
         sound = effect(name)
         if sound.shape[1] == 1:
             sound = np.repeat(sound, 2, axis=1)

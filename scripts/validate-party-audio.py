@@ -74,6 +74,7 @@ for new in after:
         assert .02 < np.sqrt(np.mean(data ** 2)) < .13, name
         assert np.max(np.abs(data)) < .71, name
 speech_names = {s["name"] for s in after if s["name"].startswith(("vo_", "quote")) or s["name"] in ("player", "nocredits")}
+speech_names.difference_update(report["effects"])
 assert speech_names == voice["callouts"].keys(), "Unreplaced speech slot"
 assert music['direction'] in json.loads((table / 'info.json').read_text())['table_description']
 result = {"replacements": len(replaced),

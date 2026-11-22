@@ -65,6 +65,10 @@ parts={}
 for name in ('LilHead','LilLeftArm','LilRightArm','Primitive077'):
     path=WORK/'gameitems'/f'Primitive.{name}.json';p=json.loads(path.read_text())['Primitive']
     p['image']='finni-fox-atlas';p['position']['z']+=.0215/.00053975
+    # Draw all fox parts together, including the body, outside the static cache.
+    if p['static_rendering']:
+        p['disable_lighting_below']=1.0  # Match the static pass's lighting.
+    p['static_rendering']=False
     p['is_collidable']=False;p['is_toy']=True;p['use_3d_mesh']=True;p['mesh_file_name']=name+'.obj'
     parts[name]=export_obj(name,[bpy.data.objects[name]],fox=True)
     path.write_text(json.dumps({'Primitive':p},indent=2))

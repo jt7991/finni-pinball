@@ -40,6 +40,8 @@ def lines():
     result["vo_nocredits"] = result["nocredits"]
     source_names = {s["name"] for s in json.loads((SOURCE / "sounds.json").read_text())
                     if s["name"].startswith(("vo_", "quote")) or s["name"] in ("player", "nocredits")}
+    effects = json.loads((ROOT / "design/party-audio.json").read_text())["effects"]
+    source_names.difference_update(effects)
     assert source_names <= result.keys(), f"Unmapped source speech: {source_names - result.keys()}"
     assert result.keys() - source_names == {"vo_enterinitials", "vo_nocredits"} | ADDED_STORY_IDS | ADDED_EVENT_IDS
     return config, result

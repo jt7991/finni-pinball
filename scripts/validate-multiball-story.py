@@ -8,8 +8,8 @@ import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
 source = (ROOT/'.work/deadpool-extracted/script.vbs').read_bytes()
-tune = runpy.run_path(str(ROOT/'scripts/apply-gameplay-tuning.py'))['tuned_script']
-expected = tune(source)
+tuning = runpy.run_path(str(ROOT/'scripts/apply-gameplay-tuning.py'))
+expected = tuning['tuned_script'](source)
 script = (ROOT/'.work/finni-live-extracted/script.vbs').read_bytes()
 assert script == expected
 assert (ROOT/'output/live-vpx/Finni-Big-Day.vbs').read_bytes() == expected
@@ -24,6 +24,7 @@ images = {p.stem:p for p in (roundtrip/'images').iterdir()}
 assert images['pf'].read_bytes() == (art/'finni-playfield-base.png').read_bytes()
 
 def gameplay(data, story=False):
+    data = tuning['restore_tilt'](data)
     data = runpy.run_path(str(ROOT/'scripts/apply-multiball-music.py'))['restore_music'](data)
     if story:
         data = re.sub(rb'^[ \t]+DMD [^\r\n]*"vo_caketime(?:toppings|finish|frosting)"\r\n', b'', data, flags=re.M)
