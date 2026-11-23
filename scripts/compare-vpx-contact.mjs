@@ -9,12 +9,13 @@ assert.ok(!fixture.probeKind||fixture.probeKind==='contacts','Use the dedicated 
 const {layout,objects,source}=readReferenceAssets(fixture);
 applyReferencePhysics(layout,objects,fixture);
 if(process.argv.includes('--native-contact-solver'))layout.physics.native_flipper_contacts=true;
-const reports=[];
+const reports=[],resetClockDiagnostic=process.argv.includes('--native-reset-clock-diagnostic');
 for(const scenario of fixture.cases){
   const g=await createFullGame(layout,objects,source,()=>{});
   g.random=referenceRandom();
   try{
-    g.start();for(let i=0;i<2/STEP;i++)g.step();g.launch();let r=g.records[0];
+    const warmupMilliseconds=resetClockDiagnostic?scenario.initial?.[0]:2000;if(!Number.isInteger(warmupMilliseconds)||warmupMilliseconds<2000)throw Error('An independently observed native reset clock is required');
+    g.start();for(let ms=0;ms<warmupMilliseconds;ms++)g.step();g.launch();let r=g.records[0];
     if(fixture.startingProgress){const {battlesWon}=fixture.startingProgress;assert.ok(Number.isInteger(battlesWon)&&battlesWon>=0&&battlesWon<=7);g.rules.execute(`BattlesWon(CurrentPlayer)=${battlesWon}`);}
     if(fixture.nativeRuleState?.measuredBallRole==='animation'){
       // The old raw recordings selected an animation ball before the playable
@@ -94,7 +95,7 @@ for(const scenario of fixture.cases){
     const bodies=(g.nativeBodyAudit??[]).flatMap(row=>row.bodies),nativeBodySummary={frames:g.nativeBodyAudit?.length??0,bodies:bodies.length};
     for(const key of ['positionError','velocityError','momentumError','orientationError'])nativeBodySummary[key]=Math.max(0,...bodies.map(body=>body[key]??0));
     if(fixture.liveBodyState)nativeBodySummary.identityMismatches=g.nativeBodyAudit.filter(frame=>frame.missingIDs.length||frame.unexpectedIDs.length).length;
-    const report={name:scenario.name,maxPositionError:Math.max(...samples.map(r=>r.positionError)),maxVelocityError:Math.max(...samples.map(r=>r.velocityError)),maxFlipperAngleError:Math.max(...samples.map(r=>r.flipperAngleError)),physicsStats:g.physicsStats,samples,...(fixture.traceRegression?{traceSamples}:{}),...(g.nativeRandomAudit?{nativeRandomAudit:g.nativeRandomAudit,nativeBodySummary,nativePlungerSummary:summarizeNativePlunger(g.nativePlungerAudit)}:{}),...(g.nativeScriptRandomAudit?{nativeScriptRandomAudit:g.nativeScriptRandomAudit}:{}),...(process.argv.includes('--body-audit')?{nativeBodyAudit:g.nativeBodyAudit,nativePlungerAudit:g.nativePlungerAudit}:{})};reports.push(report);
+    const report={name:scenario.name,maxPositionError:Math.max(...samples.map(r=>r.positionError)),maxVelocityError:Math.max(...samples.map(r=>r.velocityError)),maxFlipperAngleError:Math.max(...samples.map(r=>r.flipperAngleError)),physicsStats:g.physicsStats,samples,...(fixture.traceRegression?{traceSamples}:{}),...(g.nativeRandomAudit?{nativeRandomAudit:g.nativeRandomAudit,nativeBodySummary,nativePlungerSummary:summarizeNativePlunger(g.nativePlungerAudit)}:{}),...(g.nativeScriptRandomAudit?{nativeScriptRandomAudit:g.nativeScriptRandomAudit}:{}),...(process.argv.includes('--body-audit')?{nativeBodyAudit:g.nativeBodyAudit,nativePlungerAudit:g.nativePlungerAudit}:{})};if(resetClockDiagnostic)report.resetClockDiagnostic={milliseconds:scenario.initial[0],scope:'Observed reset clock only; missing starting bodies, native RNG and startup-input times are not reconstructed.'};reports.push(report);
     if(scenario.inputSequence)report.inputCount=appliedInputs();
     if(scenario.scriptClocks)report.scriptClockInputs=clockInputs;
     if(scenario.flipperContacts)report.flipperContacts=flipperContacts;
