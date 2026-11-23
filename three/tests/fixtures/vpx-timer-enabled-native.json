@@ -1,0 +1,501 @@
+{
+  "captureSHA256": "f930b38a1313288e8a357676a8ddd81b45d63d44d1701d08c778836e42777da4",
+  "engineSHA256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+  "declarations": "Dim RefPropActive,RefPropObject,RefPropKind,RefPropCount,RefPropOrigin,RefPropTimes,RefPropActions,RefPropIndex\nRefPropActive=False\nSub RefPropObserve(phase)\n Dim flag\n If RefPropKind=\"Timer\" Then flag=RefPropObject.Enabled Else flag=RefPropObject.TimerEnabled\n Debug.Print \"TIMER_PROPERTY|\" & phase & \"|\" & GameTime & \"|\" & RefPropCount & \"|\" & Abs(CLng(flag)) & \"|\" & VarType(flag)\nEnd Sub\nSub Spots_Timer\n RefPropCount=RefPropCount+1\n RefPropObserve \"fire\"\nEnd Sub\nSub Flasher007_Timer\n RefPropCount=RefPropCount+1\n RefPropObserve \"fire\"\nEnd Sub\nSub LeftFlipper_Timer\n If RefPropActive Then\n  Do While RefPropIndex<=UBound(RefPropTimes)\n   If GameTime-RefPropOrigin<RefPropTimes(RefPropIndex) Then Exit Do\n   Execute RefPropActions(RefPropIndex)\n   RefPropObserve \"action\"\n   RefPropIndex=RefPropIndex+1\n  Loop\n End If\nEnd Sub",
+  "cases": [
+    {
+      "name": "Timer repeated enable",
+      "kind": "Timer",
+      "initial": true,
+      "actions": [
+        {
+          "ms": 30,
+          "code": "True"
+        },
+        {
+          "ms": 60,
+          "code": "-1"
+        },
+        {
+          "ms": 260,
+          "code": "False"
+        }
+      ],
+      "events": [
+        {
+          "phase": "initial",
+          "values": [
+            2183,
+            0,
+            1,
+            11
+          ],
+          "ms": 0
+        },
+        {
+          "phase": "action",
+          "values": [
+            2213,
+            0,
+            1,
+            11
+          ],
+          "ms": 30
+        },
+        {
+          "phase": "action",
+          "values": [
+            2243,
+            0,
+            1,
+            11
+          ],
+          "ms": 60
+        },
+        {
+          "phase": "fire",
+          "values": [
+            2283,
+            1,
+            1,
+            11
+          ],
+          "ms": 100
+        },
+        {
+          "phase": "fire",
+          "values": [
+            2383,
+            2,
+            1,
+            11
+          ],
+          "ms": 200
+        },
+        {
+          "phase": "action",
+          "values": [
+            2443,
+            2,
+            0,
+            11
+          ],
+          "ms": 260
+        }
+      ]
+    },
+    {
+      "name": "Timer explicit restart",
+      "kind": "Timer",
+      "initial": true,
+      "actions": [
+        {
+          "ms": 30,
+          "code": "False:ON"
+        },
+        {
+          "ms": 60,
+          "code": "1"
+        },
+        {
+          "ms": 260,
+          "code": "False"
+        }
+      ],
+      "events": [
+        {
+          "phase": "initial",
+          "values": [
+            2466,
+            0,
+            1,
+            11
+          ],
+          "ms": 0
+        },
+        {
+          "phase": "action",
+          "values": [
+            2496,
+            0,
+            1,
+            11
+          ],
+          "ms": 30
+        },
+        {
+          "phase": "action",
+          "values": [
+            2526,
+            0,
+            1,
+            11
+          ],
+          "ms": 60
+        },
+        {
+          "phase": "fire",
+          "values": [
+            2596,
+            1,
+            1,
+            11
+          ],
+          "ms": 130
+        },
+        {
+          "phase": "fire",
+          "values": [
+            2696,
+            2,
+            1,
+            11
+          ],
+          "ms": 230
+        },
+        {
+          "phase": "action",
+          "values": [
+            2726,
+            2,
+            0,
+            11
+          ],
+          "ms": 260
+        }
+      ]
+    },
+    {
+      "name": "Flasher repeated enable",
+      "kind": "Flasher",
+      "initial": true,
+      "actions": [
+        {
+          "ms": 30,
+          "code": "True"
+        },
+        {
+          "ms": 60,
+          "code": "-1"
+        },
+        {
+          "ms": 260,
+          "code": "False"
+        }
+      ],
+      "events": [
+        {
+          "phase": "initial",
+          "values": [
+            2766,
+            0,
+            1,
+            11
+          ],
+          "ms": 0
+        },
+        {
+          "phase": "action",
+          "values": [
+            2796,
+            0,
+            1,
+            11
+          ],
+          "ms": 30
+        },
+        {
+          "phase": "action",
+          "values": [
+            2826,
+            0,
+            1,
+            11
+          ],
+          "ms": 60
+        },
+        {
+          "phase": "fire",
+          "values": [
+            2866,
+            1,
+            1,
+            11
+          ],
+          "ms": 100
+        },
+        {
+          "phase": "fire",
+          "values": [
+            2966,
+            2,
+            1,
+            11
+          ],
+          "ms": 200
+        },
+        {
+          "phase": "action",
+          "values": [
+            3026,
+            2,
+            0,
+            11
+          ],
+          "ms": 260
+        }
+      ]
+    },
+    {
+      "name": "Flasher explicit restart",
+      "kind": "Flasher",
+      "initial": true,
+      "actions": [
+        {
+          "ms": 30,
+          "code": "False:ON"
+        },
+        {
+          "ms": 60,
+          "code": "1"
+        },
+        {
+          "ms": 260,
+          "code": "False"
+        }
+      ],
+      "events": [
+        {
+          "phase": "initial",
+          "values": [
+            3067,
+            0,
+            1,
+            11
+          ],
+          "ms": 0
+        },
+        {
+          "phase": "action",
+          "values": [
+            3097,
+            0,
+            1,
+            11
+          ],
+          "ms": 30
+        },
+        {
+          "phase": "action",
+          "values": [
+            3127,
+            0,
+            1,
+            11
+          ],
+          "ms": 60
+        },
+        {
+          "phase": "fire",
+          "values": [
+            3197,
+            1,
+            1,
+            11
+          ],
+          "ms": 130
+        },
+        {
+          "phase": "fire",
+          "values": [
+            3297,
+            2,
+            1,
+            11
+          ],
+          "ms": 230
+        },
+        {
+          "phase": "action",
+          "values": [
+            3327,
+            2,
+            0,
+            11
+          ],
+          "ms": 260
+        }
+      ]
+    },
+    {
+      "name": "Timer repeated disable",
+      "kind": "Timer",
+      "initial": false,
+      "actions": [
+        {
+          "ms": 30,
+          "code": "False"
+        },
+        {
+          "ms": 60,
+          "code": "True"
+        },
+        {
+          "ms": 300,
+          "code": "False"
+        }
+      ],
+      "events": [
+        {
+          "phase": "initial",
+          "values": [
+            3367,
+            0,
+            0,
+            11
+          ],
+          "ms": 0
+        },
+        {
+          "phase": "action",
+          "values": [
+            3397,
+            0,
+            0,
+            11
+          ],
+          "ms": 30
+        },
+        {
+          "phase": "action",
+          "values": [
+            3427,
+            0,
+            1,
+            11
+          ],
+          "ms": 60
+        },
+        {
+          "phase": "fire",
+          "values": [
+            3527,
+            1,
+            1,
+            11
+          ],
+          "ms": 160
+        },
+        {
+          "phase": "fire",
+          "values": [
+            3627,
+            2,
+            1,
+            11
+          ],
+          "ms": 260
+        },
+        {
+          "phase": "action",
+          "values": [
+            3667,
+            2,
+            0,
+            11
+          ],
+          "ms": 300
+        }
+      ]
+    },
+    {
+      "name": "Flasher repeated disable",
+      "kind": "Flasher",
+      "initial": false,
+      "actions": [
+        {
+          "ms": 30,
+          "code": "False"
+        },
+        {
+          "ms": 60,
+          "code": "True"
+        },
+        {
+          "ms": 300,
+          "code": "False"
+        }
+      ],
+      "events": [
+        {
+          "phase": "initial",
+          "values": [
+            3701,
+            0,
+            0,
+            11
+          ],
+          "ms": 0
+        },
+        {
+          "phase": "action",
+          "values": [
+            3731,
+            0,
+            0,
+            11
+          ],
+          "ms": 30
+        },
+        {
+          "phase": "action",
+          "values": [
+            3761,
+            0,
+            1,
+            11
+          ],
+          "ms": 60
+        },
+        {
+          "phase": "fire",
+          "values": [
+            3861,
+            1,
+            1,
+            11
+          ],
+          "ms": 160
+        },
+        {
+          "phase": "fire",
+          "values": [
+            3961,
+            2,
+            1,
+            11
+          ],
+          "ms": 260
+        },
+        {
+          "phase": "action",
+          "values": [
+            4001,
+            2,
+            0,
+            11
+          ],
+          "ms": 300
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "columns": [
+    "absolute_ms",
+    "fire_count",
+    "enabled",
+    "variant_type"
+  ],
+  "scope": "Original unmodified native object timer implementation. Component handlers on Spots, Flasher007 and LeftFlipper are replaced with diagnostic counters/input dispatch only; all other Timer objects and light sequencers isolated. Actual 1ms input and callback clocks observed, including Boolean getter Variant type. No source deadlines, clocks or outputs replaced."
+}

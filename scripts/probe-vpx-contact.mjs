@@ -9,6 +9,7 @@ import {createHash} from 'node:crypto';
 import {nativeBallMemoryObserver} from './native-ball-memory-observer.mjs';
 import {nativePlungerMemoryObserver} from './native-plunger-memory-observer.mjs';
 import {nativeInputSequence} from './native-input-sequence.mjs';
+import {nativeRngSites,installNativeRngSites} from './native-rng-sites.mjs';
 const [debug,base,output]=process.argv.slice(2);
 const outputName=process.argv.find(a=>a.startsWith('--output-name='))?.slice(14);
 if(outputName)assert.match(outputName,/^[a-z0-9.-]+\.json$/i,'Explicit capture filename stays in the review directory');
@@ -30,6 +31,8 @@ const recordKickers=process.argv.includes('--kickers');
 const recordTrails=process.argv.includes('--ball-trails');
 const recordRng=process.argv.includes('--rng-state');
 const recordInternals=process.argv.includes('--native-internals');
+const recordRngSites=process.argv.includes('--native-rng-sites');
+if(recordRngSites){assert.ok(recordInternals);reference.runtimeRngSites=nativeRngSites(await readFile('.work/three-review/reference-engine.wasm'));}
 const liveBodyState=process.argv.includes('--live-body-state');
 if(liveBodyState){assert.ok(recordInternals,'Live bodies require the validated full native memory observer');reference.liveBodyState=true;}
 const recordContactSlots=process.argv.includes('--contact-slots');
@@ -264,6 +267,7 @@ try{
       };
     }
   `});
+  if(recordRngSites)await call('Page.addScriptToEvaluateOnNewDocument',{source:'('+installNativeRngSites.toString()+')('+JSON.stringify(reference.runtimeRngSites)+')'});
   await call('Page.navigate',{url:base});console.log('Loading native contact reference');
   await wait('!!window.finni && !document.getElementById("play").disabled');await evaluate('document.getElementById("play").click()');await wait('document.body.classList.contains("playing")');
   // Table startup creates three bobble-animation balls before its delayed
@@ -289,6 +293,7 @@ try{
       // the log at 1000Hz can exhaust VPX's timer budget and skip callbacks.
       if(match?.[1]!=='RNG_FRAME')descriptor.set.call(this,value);if(!match)return;
       const data=new DataView(memory.buffer),low=data.getUint32(${reference.nativeRandom.stateAddress},true),high=data.getUint32(${reference.nativeRandom.stateAddress+4},true);
+      ${recordRngSites?`if(match[1]==='CONTACT_INIT'){nativeRngSiteObservation.records.length=0;nativeRngSiteObservation.origin=Number(match[2]);nativeRngSiteObservation.armed=true;}`:''}
       const record={kind:match[1],ms:Number(match[2]),low,high${recordInternals?`,internals:window.nativeBallLayout?window.nativeBallObserver.read():undefined`:''}};
       ${recordScriptRng?`if(match[1]==='RNG_FRAME'){const state=Number(line.slice(line.indexOf('RNG_FRAME|')).replace(/'$/,'').split('|')[2]);if(!Number.isInteger(state)||state<0||state>=16777216)throw Error('Invalid native script RNG state');if(record.internals)record.internals.scriptRandom=state;}`:''}
       window.nativeRandomRecords.push(record);
@@ -517,6 +522,7 @@ try{
     if(recordAnimationFrames)assert.ok(animationFrames.length&&animationFrames.every(row=>Number.isInteger(row[0])&&Number.isInteger(row[1])&&row[1]>=0),'observed native animation frame clocks');
     results.push({...scenario,initial,actualDelay,...closing,samples,rawSamples,...(initialNativeInternals?{initialNativeInternals}:{}),...(scenario.plunger?{initialPlungerPosition}:{}),...(initialCoilState?{initialCoilState}:{}),...(timerTrace?{timerTrace}:{}),...(recordAllBalls?{initialBallStates,rawInitialBallStates,initialMeasuredBallID}:{}),...(recordTrails?{initialBallTrails,rawInitialBallTrails}:{}),...(recordRng?{initialNativeRandom,nativeRandomFrames}:{}),...(animationFrames?{animationFrames}:{}),...(recordScriptRng?{initialScriptRandom}:{})});console.log(scenario.name,'input at',actualDelay,JSON.stringify(samples.at(-1)));
     if(reference.instrumentation?.scriptClockInputs)results.at(-1).scriptClocks=await evaluate(`window.nativeScriptClocks.filter(row=>row.ms>=${origin}).map(row=>({...row,ms:row.ms-${origin}}))`);
+    if(recordRngSites){await evaluate('nativeRngSiteObservation.armed=false');assert.equal(await evaluate('nativeRngSiteObservation.installed'),true);results.at(-1).rngSites=await evaluate('nativeRngSiteObservation.records');results.at(-1).rngSites=results.at(-1).rngSites.filter(row=>row.ms>=0&&row.ms<=(recordThrough??samples.at(-1)[0]));}
     if(reference.runtimeInputSequence){
       const observed=await evaluate(`window.nativeInputRecords.filter(row=>row.ms>=${origin}).map(row=>({...row,ms:row.ms-${origin}}))`);
       results.at(-1).inputSequence=observed.map((row,i)=>{assert.equal(row.index,i);const requested=reference.runtimeInputSequence.inputs[i];assert.ok(requested);assert.ok(row.ms>=requested.ms);return {...requested,requestedMilliseconds:requested.ms,ms:row.ms,key:row.key};});

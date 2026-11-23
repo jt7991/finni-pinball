@@ -94,8 +94,13 @@ export function createRules(source,specs,host={}) {
         }
         if(k==='enabled'&&spec.kind==='Timer'||k==='timerenabled'){
           const enabled=!!v,timerKey=k==='enabled'?lower:`${lower}:timer`;
-          if(enabled)timers.set(timerKey,{object:proxy,handler:`${name}_Timer`,at:time+Math.max(.001,Number(k==='enabled'?target.interval:target.timerinterval)/1000),property:k});
-          else timers.delete(timerKey);
+          target[k]=enabled;
+          // IEditable::put_TimerEnabled changes scheduling only when the
+          // Boolean state changes. Repeated True must retain its deadline.
+          if(enabled!==!!previous){
+            if(enabled)timers.set(timerKey,{object:proxy,handler:`${name}_Timer`,at:time+Math.max(.001,Number(k==='enabled'?target.interval:target.timerinterval)/1000),property:k});
+            else timers.delete(timerKey);
+          }
         }
         if(k==='isdropped'||k==='collidable'||k==='open'||k==='enabled'&&['Trigger','Kicker'].includes(spec.kind))host.mechanism?.(name,k,v);
         if(spec.kind==='Bumper'&&['threshold','force','scatter','hashitevent','enableskirtanimation','ringspeed','ringdropoffset'].includes(k))host.mechanism?.(name,k,v);

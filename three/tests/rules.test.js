@@ -105,5 +105,6 @@ test('live-catch elasticity lasts ten milliseconds rather than ten physics frame
 test('the authored Cake spinner timeout disables its own timer through the bound event object',()=>{
   const r=setup();r.execute('bLilDPMB=True:LilDPSpinner.Interval=1:LilDPSpinner.Enabled=True');
   assert.equal(r.objects.get('lildpspinner').enabled,true);r.tick(.002);
-  assert.equal(r.objects.get('lildpspinner').enabled,0);
+  assert.equal(r.objects.get('lildpspinner').enabled,false);
+  assert.equal(r.value('VarType(LilDPSpinner.Enabled)'),11,'native timer getters return a Boolean Variant');
 });

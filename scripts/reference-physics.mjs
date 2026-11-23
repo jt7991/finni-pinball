@@ -120,20 +120,12 @@ export function restoreReferenceBalls(game,fixture,scenario,fallback){
       });
       game.nativeBodyAudit.push({ms,swap:game.ballCollisionSwap,expectedSwap:observed.swapBallCollisions,bodies,...(actualIDs?{actualIDs,expectedIDs:observed.balls.map(body=>body.id),missingIDs:observed.balls.filter(body=>!actualIDs.includes(body.id)).map(body=>body.id),unexpectedIDs:actualIDs.filter(id=>!expectedByID.has(id))}:{})});
     };
-    if(fixture.liveBodyState){
-      // Native RNG_FRAME reads bodies at the end of this authored timer,
-      // before later timers such as RollingTimer apply spin/speed controls.
-      const execute=game.rules.engine.executeStatementThrows.bind(game.rules.engine);
-      game.rules.engine.executeStatementThrows=(statement,...args)=>{const result=execute(statement,...args);if(/^LeftFlipper_Timer\s*$/i.test(statement))observeBodies(Math.round(game.time*1000)-origin);return result;};
-    }
     let randomObservation;
     if(game.plunger){
       if(scenario.initialNativeInternals?.plunger)game.nativePlungerAudit=[];
       const update=game.plunger.updateVelocity.bind(game.plunger);
       if(scenario.initialScriptRandom!==undefined)game.nativeScriptRandomAudit=[];
-      game.plunger.updateVelocity=()=>{
-        // RNG_FRAME is emitted after native script timers, before mover
-        // velocity updates. Sample at that same phase, including Fire input.
+      const observeBoundary=()=>{
         const ms=Math.round(game.time*1000)-origin,expected=bodyFrames.get(ms)?.plunger;
         const expectedRandom=frames.get(ms),actualRandom=random.getState(),agrees=!expectedRandom||actualRandom.every((word,i)=>word===expectedRandom[i]);
         randomObservation={agrees,actual:actualRandom};
@@ -151,8 +143,14 @@ export function restoreReferenceBalls(game,fixture,scenario,fallback){
             if(fixture.nativeScriptRandom?.requireContinuity&&!agrees)throw Error(`Native script random-state progression differs before physics frame ${ms}`);
           }
         }
-        update();
       };
+      if(fixture.liveBodyState){
+        // The native marker runs inside LeftFlipper_Timer, before later
+        // timer callbacks can consume sound RNG or alter rolling state.
+        const execute=game.rules.engine.executeStatementThrows.bind(game.rules.engine);
+        game.rules.engine.executeStatementThrows=(statement,...args)=>{const result=execute(statement,...args);if(/^LeftFlipper_Timer\s*$/i.test(statement)){observeBodies(Math.round(game.time*1000)-origin);observeBoundary();}return result;};
+      }
+      game.plunger.updateVelocity=()=>{if(!fixture.liveBodyState)observeBoundary();update();};
     }
     game.step=()=>{
       const ms=Math.round(game.time*1000)-origin+1;
