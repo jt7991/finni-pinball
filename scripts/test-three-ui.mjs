@@ -43,6 +43,10 @@ try{
     await evaluate(`document.getElementById('player-count').value='${name==='phone'?4:1}';document.getElementById('play').click()`);
     await wait('document.body.classList.contains("ball-in-plunger")');
     assert.equal(await evaluate('testWorker.starts.at(-1)'),name==='phone'?4:1,'main player selector reaches the simulation worker');
+    await call('Input.dispatchKeyEvent',{type:'keyDown',code:'Digit1',key:'1'});
+    await call('Input.dispatchKeyEvent',{type:'keyUp',code:'Digit1',key:'1'});
+    assert.equal(await evaluate('testWorker.starts.length'),1,'Start cannot restart an active game');
+    assert.equal(await evaluate('testWorker.inputs.some(input=>input.action==="start")'),false,'Start cannot add players during play');
     assert.equal(await evaluate('document.documentElement.scrollWidth<=innerWidth&&document.documentElement.scrollHeight<=innerHeight'),true,`${name} no overflow`);
     if(name==='phone'||name==='small-phone'){
       const left=await center('#flip-zones [data-input=left]'),right=await center('#flip-zones [data-input=right]');

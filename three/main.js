@@ -48,7 +48,10 @@ function event(e){
 }
 function input(action,down,source){
   if(!game||paused)return;
-  if(action==='start'&&down&&game.state!=='playing'){game.start(selectedPlayers());return;}
+  if(action==='start'){
+    if(down&&!$('overlay').hidden&&!$('play').disabled&&!$('initials-dialog').open)$('play').click();
+    return;
+  }
   if($('latch').checked&&(action==='left'||action==='right')){
     if(down){const key=`latched:${action}`,held=sources.has(key);if(held)sources.delete(key);else sources.set(key,action);game.input(action,!held);paint();}
     return;
