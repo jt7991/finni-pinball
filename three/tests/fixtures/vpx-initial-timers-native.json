@@ -1,0 +1,393 @@
+{
+  "captureSHA256": "95e6ecf222d120e8357ce1e6743aa606025d0823a7a76a933800730b9852ab9c",
+  "engineSHA256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+  "events": [
+    {
+      "name": "properties",
+      "values": [
+        2125,
+        1,
+        50,
+        1,
+        160,
+        1,
+        40
+      ]
+    },
+    {
+      "name": "GIUpdateTimer",
+      "values": [
+        2150,
+        1,
+        50
+      ]
+    },
+    {
+      "name": "GIUpdateTimer",
+      "values": [
+        2200,
+        1,
+        50
+      ]
+    },
+    {
+      "name": "FinniDmdAnimationTimer",
+      "values": [
+        2240,
+        1,
+        160
+      ]
+    },
+    {
+      "name": "GIUpdateTimer",
+      "values": [
+        2250,
+        1,
+        50
+      ]
+    },
+    {
+      "name": "GIUpdateTimer",
+      "values": [
+        2300,
+        1,
+        50
+      ]
+    },
+    {
+      "name": "GIUpdateTimer",
+      "values": [
+        2350,
+        1,
+        50
+      ]
+    },
+    {
+      "name": "GIUpdateTimer",
+      "values": [
+        2400,
+        1,
+        50
+      ]
+    },
+    {
+      "name": "FinniDmdAnimationTimer",
+      "values": [
+        2400,
+        1,
+        160
+      ]
+    },
+    {
+      "name": "GIUpdateTimer",
+      "values": [
+        2450,
+        1,
+        50
+      ]
+    },
+    {
+      "name": "GIUpdateTimer",
+      "values": [
+        2500,
+        1,
+        50
+      ]
+    },
+    {
+      "name": "GIUpdateTimer",
+      "values": [
+        2550,
+        1,
+        50
+      ]
+    },
+    {
+      "name": "FinniDmdAnimationTimer",
+      "values": [
+        2560,
+        1,
+        160
+      ]
+    },
+    {
+      "name": "GIUpdateTimer",
+      "values": [
+        2600,
+        1,
+        50
+      ]
+    },
+    {
+      "name": "GIUpdateTimer",
+      "values": [
+        2650,
+        1,
+        50
+      ]
+    },
+    {
+      "name": "GIUpdateTimer",
+      "values": [
+        2700,
+        1,
+        50
+      ]
+    },
+    {
+      "name": "FinniDmdAnimationTimer",
+      "values": [
+        2720,
+        1,
+        160
+      ]
+    },
+    {
+      "name": "GIUpdateTimer",
+      "values": [
+        2750,
+        1,
+        50
+      ]
+    },
+    {
+      "name": "GIUpdateTimer",
+      "values": [
+        2800,
+        1,
+        50
+      ]
+    },
+    {
+      "name": "GIUpdateTimer",
+      "values": [
+        2850,
+        1,
+        50
+      ]
+    },
+    {
+      "name": "FinniDmdAnimationTimer",
+      "values": [
+        2880,
+        1,
+        160
+      ]
+    },
+    {
+      "name": "GIUpdateTimer",
+      "values": [
+        2900,
+        1,
+        50
+      ]
+    },
+    {
+      "name": "GIUpdateTimer",
+      "values": [
+        2950,
+        1,
+        50
+      ]
+    },
+    {
+      "name": "GIUpdateTimer",
+      "values": [
+        3000,
+        1,
+        50
+      ]
+    },
+    {
+      "name": "FinniDmdAnimationTimer",
+      "values": [
+        3040,
+        1,
+        160
+      ]
+    },
+    {
+      "name": "GIUpdateTimer",
+      "values": [
+        3050,
+        1,
+        50
+      ]
+    },
+    {
+      "name": "GIUpdateTimer",
+      "values": [
+        3100,
+        1,
+        50
+      ]
+    },
+    {
+      "name": "GIUpdateTimer",
+      "values": [
+        3150,
+        1,
+        50
+      ]
+    },
+    {
+      "name": "GIUpdateTimer",
+      "values": [
+        3200,
+        1,
+        50
+      ]
+    },
+    {
+      "name": "FinniDmdAnimationTimer",
+      "values": [
+        3200,
+        1,
+        160
+      ]
+    },
+    {
+      "name": "GIUpdateTimer",
+      "values": [
+        3250,
+        1,
+        50
+      ]
+    },
+    {
+      "name": "GIUpdateTimer",
+      "values": [
+        3300,
+        1,
+        50
+      ]
+    },
+    {
+      "name": "GIUpdateTimer",
+      "values": [
+        3350,
+        1,
+        50
+      ]
+    },
+    {
+      "name": "FinniDmdAnimationTimer",
+      "values": [
+        3360,
+        1,
+        160
+      ]
+    },
+    {
+      "name": "GIUpdateTimer",
+      "values": [
+        3400,
+        1,
+        50
+      ]
+    },
+    {
+      "name": "GIUpdateTimer",
+      "values": [
+        3450,
+        1,
+        50
+      ]
+    },
+    {
+      "name": "GIUpdateTimer",
+      "values": [
+        3500,
+        1,
+        50
+      ]
+    },
+    {
+      "name": "FinniDmdAnimationTimer",
+      "values": [
+        3520,
+        1,
+        160
+      ]
+    },
+    {
+      "name": "GIUpdateTimer",
+      "values": [
+        3550,
+        1,
+        50
+      ]
+    },
+    {
+      "name": "GIUpdateTimer",
+      "values": [
+        3600,
+        1,
+        50
+      ]
+    },
+    {
+      "name": "GIUpdateTimer",
+      "values": [
+        3650,
+        1,
+        50
+      ]
+    },
+    {
+      "name": "FinniDmdAnimationTimer",
+      "values": [
+        3680,
+        1,
+        160
+      ]
+    },
+    {
+      "name": "GIUpdateTimer",
+      "values": [
+        3700,
+        1,
+        50
+      ]
+    }
+  ],
+  "handlers": [
+    {
+      "name": "GIUpdateTimer",
+      "originalSHA256": "0987fbb9595c342b571ef2ef18f8268b6d8fea67522a5e86651296dc8ca462f3",
+      "original": "Sub GIUpdateTimer_Timer\r\n    Dim tmp, obj\r\n    tmp = Getballs\r\n    If UBound(tmp) <> OldGiState Then\r\n        OldGiState = Ubound(tmp)\r\n        If UBound(tmp) = -1 Then '-1 means no balls, 0 is the first captive ball, 1 is the second captive ball...)\r\n            GiOff                ' turn off the gi if no active balls on the table, we could also have used the variable ballsonplayfield.\r\n        Else\r\n            Gion\r\n        End If\r\n    End If\r\nEnd Sub",
+      "observed": "Sub GIUpdateTimer_Timer\r\n Debug.Print \"INITIAL_TIMER|GIUpdateTimer|\" & GameTime & \"|\" & Abs(CLng(GIUpdateTimer.Enabled)) & \"|\" & GIUpdateTimer.Interval\n    Dim tmp, obj\r\n    tmp = Getballs\r\n    If UBound(tmp) <> OldGiState Then\r\n        OldGiState = Ubound(tmp)\r\n        If UBound(tmp) = -1 Then '-1 means no balls, 0 is the first captive ball, 1 is the second captive ball...)\r\n            GiOff                ' turn off the gi if no active balls on the table, we could also have used the variable ballsonplayfield.\r\n        Else\r\n            Gion\r\n        End If\r\n    End If\r\nEnd Sub"
+    },
+    {
+      "name": "FinniDmdAnimationTimer",
+      "originalSHA256": "858954d0d49eb591dee227be8450e8c6c795fce53733aff24a1e835c58ff69f5",
+      "original": "Sub FinniDmdAnimationTimer_Timer()\r\n    If Not FinniDmdMotion Then Exit Sub\r\n    If Not FinniDmdAnimated(dLine(2)) Then Exit Sub\r\n    FinniDmdFrame = (FinniDmdFrame + 1) Mod 12\r\n    DMDUpdate 2\r\nEnd Sub",
+      "observed": "Sub FinniDmdAnimationTimer_Timer()\r\n Debug.Print \"INITIAL_TIMER|FinniDmdAnimationTimer|\" & GameTime & \"|\" & Abs(CLng(FinniDmdAnimationTimer.Enabled)) & \"|\" & FinniDmdAnimationTimer.Interval\n    If Not FinniDmdMotion Then Exit Sub\r\n    If Not FinniDmdAnimated(dLine(2)) Then Exit Sub\r\n    FinniDmdFrame = (FinniDmdFrame + 1) Mod 12\r\n    DMDUpdate 2\r\nEnd Sub"
+    }
+  ],
+  "errors": [],
+  "scope": "Ordinary native Start/ball-in-plunger; all authored timers and sequencers remain running. Two original timer handlers retain every authored statement, with a read-only logger inserted on entry. No Enabled/Interval write, isolation, RNG, clock or physics replacement. Observations begin after initialization; this does not capture the first startup callback.",
+  "initial": [
+    {
+      "kind": "Timer",
+      "name": "PulseTimer",
+      "is_timer_enabled": true,
+      "timer_interval": 50,
+      "native_source_order": 88
+    },
+    {
+      "kind": "Timer",
+      "name": "GIUpdateTimer",
+      "is_timer_enabled": true,
+      "timer_interval": 50,
+      "native_source_order": 89
+    },
+    {
+      "kind": "Timer",
+      "name": "FinniDmdAnimationTimer",
+      "is_timer_enabled": true,
+      "timer_interval": 160,
+      "native_source_order": 747
+    }
+  ]
+}

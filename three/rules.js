@@ -122,6 +122,11 @@ export function createRules(source,specs,host={}) {
     objects.set(lower,proxy);engine.addObject(name,proxy);return proxy;
   }
   for(const spec of specs.objects)object(spec);
+  // TimerSetup adds authored enabled timers in native table-part order,
+  // before script initialization enables any additional timers.
+  for(const spec of specs.objects.filter(s=>s.is_timer_enabled).sort((a,b)=>(a.native_source_order??0)-(b.native_source_order??0))){
+    objects.get(spec.name.toLowerCase())[spec.kind==='Timer'?'enabled':'timerenabled']=true;
+  }
   const byName=new Map(specs.objects.map(s=>[s.name.toLowerCase(),s]));
   for(const spec of specs.objects.filter(s=>s.kind==='LightSequencer')){
     const collection=specs.collections.find(c=>c.name.toLowerCase()===spec.collection?.toLowerCase());
