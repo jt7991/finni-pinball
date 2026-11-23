@@ -67,7 +67,7 @@ export function createSimulationHost(send,{allowDebug=false,now=()=>performance.
     }
     game=await createFullGame(assets.layout,assets.specs,assets.source,event=>effects.push({type:'event',event}),{
       play:(name,settings)=>effects.push({type:'play',name,settings}),stop:name=>effects.push({type:'stop',name}),
-    },{storage,frameAnimations:true,playerSettings:message.playerSettings});
+    },{storage,frameAnimations:true,playerSettings:message.playerSettings,ballSettings:message.ballSettings});
     const description=describeGame(game);for(const [name,state]of description.objects)objectStates.set(name,{...state});send({type:'ready',description});publish();
   }
   function debug(command){

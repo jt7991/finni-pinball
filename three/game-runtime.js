@@ -1,7 +1,7 @@
 // Main-thread view of the complete game. Every command is applied in order in
 // the simulation worker. Stable object references let the existing scene bind
 // to targets, lights and mechanisms once, just as it did to the local engine.
-import {mainPlayerSettings} from './player-settings.js';
+import {mainPlayerSettings,mainBallSettings} from './player-settings.js';
 export async function createRuntimeGame(base,emit,media){
   const worker=new Worker(new URL('./simulation-worker.js',import.meta.url),{type:'module'});
   const stored=[];
@@ -11,7 +11,7 @@ export async function createRuntimeGame(base,emit,media){
       try{stored.push([key.slice('finni-three-rule-'.length),JSON.parse(localStorage.getItem(key))]);}catch{}
     }
   }catch{}
-  return connectSimulation(worker,{base:new URL(base,location.href).href,storage:stored,playerSettings:mainPlayerSettings},emit,media);
+  return connectSimulation(worker,{base:new URL(base,location.href).href,storage:stored,playerSettings:mainPlayerSettings,ballSettings:mainBallSettings},emit,media);
 }
 
 export function connectSimulation(worker,init,emit=()=>{},media){
