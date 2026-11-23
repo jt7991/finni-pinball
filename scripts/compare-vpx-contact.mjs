@@ -15,6 +15,7 @@ for(const scenario of fixture.cases){
   g.random=referenceRandom();
   try{
     g.start();for(let i=0;i<2/STEP;i++)g.step();g.launch();let r=g.records[0];
+    if(fixture.startingProgress){const {battlesWon}=fixture.startingProgress;assert.ok(Number.isInteger(battlesWon)&&battlesWon>=0&&battlesWon<=7);g.rules.execute(`BattlesWon(CurrentPlayer)=${battlesWon}`);}
     if(fixture.nativeRuleState?.measuredBallRole==='animation'){
       // The old raw recordings selected an animation ball before the playable
       // ball existed. Preserve that role and physical ball count in the replay.

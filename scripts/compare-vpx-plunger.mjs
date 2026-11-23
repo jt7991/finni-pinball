@@ -16,6 +16,7 @@ for(const scenario of fixture.cases){
     const ruleState=()=>Object.fromEntries(ruleNames.map(name=>[name,g.rules.value(name)]));
     if(ruleAudit){const hit=g.rules.hit.bind(g.rules);g.rules.hit=(name,kind,...args)=>{if(ruleOrigin===undefined||kind==='Animate'&&!/plunger/i.test(name))return hit(name,kind,...args);const row={ms:Math.round(g.time*1000)-ruleOrigin,event:name+'_'+kind,before:ruleState(),scriptBefore:g.rules.scriptRandom.getState()};const result=hit(name,kind,...args);row.after=ruleState();row.scriptAfter=g.rules.scriptRandom.getState();ruleAudit.push(row);return result;};for(const method of ['rnd','randomize']){const original=g.rules.scriptRandom[method].bind(g.rules.scriptRandom);g.rules.scriptRandom[method]=argument=>{const before=g.rules.scriptRandom.getState(),result=original(argument);if(ruleOrigin!==undefined)ruleAudit.push({ms:Math.round(g.time*1000)-ruleOrigin,method,argument,before,after:g.rules.scriptRandom.getState()});return result;};}}
     g.start();for(let i=0;i<2/STEP;i++)g.step();let r=g.records[0];
+    if(fixture.startingProgress){const {battlesWon}=fixture.startingProgress;assert.ok(Number.isInteger(battlesWon)&&battlesWon>=0&&battlesWon<=7);g.rules.execute(`BattlesWon(CurrentPlayer)=${battlesWon}`);}
     placeReferenceBall(g,r,{...scenario,vx:0,vy:0,vz:0});
     const timer=g.rules.objects.get('rollingtimer');timer.enabled=false;timer.enabled=true;
     r=restoreReferenceBalls(g,fixture,scenario,r);
@@ -54,6 +55,7 @@ for(const scenario of fixture.cases){
     const appliedInputs=replayReferenceInputs(g,fixture,scenario);
     let elapsed=0;const samples=[],traceSamples=[],animationAudit=[];
     const animationFrames=scenario.animationFrames?new Map(scenario.animationFrames.map(row=>[row[0],row])):null;
+    const missionFrames=new Map((scenario.missionFrames??[]).map(row=>[row[0],row])),missionAudit=[];
     if(animationFrames){
       assert.ok(scenario.animationFrames.length,'native animation clocks recorded');
       for(let i=1;i<scenario.animationFrames.length;i++)assert.equal(scenario.animationFrames[i][0]-scenario.animationFrames[i-1][0],scenario.animationFrames[i][1],'native frame-clock continuity');
@@ -62,6 +64,7 @@ for(const scenario of fixture.cases){
     const prepareObservedFrame=ms=>{
       const expected=animationFrames?.get(ms);if(!expected)return;
       g.prepareFrame();
+      const mission=missionFrames.get(ms);if(mission){const actual=Object.values(fixture.runtimeMissionFrames.fields).map(expression=>g.rules.value(expression));missionAudit.push({ms,expected:mission.slice(1),actual,errors:actual.map((value,i)=>value-mission[i+1])});}
       const names=fixture.instrumentation.animationFrameTrace.targets??['Target009','Target010','Target011'],targets=names.map(name=>g.targetMotions.get(name.toLowerCase())),actual=[ms,expected[1],...targets.map(target=>target.offset),...targets.map(target=>Number(target.dropped)),g.rules.value('Score(CurrentPlayer)')];
       animationAudit.push({ms,expected,actual,errors:actual.slice(2).map((value,i)=>value-(i<3?Math.fround(expected[i+2]):expected[i+2]))});
     };
@@ -95,6 +98,8 @@ for(const scenario of fixture.cases){
     if(scenario.inputSequence)report.nativeFlipperSummary={frames:samples.length,angleErrors:[0,1].map(index=>Math.max(0,...samples.map(row=>Math.abs(row.nativeAngles[index]-Math.fround(row.expected[10+index]))))),inputs:appliedInputs()};
     if(scenario.flipperContacts)report.flipperContacts=flipperContacts;
     if(scatterDraws)report.scatterDraws=scatterDraws;
+    if(scenario.controlledShot)report.controlledShots=appliedInputs.controlledShots;
+    if(scenario.missionFrames)report.missionSummary={frames:missionAudit.length,fields:Object.keys(fixture.runtimeMissionFrames.fields),mismatches:missionAudit.filter(row=>row.errors.some(Boolean)).length,firstMismatch:missionAudit.find(row=>row.errors.some(Boolean)),last:missionAudit.at(-1)};
     if(!process.argv.includes('--json'))console.log(JSON.stringify({...report,samples:undefined,traceSamples:undefined,nativeRandomAudit:undefined,nativeBodyAudit:undefined,nativePlungerAudit:undefined,animationAudit:undefined,nativeScriptRandomAudit:undefined}));
   }catch(error){failure=error;fs.writeFileSync((process.argv.find(a=>a.startsWith('--report='))?.slice(9)??'.work/three-review/vpx-plunger-comparison.json')+'.partial',JSON.stringify({error:String(error),stack:error.stack,time:g.time,bodyAudit:g.nativeBodyAudit,randomAudit:g.nativeRandomAudit,scriptRandomAudit:g.nativeScriptRandomAudit,ruleAudit,delays:g.rules.delays},null,2));throw error;}finally{try{g.dispose();}catch(error){if(!failure)throw error;}}
 }
@@ -129,4 +134,5 @@ if(process.argv.includes('--check'))for(const r of reports){
   if(fixture.scriptClockRegression){assert.equal(r.scriptClockInputs,fixture.scriptClockRegression.calls);assert.equal(r.nativeScriptRandomAudit.length,fixture.nativeBodyRegression.frames);assert.ok(r.nativeScriptRandomAudit.every(row=>row.agrees));}
   if(fixture.inputSequenceRegression){assert.equal(r.nativeFlipperSummary.inputs,fixture.inputSequenceRegression.inputs);assert.ok(r.nativeFlipperSummary.frames>=fixture.inputSequenceRegression.angleFrames);assert.deepEqual(r.nativeFlipperSummary.angleErrors,[0,0]);assert.deepEqual(r.flipperContacts,fixture.cases.find(c=>c.name===r.name).flipperContacts,'every actual native flipper collision clock, side, speed and body');}
   assert.equal(r.physicsStats.substepBudgetExceeded,0);
+  if(fixture.missionRegression){const c=fixture.cases.find(c=>c.name===r.name);assert.equal(r.nativeFlipperSummary.inputs,fixture.missionRegression.inputs);assert.equal(r.missionSummary.frames,fixture.missionRegression.frames);assert.equal(r.missionSummary.mismatches,0,JSON.stringify(r.missionSummary.firstMismatch));assert.equal(r.scriptClockInputs,fixture.missionRegression.scriptClocks);assert.deepEqual(r.controlledShots,[c.controlledShot]);}
 }
