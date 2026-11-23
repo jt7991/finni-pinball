@@ -273,6 +273,11 @@ if(probeKind==='targets'){
   cases.push({name:'Target011-timed-hold',target:'Target011',x:612.3,y:803.1,z:25,vx:0,vy:0,sampleCount:540,setupCode:'bLilDPMB=True:bMultiBallMode=True:LilDPHits=4:LilDPHitsNeeded(CurrentPlayer)=1:LilDPJackpot(CurrentPlayer)=500000:LilDPTimer.Enabled=False:LilDPTimer.Interval=100:LilDPTimer.Enabled=True'});
   cases.push({name:'Target011-soak-hold',target:'Target011',x:612.3,y:803.1,z:25,vx:0,vy:0,sampleCount:1080,setupCode:'bLilDPMB=True:bMultiBallMode=True:LilDPHits=4:LilDPHitsNeeded(CurrentPlayer)=3:LilDPJackpot(CurrentPlayer)=790000:LilDPTimer.Enabled=False:LilDPTimer.Interval=350:LilDPTimer.Enabled=True'});
 }
+if(process.argv.includes('--continuous-gate')){
+  assert.equal(probeKind,'gates');assert.ok(selected,'Continuous gate control requires one explicitly selected approach');
+  for(const scenario of cases)delete scenario.parkFromSample;
+  reference.continuousGateControl='The authored gate approach is reset once initially. No ball parking or further pose/velocity resets occur during the observation window.';
+}
 if(exactDelay!==undefined){
   const driven=cases.filter(s=>!selected||s.name===selected);
   assert.ok(driven.length&&driven.every(s=>s.side||s.plunger),'exact clock scheduling requires selected flipper or plunger scenarios');
