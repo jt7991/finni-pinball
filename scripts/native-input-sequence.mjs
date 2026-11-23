@@ -1,10 +1,11 @@
 // Explicit diagnostic input driver. Keep the authored native timer body and
 // issue ordinary table key events at its measured 1ms callback boundaries.
 import assert from 'node:assert/strict';import {createHash} from 'node:crypto';
+const actionKeys={left:'LeftFlipperKey',right:'RightFlipperKey',nudgeLeft:'LeftTiltKey',nudgeForward:'CenterTiltKey',nudgeRight:'RightTiltKey'};
 export function nativeInputSequence(source,inputs){
  assert.ok(Array.isArray(inputs)&&inputs.length>0&&inputs.length<=100);
  for(const [i,input]of inputs.entries()){
-  assert.deepEqual(Object.keys(input).sort(),['action','down','ms']);assert.ok(['left','right'].includes(input.action));assert.equal(typeof input.down,'boolean');assert.ok(Number.isInteger(input.ms)&&input.ms>0);if(i)assert.ok(input.ms>=inputs[i-1].ms);
+  assert.deepEqual(Object.keys(input).sort(),['action','down','ms']);assert.ok(Object.hasOwn(actionKeys,input.action));assert.equal(typeof input.down,'boolean');assert.ok(Number.isInteger(input.ms)&&input.ms>0);if(i)assert.ok(input.ms>=inputs[i-1].ms);
  }
  const names=['LeftFlipper_Timer','RollingTimer_Timer','LeftFlipper_Collide','RightFlipper_Collide'],originals=names.map(name=>{const matches=source.match(new RegExp('^Sub '+name+'\\b[\\s\\S]*?^End Sub','gmi'));assert.equal(matches?.length,1);return matches[0];});
  const handlers=originals.map((body,i)=>{
@@ -16,7 +17,7 @@ export function nativeInputSequence(source,inputs){
  const code=`Dim RefInputStart,RefInputIndex,RefInputTimes,RefInputActions,RefInputDowns
 RefInputStart=-1:RefInputIndex=0
 RefInputTimes=Array(${inputs.map(input=>input.ms)})
-RefInputActions=Array(${inputs.map(input=>input.action==='left'?'LeftFlipperKey':'RightFlipperKey')})
+RefInputActions=Array(${inputs.map(input=>actionKeys[input.action])})
 RefInputDowns=Array(${inputs.map(input=>input.down?'True':'False')})
 Sub RefInputAdvance
  If RefTraceOn And RefInputStart>=0 Then

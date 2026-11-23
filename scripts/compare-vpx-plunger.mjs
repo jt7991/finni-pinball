@@ -46,13 +46,24 @@ for(const scenario of fixture.cases){
       g.plunger.updateNativeShapes();
     }
     g.rules.execute('Plunger.PullBack');g.rules.schedule(scenario.actualDelay,'Plunger.Fire');
-    const nativeKeys=new Map();
+    const nativeKeys=new Map(),inputFrames=new Map();let appliedInputs=0;
     for(const input of scenario.inputSequence??[]){
-      assert.ok(['left','right'].includes(input.action)&&Number.isInteger(input.key));assert.equal(typeof input.down,'boolean');
+      assert.ok(['left','right','nudgeLeft','nudgeForward','nudgeRight'].includes(input.action)&&Number.isInteger(input.key));assert.equal(typeof input.down,'boolean');
       if(nativeKeys.has(input.action))assert.equal(input.key,nativeKeys.get(input.action));else nativeKeys.set(input.action,input.key);
-      // VPX's SDL logical constants (65536/65537) and this host's internal
-      // constants (42/54) identify the same named table actions.
-      g.rules.schedule(input.ms,`Table1_Key${input.down?'Down':'Up'} ${KEY[input.action]}`);
+      // Native SDL logical codes and this host's internal constants identify
+      // the same explicitly named authored table actions.
+      if(!inputFrames.has(input.ms))inputFrames.set(input.ms,[]);inputFrames.get(input.ms).push(input);
+    }
+    if(scenario.inputSequence){
+      assert.match(fixture.runtimeInputSequence.code,/Sub LeftFlipper_Timer\b[^\n]*\n\s+RefInputAdvance/,'native input driver runs before the authored flipper timer body');
+      const origin=Math.round(g.time*1000),execute=g.rules.engine.executeStatementThrows.bind(g.rules.engine);
+      g.rules.engine.executeStatementThrows=(statement,...args)=>{
+        if(/^LeftFlipper_Timer\s*$/i.test(statement)){
+          const ms=Math.round(g.time*1000)-origin,inputs=inputFrames.get(ms)??[];inputFrames.delete(ms);
+          for(const input of inputs){execute(`Table1_Key${input.down?'Down':'Up'} ${KEY[input.action]}`);appliedInputs++;}
+        }
+        return execute(statement,...args);
+      };
     }
     let elapsed=0;const samples=[],traceSamples=[],animationAudit=[];
     const animationFrames=scenario.animationFrames?new Map(scenario.animationFrames.map(row=>[row[0],row])):null;
@@ -87,14 +98,14 @@ for(const scenario of fixture.cases){
     }
     if(fixture.nativeBodyRegression?.throughMilliseconds>elapsed)advanceTo(fixture.nativeBodyRegression.throughMilliseconds);
     const bodies=(g.nativeBodyAudit??[]).flatMap(frame=>frame.bodies),nativeBodySummary={frames:g.nativeBodyAudit?.length??0,bodies:bodies.length};
-    for(const key of ['positionError','velocityError','momentumError','orientationError'])nativeBodySummary[key]=Math.max(0,...bodies.map(body=>body[key]??0));
+    for(const key of ['positionError','velocityError','momentumError','orientationError'])nativeBodySummary[key]=bodies.reduce((max,body)=>Math.max(max,body[key]??0),0);
     if(fixture.liveBodyState)Object.assign(nativeBodySummary,{identityMismatches:g.nativeBodyAudit.filter(frame=>frame.missingIDs.length||frame.unexpectedIDs.length).length,lifecycles:g.nativeBodyAudit.filter((frame,i,a)=>i===0||String(frame.actualIDs)!==String(a[i-1].actualIDs)).map(frame=>({ms:frame.ms,ids:frame.actualIDs}))});
     const nativePlungerSummary=summarizeNativePlunger(g.nativePlungerAudit);
     const report={name:scenario.name,actualDelay:scenario.actualDelay,maxPositionError:Math.max(...samples.map(r=>r.positionError)),maxVelocityError:Math.max(...samples.map(r=>r.velocityError)),maxPlungerError:Math.max(...samples.map(r=>r.plungerError)),maxNativeSpeed:Math.max(...samples.map(r=>Math.hypot(...r.expected.slice(4,6)))),maxModelSpeed:Math.max(...samples.map(r=>Math.hypot(...r.actual.slice(4,6)))),physicsStats:g.physicsStats,samples,...(traceRows.size?{traceSamples}:{}),...(g.nativeRandomAudit?{nativeRandomAudit:g.nativeRandomAudit,nativeBodySummary}:{}),...(nativePlungerSummary?{nativePlungerSummary}:{}),...(process.argv.includes('--body-audit')?{nativeBodyAudit:g.nativeBodyAudit,nativePlungerAudit:g.nativePlungerAudit}:{})};reports.push(report);
     if(animationFrames)Object.assign(report,{animationAudit,animationSummary:{frames:animationAudit.length,offsetError:Math.max(0,...animationAudit.flatMap(row=>row.errors.slice(0,3).map(Math.abs))),stateMismatches:animationAudit.filter(row=>row.errors.slice(3).some(Boolean)).length},nativeScriptRandomAudit:g.nativeScriptRandomAudit});
     if(ruleAudit)report.ruleAudit=ruleAudit;
     if(scenario.scriptClocks)report.scriptClockInputs=clockInputs;
-    if(scenario.inputSequence)report.nativeFlipperSummary={frames:samples.length,angleErrors:[0,1].map(index=>Math.max(0,...samples.map(row=>Math.abs(row.nativeAngles[index]-Math.fround(row.expected[10+index]))))),inputs:scenario.inputSequence.length};
+    if(scenario.inputSequence)report.nativeFlipperSummary={frames:samples.length,angleErrors:[0,1].map(index=>Math.max(0,...samples.map(row=>Math.abs(row.nativeAngles[index]-Math.fround(row.expected[10+index]))))),inputs:appliedInputs};
     if(scenario.flipperContacts)report.flipperContacts=flipperContacts;
     if(!process.argv.includes('--json'))console.log(JSON.stringify({...report,samples:undefined,traceSamples:undefined,nativeRandomAudit:undefined,nativeBodyAudit:undefined,nativePlungerAudit:undefined,animationAudit:undefined,nativeScriptRandomAudit:undefined}));
   }catch(error){failure=error;fs.writeFileSync((process.argv.find(a=>a.startsWith('--report='))?.slice(9)??'.work/three-review/vpx-plunger-comparison.json')+'.partial',JSON.stringify({error:String(error),stack:error.stack,time:g.time,bodyAudit:g.nativeBodyAudit,randomAudit:g.nativeRandomAudit,scriptRandomAudit:g.nativeScriptRandomAudit,ruleAudit,delays:g.rules.delays},null,2));throw error;}finally{try{g.dispose();}catch(error){if(!failure)throw error;}}
