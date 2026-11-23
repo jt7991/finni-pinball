@@ -16,12 +16,14 @@ export class NativeMatrixStream{
  upload(material,matrices){const gl=this.gl,compiled=this.renderer.properties.get(material).currentProgram;if(!compiled)throw Error('Compile native materials before rendering');const program=compiled.program;let index=this.indices.get(program);if(index===undefined){index=gl.getUniformBlockIndex(program,this.block);if(index===gl.INVALID_INDEX)throw Error('Native matrix block missing');this.indices.set(program,index);}gl.uniformBlockBinding(program,index,this.binding);gl.bindBufferBase(gl.UNIFORM_BUFFER,this.binding,this.buffer);gl.bindBuffer(gl.UNIFORM_BUFFER,this.buffer);gl.bufferSubData(gl.UNIFORM_BUFFER,0,matrices);gl.bindBuffer(gl.UNIFORM_BUFFER,null);}
  dispose(){this.gl.deleteBuffer(this.buffer);}
 }
-export async function loadNativePrimitiveVisuals(base,metadataFile='native-primitives.json'){
- const read=async file=>{const response=await fetch(base+file);if(!response.ok)throw Error('Native render asset unavailable: '+file);return response;},metadata=await(await read(metadataFile)).json(),packed=await(await read(metadata.geometry.file)).arrayBuffer(),programs={},pixels={};
+export function nativeTextureProfile(metadata,profile){return{...metadata,textures:Object.fromEntries(Object.entries(metadata.textures).map(([id,spec])=>[id,spec.variants?.[profile]??spec]))};}
+export async function loadNativePrimitiveVisuals(base,metadataFile='native-primitives.json',{textureProfile,baseColorOnly=false}={}){
+ const read=async file=>{const response=await fetch(base+file);if(!response.ok)throw Error('Native render asset unavailable: '+file);return response;},metadata=nativeTextureProfile(await(await read(metadataFile)).json(),textureProfile),packed=await(await read(metadata.geometry.file)).arrayBuffer(),programs={},pixels={};
  if(metadata.geometry.encoding&&metadata.geometry.encoding!=='delta-byteplanes-v1')throw Error('Unsupported native geometry encoding');
  const geometry=metadata.geometry.encoding?decodeNativeGeometry(packed,metadata.parts):packed;
  await Promise.all(Object.entries(metadata.programs).map(async([id,p])=>{programs[id]={vertex:stripVersion(await(await read(p.vertex)).text()),fragment:stripVersion(await(await read(p.fragment)).text())};}));
- await Promise.all(Object.entries(metadata.textures).map(async([id,spec])=>{
+ const needed=baseColorOnly?new Set(metadata.parts.flatMap(part=>part.textures.tex_base_color?[String(part.textures.tex_base_color.id)]:[])):null;
+ await Promise.all(Object.entries(metadata.textures).filter(([id])=>!needed||needed.has(id)).map(async([id,spec])=>{
   if(spec.encoding==='webp-lossless'){
    if(spec.levels.length!==1)throw Error('Unsupported encoded native mip chain');
    pixels[id]=await createImageBitmap(await(await read(spec.levels[0].file)).blob(),{imageOrientation:'none',premultiplyAlpha:'none',colorSpaceConversion:'none'});
@@ -32,6 +34,7 @@ export function createNativeBaseTexture(assets,id,sampler){
  const spec=assets.metadata.textures[id],levels=assets.pixels[id];if(spec.pixelFormat!==6408||spec.pixelType!==5121)throw Error('Unsupported native base texture upload '+id);const texture=spec.encoding==='webp-lossless'?new THREE.Texture(levels):new THREE.DataTexture(new Uint8Array(levels[0].bytes),spec.width,spec.height,THREE.RGBAFormat,THREE.UnsignedByteType);texture.flipY=false;texture.colorSpace=spec.format===35907?THREE.SRGBColorSpace:THREE.NoColorSpace;texture.internalFormat=spec.format===35907?'SRGB8_ALPHA8':'RGBA8';texture.wrapS=wraps[sampler[10242]];texture.wrapT=wraps[sampler[10243]];texture.magFilter=filters[sampler[10240]];texture.minFilter=filters[sampler[10241]];texture.anisotropy=sampler[34046]??1;texture.generateMipmaps=spec.generatedMipmaps;if(Array.isArray(levels)&&levels.length>1){texture.mipmaps=levels.map(level=>({width:level.width,height:level.height,data:new Uint8Array(level.bytes)}));texture.generateMipmaps=false;}texture.needsUpdate=true;return texture;
 }
 export function createNativePrimitiveVisuals(renderer,scene,assets,lighting,{stateFor=()=>null,transmissionTexture,reflectionTexture}={}){
+ let reflectionsEnabled=true;
  if(!transmissionTexture&&assets.metadata.parts.some(p=>p.uniforms.cBase_Alpha?.[3]<1&&p.uniforms.fDisableLighting_top_below?.[1]<1))throw Error('Native translucent primitives require a light transmission texture');
  if(assets.metadata.parts.some(p=>p.uniforms.doNormalMapping||p.uniforms.doRefractions))throw Error('Native normal maps and refraction probes need their rendering passes');
  if(assets.metadata.parts.some(p=>(p.probe||(p.uniforms.mirrorNormal_factor?.[3]??0)>0)&&(!reflectionTexture||!p.probe)))throw Error('Native reflections need an authored probe and its rendered texture');
@@ -51,7 +54,7 @@ export function createNativePrimitiveVisuals(renderer,scene,assets,lighting,{sta
   const material=new THREE.RawShaderMaterial({glslVersion:THREE.GLSL3,uniforms,vertexShader:program.vertex,fragmentShader:program.fragment,side:state.cull?(state.cullFace===1028?THREE.BackSide:THREE.FrontSide):THREE.DoubleSide,depthWrite:state.depthWrite,depthFunc:THREE.LessEqualDepth,transparent:legacyTransparent,blending:state.blend?THREE.CustomBlending:THREE.NoBlending,blendEquation:THREE.AddEquation,blendSrc:THREE.SrcAlphaFactor,blendDst:THREE.OneMinusSrcAlphaFactor});
   const vertices=new Float32Array(assets.geometry,spec.vertexByteOffset,spec.vertices*8),interleaved=new THREE.InterleavedBuffer(vertices,8),geometry=new THREE.BufferGeometry(),position=new THREE.InterleavedBufferAttribute(interleaved,3,0);geometry.setAttribute('position',position);geometry.setAttribute('vPosition',position);geometry.setAttribute('vNormal',new THREE.InterleavedBufferAttribute(interleaved,3,3));geometry.setAttribute('tc',new THREE.InterleavedBufferAttribute(interleaved,2,6));geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(assets.geometry,spec.indexByteOffset,spec.indices),1));const mesh=new THREE.Mesh(geometry,material);mesh.name=spec.meshName??spec.name??spec.spec.name;mesh.frustumCulled=false;mesh.renderOrder=spec.drawOrder;if(spec.spec.position)mesh.position.set(spec.spec.position.x*.01,(2115-spec.spec.position.y)*.01,spec.spec.position.z*.01);root.add(mesh);const part={spec:spec.spec,record:spec,mesh,material,baseSide:material.side,matrices:new Float32Array(80),state:stateFor(spec.spec.name),cameras:new WeakMap()};material.onBeforeRender=()=>stream.upload(material,part.matrices);part.releaseSamplers=samplers.register(material,Object.fromEntries(Object.entries(spec.textures).map(([name,binding])=>[name,binding.sampler])));parts.push(part);
  }
- return{root,parts,stream,textures,baseTexture,samplers,async prepare(camera){
+ return{root,parts,stream,textures,baseTexture,samplers,setReflectionsEnabled(value){reflectionsEnabled=!!value;},async prepare(camera){
   // Initially hidden parts still need a compiled program before a script makes
   // them visible. Compile visible proxies without changing game visibility.
   const compilationScene=new THREE.Scene();
@@ -81,9 +84,9 @@ export function createNativePrimitiveVisuals(renderer,scene,assets,lighting,{sta
    }
    if(native.reflection){if(spec.is_reflection_enabled===false||record.probe)part.mesh.visible=false;part.material.side=native.reverseCullingByRenderer?part.baseSide:part.baseSide===THREE.DoubleSide?THREE.DoubleSide:part.baseSide===THREE.BackSide?THREE.FrontSide:THREE.BackSide;}
    else{part.material.side=part.baseSide;if(record.reflectionOnly)part.mesh.visible=false;}
-   if(part.material.uniforms.tex_reflection)part.material.uniforms.tex_reflection.value=native.reflection?dummy:reflectionTexture??dummy;
+   if(part.material.uniforms.tex_reflection)part.material.uniforms.tex_reflection.value=native.reflection||!reflectionsEnabled?dummy:reflectionTexture??dummy;
    if(part.material.uniforms.tex_base_transmission)part.material.uniforms.tex_base_transmission.value=native.reflection&&record.reflectionTransmission===false?dummy:transmissionTexture??dummy;
-   if(record.probe)part.material.uniforms.mirrorNormal_factor.value.set(cached.mirror??[0,0,0,0]);
+   if(record.probe)part.material.uniforms.mirrorNormal_factor.value.set(reflectionsEnabled?cached.mirror??[0,0,0,0]:[0,0,0,0]);
   }
  },dispose(){for(const part of parts){part.releaseSamplers();part.mesh.geometry.dispose();part.material.dispose();}for(const texture of textures.values())texture.dispose();dummy.dispose();stream.dispose();scene.remove(root);}};
 }

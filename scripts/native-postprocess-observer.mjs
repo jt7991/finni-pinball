@@ -33,7 +33,7 @@ export function installNativePostprocessObserver(options={}){
    const target=gl.getParameter(gl.DRAW_FRAMEBUFFER_BINDING)?textureId(gl.getFramebufferAttachmentParameter(gl.DRAW_FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.FRAMEBUFFER_ATTACHMENT_OBJECT_NAME)):null,stage={name,program:programs.get(pr),uniforms,inputs,target,viewport:Array.from(gl.getParameter(gl.VIEWPORT)),scissor:Array.from(gl.getParameter(gl.SCISSOR_BOX)),scissorEnabled:gl.isEnabled(gl.SCISSOR_TEST),blend:gl.isEnabled(gl.BLEND),depth:gl.isEnabled(gl.DEPTH_TEST),colorMask:Array.from(gl.getParameter(gl.COLOR_WRITEMASK)),inputImages:{},priorTarget:readColor(gl,target)};
    for(const [key,{id}]of Object.entries(inputs))if(id!==null){if(key==='tex_depth')stage.inputImages[key]=readDepth(gl,id);else stage.inputImages[key]=readColor(gl,id);}
    const buffer=gl.getVertexAttrib(0,gl.VERTEX_ATTRIB_ARRAY_BUFFER_BINDING),prior=gl.getParameter(gl.ARRAY_BUFFER_BINDING),stride=gl.getVertexAttrib(0,gl.VERTEX_ATTRIB_ARRAY_STRIDE),offset=gl.getVertexAttribOffset(0,gl.VERTEX_ATTRIB_ARRAY_POINTER);if(buffer){try{gl.bindBuffer(gl.ARRAY_BUFFER,buffer);const vertices=new Float32Array(4*stride/4);gl.getBufferSubData(gl.ARRAY_BUFFER,offset,vertices);stage.vertices=Array.from(vertices);stage.stride=stride;}finally{gl.bindBuffer(gl.ARRAY_BUFFER,prior);}}
-   if(name==='ambient_occlusion'||name.includes('tonemap'))stage.nativeFrameIndex=clockSample(gl,name);
+   if(name==='ambient_occlusion'||name.includes('tonemap')){stage.nativeFrameIndex=clockSample(gl,name);if(window.nativeCabinet?.latest)stage.cabinet=structuredClone(window.nativeCabinet.latest);}
    data.stages.push(stage);return stage;
   }catch(error){data.errors.push({stage:name,message:error.message});data.done=true;}finally{observing=false;}
  };

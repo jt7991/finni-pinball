@@ -166,7 +166,8 @@ async function boot(){
     leaderboard=createLeaderboard(statement=>game.rules.execute(statement),release);
     display=await createDisplay($('dmd'),game.rules.objects,base);
     $('load-status').textContent='Loading artwork and table model…';
-    view=await createView($('table'),game);view.setCamera(cameraMode());view.setQuality($('quality').value==='auto'?(matchMedia('(max-width:650px)').matches?'performance':'detailed'):$('quality').value);
+    const quality=$('quality').value==='auto'?(matchMedia('(max-width:650px), (pointer:coarse) and (max-width:1024px)').matches?'performance':'detailed'):$('quality').value;
+    view=await createView($('table'),game,{quality});view.setCamera(cameraMode());
     const seconds=((performance.now()-startTime)/1000).toFixed(1);
     $('load-status').textContent=`Ready in ${seconds}s. Hold Launch, then release to shoot.`;
     $('play').disabled=false;$('play').textContent='Start game';$('progress').hidden=true;message('Ready to play');

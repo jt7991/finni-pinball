@@ -32,11 +32,11 @@ export function createNativeBallVisuals(renderer,scene,assets,lighting,{previous
  }
  add();
  return{parts,geometry,stream,add,
- beginSubmission(balls){
+ beginSubmission(balls,{reflections=true}={}){
   if(!submissionClock)return;frameSubmissions=new Map(balls.map(ball=>[ball,[]]));
   // RenderFrame::Execute runs every begin-of-frame callback before any GPU
   // pass. Preserve separate reflected/main commands and their clock reads.
-  for(const reflection of [true,false])for(const ball of balls)if(visible(ball,reflection))frameSubmissions.get(ball)[Number(reflection)]=submit(ball);
+  for(const reflection of (reflections?[true,false]:[false]))for(const ball of balls)if(visible(ball,reflection))frameSubmissions.get(ball)[Number(reflection)]=submit(ball);
  },
  endSubmission(){frameSubmissions=undefined;},
  update(camera,balls,{width,height}={}){
