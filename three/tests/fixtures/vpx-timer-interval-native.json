@@ -1,0 +1,1004 @@
+{
+  "captureSHA256": "80952ea4ec710d82949851f050ac2b1308ac46d0b09a2337dab4028c2dd4fd45",
+  "engineSHA256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+  "declarations": "Dim RefIntervalActive,RefIntervalObject,RefIntervalKind,RefIntervalCount,RefIntervalOrigin,RefIntervalTimes,RefIntervalActions,RefIntervalIndex,RefIntervalFirst\nRefIntervalActive=False\nSub RefIntervalObserve(phase)\n Dim flag,period\n If RefIntervalKind=\"Timer\" Then\n  flag=RefIntervalObject.Enabled:period=RefIntervalObject.Interval\n Else\n  flag=RefIntervalObject.TimerEnabled:period=RefIntervalObject.TimerInterval\n End If\n Debug.Print \"TIMER_INTERVAL|\" & phase & \"|\" & GameTime & \"|\" & RefIntervalCount & \"|\" & Abs(CLng(flag)) & \"|\" & period & \"|\" & VarType(period)\nEnd Sub\nSub RefIntervalFire\n RefIntervalCount=RefIntervalCount+1\n If RefIntervalCount=1 And RefIntervalFirst<>\"\" Then Execute RefIntervalFirst\n RefIntervalObserve \"fire\"\nEnd Sub\nSub Spots_Timer\n RefIntervalFire\nEnd Sub\nSub Flasher007_Timer\n RefIntervalFire\nEnd Sub\nSub LeftFlipper_Timer\n If RefIntervalActive Then\n  Do While RefIntervalIndex<=UBound(RefIntervalTimes)\n   If GameTime-RefIntervalOrigin<RefIntervalTimes(RefIntervalIndex) Then Exit Do\n   Execute RefIntervalActions(RefIntervalIndex)\n   RefIntervalObserve \"action\"\n   RefIntervalIndex=RefIntervalIndex+1\n  Loop\n End If\nEnd Sub",
+  "cases": [
+    {
+      "name": "Timer repeated interval",
+      "kind": "Timer",
+      "initial": true,
+      "actions": [
+        {
+          "ms": 30,
+          "code": "RefIntervalObject.Interval=100"
+        },
+        {
+          "ms": 70,
+          "code": "RefIntervalObject.Enabled=True"
+        },
+        {
+          "ms": 300,
+          "code": "RefIntervalObject.Enabled=False"
+        }
+      ],
+      "events": [
+        {
+          "phase": "initial",
+          "values": [
+            2290,
+            0,
+            1,
+            100,
+            3
+          ],
+          "ms": 0
+        },
+        {
+          "phase": "action",
+          "values": [
+            2320,
+            0,
+            1,
+            100,
+            3
+          ],
+          "ms": 30
+        },
+        {
+          "phase": "action",
+          "values": [
+            2360,
+            0,
+            1,
+            100,
+            3
+          ],
+          "ms": 70
+        },
+        {
+          "phase": "fire",
+          "values": [
+            2420,
+            1,
+            1,
+            100,
+            3
+          ],
+          "ms": 130
+        },
+        {
+          "phase": "fire",
+          "values": [
+            2520,
+            2,
+            1,
+            100,
+            3
+          ],
+          "ms": 230
+        },
+        {
+          "phase": "action",
+          "values": [
+            2590,
+            2,
+            0,
+            100,
+            3
+          ],
+          "ms": 300
+        }
+      ]
+    },
+    {
+      "name": "Timer changed interval",
+      "kind": "Timer",
+      "initial": true,
+      "actions": [
+        {
+          "ms": 30,
+          "code": "RefIntervalObject.Interval=40"
+        },
+        {
+          "ms": 300,
+          "code": "RefIntervalObject.Enabled=False"
+        }
+      ],
+      "events": [
+        {
+          "phase": "initial",
+          "values": [
+            2607,
+            0,
+            1,
+            100,
+            3
+          ],
+          "ms": 0
+        },
+        {
+          "phase": "action",
+          "values": [
+            2637,
+            0,
+            1,
+            40,
+            3
+          ],
+          "ms": 30
+        },
+        {
+          "phase": "fire",
+          "values": [
+            2677,
+            1,
+            1,
+            40,
+            3
+          ],
+          "ms": 70
+        },
+        {
+          "phase": "fire",
+          "values": [
+            2717,
+            2,
+            1,
+            40,
+            3
+          ],
+          "ms": 110
+        },
+        {
+          "phase": "fire",
+          "values": [
+            2757,
+            3,
+            1,
+            40,
+            3
+          ],
+          "ms": 150
+        },
+        {
+          "phase": "fire",
+          "values": [
+            2797,
+            4,
+            1,
+            40,
+            3
+          ],
+          "ms": 190
+        },
+        {
+          "phase": "fire",
+          "values": [
+            2837,
+            5,
+            1,
+            40,
+            3
+          ],
+          "ms": 230
+        },
+        {
+          "phase": "fire",
+          "values": [
+            2877,
+            6,
+            1,
+            40,
+            3
+          ],
+          "ms": 270
+        },
+        {
+          "phase": "action",
+          "values": [
+            2907,
+            6,
+            0,
+            40,
+            3
+          ],
+          "ms": 300
+        }
+      ]
+    },
+    {
+      "name": "Timer callback interval",
+      "kind": "Timer",
+      "initial": true,
+      "onFirst": "RefIntervalObject.Interval=40",
+      "actions": [
+        {
+          "ms": 300,
+          "code": "RefIntervalObject.Enabled=False"
+        }
+      ],
+      "events": [
+        {
+          "phase": "initial",
+          "values": [
+            2940,
+            0,
+            1,
+            100,
+            3
+          ],
+          "ms": 0
+        },
+        {
+          "phase": "fire",
+          "values": [
+            3040,
+            1,
+            1,
+            40,
+            3
+          ],
+          "ms": 100
+        },
+        {
+          "phase": "fire",
+          "values": [
+            3080,
+            2,
+            1,
+            40,
+            3
+          ],
+          "ms": 140
+        },
+        {
+          "phase": "fire",
+          "values": [
+            3120,
+            3,
+            1,
+            40,
+            3
+          ],
+          "ms": 180
+        },
+        {
+          "phase": "fire",
+          "values": [
+            3160,
+            4,
+            1,
+            40,
+            3
+          ],
+          "ms": 220
+        },
+        {
+          "phase": "fire",
+          "values": [
+            3200,
+            5,
+            1,
+            40,
+            3
+          ],
+          "ms": 260
+        },
+        {
+          "phase": "action",
+          "values": [
+            3240,
+            5,
+            0,
+            40,
+            3
+          ],
+          "ms": 300
+        }
+      ]
+    },
+    {
+      "name": "Timer callback restart",
+      "kind": "Timer",
+      "initial": true,
+      "onFirst": "RefIntervalObject.Enabled=False:RefIntervalObject.Interval=40:RefIntervalObject.Enabled=True",
+      "actions": [
+        {
+          "ms": 300,
+          "code": "RefIntervalObject.Enabled=False"
+        }
+      ],
+      "events": [
+        {
+          "phase": "initial",
+          "values": [
+            3274,
+            0,
+            1,
+            100,
+            3
+          ],
+          "ms": 0
+        },
+        {
+          "phase": "fire",
+          "values": [
+            3374,
+            1,
+            1,
+            40,
+            3
+          ],
+          "ms": 100
+        },
+        {
+          "phase": "fire",
+          "values": [
+            3414,
+            2,
+            1,
+            40,
+            3
+          ],
+          "ms": 140
+        },
+        {
+          "phase": "fire",
+          "values": [
+            3454,
+            3,
+            1,
+            40,
+            3
+          ],
+          "ms": 180
+        },
+        {
+          "phase": "fire",
+          "values": [
+            3494,
+            4,
+            1,
+            40,
+            3
+          ],
+          "ms": 220
+        },
+        {
+          "phase": "fire",
+          "values": [
+            3534,
+            5,
+            1,
+            40,
+            3
+          ],
+          "ms": 260
+        },
+        {
+          "phase": "action",
+          "values": [
+            3574,
+            5,
+            0,
+            40,
+            3
+          ],
+          "ms": 300
+        }
+      ]
+    },
+    {
+      "name": "Timer disabled interval",
+      "kind": "Timer",
+      "initial": false,
+      "actions": [
+        {
+          "ms": 30,
+          "code": "RefIntervalObject.Interval=40"
+        },
+        {
+          "ms": 60,
+          "code": "RefIntervalObject.Enabled=True"
+        },
+        {
+          "ms": 250,
+          "code": "RefIntervalObject.Enabled=False"
+        }
+      ],
+      "events": [
+        {
+          "phase": "initial",
+          "values": [
+            3608,
+            0,
+            0,
+            100,
+            3
+          ],
+          "ms": 0
+        },
+        {
+          "phase": "action",
+          "values": [
+            3638,
+            0,
+            0,
+            40,
+            3
+          ],
+          "ms": 30
+        },
+        {
+          "phase": "action",
+          "values": [
+            3668,
+            0,
+            1,
+            40,
+            3
+          ],
+          "ms": 60
+        },
+        {
+          "phase": "fire",
+          "values": [
+            3708,
+            1,
+            1,
+            40,
+            3
+          ],
+          "ms": 100
+        },
+        {
+          "phase": "fire",
+          "values": [
+            3748,
+            2,
+            1,
+            40,
+            3
+          ],
+          "ms": 140
+        },
+        {
+          "phase": "fire",
+          "values": [
+            3788,
+            3,
+            1,
+            40,
+            3
+          ],
+          "ms": 180
+        },
+        {
+          "phase": "fire",
+          "values": [
+            3828,
+            4,
+            1,
+            40,
+            3
+          ],
+          "ms": 220
+        },
+        {
+          "phase": "action",
+          "values": [
+            3858,
+            4,
+            0,
+            40,
+            3
+          ],
+          "ms": 250
+        }
+      ]
+    },
+    {
+      "name": "Flasher repeated interval",
+      "kind": "Flasher",
+      "initial": true,
+      "actions": [
+        {
+          "ms": 30,
+          "code": "RefIntervalObject.TimerInterval=100"
+        },
+        {
+          "ms": 70,
+          "code": "RefIntervalObject.TimerEnabled=True"
+        },
+        {
+          "ms": 300,
+          "code": "RefIntervalObject.TimerEnabled=False"
+        }
+      ],
+      "events": [
+        {
+          "phase": "initial",
+          "values": [
+            3874,
+            0,
+            1,
+            100,
+            3
+          ],
+          "ms": 0
+        },
+        {
+          "phase": "action",
+          "values": [
+            3904,
+            0,
+            1,
+            100,
+            3
+          ],
+          "ms": 30
+        },
+        {
+          "phase": "action",
+          "values": [
+            3944,
+            0,
+            1,
+            100,
+            3
+          ],
+          "ms": 70
+        },
+        {
+          "phase": "fire",
+          "values": [
+            4004,
+            1,
+            1,
+            100,
+            3
+          ],
+          "ms": 130
+        },
+        {
+          "phase": "fire",
+          "values": [
+            4104,
+            2,
+            1,
+            100,
+            3
+          ],
+          "ms": 230
+        },
+        {
+          "phase": "action",
+          "values": [
+            4174,
+            2,
+            0,
+            100,
+            3
+          ],
+          "ms": 300
+        }
+      ]
+    },
+    {
+      "name": "Flasher changed interval",
+      "kind": "Flasher",
+      "initial": true,
+      "actions": [
+        {
+          "ms": 30,
+          "code": "RefIntervalObject.TimerInterval=40"
+        },
+        {
+          "ms": 300,
+          "code": "RefIntervalObject.TimerEnabled=False"
+        }
+      ],
+      "events": [
+        {
+          "phase": "initial",
+          "values": [
+            4208,
+            0,
+            1,
+            100,
+            3
+          ],
+          "ms": 0
+        },
+        {
+          "phase": "action",
+          "values": [
+            4238,
+            0,
+            1,
+            40,
+            3
+          ],
+          "ms": 30
+        },
+        {
+          "phase": "fire",
+          "values": [
+            4278,
+            1,
+            1,
+            40,
+            3
+          ],
+          "ms": 70
+        },
+        {
+          "phase": "fire",
+          "values": [
+            4318,
+            2,
+            1,
+            40,
+            3
+          ],
+          "ms": 110
+        },
+        {
+          "phase": "fire",
+          "values": [
+            4358,
+            3,
+            1,
+            40,
+            3
+          ],
+          "ms": 150
+        },
+        {
+          "phase": "fire",
+          "values": [
+            4398,
+            4,
+            1,
+            40,
+            3
+          ],
+          "ms": 190
+        },
+        {
+          "phase": "fire",
+          "values": [
+            4438,
+            5,
+            1,
+            40,
+            3
+          ],
+          "ms": 230
+        },
+        {
+          "phase": "fire",
+          "values": [
+            4478,
+            6,
+            1,
+            40,
+            3
+          ],
+          "ms": 270
+        },
+        {
+          "phase": "action",
+          "values": [
+            4508,
+            6,
+            0,
+            40,
+            3
+          ],
+          "ms": 300
+        }
+      ]
+    },
+    {
+      "name": "Flasher callback interval",
+      "kind": "Flasher",
+      "initial": true,
+      "onFirst": "RefIntervalObject.TimerInterval=40",
+      "actions": [
+        {
+          "ms": 300,
+          "code": "RefIntervalObject.TimerEnabled=False"
+        }
+      ],
+      "events": [
+        {
+          "phase": "initial",
+          "values": [
+            4542,
+            0,
+            1,
+            100,
+            3
+          ],
+          "ms": 0
+        },
+        {
+          "phase": "fire",
+          "values": [
+            4642,
+            1,
+            1,
+            40,
+            3
+          ],
+          "ms": 100
+        },
+        {
+          "phase": "fire",
+          "values": [
+            4682,
+            2,
+            1,
+            40,
+            3
+          ],
+          "ms": 140
+        },
+        {
+          "phase": "fire",
+          "values": [
+            4722,
+            3,
+            1,
+            40,
+            3
+          ],
+          "ms": 180
+        },
+        {
+          "phase": "fire",
+          "values": [
+            4762,
+            4,
+            1,
+            40,
+            3
+          ],
+          "ms": 220
+        },
+        {
+          "phase": "fire",
+          "values": [
+            4802,
+            5,
+            1,
+            40,
+            3
+          ],
+          "ms": 260
+        },
+        {
+          "phase": "action",
+          "values": [
+            4842,
+            5,
+            0,
+            40,
+            3
+          ],
+          "ms": 300
+        }
+      ]
+    },
+    {
+      "name": "Flasher callback restart",
+      "kind": "Flasher",
+      "initial": true,
+      "onFirst": "RefIntervalObject.TimerEnabled=False:RefIntervalObject.TimerInterval=40:RefIntervalObject.TimerEnabled=True",
+      "actions": [
+        {
+          "ms": 300,
+          "code": "RefIntervalObject.TimerEnabled=False"
+        }
+      ],
+      "events": [
+        {
+          "phase": "initial",
+          "values": [
+            4876,
+            0,
+            1,
+            100,
+            3
+          ],
+          "ms": 0
+        },
+        {
+          "phase": "fire",
+          "values": [
+            4976,
+            1,
+            1,
+            40,
+            3
+          ],
+          "ms": 100
+        },
+        {
+          "phase": "fire",
+          "values": [
+            5016,
+            2,
+            1,
+            40,
+            3
+          ],
+          "ms": 140
+        },
+        {
+          "phase": "fire",
+          "values": [
+            5056,
+            3,
+            1,
+            40,
+            3
+          ],
+          "ms": 180
+        },
+        {
+          "phase": "fire",
+          "values": [
+            5096,
+            4,
+            1,
+            40,
+            3
+          ],
+          "ms": 220
+        },
+        {
+          "phase": "fire",
+          "values": [
+            5136,
+            5,
+            1,
+            40,
+            3
+          ],
+          "ms": 260
+        },
+        {
+          "phase": "action",
+          "values": [
+            5176,
+            5,
+            0,
+            40,
+            3
+          ],
+          "ms": 300
+        }
+      ]
+    },
+    {
+      "name": "Flasher disabled interval",
+      "kind": "Flasher",
+      "initial": false,
+      "actions": [
+        {
+          "ms": 30,
+          "code": "RefIntervalObject.TimerInterval=40"
+        },
+        {
+          "ms": 60,
+          "code": "RefIntervalObject.TimerEnabled=True"
+        },
+        {
+          "ms": 250,
+          "code": "RefIntervalObject.TimerEnabled=False"
+        }
+      ],
+      "events": [
+        {
+          "phase": "initial",
+          "values": [
+            5210,
+            0,
+            0,
+            100,
+            3
+          ],
+          "ms": 0
+        },
+        {
+          "phase": "action",
+          "values": [
+            5240,
+            0,
+            0,
+            40,
+            3
+          ],
+          "ms": 30
+        },
+        {
+          "phase": "action",
+          "values": [
+            5270,
+            0,
+            1,
+            40,
+            3
+          ],
+          "ms": 60
+        },
+        {
+          "phase": "fire",
+          "values": [
+            5310,
+            1,
+            1,
+            40,
+            3
+          ],
+          "ms": 100
+        },
+        {
+          "phase": "fire",
+          "values": [
+            5350,
+            2,
+            1,
+            40,
+            3
+          ],
+          "ms": 140
+        },
+        {
+          "phase": "fire",
+          "values": [
+            5390,
+            3,
+            1,
+            40,
+            3
+          ],
+          "ms": 180
+        },
+        {
+          "phase": "fire",
+          "values": [
+            5430,
+            4,
+            1,
+            40,
+            3
+          ],
+          "ms": 220
+        },
+        {
+          "phase": "action",
+          "values": [
+            5460,
+            4,
+            0,
+            40,
+            3
+          ],
+          "ms": 250
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "columns": [
+    "absolute_ms",
+    "fire_count",
+    "enabled",
+    "interval",
+    "interval_variant_type"
+  ],
+  "scope": "Original unmodified native timer implementation with diagnostic handlers on Spots, Flasher007 and LeftFlipper. Other Timer objects and light sequencers isolated. Actual input and callback clocks and getter types retained. No deadlines, clocks, RNG or outputs replaced. Positive physical-step timers only; frame/sync timers are outside this fixture."
+}

@@ -102,6 +102,12 @@ export function createRules(source,specs,host={}) {
             else timers.delete(timerKey);
           }
         }
+        if(k==='interval'&&spec.kind==='Timer'||k==='timerinterval'){
+          // IEditable::put_TimerInterval always calls HitTimer::SetInterval,
+          // even for the same value and from inside the timer callback.
+          const timer=timers.get(k==='interval'?lower:`${lower}:timer`);
+          if(timer)timer.at=time+Math.max(.001,Number(v)/1000);
+        }
         if(k==='isdropped'||k==='collidable'||k==='open'||k==='enabled'&&['Trigger','Kicker'].includes(spec.kind))host.mechanism?.(name,k,v);
         if(spec.kind==='Bumper'&&['threshold','force','scatter','hashitevent','enableskirtanimation','ringspeed','ringdropoffset'].includes(k))host.mechanism?.(name,k,v);
         if(spec.kind==='Wall'&&['disabled','slingshotthreshold'].includes(k))host.mechanism?.(name,k,v);
