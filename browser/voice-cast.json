@@ -6,7 +6,6 @@
       "name": "Mini Finni",
       "summary": "12 complete reactions for the little Finni toy, reused across all 44 reaction slots.",
       "direction": "One performer keeps this character consistent. Small, cheeky, and conversational. Record these 12 reactions once; the game reuses them across all toy-hit slots. There are no extra reactions to record.",
-      "preset": "party",
       "prefixes": [],
       "line_ids": [
         "vo_lildp1",
@@ -21,14 +20,14 @@
         "vo_lildp33",
         "vo_lildp36",
         "vo_lildp43"
-      ]
+      ],
+      "recommended_preset": "party"
     },
     {
       "id": "cake-host",
       "name": "Cake Time host",
       "summary": "Cake Time introductions, instructions, jackpots, and timer cues.",
       "direction": "A delighted baker guiding the cake celebration. This can be a different teammate from Mini Finni. Keep all Cake Time guidance in this voice.",
-      "preset": "natural",
       "prefixes": [],
       "line_ids": [
         "vo_caketimefinish",
@@ -43,14 +42,14 @@
         "vo_lildp_timeup",
         "vo_lildp_xtraball",
         "vo_lildpmb"
-      ]
+      ],
+      "recommended_preset": "broadcast"
     },
     {
       "id": "finni-host",
       "name": "Finni the host",
       "summary": "Party welcomes, celebrations, and the first set of party chatter.",
       "direction": "Warm, conversational, and a little distracted by preparations. Use one relaxed host character.",
-      "preset": "natural",
       "prefixes": [],
       "line_ids": [
         "vo_deadpool",
@@ -75,14 +74,14 @@
         "quote12",
         "quote13",
         "quote14"
-      ]
+      ],
+      "recommended_preset": "party"
     },
     {
       "id": "party-guest-one",
       "name": "Party guest · chatter A",
       "summary": "A small set of remarks from another guest at the party.",
       "direction": "Speak as yourself, warmly and conversationally. A different teammate can own each chatter set. Keep the tone like friends at the same party.",
-      "preset": "natural",
       "prefixes": [],
       "line_ids": [
         "quote15",
@@ -99,14 +98,14 @@
         "quote26",
         "quote27",
         "quote28"
-      ]
+      ],
+      "recommended_preset": "party"
     },
     {
       "id": "party-guest-two",
       "name": "Party guest · chatter B",
       "summary": "A small set of remarks from another guest at the party.",
       "direction": "Speak as yourself, warmly and conversationally. A different teammate can own each chatter set. Keep the tone like friends at the same party.",
-      "preset": "natural",
       "prefixes": [],
       "line_ids": [
         "quote29",
@@ -123,14 +122,14 @@
         "quote40",
         "quote41",
         "quote42"
-      ]
+      ],
+      "recommended_preset": "party"
     },
     {
       "id": "party-crew",
       "name": "Party crew",
       "summary": "A helpful friend announcing tasks, supplies, and party moments.",
       "direction": "Friendly and practical. Make task names clear and celebrate completed tasks with a little lift. This 25-line set can go to a teammate who is not recording the instructions.",
-      "preset": "natural",
       "prefixes": [],
       "line_ids": [
         "vo_ball1locked",
@@ -158,14 +157,14 @@
         "vo_saurondefeated",
         "vo_trex",
         "vo_trexdefeated"
-      ]
+      ],
+      "recommended_preset": "party"
     },
     {
       "id": "shot-guide",
       "name": "Shot guide · basics",
       "summary": "Ramps, loops, targets, and skill shots.",
       "direction": "Clear, friendly, and upbeat. Emphasize the action or reward. A different teammate can record each instruction set; match pronunciation and volume across the team.",
-      "preset": "natural",
       "prefixes": [],
       "line_ids": [
         "vo_hitboombutton",
@@ -189,14 +188,14 @@
         "vo_completetoplanes",
         "vo_holdflipper-sk",
         "vo_useflipperselecttoplaneskillshot"
-      ]
+      ],
+      "recommended_preset": "announcer"
     },
     {
       "id": "mode-guide",
       "name": "Shot guide · party modes",
       "summary": "Context-specific instructions for tasks and party modes.",
       "direction": "Clear, friendly, and upbeat. Emphasize the action or reward. A different teammate can record each instruction set; match pronunciation and volume across the team.",
-      "preset": "natural",
       "prefixes": [],
       "line_ids": [
         "vo_hitredshots-katanarama",
@@ -223,14 +222,14 @@
         "vo_shootrightramp-startkatanaramatime",
         "vo_shootscoop-startbattle",
         "vo_shoottherampscollectkatanadiamonds"
-      ]
+      ],
+      "recommended_preset": "announcer"
     },
     {
       "id": "scorekeeper",
       "name": "Scorekeeper · combos & multipliers",
       "summary": "Combo levels, bonus levels, and playfield multipliers.",
       "direction": "Clear, friendly, and upbeat. Emphasize the action or reward. A different teammate can record each instruction set; match pronunciation and volume across the team.",
-      "preset": "natural",
       "prefixes": [],
       "line_ids": [
         "vo_2xbonus",
@@ -252,14 +251,14 @@
         "vo_supercombo",
         "vo_superdupercombo",
         "vo_ultracpmbo"
-      ]
+      ],
+      "recommended_preset": "announcer"
     },
     {
       "id": "rewards",
       "name": "Celebrations · rewards",
       "summary": "Jackpots, extra balls, multiball, and reward readiness.",
       "direction": "Clear, friendly, and upbeat. Emphasize the action or reward. A different teammate can record each instruction set; match pronunciation and volume across the team.",
-      "preset": "natural",
       "prefixes": [],
       "line_ids": [
         "vo_extraball",
@@ -278,14 +277,14 @@
         "vo_weaponjackpot",
         "vo_weaponjackpotislit",
         "vo_weaponshotsbuildsjackpot"
-      ]
+      ],
+      "recommended_preset": "announcer"
     },
     {
       "id": "announcer",
       "name": "Welcome & timers",
       "summary": "Player numbers, start-of-game cues, timers, and remaining game guidance.",
       "direction": "Clear and welcoming for player cues; a little more urgency for timer warnings. This is a small recording set, not a requirement to voice every game instruction.",
-      "preset": "natural",
       "prefixes": [],
       "line_ids": [
         "nocredits",
@@ -310,7 +309,8 @@
         "vo_takefinalshot",
         "vo_timeisup",
         "vo_timerunningout"
-      ]
+      ],
+      "recommended_preset": "announcer"
     }
   ]
 }

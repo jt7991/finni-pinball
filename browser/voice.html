@@ -1,12 +1,69 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#101b18"><title>Voice studio · Finni’s Big Day</title><link rel="icon" href="/favicon.ico?v=dmd" sizes="16x16 32x32 48x48"><link rel="icon" href="/favicon.png?v=dmd" type="image/png"><link rel="apple-touch-icon" href="/icons/apple-touch-icon.png"><link rel="stylesheet" href="/voice.css"><script type="module" src="/voice.js"></script></head>
-<body><header><a class="brand" href="/">Finni’s Big Day</a><a href="#library">Team library</a><a href="/">Play the game</a></header>
-<main><div class="intro"><h1>Give the party a voice.</h1><p>Pick a role, keep its voice consistent, and share your takes with the team.</p></div>
-<section class="casting" aria-labelledby="cast-heading"><h2 id="cast-heading">Pick a small recording set</h2><p>Start with 12–25 lines each. Keep Mini Finni with one performer; Cake Time, party chatter, and the different instruction sets can go to other teammates. You do not need a different person for every set.</p><div id="cast" class="cast-grid"></div><p class="hint">Start with three audition lines per role: a short cue, a longer line, and an excited moment. Choose a reference take together, then keep pronunciation, volume, and energy consistent across the team. Choose another small set only if you want more to record.</p></section><div class="studio"><section aria-labelledby="script-heading"><h2 id="script-heading">Choose your role and line</h2><label for="role">Your character or recording set</label><select id="role" disabled><option value="">Loading roles…</option></select><p id="role-direction" class="direction" aria-live="polite"></p><label for="line">Game callout</label><select id="line"><option value="">Custom line</option></select><label for="script">What you’ll say</label><textarea id="script" rows="3" maxlength="500" placeholder="Write a short line for Finni…"></textarea><p class="direction">Record one line per take. Leave a brief pause before and after speaking. Keep lines short. Record in a quiet room, about a hand’s width from the mic, with no music playing.</p>
-<div class="record-actions"><button id="record" class="primary">Record a take</button><label class="upload" for="upload">Upload audio<input id="upload" type="file" accept="audio/*"></label></div><p id="record-status" role="status">Up to 30 seconds per take.</p><canvas id="waveform" width="720" height="120" aria-label="Recorded audio waveform"></canvas><label for="original">Original take</label><audio id="original" controls preload="metadata"></audio></section>
-<section aria-labelledby="sound-heading"><h2 id="sound-heading">Find the Finni sound</h2><label for="preset">Voice preset</label><select id="preset"><option value="party">Finni Party · warm &amp; playful</option><option value="natural">Natural · your own voice</option><option value="toy">Toy Friend · a little more character</option></select><p id="preset-note">A gentle pitch lift, rumble filter, compression, and matched volume.</p>
-<label for="pitch">Pitch <output id="pitch-value">+2 semitones</output></label><input id="pitch" type="range" min="-6" max="8" value="2" step="1"><label for="compression">Compression <output id="compression-value">65%</output></label><input id="compression" type="range" min="0" max="100" value="65"><p class="hint">Compression evens out loud and quiet words. Pitch keeps the line’s length; larger shifts can sound more synthetic.</p>
-<button id="render" disabled>Apply sound</button><label for="processed">Game-ready preview</label><audio id="processed" controls preload="metadata"></audio><p class="hint">32 kHz stereo WAV · matched speech level · peaks capped at −1 dB</p><div class="actions"><button id="download" disabled>Download WAV</button><button id="submit" class="primary" disabled>Submit to team</button></div><p id="edit-status" role="status">Record or upload a take to get started.</p></section></div>
-<section id="library" aria-labelledby="library-heading"><div class="section-heading"><div><h2 id="library-heading">The team’s takes</h2><p>Compare originals and processed voices. New takes wait for review.</p></div><button id="refresh">Refresh library</button></div>
-<form id="login"><p>Sign in with the team account your administrator created to submit and hear shared takes.</p><div class="login-fields"><label>Email<input id="email" type="email" autocomplete="username" required></label><label>Password<input id="password" type="password" autocomplete="current-password" required></label><button class="primary" type="submit">Sign in</button></div></form><div id="account" hidden><span id="identity"></span><button id="logout">Sign out</button></div><p id="library-status" role="status">The team library requires sign-in. You can record and download without an account.</p><div id="takes"></div><button id="more" hidden>Load more takes</button></section>
-</main><footer>Finni’s Big Day voice studio · Submitting saves both versions and your sound settings. Takes enter the game after review and a new build.</footer></body></html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0c102a">
+  <title>Voice studio · Finni’s Big Day</title>
+  <link rel="icon" href="/favicon.ico?v=dmd" sizes="16x16 32x32 48x48">
+  <link rel="icon" href="/favicon.png?v=dmd" type="image/png">
+  <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="/arcade.css?v=voice-studio">
+  <link rel="stylesheet" href="/voice.css">
+  <script type="module" src="/voice.js"></script>
+</head>
+<body class="voice-page">
+<a class="skip-link" href="#recording-desk">Skip to recording</a>
+<header class="studio-header">
+  <a class="brand" href="/">Finni’s Big Day</a>
+  <nav aria-label="Voice studio navigation"><a href="#library">Team library</a><a class="back-link" href="/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m10 5-7 7 7 7M3 12h18"/></svg>Play the game</a></nav>
+</header>
+<main>
+  <div class="intro"><h1>Voice studio</h1><p>Record and share team callouts, one line at a time.</p></div>
+  <div class="studio" id="recording-desk">
+    <section class="recording-panel" aria-labelledby="script-heading">
+      <h2 id="script-heading">Record a line</h2>
+      <div class="script-fields">
+        <div><label for="role">Recording set</label><select id="role" disabled><option value="">Loading sets…</option></select></div>
+        <div><label for="line">Game line</label><select id="line"><option value="">Custom line</option></select></div>
+      </div>
+      <details class="delivery-notes"><summary>Voice &amp; delivery notes</summary><p id="role-direction" class="direction" aria-live="polite"></p><p>Start with three audition lines: a short cue, a longer line, and an excited moment. Choose a reference take together and keep pronunciation, volume, and energy consistent.</p></details>
+      <label for="script">Your script</label><textarea id="script" rows="2" maxlength="500" placeholder="Write a custom callout…" aria-describedby="script-note"></textarea><p id="script-note" class="hint">One line per take. Leave a short pause before and after speaking.</p>
+      <div class="record-actions"><button id="record" class="primary">Record a take</button><label class="upload" for="upload">Upload audio<input id="upload" type="file" accept="audio/*"></label></div>
+      <p id="record-status" class="status" role="status">Up to 30 seconds per take.</p>
+      <details class="recording-tips"><summary>Microphone tips</summary><p>Use a quiet room with no music playing. Keep about a hand’s width from the microphone and use the same setup for your full recording set.</p></details>
+      <div class="waveform"><canvas id="waveform" width="720" height="120" aria-label="Recorded audio waveform"></canvas></div>
+      <label for="original">Original take</label><audio id="original" controls preload="metadata"></audio>
+    </section>
+    <section class="sound-panel" aria-labelledby="sound-heading">
+      <h2 id="sound-heading">Preview &amp; submit</h2>
+      <fieldset class="ai-controls"><legend>Enhance your recording</legend>
+        <p class="hint">Reduce background noise with ElevenLabs AI, then match the volume for the game. Keep your own voice and performance.</p>
+        <p id="ai-cost" class="hint">Paid AI cleanup. Record or upload a take to see an estimate.</p>
+        <div class="actions"><button id="ai-enhance" disabled>Enhance recording</button><button id="ai-reset" disabled>Undo AI cleanup</button></div>
+        <p id="ai-status" class="status" role="status">Connecting to local AI cleanup…</p><button id="ai-refresh" class="text-button" type="button">Check connection</button>
+        <p class="hint">Your original stays available for comparison. Cleanup works best with a clear recording; clipping and heavy muffling may remain.</p>
+      </fieldset>
+      <label for="preset">Optional finishing effect</label><select id="preset" aria-describedby="preset-note"><option value="natural">Clean &amp; natural</option></select><p id="preset-note" aria-live="polite">Your own voice, with low rumble reduced and gentle volume matching. Start here for any role.</p>
+      <p class="hint">Use Clean &amp; natural for gentle studio-style finishing. Other effects remain available for any role.</p>
+      <label class="trim-toggle" for="auto-trim"><input id="auto-trim" type="checkbox" checked><span>Auto-trim silence<small>Trim quiet space at the ends, keeping pauses inside the line. Your original stays untouched.</small></span></label>
+      <div class="processed-take"><label for="processed">Game-ready preview</label><audio id="processed" controls preload="metadata"></audio><p class="hint">32 kHz stereo WAV · matched speech level · −1 dB peak ceiling</p></div>
+      <div class="actions"><button id="download" disabled>Download WAV</button><button id="submit" class="primary" disabled>Submit to team</button></div><p id="edit-status" class="status" role="status">Record or upload a take to get started.</p>
+      <p class="sign-in-note" id="sign-in-note">You can record and download without an account. <a href="#login">Sign in</a> to submit a take.</p>
+    </section>
+  </div>
+  <details class="casting">
+    <summary>Browse all recording sets <span>12–25 lines per set</span></summary>
+    <p>Keep Mini Finni with one performer. Cake Time, party chatter, and instruction sets can go to other teammates. One person can take more than one set.</p>
+    <div id="cast" class="cast-list"></div>
+  </details>
+  <section id="library" aria-labelledby="library-heading">
+    <div class="section-heading"><div><h2 id="library-heading">Team library</h2><p>Listen to shared takes and check review notes.</p></div><button id="refresh">Refresh library</button></div>
+    <form id="login"><p>Sign in with the team account your administrator created.</p><div class="login-fields"><label>Email<input id="email" type="email" autocomplete="username" required></label><label>Password<input id="password" type="password" autocomplete="current-password" required></label><button class="primary" type="submit">Sign in</button></div></form>
+    <div id="account" hidden><span id="identity"></span><button id="logout">Sign out</button></div>
+    <p id="library-status" class="status" role="status">Sign in to hear and share team takes. Recording and downloads do not require an account.</p><div id="takes"></div><button id="more" hidden>Load more takes</button>
+  </section>
+</main>
+<footer>Submissions save the original, processed WAV, and sound settings. Takes enter the game after approval and a new build.</footer>
+</body>
+</html>

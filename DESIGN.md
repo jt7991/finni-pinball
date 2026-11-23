@@ -93,7 +93,7 @@ components:
 
 The browser player uses filled 1980s raster lettering, midnight navy, saturated arcade accents and crisp framing. Its controls stay compact and functional so the illuminated table and full-color DMD remain the visual focus. The user selected Pixel Cabinet (pixel80), replacing the earlier Asteroids lettering exploration.
 
-The accepted revision-13 comic party-preparation world remains authoritative inside the game: Finni and friends, detailed illustrated chores, navy hardware, a bright pink cake and saturated balloon bumpers. Browser chrome uses the newer pixel display face; Chewy remains part of the native table artwork. This system documents the browser player only. It does not restyle the native table or voice studio.
+The accepted revision-13 comic party-preparation world remains authoritative inside the game: Finni and friends, detailed illustrated chores, navy hardware, a bright pink cake and saturated balloon bumpers. Browser chrome uses the newer pixel display face; Chewy remains part of the native table artwork. This system documents the browser shell. The voice studio adopts the same Pixel Cabinet palette, fonts, and control styles while keeping its recording workflow; its route-specific decisions live in `.impeccable/surfaces/browser-voice-html.md`. It does not restyle the native table.
 
 **Key Characteristics:**
 

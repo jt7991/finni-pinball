@@ -1,42 +1,60 @@
 import {PRESETS, processVoice} from './voice-audio.js';
 const $ = id => document.getElementById(id);
 let decoded, result, renderedSettings, recorder, stream, timer, clock, recording = false, busy = false;
-let token = '', member, page = 1, settings = {...PRESETS.party};
+let token = '', member, page = 1, settings = {...PRESETS.natural};
 const urls = new Map();
 let cast, gameLines = {}, lineRoles = {};
+let aiTake = null, appliedAI = null, originalWav = null, aiAvailable = false, aiLoading = false;
+// Comparing takes should never accidentally play two recordings on top of each other.
+document.addEventListener('play', ({target}) => {
+  if (!(target instanceof HTMLMediaElement)) return;
+  for (const player of document.querySelectorAll('audio')) if (player !== target) player.pause();
+}, true);
 function message(id, text, error = false) { $(id).textContent = text; $(id).classList.toggle('error', error); }
 function replaceAudio(id, blob) {
   if (urls.has(id)) URL.revokeObjectURL(urls.get(id));
   const url = URL.createObjectURL(blob); urls.set(id, url); $(id).src = url;
 }
 function controls() {
-  $('render').disabled = !decoded || busy || recording;
   $('download').disabled = !result || busy || recording;
   $('submit').disabled = !result || !token || busy || recording;
   $('upload').disabled = !cast || busy || recording;
   $('record').disabled = !cast || busy;
-  for (const id of ['preset','pitch','compression','line','script','role']) $(id).disabled = !cast || busy || recording;
+  for (const id of ['preset','auto-trim','line','script','role']) $(id).disabled = !cast || busy || recording;
+  $('ai-enhance').disabled = (!aiAvailable && !aiTake) || !originalWav || !!appliedAI || busy || recording || aiLoading;
+  $('ai-enhance').textContent = aiTake ? 'Apply AI cleanup' : 'Enhance recording';
+  $('ai-reset').disabled = !appliedAI || busy || recording;
+  $('ai-refresh').disabled = busy || recording || aiLoading;
   for (const button of document.querySelectorAll('.cast-card button')) button.disabled = busy || recording;
 }
 function invalidate() {
   result = null; $('processed').pause(); $('processed').removeAttribute('src'); $('processed').load();
-  if (decoded) message('edit-status', 'Sound changed. Apply sound to update your preview.');
+  if (decoded) message('edit-status', 'Treatment changed. Updating your preview.');
   controls();
 }
-function updateSettings() {
-  settings.pitch = Number($('pitch').value); settings.compression = Number($('compression').value);
-  $('pitch-value').value = `${settings.pitch > 0 ? '+' : ''}${settings.pitch} semitones`;
-  $('compression-value').value = `${settings.compression}%`;
+function changeTreatment() {
+  settings = {...PRESETS[$('preset').value], autoTrim: $('auto-trim').checked};
+  $('preset-note').textContent = settings.description;
   invalidate();
+  if (decoded) render();
 }
-$('preset').addEventListener('change', () => {
-  settings = {...PRESETS[$('preset').value]};
-  $('pitch').value = settings.pitch; $('compression').value = settings.compression;
-  $('preset-note').textContent = settings.pitch ? 'A playful pitch lift, rumble filter, compression, and matched volume.' : 'Your natural pitch, a rumble filter, light compression, and matched volume.';
-  updateSettings();
-});
-for (const id of ['pitch','compression']) $(id).addEventListener('input', updateSettings);
-
+$('preset').replaceChildren();
+const presetGroups = new Map();
+for (const label of ['Pitch & tuning', 'Character tone', 'Studio & speakers']) {
+  const group = document.createElement('optgroup'); group.label = label;
+  presetGroups.set(label, group); $('preset').append(group);
+}
+for (const [id, preset] of Object.entries(PRESETS)) {
+  let group = 'Studio & speakers';
+  if (preset.pitch || preset.tuning || preset.wobble) group = 'Pitch & tuning';
+  else if (['gremlin', 'plush', 'sprite', 'robot', 'villain'].includes(id)) group = 'Character tone';
+  const option = document.createElement('option'); option.value = id; option.textContent = preset.name;
+  presetGroups.get(group).append(option);
+}
+$('preset').value = 'natural';
+$('preset').addEventListener('change', changeTreatment);
+$('auto-trim').addEventListener('change', changeTreatment);
+changeTreatment();
 async function acceptAudio(blob) {
   if (blob.size > 20 * 1024 * 1024) throw new Error('Choose an audio file under 20 MB and 30 seconds.');
   const context = new AudioContext();
@@ -44,10 +62,12 @@ async function acceptAudio(blob) {
   try { audio = await context.decodeAudioData(await blob.arrayBuffer()); }
   finally { await context.close(); }
   if (!audio.duration || audio.duration > 30.1) throw new Error('Use a take of 30 seconds or less. Short lines work best.');
-  decoded = audio; result = null;
+  decoded = audio; result = null; aiTake = null; appliedAI = null; originalWav = null;
+  updateAICost();
+  if (aiAvailable) message('ai-status', 'Take ready. Press Enhance recording for AI noise cleanup.');
   replaceAudio('original', blob);
   const canvas = $('waveform'), draw = canvas.getContext('2d'), data = audio.getChannelData(0);
-  draw.clearRect(0,0,canvas.width,canvas.height); draw.strokeStyle = '#ffc594'; draw.lineWidth = 2;
+  draw.clearRect(0,0,canvas.width,canvas.height); draw.strokeStyle = '#55d8ed'; draw.lineWidth = 2;
   draw.beginPath();
   for (let x = 0; x < canvas.width; x++) {
     const from = Math.floor(x * data.length / canvas.width), to = Math.max(from + 1, Math.floor((x + 1) * data.length / canvas.width));
@@ -60,13 +80,18 @@ async function acceptAudio(blob) {
 async function render() {
   busy = true; controls(); message('edit-status', 'Applying the Finni sound…');
   try {
-    renderedSettings = {...settings}; result = await processVoice(decoded, renderedSettings);
+    renderedSettings = {...settings};
+    if (appliedAI) renderedSettings = {...renderedSettings, ai: appliedAI, name: `AI cleanup + ${settings.name}`};
+    result = await processVoice(appliedAI ? aiTake : decoded, renderedSettings);
+    if (!originalWav) originalWav = result.original;
+    result.original = originalWav;
+    if (result.processed.size > 4_000_000) throw Error('The processed take is too long for the team library. Use a shorter recording.');
     replaceAudio('processed', result.processed);
-    message('edit-status', 'Preview is ready. Listen, then submit your take or download it.');
+    const trimmed = renderedSettings.autoTrim ? ` Auto-trim removed ${result.trim.removed.toFixed(2)} seconds from the ends.` : ' Auto-trim is off.';
+    message('edit-status', `Preview ready · ${result.duration.toFixed(2)} seconds.${appliedAI ? " AI cleanup applied." : ""}${trimmed} Listen, then submit or download.`);
   } catch (error) { result = null; message('edit-status', `Could not process audio: ${error.message}`, true); }
   finally { busy = false; controls(); }
 }
-$('render').addEventListener('click', render);
 $('upload').addEventListener('change', async () => {
   const file = $('upload').files[0]; if (!file) return;
   busy = true; controls();
@@ -123,7 +148,7 @@ async function api(path, options = {}) {
   return body;
 }
 function signOut() {
-  token = ''; member = null; $('login').hidden = false; $('account').hidden = true;
+  token = ''; member = null; $('sign-in-note').hidden = false; $('login').hidden = false; $('account').hidden = true;
   $('takes').replaceChildren(); $('more').hidden = true;
   message('library-status', 'Sign in to see and submit shared takes.'); controls();
 }
@@ -133,7 +158,7 @@ $('login').addEventListener('submit', async event => {
   try {
     const auth = await api('collections/voice_team/auth-with-password', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({identity:$('email').value,password:$('password').value})});
     token = auth.token; member = auth.record; $('password').value = '';
-    $('login').hidden = true; $('account').hidden = false; $('identity').textContent = `Signed in as ${member.name || member.email}`;
+    $('login').hidden = true; $('sign-in-note').hidden = true; $('account').hidden = false; $('identity').textContent = `Signed in as ${member.name || member.email}`;
     controls(); await loadLibrary();
   } catch (error) { message('library-status', `Sign-in failed. ${error.message}`, true); }
   finally { button.disabled = false; }
@@ -143,7 +168,7 @@ $('submit').addEventListener('click', async () => {
   busy = true; controls(); message('edit-status', 'Uploading both versions to the team library…');
   try {
     const data = new FormData(), id = $('line').value || 'custom';
-    for (const [key,value] of Object.entries({contributor:member.id,speaker:member.name || member.email,line_id:id,line_text:$('script').value.trim(),settings:JSON.stringify({...renderedSettings,role:$('role').value}),status:'pending'})) data.append(key,value);
+    for (const [key,value] of Object.entries({contributor:member.id,speaker:member.name || member.email,line_id:id,line_text:$('script').value.trim(),settings:JSON.stringify({...renderedSettings,role:$('role').value,trim:result.trim,processed_duration:result.duration}),status:'pending'})) data.append(key,value);
     data.append('original', result.original, `${id}-original.wav`); data.append('processed', result.processed, `${id}-finni.wav`);
     await api('collections/voice_takes/records', {method:'POST',body:data});
     message('edit-status', 'Take submitted for review. Both versions are saved in the team library.');
@@ -167,7 +192,7 @@ async function loadLibrary(append = false) {
     for (const take of records.items) {
       const row = element('article',''); row.className = 'take';
       row.append(element('h3', `${cast?.roles.find(role => role.id === take.settings?.role)?.name || 'Unassigned role'} · ${take.speaker} · ${take.line_id}`), element('p', take.line_text));
-      row.append(element('p', `${take.status} · ${new Date(take.created).toLocaleString()} · ${take.settings.name || 'Custom sound'} · pitch ${take.settings.pitch}`));
+      row.append(element('p', `${take.status} · ${new Date(take.created).toLocaleString()} · ${take.settings?.name || 'Custom sound'}`));
       if (take.review_note) row.append(element('p', `Review: ${take.review_note}`));
       const players = element('div',''); players.className = 'take-players';
       for (const key of ['original','processed']) {
@@ -186,7 +211,9 @@ async function loadLibrary(append = false) {
 }
 $('refresh').addEventListener('click', () => loadLibrary()); $('more').addEventListener('click', () => loadLibrary(true));
 function clearTake() {
-  decoded = null; result = null;
+  decoded = null; result = null; aiTake = null; appliedAI = null; originalWav = null;
+  updateAICost();
+  if (aiAvailable) message('ai-status', 'Record or upload a take, then press Enhance recording.');
   for (const id of ['original','processed']) {
     $(id).pause(); $(id).removeAttribute('src'); $(id).load();
     if (urls.has(id)) { URL.revokeObjectURL(urls.get(id)); urls.delete(id); }
@@ -208,7 +235,7 @@ function chooseRole(id) {
   const custom = element('option', 'Custom line for this role'); custom.value = ''; $('line').append(custom);
   $('script').value = gameLines[$('line').value] || '';
   clearTake();
-  $('preset').value = role.preset; $('preset').dispatchEvent(new Event('change'));
+  for (const option of $('preset').options) option.textContent = `${PRESETS[option.value].name}${option.value === role.recommended_preset ? ' (recommended)' : ''}`;
 }
 $('role').addEventListener('change', () => chooseRole($('role').value));
 $('line').addEventListener('change', () => {
@@ -226,6 +253,7 @@ Promise.all(['/voice-lines.json','/voice-cast.json'].map(async path => {
   }
   if (!config.roles.some(role => role.id === config.default_role)) throw Error('Unknown default voice role');
   for (const role of config.roles) {
+    if (!PRESETS[role.recommended_preset]) throw Error(`Unknown recommended effect in ${role.name}`);
     if (role.line_ids.some(id => !(id in lines))) throw Error(`Unknown game line in ${role.name}`);
   }
   cast = config; gameLines = lines;
@@ -235,7 +263,7 @@ Promise.all(['/voice-lines.json','/voice-cast.json'].map(async path => {
     const workload = `${count} lines`;
     const option = element('option', `${role.name} · ${workload}`); option.value = role.id; $('role').append(option);
     const card = element('article',''); card.className = 'cast-card';
-    const button = element('button', `Record ${role.name}`); button.type = 'button';
+    const button = element('button', 'Choose set'); button.type = 'button'; button.setAttribute('aria-label', `Record ${role.name}`);
     button.addEventListener('click', () => { chooseRole(role.id); $('role').focus(); });
     card.append(element('h3', role.name), element('p', role.summary), element('p', workload), button);
     $('cast').append(card);
@@ -243,3 +271,69 @@ Promise.all(['/voice-lines.json','/voice-cast.json'].map(async path => {
   chooseRole(cast.roles[0].id); controls();
 }).catch(() => message('record-status', 'Recording roles could not load. Reload the page to try again.', true));
 controls();
+
+
+function updateAICost() {
+  if (aiTake) { $('ai-cost').textContent = 'AI cleanup is saved for this take. Reapply it, change finishing effects, or trim without another paid request.'; return; }
+  if (!decoded) { $('ai-cost').textContent = 'Paid AI cleanup. Record or upload a take to see an estimate.'; return; }
+  const billedDuration = Math.max(5, decoded.duration);
+  const paddingNote = decoded.duration < 5 ? ' Short takes are padded to 5 seconds for cleanup, then cropped back.' : '';
+  $('ai-cost').textContent = `Estimated AI cleanup: $${(billedDuration / 60 * .12).toFixed(3)} at $0.12/min.${paddingNote} Actual billing may vary. Enhance recording sends this take to ElevenLabs once.`;
+}
+async function loadAIStatus() {
+  aiLoading = true; controls(); message('ai-status', 'Checking local AI cleanup…');
+  try {
+    const response = await fetch('/api/voice-ai/options');
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.enabled || data.tool !== 'audio_isolation') throw Error(data.message || 'Start the local studio server with --voice-ai to use AI cleanup.');
+    aiAvailable = true;
+    message('ai-status', appliedAI ? 'AI cleanup is applied. Compare the preview with your original.' : 'Ready. Record or upload a take, then press Enhance recording.');
+  } catch (error) {
+    aiAvailable = false; message('ai-status', error.message, true);
+  } finally { aiLoading = false; controls(); }
+}
+$('ai-refresh').addEventListener('click', loadAIStatus);
+$('ai-reset').addEventListener('click', async () => {
+  if (busy || recording || !decoded) return;
+  appliedAI = null;
+  message('ai-status', 'Using your original recording. You can reapply the saved AI cleanup at no extra cost.');
+  await render();
+});
+$('ai-enhance').addEventListener('click', async () => {
+  if (busy || recording || !decoded || !originalWav || (!aiAvailable && !aiTake) || appliedAI) return;
+  const enhancement = {provider: 'elevenlabs', tool: 'audio_isolation'};
+  if (aiTake) {
+    appliedAI = enhancement;
+    await render();
+    message('ai-status', result ? 'Reapplied the saved AI cleanup. No new request was sent.' : 'The saved cleanup could not be previewed. Check the preview error.', !result);
+    return;
+  }
+  busy = true; controls();
+  message('ai-status', 'ElevenLabs is cleaning your recording…');
+  try {
+    const response = await fetch('/api/voice-ai/enhance', {method:'POST', headers:{'Content-Type':'audio/wav'}, body: originalWav});
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      throw Error(data.message || `Enhancement failed (HTTP ${response.status}). Check ElevenLabs history before retrying.`);
+    }
+    const bytes = await response.arrayBuffer(), context = new AudioContext();
+    let enhanced;
+    try { enhanced = await context.decodeAudioData(bytes); }
+    finally { await context.close(); }
+    if (!enhanced.duration || enhanced.duration > 30.1) throw Error('The AI result is longer than 30 seconds. Use a shorter recording. This enhancement may have been billed.');
+    // The bridge appends silence for short takes. Keep the original line length.
+    const length = Math.min(enhanced.length, Math.ceil(decoded.duration * enhanced.sampleRate));
+    const cropped = new AudioBuffer({numberOfChannels: enhanced.numberOfChannels, length, sampleRate: enhanced.sampleRate});
+    for (let channel = 0; channel < enhanced.numberOfChannels; channel++) {
+      cropped.copyToChannel(enhanced.getChannelData(channel).subarray(0, length), channel);
+    }
+    aiTake = cropped; appliedAI = enhancement;
+    updateAICost();
+    await render();
+    if (result) message('ai-status', 'AI cleanup applied. Compare with your original, then download or submit.');
+    else message('ai-status', 'AI cleanup is saved, but the preview could not be prepared. Check the preview error before continuing.', true);
+  } catch (error) {
+    message('ai-status', `${error.message} Your original recording is still here.`, true);
+  } finally { busy = false; controls(); }
+});
+loadAIStatus();

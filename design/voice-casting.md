@@ -29,7 +29,7 @@ Gameplay instructions do not require a single announcer. Give each context set t
 1. Choose a set of 12–25 lines. No one needs to commit to the whole game.
 2. Try three lines: a short cue, a longer instruction or remark, and an excited moment. For Mini Finni, try “Oh! Hello there.”, “A little warning next time?”, and “You found me.”
 3. Listen together, select a reference performance, and note who owns each set. Agree how to pronounce Finni and the task names.
-4. Use the same quiet room, microphone distance, and sound settings within each set. Keep character voices conversational; exaggerated pitch is optional.
+4. Use the same quiet room, microphone distance, and sound settings within each set. Use the performance to give each character its personality.
 5. Use `/voice` to select the character or recording set. Record one line per take, with a brief pause at each end. Submit a second delivery only when useful. Keep takes under 30 seconds, without music or added effects.
 
 Review a sequence across different teammates to check that the voices sound like they belong at the same party. Listen to originals for performance, then processed takes for consistent level. Request pickups from the set’s original performer where possible. Offer extra sets after the first round, rather than assigning someone a large script up front.
@@ -58,3 +58,10 @@ python3 scripts/import-team-voices.py --url https://your-game.example.com --inst
 The importer preserves existing sound IDs and leaves sounds without an approved replacement unchanged. Use `--require-complete` to require all 201 recording tasks before writing or installing anything. All 12 Mini Finni takes cover its 44 game slots. Build the base table before importing so a later base build does not overwrite the team recordings.
 
 After installation, assemble the extraction with the existing vpxtool workflow, validate the packaged audio, and update the deployed `runtime/Finni-Big-Day.vpx` through the usual release process. Approval alone does not publish a new table. The import command can be added to that build process for repeatable updates; it does not poll the live service or deploy on every approval.
+
+
+## Recording enhancement
+
+Keep each teammate recognizably themselves. The local studio uses ElevenLabs Voice Isolator for AI noise cleanup, followed by local filtering, gentle compression, level matching and optional end trimming. It processes the actual recording without a target voice, clone, remix or blended second performance. Use Clean & natural for a consistent, natural starting point. The more theatrical local effects remain optional.
+
+Run with `--voice-only --voice-ai` and use Enhance recording explicitly after recording or uploading. The UI shows a cost estimate before the paid request. Compare original and processed takes, undo or reapply the cached cleanup without another request, then submit for review. Keep the same setup across a recording set; AI cleanup cannot substitute for a clear source recording. See the README for Secrets Manager access and local startup.
