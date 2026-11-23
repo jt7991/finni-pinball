@@ -99,8 +99,13 @@ if(traceFrom)assert.ok(reference.instrumentation?.stateTraceWindow,'reference su
 reference.timerTraceCaptured=recordTimers;
 if(recordTimers)reference.traceMilliseconds=traceMilliseconds;
 if(traceFrom)reference.traceFromMilliseconds=traceFrom;
-assert.deepEqual(reference.controlledOverrides,{scatter:0,default_scatter:0},'controlled native table metadata');
-const runtimeOverrides={'LeftFlipper.Scatter':0,'RightFlipper.Scatter':0};
+if(reference.runtimeMarkers){
+  assert.equal(reference.controlledSha256,reference.sourceSha256,'Original table bytes retain all scatter');
+  assert.equal(reference.runtimeMarkers.tableSHA256,reference.sourceSha256);
+  assert.deepEqual(reference.controlledOverrides,{});
+  assert.equal(reference.allScatterZero,undefined);
+}else assert.deepEqual(reference.controlledOverrides,{scatter:0,default_scatter:0},'controlled native table metadata');
+const runtimeOverrides=reference.runtimeMarkers?{}:{'LeftFlipper.Scatter':0,'RightFlipper.Scatter':0};
 reference.flipperAngleScalarEncoding='Native Float32 COM angles formatted through CStr(CDbl()), preserving every Single bit after parsing as Float32.';
 const columns=['ms','x','y','z','vx','vy','vz','wx','wy','wz','left','right',...(probeKind==='triggers'?['balls_over']:probeKind==='plunger'?['plunger_position']:probeKind==='targets'?['target009_dropped','target010_dropped','target011_dropped','target009_offset','target010_offset','target011_offset','score']:['spinners','gates'].includes(probeKind)?[probeKind==='gates'?'gate_angle':'spinner_angle','score','left_spinner_count']:[])];
 if(probeKind==='autofire')columns.push('plunger_position','coil_balls');
@@ -279,6 +284,11 @@ try{
   // playable ball. Waiting for the real plunger switch avoids measuring a toy
   // that the authored rolling/spin controller deliberately skips.
   await wait('document.body.classList.contains("ball-in-plunger")');
+  if(reference.runtimeMarkers){
+    await script(reference.runtimeMarkers.code);
+    await script('Debug.Print "RUNTIME_MARKERS_READY|" & Target010.TimerInterval & ":" & Abs(CLng(Target010.TimerEnabled))');
+    assert.equal((await marker('RUNTIME_MARKERS_READY')).replace(/'$/,''),'-1:1');
+  }
   if(reference.runtimeInputSequence)await script(reference.runtimeInputSequence.code);
   if(observeInitialTimerClocks)await script(reference.runtimeInitialTimerClocks.code);
   if(observeScriptClocks){await script(scriptClockObserver+'\nDebug.Print "SCRIPT_CLOCK_OBSERVER_READY|1"');assert.ok((await evaluate('document.getElementById("log").textContent')).includes('SCRIPT_CLOCK_OBSERVER_READY|1'),'native diagnostic function declaration accepted');}
@@ -327,7 +337,7 @@ try{
   reference.nativeRuleState={ballCount:state[0],measuredBallIndex,measuredBallRole:measuredBallIndex<state[3]?'animation':'playable',rollingTimerEnabled:!!state[1],maxvel:state[2],lockedBallOffset:state[3]};console.log('Native rule state',JSON.stringify(reference.nativeRuleState));
   reference.comparisonScope=reference.nativeRuleState.measuredBallRole==='animation'?'raw physical ball excluded by the authored playable-ball spin/speed controller':'playable ball including authored spin and speed controls';
   assert.ok(state[0]>state[3],'playable ball exists after the animation balls');
-  await script('LeftFlipper.Scatter=0:RightFlipper.Scatter=0');
+  if(!reference.runtimeMarkers)await script('LeftFlipper.Scatter=0:RightFlipper.Scatter=0');
   const disabled=process.argv.find(a=>a.startsWith('--disable='))?.slice(10).split(',')??[];
   for(const name of disabled){
     assert.match(name,/^[A-Za-z][A-Za-z0-9_]*$/);

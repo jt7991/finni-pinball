@@ -19,6 +19,11 @@ for(const scenario of fixture.cases){
     placeReferenceBall(g,r,{...scenario,vx:0,vy:0,vz:0});
     const timer=g.rules.objects.get('rollingtimer');timer.enabled=false;timer.enabled=true;
     r=restoreReferenceBalls(g,fixture,scenario,r);
+    const scatterDraws=process.argv.includes('--observe-scatter')?{surface:0,plunger:0,other:0}:undefined;
+    if(scatterDraws){
+      const signed=g.random.signed;assert.equal(typeof signed,'function');
+      g.random.signed=()=>{const stack=Error().stack,site=stack.includes('collideNativeSurface')?'surface':stack.includes('Plunger.collide')?'plunger':'other';scatterDraws[site]++;return signed();};
+    }
     const flipperContacts=[];
     if(scenario.flipperContacts){
       const origin=Math.round(g.time*1000),hit=g.rules.hit.bind(g.rules),ids=new Map(g.physicalRecords.map((record,i)=>[record.proxy,scenario.initialBallStates[i][fixture.initialBallStateColumns.indexOf('ID')]]));
@@ -107,6 +112,7 @@ for(const scenario of fixture.cases){
     if(scenario.scriptClocks)report.scriptClockInputs=clockInputs;
     if(scenario.inputSequence)report.nativeFlipperSummary={frames:samples.length,angleErrors:[0,1].map(index=>Math.max(0,...samples.map(row=>Math.abs(row.nativeAngles[index]-Math.fround(row.expected[10+index]))))),inputs:appliedInputs};
     if(scenario.flipperContacts)report.flipperContacts=flipperContacts;
+    if(scatterDraws)report.scatterDraws=scatterDraws;
     if(!process.argv.includes('--json'))console.log(JSON.stringify({...report,samples:undefined,traceSamples:undefined,nativeRandomAudit:undefined,nativeBodyAudit:undefined,nativePlungerAudit:undefined,animationAudit:undefined,nativeScriptRandomAudit:undefined}));
   }catch(error){failure=error;fs.writeFileSync((process.argv.find(a=>a.startsWith('--report='))?.slice(9)??'.work/three-review/vpx-plunger-comparison.json')+'.partial',JSON.stringify({error:String(error),stack:error.stack,time:g.time,bodyAudit:g.nativeBodyAudit,randomAudit:g.nativeRandomAudit,scriptRandomAudit:g.nativeScriptRandomAudit,ruleAudit,delays:g.rules.delays},null,2));throw error;}finally{try{g.dispose();}catch(error){if(!failure)throw error;}}
 }

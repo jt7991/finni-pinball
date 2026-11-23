@@ -1,0 +1,34 @@
+import fs from 'node:fs';
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {execFileSync} from 'node:child_process';
+import {readReferenceFixture} from '../../scripts/reference-physics.mjs';
+
+test('original authored scatter retains fifteen seconds of live balls, scored flipper contacts and a physical drain',()=>{
+  const path='three/tests/fixtures/vpx-original-scatter-alternating-15000-native.json.gz';
+  const fixture=readReferenceFixture(new URL('../../'+path,import.meta.url)),c=fixture.cases[0];
+  assert.equal(fixture.sourceSha256,'6300d64767894aebcf82f378985cb63e8a540fa373365c7a82c189f78dadfd5a');
+  assert.equal(fixture.controlledSha256,fixture.sourceSha256);
+  assert.equal(fixture.runtimeMarkers.tableSHA256,fixture.sourceSha256);
+  assert.equal(fixture.allScatterZero,undefined);
+  assert.deepEqual(fixture.controlledOverrides,{});assert.deepEqual(fixture.runtimeOverrides,{});
+  assert.equal(fixture.nativeRandom.engineSha256,'c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8');
+  assert.equal(fixture.runtimeRngSites,undefined,'original unchanged engine instructions');
+  assert.equal(c.inputSequence.length,32);assert.equal(c.flipperContacts.length,5);
+  const report='.work/three-review/original-scatter-15000-regression.json';
+  execFileSync(process.execPath,['scripts/compare-vpx-plunger.mjs',path,'--check','--observe-scatter','--report='+report],{cwd:new URL('../../',import.meta.url),encoding:'utf8',maxBuffer:2*1024*1024});
+  const [r]=JSON.parse(fs.readFileSync(new URL('../../'+report,import.meta.url)));
+  assert.equal(r.nativeBodySummary.frames,15000);assert.equal(r.nativeBodySummary.bodies,60000);
+  for(const field of ['positionError','velocityError','momentumError','orientationError','identityMismatches'])assert.equal(r.nativeBodySummary[field],0,field);
+  assert.deepEqual(r.nativeBodySummary.lifecycles,fixture.lifecycleRegression);
+  assert.deepEqual(fixture.lifecycleRegression,[{ms:1,ids:[0,1,2,3]},{ms:9405,ids:[0,1,2,4]}]);
+  assert.equal(r.nativeRandomAudit.length,15000);assert.ok(r.nativeRandomAudit.every(row=>row.agrees));
+  assert.equal(r.nativeScriptRandomAudit.length,15000);assert.ok(r.nativeScriptRandomAudit.every(row=>row.agrees));
+  assert.deepEqual(r.nativeFlipperSummary.angleErrors,[0,0]);assert.equal(r.nativeFlipperSummary.inputs,32);
+  assert.deepEqual(r.flipperContacts,c.flipperContacts);
+  assert.equal(r.animationSummary.frames,899);assert.equal(r.animationSummary.offsetError,0);assert.equal(r.animationSummary.stateMismatches,0);
+  assert.equal(fixture.animationRegression.lastScore,18330);assert.equal(r.scriptClockInputs,5);
+  assert.ok(r.maxPositionError<.001);assert.ok(r.maxVelocityError<.000001);assert.ok(r.maxAngularError<.000001);
+  assert.ok(r.scatterDraws.surface>0,'actual nonzero surface-scatter branch executes while every independent native state remains exact');
+  assert.equal(r.physicsStats.substepBudgetExceeded,0);
+});
