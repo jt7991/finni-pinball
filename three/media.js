@@ -1,9 +1,12 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Sound player selection/repeat semantics follow VPX AudioPlayer/SoundPlayer.
+// See public/licenses/VPX-Physics-NOTICE.txt.
 import {nativeSoundRate} from './native-sound.js';
 
 export function createAudio(manifest,base) {
   let context,muted=false,primed=false,stopEpoch=0;
   const musicElement=new Audio();
-  const cache=new Map(),decodedBytes=new Map(),playing=new Map(),music=new Map(),loops=new Map(),stops=new Map();
+  const cache=new Map(),decodedBytes=new Map(),playing=new Map(),music=new Map(),stops=new Map();
   async function unlock(){
     context??=new AudioContext();const resumed=context.resume();
     // Reuse one gesture-unlocked media element for streamed music on iOS.
@@ -31,42 +34,64 @@ export function createAudio(manifest,base) {
     })());
     return cache.get(name);
   }
-  function stop(name){
-    if(name===undefined){stopEpoch++;for(const sources of playing.values())for(const s of sources)s.stop();playing.clear();loops.clear();for(const element of music.values()){element.pause();element.removeAttribute('src');element.load();}music.clear();return;}
-    name=String(name).toLowerCase();stops.set(name,(stops.get(name)??0)+1);loops.delete(name);
-    const element=music.get(String(name).toLowerCase());if(element){element.pause();element.removeAttribute('src');element.load();music.delete(String(name).toLowerCase());}
-    for(const s of playing.get(String(name).toLowerCase())??[])s.stop();playing.delete(String(name).toLowerCase());
+  function stopPlayer(player){
+    player.active=false;
+    if(player.source){player.source.onended=null;player.source.stop();player.source.disconnect?.();player.source=null;}
+    player.gain?.disconnect?.();player.panner?.disconnect?.();
   }
-  async function play(name,{loop=0,volume=1,pan=0,rate=1,pitch=0,pitchFactor=1}={}){
+  function stop(name){
+    if(name===undefined){stopEpoch++;for(const players of playing.values())for(const player of players)stopPlayer(player);playing.clear();for(const element of music.values()){element.pause();element.removeAttribute('src');element.load();}music.clear();return;}
+    name=String(name).toLowerCase();stops.set(name,(stops.get(name)??0)+1);
+    const element=music.get(String(name).toLowerCase());if(element){element.pause();element.removeAttribute('src');element.load();music.delete(String(name).toLowerCase());}
+    for(const player of playing.get(name)??[])stopPlayer(player);playing.delete(name);
+  }
+  function updatePlayer(player,name){
+    const {source,gain,panner,settings}=player;if(!source)return;
+    source.loop=settings.loop<0;
+    gain.gain.value=Math.max(0,Math.min(1,Number(settings.volume)));
+    panner.pan.value=Math.max(-1,Math.min(1,Number(settings.pan)));
+    source.playbackRate.value=settings.rate*nativeSoundRate(manifest[name].sampleRate??source.buffer.sampleRate,settings.pitch,settings.pitchFactor);
+  }
+  function startPlayer(player,name,data){
+    const source=context.createBufferSource(),gain=context.createGain(),panner=context.createStereoPanner();
+    Object.assign(player,{source,gain,panner});source.buffer=data;updatePlayer(player,name);
+    source.connect(gain).connect(panner).connect(context.destination);
+    source.onended=()=>{
+      if(!player.active||player.source!==source)return;
+      source.onended=null;source.disconnect?.();gain.disconnect?.();panner.disconnect?.();player.source=null;
+      if(player.remaining>0){player.remaining--;startPlayer(player,name,data);}else player.active=false;
+    };
+    source.start();
+  }
+  async function play(name,{loop=0,volume=1,pan=0,rate=1,pitch=0,pitchFactor=1,useExisting=false,restart=false}={}){
     name=String(name).toLowerCase();if(muted||!context||!manifest[name])return;
+    let player;
     try{
       if(manifest[name].music){
         for(const old of [...music.keys()])stop(old);
         const element=musicElement;element.src=`${base}audio/${manifest[name].file}`;element.loop=loop===-1;
         element.volume=Math.max(0,Math.min(1,Number(volume)));element.preload='none';music.set(name,element);await element.play();return;
       }
-      let loopState;
-      const playbackRate=data=>rate*nativeSoundRate(manifest[name].sampleRate??data.sampleRate,pitch,pitchFactor);
-      if(loop===-1){
-        loopState=loops.get(name);
-        if(loopState){
-          Object.assign(loopState,{volume,pan,pitch,pitchFactor,rate});
-          if(loopState.gain){loopState.gain.gain.value=volume;loopState.panner.pan.value=Math.max(-1,Math.min(1,pan));loopState.source.playbackRate.value=playbackRate(loopState.source.buffer);}
-          return;
-        }
-        loopState={volume,pan,rate,pitch,pitchFactor};loops.set(name,loopState);
-      }
-      const requested=context.currentTime,epoch=stopEpoch,stopped=stops.get(name)??0,data=await buffer(name);
+      // Native AudioPlayer selects the first player for useSame, or the first
+      // idle one otherwise. Looping alone does not request reuse. Reserve the
+      // player before decoding so rapid useSame calls update one pending voice.
+      if(restart)stop(name);
+      const players=playing.get(name)??[];playing.set(name,players);
+      player=players.find(candidate=>useExisting||!candidate.active);
+      if(!player){player={active:false};players.push(player);}
+      player.settings={loop,volume,pan,rate,pitch,pitchFactor};player.remaining=Math.max(0,Math.trunc(loop)-1);
+      if(player.active){updatePlayer(player,name);await player.pending;return;}
+      player.active=true;
+      const requested=context.currentTime,epoch=stopEpoch,stopped=stops.get(name)??0;
+      const selected=player,loading=(async()=>{
+       const data=await buffer(name);
       // Native stop applies to requests already issued, even if this web
       // buffer is still fetching/decoding. Later requests remain playable.
-      if(muted||epoch!==stopEpoch||stopped!==(stops.get(name)??0)||context.currentTime-requested>2&&!loopState||loopState&&loops.get(name)!==loopState)return;
-      const source=context.createBufferSource(),gain=context.createGain(),panner=context.createStereoPanner();
-      source.buffer=data;source.loop=loop===-1;gain.gain.value=Math.max(0,Math.min(1,Number(loopState?.volume??volume)));
-      panner.pan.value=Math.max(-1,Math.min(1,Number(loopState?.pan??pan)));source.playbackRate.value=loopState?(loopState.rate*nativeSoundRate(manifest[name].sampleRate??data.sampleRate,loopState.pitch,loopState.pitchFactor)):playbackRate(data);
-      if(loopState)Object.assign(loopState,{source,gain,panner});source.connect(gain).connect(panner).connect(context.destination);
-      const set=playing.get(name)??new Set();playing.set(name,set);set.add(source);
-      source.onended=()=>set.delete(source);source.start();
-    }catch(error){console.warn(error.message);}
+       if(!selected.active||muted||epoch!==stopEpoch||stopped!==(stops.get(name)??0)||context.currentTime-requested>2&&selected.settings.loop>=0){selected.active=false;return;}
+       startPlayer(selected,name,data);
+      })();
+      player.pending=loading;await loading;player.pending=null;
+    }catch(error){if(player)stopPlayer(player);console.warn(error.message);}
   }
   return {unlock,play,stop,setMuted(value){muted=value;if(value)stop();},get muted(){return muted;}};
 }

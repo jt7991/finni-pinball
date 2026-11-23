@@ -6,6 +6,10 @@ native-tree.js, native-dynamic-tree.js, native-ball-collision.js, native-random.
 native-rubber.js, native-target.js, native-target-event.js, native-bumper.js, native-slingshot.js, native-sound.js, kicker.js, impulse-plunger.js, vpm-timer.js and playfield-contact.js is adapted from
 Visual Pinball, copyright its respective contributors, licensed GPLv3 or later.
 These derived modules are distributed under GPL-3.0-or-later.
+media.js retains AudioPlayer::PlaySound's useSame/restart player selection and
+SoundPlayer::Play's loop-count and live-update behavior from the same revision:
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/audio/AudioPlayer.cpp
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/audio/SoundPlayer.cpp
 native-ball-render.js and native-ball-render-state.js adapt Ball::Render and
 Renderer::UpdateBallShaderMatrix from the same pinned revision. The compiled
 shaders and original ball mesh in public/native-ball/ derive from:

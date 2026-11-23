@@ -59,7 +59,7 @@ test('WebAudio uses the native source sample rate after device resampling and up
   globalThis.fetch=async()=>({ok:true,arrayBuffer:async()=>new ArrayBuffer(4)});
   try{
     const audio=createAudio({effect:{file:'effect.m4a',sampleRate:22050}},'/three/');await audio.unlock();
-    await audio.play('effect',{loop:-1,pitch:11025,pitchFactor:1.05});assert.equal(sources.length,1);assert.equal(sources[0].buffer.sampleRate,48000);assert.ok(Math.abs(sources[0].playbackRate.value-1.575)<2e-7);
-    await audio.play('effect',{loop:-1,pitch:0,pitchFactor:1});assert.equal(sources.length,1,'update the existing loop');assert.equal(sources[0].playbackRate.value,1);audio.stop();
+    await audio.play('effect',{loop:-1,useExisting:true,pitch:11025,pitchFactor:1.05});assert.equal(sources.length,1);assert.equal(sources[0].buffer.sampleRate,48000);assert.ok(Math.abs(sources[0].playbackRate.value-1.575)<2e-7);
+    await audio.play('effect',{loop:-1,useExisting:true,pitch:0,pitchFactor:1});assert.equal(sources.length,1,'update the existing loop');assert.equal(sources[0].playbackRate.value,1);audio.stop();
   }finally{Object.assign(globalThis,originals);}
 });
