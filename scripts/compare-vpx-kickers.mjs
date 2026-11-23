@@ -13,7 +13,7 @@ for(const c of fixture.cases){
     g.start();for(let ms=0;ms<2000;ms++)g.step();g.launch();let record=g.records[0];
     const timer=g.rules.objects.get('rollingtimer');timer.enabled=false;timer.enabled=true;
     placeReferenceBall(g,record,c);record=restoreReferenceBalls(g,fixture,c,record);
-    const events=[],hit=g.rules.hit;g.rules.hit=(name,event,ball)=>{if(name===c.kicker&&event==='Hit')events.push(Math.round(g.time*1000)-2000);return hit(name,event,ball);};
+    const origin=Math.round(g.time*1000),events=[],hit=g.rules.hit;g.rules.hit=(name,event,ball)=>{if(name===c.kicker&&event==='Hit')events.push(Math.round(g.time*1000)-origin);return hit(name,event,ball);};
     let elapsed=0;const samples=[];
     for(const expected of c.samples){
       while(elapsed<expected[0]){g.step();elapsed++;}

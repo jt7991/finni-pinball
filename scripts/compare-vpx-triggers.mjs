@@ -21,16 +21,17 @@ for(const c of fixture.cases){
     const timer=g.rules.objects.get('rollingtimer');timer.enabled=false;timer.enabled=true;
     placeReferenceBall(g,r,c);
     r=restoreReferenceBalls(g,fixture,c,r);
-    const events=[],emit=trigger.emit;trigger.emit=(event,record)=>{events.push({ms:Math.round(g.time*1000)-2400,event});emit(event,record);};
+    const origin=Math.round(g.time*1000),events=[],emit=trigger.emit;trigger.emit=(event,record)=>{events.push({ms:Math.round(g.time*1000)-origin,event});emit(event,record);};
     let elapsed=0;const samples=[];
     for(const expected of c.samples){
-      for(let ms=elapsed;ms<expected[0];ms++)g.step();elapsed=expected[0];const p=r.body.translation(),v=r.body.linvel(),count=trigger.members.get(g.nativeBall(r.body).body)??0;
+      for(let ms=elapsed;ms<expected[0];ms++)g.step();elapsed=expected[0];const p=(g.nativePositionUnits?g.nativeBall(r.body).body:r.body).translation(),v=r.body.linvel(),count=trigger.members.get(g.nativeBall(r.body).body)??0;
       samples.push({ms:elapsed,count,expectedCount:expected[12],position:[p.x*100,2115-p.y*100,p.z*100],positionError:Math.hypot(p.x*100-expected[1],2115-p.y*100-expected[2],p.z*100-expected[3]),velocityError:Math.hypot(v.x-expected[4],-v.y-expected[5],v.z-expected[6])});
     }
-    const bodies=(g.nativeBodyAudit??[]).flatMap(frame=>frame.bodies),nativeBodySummary={frames:g.nativeBodyAudit?.length??0,bodies:bodies.length};
-    for(const key of ['positionError','velocityError','momentumError','orientationError'])nativeBodySummary[key]=Math.max(0,...bodies.map(body=>body[key]??0));
+    const frames=g.nativeBodyAudit??[],bodies=frames.flatMap(frame=>frame.bodies),nativeBodySummary={frames:frames.length,bodies:bodies.length,missingReferences:bodies.filter(body=>body.missingReference).length,missingIDs:frames.reduce((n,frame)=>n+(frame.missingIDs?.length??0),0),unexpectedIDs:frames.reduce((n,frame)=>n+(frame.unexpectedIDs?.length??0),0),swapMismatches:frames.filter(frame=>Boolean(frame.swap)!==Boolean(frame.expectedSwap)).length};
+    for(const key of ['positionError','velocityError','momentumError','orientationError'])nativeBodySummary[key]=bodies.reduce((max,body)=>Math.max(max,body[key]??0),0);
     const nativePlungerSummary=summarizeNativePlunger(g.nativePlungerAudit);
     const report={name:c.name,events,maxPositionError:Math.max(...samples.map(s=>s.positionError)),maxVelocityError:Math.max(...samples.map(s=>s.velocityError)),membershipMismatches:samples.filter(s=>s.count!==s.expectedCount).length,physicsStats:g.physicsStats,samples,...(g.nativeRandomAudit?{nativeRandomAudit:g.nativeRandomAudit,nativeBodySummary}:{}),...(nativePlungerSummary?{nativePlungerSummary}:{}),...(process.argv.includes('--body-audit')?{nativeBodyAudit:g.nativeBodyAudit,nativePlungerAudit:g.nativePlungerAudit}:{})};reports.push(report);
+    if(g.nativeScriptRandomAudit)report.nativeScriptRandomAudit=g.nativeScriptRandomAudit;
     if(!process.argv.includes('--json'))console.log(JSON.stringify({...report,samples:undefined,nativeRandomAudit:undefined,nativeBodyAudit:undefined,nativePlungerAudit:undefined}));
   }finally{g.dispose();}
 }
@@ -46,7 +47,9 @@ if(process.argv.includes('--check'))for(const r of reports){
   if(fixture.nativeBodyRegression){
     const limit=fixture.nativeBodyRegression;assert.ok(r.nativeBodySummary.frames>=limit.frames,'complete native body-frame coverage');
     for(const key of ['positionError','velocityError','momentumError','orientationError'])if(limit[key]!==undefined)assert.ok(r.nativeBodySummary[key]<=limit[key],`${r.name} native body ${key}`);
+    for(const key of ['missingReferences','missingIDs','unexpectedIDs','swapMismatches'])assert.equal(r.nativeBodySummary[key],0,`${r.name} ${key}`);
   }
+  if(fixture.nativeScriptRandom?.requireContinuity){assert.equal(r.nativeScriptRandomAudit.length,fixture.nativeBodyRegression.frames);assert.ok(r.nativeScriptRandomAudit.every(row=>row.agrees));}
   if(fixture.nativePlungerRegression){
     const limit=fixture.nativePlungerRegression;assert.ok(r.nativePlungerSummary?.frames>=limit.frames,'complete native plunger-frame coverage');
     for(const [key,value]of Object.entries(limit.observations??{}))assert.ok(r.nativePlungerSummary.observations[key]>=value,`${r.name} native plunger ${key} observation coverage`);

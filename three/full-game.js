@@ -283,7 +283,7 @@ class FullGame extends Pinball {
   release(){
     this.charge=0;this.held.launch=false;
     this.plunger.cancel();
-    if(this.rules){this.rules.key('left',false);this.rules.key('right',false);}
+    if(this.rules){if(this.held.left)this.rules.key('left',false);if(this.held.right)this.rules.key('right',false);}
     this.held.left=false;this.held.right=false;
   }
   launch(){
@@ -320,8 +320,10 @@ class FullGame extends Pinball {
   }
 
   step(){
-    this.time+=STEP;
-    this.rules.tick(STEP);
+    // Native PhysicsEngine processes its first physical interval at GameTime0.
+    // Subsequent intervals advance the clock before running authored timers.
+    if(this.physicsStarted){this.time+=STEP;this.rules.tick(STEP);}
+    else{this.physicsStarted=true;this.rules.tick(0);}
     if(!this.frameAnimations)this.updateAnimations(STEP*1000,false);
     const nudge=this.cabinetNudge.step(this.nativePositionUnits?this.nativeIncline:this.incline);
     this.tiltBob.step(this.cabinetNudge.acceleration);

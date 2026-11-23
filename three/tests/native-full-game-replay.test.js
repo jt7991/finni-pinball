@@ -31,5 +31,6 @@ test('ordinary native controls reproduce a complete three-ball game, high-score 
  assert.equal(report.missionSummary.frames,7192);assert.equal(report.missionSummary.mismatches,0);assert.equal(report.missionSummary.nonFiniteFields,0);
  assert.equal(report.animationSummary.frames,7192);assert.equal(report.animationSummary.offsetError,0);assert.equal(report.animationSummary.stateMismatches,0);
  assert.deepEqual(report.flipperContacts,scenario.flipperContacts);assert.equal(report.inputCount,26);assert.equal(report.scriptClockInputs,39);
+ assert.equal(report.soundCalls.length,173);assert.deepEqual(report.soundCalls,scenario.soundCalls);
  assert.equal(report.maxFlipperAngleError,0);assert.equal(report.physicsStats.substepBudgetExceeded,0);
 });

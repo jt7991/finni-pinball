@@ -339,3 +339,38 @@ requires actual game-over and replay, uninterrupted observations and unchanged
 source provenance. Existing partial-state limits stay unchanged. This proves
 the recorded post-initialization lifecycle, not startup or uninterrupted
 rendered-frame parity.
+
+The positional `PlaySoundAt` helper also matches all173 independently observed
+entry names, ordering and clocks through that full game and replay. Its original
+authored function executes unchanged under a diagnostic entry observer. This
+covers the recorded helper calls, not all audio output or device decoding.
+
+The startup regression supplies no ball snapshots. The original WASM data
+segment27313 initializes MWC64X at7661264 with bytes`0500d3e9e1af9538`, independently
+verified against two fresh native startups. Runtime initialization now uses
+those compiled words instead of entropy. Native PhysicsEngine processes its
+first physical interval at GameTime0; subsequent intervals advance the clock.
+The worker retains every due physical interval and its real wall timestamp.
+The preview stays paused until Start, and focus cleanup issues flipper key-up
+events only for held flippers, avoiding unintended positional sound/RNG draws.
+
+`vpx-main-startup-2000-native.json.gz` retains the original read-only clock-import
+observations and independently parsed compiled initializer. With ordinary Start,
+all initial bodies and every body position, velocity, momentum and orientation
+match at2000 consecutive native boundaries, including the first playable-ball
+creation. Native RNG progression also matches throughout. Only signed zero is
+normalized, because native JSON does not preserve its sign. No later pose, seed
+or phase is installed. Run `node --test three/tests/native-startup.test.js`.
+This establishes the recorded physical startup; full script-variable, rendering
+and device-audio startup parity still need broader evidence.
+
+The original isolated shooter-switch scenario also has a new complete1s native
+capture, `vpx-shooter-switch-1000-complete-native.json.gz`. All4000 live-body
+observations, all eight rod fields and both random streams match exactly, with
+unchanged native volume memberships at every public sample. The comparator now
+reads native-unit positions rather than re-quantizing them through Rapier's
+world-coordinate floats. This additional recording leaves the older four-case
+partial switch recording and every original tolerance untouched. After the
+startup correction, that older shooter case differs at a collision-boundary
+sample; the old nudge comparison now passes. Missing legacy initial state is
+still unresolved, and neither result establishes complete parity.

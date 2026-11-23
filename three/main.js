@@ -5,7 +5,7 @@ import {createLeaderboard} from '../browser/leaderboard.js';
 import {prepareUI} from './ui.js';
 
 const $=prepareUI();
-let game,view,audio,display,leaderboard,paused=false,frames=0,sampleStart=0;
+let game,view,audio,display,leaderboard,paused=true,frames=0,sampleStart=0;
 const sources=new Map(),swipes=new Map(),buttons=[...document.querySelectorAll('[data-input]')];
 const selectedPlayers=()=>Number($('player-count')?.value??1);
 const defaultKeys={ShiftLeft:'left',ShiftRight:'right',Enter:'launch',Digit1:'start',Space:'action',KeyZ:'nudgeLeft',KeyX:'nudgeForward',Slash:'nudgeRight'},keys={...defaultKeys};
@@ -39,7 +39,7 @@ function event(e){
   const lines={start:'Hold Launch, then release.',tilt:'Tilt · flippers disabled',over:'Game over'};
   if(lines[e.type])message(lines[e.type]);
   if(e.type==='message')message(e.text);
-  if(e.type==='start'){$('overlay').hidden=true;$('play').disabled=false;$('player-count').disabled=true;document.body.classList.add('playing');$('table').focus({preventScroll:true});}
+  if(e.type==='start'){pause(false);$('overlay').hidden=true;$('play').disabled=false;$('player-count').disabled=true;document.body.classList.add('playing');$('table').focus({preventScroll:true});}
   if(e.type==='over'){
     $('player-count').disabled=false;$('play').disabled=false;
     release();document.body.classList.remove('playing');$('overlay').hidden=false;

@@ -1,0 +1,14 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';import{createHash}from 'node:crypto';import{gzipSync}from 'node:zlib';
+import{nativeInitialRandom}from './native-initial-random.mjs';
+const [input,output]=process.argv.slice(2);assert.ok(input&&output);assert.equal(fs.existsSync(output),false,'Preserve existing native captures');
+const bytes=fs.readFileSync(input),capture=JSON.parse(bytes),o=capture.observed,initializer=nativeInitialRandom(fs.readFileSync('.work/three-review/reference-engine.wasm'));
+assert.equal(capture.engineSHA256,initializer.engineSHA256);assert.equal(capture.reference.sourceSha256,'3ae17f498f745efa19076ca33e08f96f66d766367fc984e37aacf50774a35e14');assert.equal(capture.reference.controlledSha256,capture.reference.sourceSha256);assert.deepEqual(capture.reference.controlledOverrides,{});assert.deepEqual(capture.errors,[]);assert.deepEqual(o.errors,[]);assert.equal(o.truncated,undefined);
+assert.equal(o.throughMilliseconds,2000);assert.equal(o.boundaries.length,2000);assert.deepEqual(o.records[0].random,initializer.words);assert.equal(o.records[0].balls.length,0);
+const beforePhysics=o.records.find(row=>row.physicsClock&&BigInt(row.physicsClock.start)>0n&&row.physicsClock.current===row.physicsClock.start&&BigInt(row.physicsClock.next)-BigInt(row.physicsClock.current)===1000n);assert.ok(beforePhysics);assert.equal(beforePhysics.ms,0);assert.equal(beforePhysics.balls.length,3);
+for(const [i,row]of o.boundaries.entries()){
+ assert.equal(row.ms,i+1);assert.equal(BigInt(row.physicsClock.next)-BigInt(row.physicsClock.current),1000n);assert.deepEqual(row.physicsClock.gravity,[0,0.17098337411880493,-1.626798152923584]);
+ for(const body of row.balls){assert.ok(Number.isInteger(body.id));assert.equal(body.address,body.owner+288);for(const [key,length]of [['position',3],['velocity',3],['momentum',3],['orientation',9]]){assert.equal(body[key].length,length);assert.ok(body[key].every(Number.isFinite));}}
+}
+assert.equal(o.boundaries.at(-1).balls.length,4,'Ordinary native Start physically releases the first playable ball');
+const fixture={...capture,initializer,beforePhysics,captureSource:{file:input,sha256:createHash('sha256').update(bytes).digest('hex')},scope:'Read-only initial native clock-import snapshots, from original initialization through2000consecutive physical boundaries and the first physical ball release. The source WASM data initializer independently supplies the initial RNG words; they are not fitted from trajectories. The model receives no later body or RNG restoration. This does not establish complete script initialization, rendering or audio decoding parity.'};
+fs.writeFileSync(output,gzipSync(Buffer.from(JSON.stringify(fixture)),{level:9}));console.log(JSON.stringify({output,frames:o.boundaries.length,initialBodies:beforePhysics.balls.length,finalBodies:o.boundaries.at(-1).balls.length,initializer,captureSHA256:fixture.captureSource.sha256}));

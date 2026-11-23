@@ -2,13 +2,11 @@
 // Visual Pinball contributors' MWC64X and float mapping, core/def.h,
 // 195f214dd4849b8ef6113fd377258b78d0dec3bf. See public/licenses/VPX-Physics-NOTICE.txt.
 const f=Math.fround;
+// Exact initializer in the pinned original WASM data segment at7661264:
+// 05 00 d3 e9 e1 af 95 38. This is source data, not a trajectory-fitted seed.
+export const NATIVE_INITIAL_RANDOM_STATE=Object.freeze([3922919429,949333985]);
 export function runtimeNativeRandom(){
-  const words=new Uint32Array(2);
-  // Independent entropy, once per engine lifetime. Never derive physical
-  // randomness from script Rnd or a trajectory seed. Native light sequencers
-  // consume this same stream when their render-frame updates run.
-  do{globalThis.crypto.getRandomValues(words);}while((words[0]===0&&words[1]===0)||(words[0]===0xffffffff&&words[1]===4294883354));
-  return nativeRandom(words[0],words[1]);
+  return nativeRandom(...NATIVE_INITIAL_RANDOM_STATE);
 }
 export function nativeRandom(low,high){
   let x=low>>>0,c=high>>>0,calls=0;

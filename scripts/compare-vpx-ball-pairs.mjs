@@ -17,7 +17,8 @@ for(const c of fixture.cases){
     const timer=g.rules.objects.get('rollingtimer');timer.enabled=false;timer.enabled=true;
     if(c.otherBall.spawn)g.spawn(c.otherBall.spawn);
     const r=restoreReferenceBalls(g,fixture,c),other=g.physicalRecords[c.otherBall.index],impacts=[],run=g.rules.run;
-    g.rules.run=(name,...args)=>{if(name==='OnBallBallCollision')impacts.push({ms:Math.round(g.time*1000)-2000,speed:args[2]});return run(name,...args);};
+    const origin=Math.round(g.time*1000);
+    g.rules.run=(name,...args)=>{if(name==='OnBallBallCollision')impacts.push({ms:Math.round(g.time*1000)-origin,speed:args[2]});return run(name,...args);};
     const values=record=>{const b=record.proxy;return [b.x,b.y,b.z,b.velx,b.vely,b.velz,b.angvelx,b.angvely,b.angvelz];};
     let elapsed=0;const samples=[];
     for(const expected of c.samples){

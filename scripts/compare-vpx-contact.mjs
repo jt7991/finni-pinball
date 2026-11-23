@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {createFullGame} from '../three/full-game.js';
 import {STEP} from '../three/physics.js';
 import {replayReferenceInputs} from './reference-inputs.mjs';
+import {observeReferenceSoundCalls} from './reference-sound-observer.mjs';
 import {applyReferencePhysics,referenceRandom,placeReferenceBall,restoreReferenceBalls,readReferenceFixture,summarizeNativePlunger,readReferenceAssets} from './reference-physics.mjs';
 const fixture=readReferenceFixture(process.argv.slice(2).find(a=>!a.startsWith('--'))??'three/tests/fixtures/vpx-contact.json');
 assert.ok(!fixture.probeKind||fixture.probeKind==='contacts','Use the dedicated plunger or nudge comparator for those measurements');
@@ -49,6 +50,7 @@ for(const scenario of fixture.cases){
     // in the same script call before the input, which does not move a ball.
     r=restoreReferenceBalls(g,fixture,scenario,r);
     const appliedInputs=replayReferenceInputs(g,fixture,scenario),origin=Math.round(g.time*1000);let clockInputs=0;
+    const soundCalls=fixture.fullGameRegression?observeReferenceSoundCalls(g,fixture,scenario,origin):undefined;
     const flipperContacts=[];
     if(scenario.flipperContacts){
       const hit=g.rules.hit.bind(g.rules);
@@ -104,6 +106,7 @@ for(const scenario of fixture.cases){
     if(scenario.inputSequence)report.inputCount=appliedInputs();
     if(scenario.scriptClocks)report.scriptClockInputs=clockInputs;
     if(scenario.flipperContacts)report.flipperContacts=flipperContacts;
+    if(soundCalls)report.soundCalls=soundCalls;
     if(fixture.animationRegression)report.animationSummary={frames:animationAudit.length,offsetError:Math.max(0,...animationAudit.flatMap(row=>row.errors.slice(0,3).map(Math.abs))),stateMismatches:animationAudit.filter(row=>row.errors.slice(3).some(error=>error!==0)).length};
     if(scenario.missionFrames)report.missionSummary={frames:missionAudit.length,fields:Object.keys(fixture.runtimeMissionFrames.fields),nonFiniteFields:missionAudit.reduce((n,row)=>n+row.actual.filter(value=>!Number.isFinite(value)).length,0),mismatches:missionAudit.filter(row=>row.errors.some(error=>error!==0)).length,firstMismatch:missionAudit.find(row=>row.errors.some(error=>error!==0)),last:missionAudit.at(-1)};
     if(fixture.fullGameRegression){const fields=Object.keys(fixture.runtimeMissionFrames.fields),indices=['playing','ballNumber','remaining','highScoreEntry','games'].map(name=>fields.indexOf(name));assert.ok(indices.every(index=>index>=0));let previous;report.fullGameTransitions=[];for(const row of missionAudit){const values=indices.map(index=>row.actual[index]);if(String(values)!==String(previous))report.fullGameTransitions.push({ms:row.ms,playing:values[0],ballNumber:values[1],remaining:values[2],highScoreEntry:values[3],games:values[4]});previous=values;}}
@@ -124,7 +127,7 @@ if(process.argv.includes('--check'))for(const report of reports){
   if(fixture.inputSequenceRegression){assert.equal(report.inputCount,fixture.inputSequenceRegression.inputs);assert.deepEqual(report.flipperContacts,fixture.cases.find(c=>c.name===report.name).flipperContacts,'every actual native flipper collision clock, side, speed and body');}
   if(fixture.scriptClockRegression)assert.equal(report.scriptClockInputs,fixture.scriptClockRegression.calls);
   if(fixture.animationRegression){assert.equal(report.animationSummary.frames,fixture.animationRegression.frames);assert.equal(report.animationSummary.offsetError,0);assert.equal(report.animationSummary.stateMismatches,0);}
-  if(fixture.fullGameRegression){assert.deepEqual(report.fullGameTransitions,fixture.fullGameRegression.stateTransitions);assert.deepEqual(report.nativeBodySummary.lifecycles,fixture.lifecycleRegression);assert.equal(report.nativeBodySummary.bodies,fixture.fullGameRegression.bodyObservations);}
+  if(fixture.fullGameRegression){const scenario=fixture.cases.find(c=>c.name===report.name);assert.deepEqual(report.fullGameTransitions,fixture.fullGameRegression.stateTransitions);assert.deepEqual(report.nativeBodySummary.lifecycles,fixture.lifecycleRegression);assert.equal(report.nativeBodySummary.bodies,fixture.fullGameRegression.bodyObservations);assert.deepEqual(report.soundCalls,scenario.soundCalls,'every observed native PlaySoundAt entry clock, order and name');}
   if(fixture.nativeBodyRegression){
     const limit=fixture.nativeBodyRegression;assert.equal(report.nativeBodySummary.frames,limit.frames,'complete native body-frame coverage');
     for(const key of ['positionError','velocityError','momentumError','orientationError'])assert.ok(report.nativeBodySummary[key]<=limit[key],`${report.name} every native body ${key}`);

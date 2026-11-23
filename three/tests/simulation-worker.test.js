@@ -20,7 +20,7 @@ function inspect(game){return {time:game.time,random:game.random.getState(),scri
 })};}
 
 test('presentation timestamps record actual physical-step wall time and remain unchanged by snapshot publication',async()=>{
- let wall=5000;const messages=[],host=createSimulationHost(message=>messages.push(message),{allowDebug:true,now:()=>0,wallNow:()=>wall});try{await host.receive({type:'init',assets:assets()});assert.deepEqual(messages.filter(m=>m.type==='snapshot').at(-1).presentationClock,{epochMilliseconds:5000,lastPhysicsMilliseconds:5000});wall=5007;await host.receive({type:'debug',action:'advance',ticks:1,id:1});let message=messages.filter(m=>m.type==='snapshot').at(-1);assert.deepEqual(message.presentationClock,{epochMilliseconds:5000,lastPhysicsMilliseconds:5007});assert.equal(message.snapshot.time,.001);wall=7000;await host.receive({type:'barrier',id:2});message=messages.filter(m=>m.type==='snapshot').at(-1);assert.deepEqual(message.presentationClock,{epochMilliseconds:5000,lastPhysicsMilliseconds:5007});assert.equal(message.paused,true);}finally{await host.receive({type:'dispose',id:3});}
+ let wall=5000;const messages=[],host=createSimulationHost(message=>messages.push(message),{allowDebug:true,now:()=>0,wallNow:()=>wall});try{await host.receive({type:'init',assets:assets()});assert.deepEqual(messages.filter(m=>m.type==='snapshot').at(-1).presentationClock,{epochMilliseconds:5000,lastPhysicsMilliseconds:5000});wall=5007;await host.receive({type:'debug',action:'advance',ticks:1,id:1});let message=messages.filter(m=>m.type==='snapshot').at(-1);assert.deepEqual(message.presentationClock,{epochMilliseconds:5000,lastPhysicsMilliseconds:5007});assert.equal(message.snapshot.time,0);wall=7000;await host.receive({type:'barrier',id:2});message=messages.filter(m=>m.type==='snapshot').at(-1);assert.deepEqual(message.presentationClock,{epochMilliseconds:5000,lastPhysicsMilliseconds:5007});assert.equal(message.paused,true);}finally{await host.receive({type:'dispose',id:3});}
 });
 
 test('real worker preserves every body, native RNG, authored rules, DMD, audio and control order',async()=>{
@@ -33,9 +33,9 @@ test('real worker preserves every body, native RNG, authored rules, DMD, audio a
     local.rules.scriptRandom.rnd(-1);local.rules.scriptRandom.randomize(123.5);local.rules.engine._registerFunction('Timer',()=>({type:'Single',value:123.5}));
     local.rules.execute('Song=""');
     await remote.debug({action:'test-prepare'});
-    // Initialization deliberately uses separate runtime entropy. Compare all
-    // subsequent effects after installing the independent measurement seed
-    // and clearing the previous randomly selected attract-mode song.
+    // Script wall-clock initialization can select different attract music.
+    // Compare subsequent effects after installing the common measurement
+    // stream and clearing that prior song.
     assert.ok(sounds.some(s=>s[0]==='play'),'initial audio crossed the worker boundary');
     sounds.length=0;directSounds.length=0;
     const digits=Array.from({length:41},(_,i)=>`digit${String(i+1).padStart(3,'0')}`);
