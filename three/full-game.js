@@ -7,6 +7,7 @@ import {createRules} from './rules.js';
 import {ContactMesh} from './mesh-contact.js';
 import {dropTargetFront} from './target-contact.js';
 import {CabinetNudge} from './cabinet-nudge.js';
+import {TiltBob} from './tilt-bob.js';
 import {Spinner} from './spinner.js';
 import {Gate} from './gate.js';
 import {TargetMotion} from './target-motion.js';
@@ -29,6 +30,7 @@ class FullGame extends Pinball {
     super(layout,emit);
     this.nativeDisplacements=this.nativeBallContacts&&this.nativePlayfieldContacts&&this.nativePositionUnits&&layout.physics?.native_displacements!==false;
     this.cabinetNudge=new CabinetNudge();
+    this.tiltBob=new TiltBob(down=>this.rules.run(down?'Table1_KeyDown':'Table1_KeyUp',this.rules.value('MechanicalTilt')));
     this.placeholder=this.ball;this.ballCollider.setEnabled(false);
     this.records=[];this.toyRecords=[];this.physicalRecords=[];this.byCollider=new Map();this.captures=new Map();this.mechanisms=new Map(this.nativeMeshes.map(m=>[this.colliderLabels.get(m.collider.handle)?.toLowerCase(),m.collider]));
     this.targetFronts=new Map();this.targetMotions=new Map();this.targetEventBall=null;
@@ -300,6 +302,8 @@ class FullGame extends Pinball {
     this.time+=STEP;
     this.rules.tick(STEP);
     if(!this.frameAnimations)this.updateAnimations(STEP*1000,false);
+    const nudge=this.cabinetNudge.step(this.nativePositionUnits?this.nativeIncline:this.incline);
+    this.tiltBob.step(this.cabinetNudge.acceleration);
     const physicalRecords=this.physicalRecords;
     for(const rec of physicalRecords){rec.previous={...rec.body.translation()};rec.previousVelocity={...rec.body.linvel()};}
     this.driveFlippers();
@@ -309,7 +313,7 @@ class FullGame extends Pinball {
       f.collider.setRestitution(surfaceRestitution(Number(state.elasticity)||0));
     }
     this.prepareContacts(physicalRecords);
-    this.stepPhysics(physicalRecords);
+    this.stepPhysics(physicalRecords,nudge);
     for(const spinner of this.spinners)this.rules.objects.get(spinner.spec.name.toLowerCase()).currentangle=spinner.currentAngle;
     this.charge=this.held.launch?1.2*this.plunger.charge:0;
     this.readFlippers();

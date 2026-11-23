@@ -1,4 +1,4 @@
-Native physics behavior in physics.js, full-game.js, rules.js, drag-curve.js, cabinet-nudge.js, ball-spin.js,
+Native physics behavior in physics.js, full-game.js, rules.js, drag-curve.js, cabinet-nudge.js, tilt-bob.js, ball-spin.js,
 flipper-contact.js, mesh-contact.js, target-contact.js, target-motion.js, target-render.js, light-sequence.js, light-sequence-patterns.js, light-animation.js, bulb-render.js, plunger.js, spinner.js, gate.js, trigger.js,
 native-ball.js, native-ball-response.js, native-orientation.js, native-angular.js, native-flipper-contact.js,
 native-mesh-contact.js, native-vector.js, native-curve.js, native-ramp.js,
@@ -104,8 +104,8 @@ The native GPU buffers independently verify every authored vertex bit, normal,
 UV and index, and the original compiled fragment verifies material output.
 flipper-tops.bin preserves the original table's Float32 top meshes. Their
 textures and flipperx.webp retain the table assets' existing rights.
-flipper-float-math.js adapts the Emscripten musl/Sun atan functions solely
-for source mesh math; see Sun-Float-Math-NOTICE.txt and the included reference
+flipper-float-math.js adapts the Emscripten musl/Sun atan functions for native
+mesh and tilt-bob math; see Sun-Float-Math-NOTICE.txt and the included reference
 sources under references/vpx-render.
 native-flipper-contact.js includes HitFlipper::Collide event timing and speed
 arguments. full-game.js also preserves Flipper::get_CurrentAngle conversion:
@@ -177,3 +177,9 @@ https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3
 The compiled mirror and reflection-only shaders in public/native-static/
 derive from the original FBShader and BasicShader programs at that revision.
 Flipper rendering reuses the same original compiled BasicShader as the table.
+tilt-bob.js adapts the angular pendulum, nonlinear damping, threshold bounce
+and immediate mechanical input dispatch from the same revision:
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/physics/cabinet/PlumbHandler.cpp
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/physics/cabinet/PlumbHandler.h
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/input/InputAction.cpp
+Its enabled/damping/angle defaults come from core/Settings_properties.inl.

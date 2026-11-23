@@ -9,6 +9,7 @@ import {createHash} from 'node:crypto';
 import {nativeBallMemoryObserver} from './native-ball-memory-observer.mjs';
 import {nativePlungerMemoryObserver} from './native-plunger-memory-observer.mjs';
 import {nativeInputSequence} from './native-input-sequence.mjs';
+import {nativeInitialTimerClocks} from './native-initial-timer-clocks.mjs';
 import {nativeRngSites,installNativeRngSites} from './native-rng-sites.mjs';
 const [debug,base,output]=process.argv.slice(2);
 const outputName=process.argv.find(a=>a.startsWith('--output-name='))?.slice(14);
@@ -23,6 +24,9 @@ if(inputSequencePath){
  reference.runtimeInputSequence=nativeInputSequence(await readFile('.work/vpx-animation-frame-rng-reference/extracted/script.vbs','utf8'),JSON.parse(await readFile(inputSequencePath,'utf8')));
 }
 const observeScriptClocks=process.argv.includes('--observe-script-clocks');
+const observeInitialTimerClocks=process.argv.includes('--observe-initial-timer-clocks');
+const observeSoundCalls=process.argv.includes('--observe-sound-calls');if(observeSoundCalls)assert.ok(observeInitialTimerClocks);
+if(observeInitialTimerClocks)reference.runtimeInitialTimerClocks=nativeInitialTimerClocks(await readFile('.work/vpx-animation-frame-rng-reference/extracted/script.vbs','utf8'),observeSoundCalls);
 const scriptClockObserver='Function RndNbr(n)\nDim RefScriptClock\nRefScriptClock=Timer\nIf RefTraceOn Then Debug.Print "SCRIPT_CLOCK|" & GameTime & "|" & VarType(RefScriptClock) & "|" & CStr(CDbl(RefScriptClock))\nRandomize RefScriptClock\nRndNbr=Int((n*Rnd)+1)\nEnd Function';
 if(observeScriptClocks){assert.ok(reference.instrumentation?.nativeScriptRngMarkers);reference.runtimeScriptClockObserver={code:scriptClockObserver,scope:'Diagnostic runtime declaration of the original RndNbr body with its sole Timer read retained in a Variant and observed before the unchanged Randomize/Rnd. No clock values or RNG results replaced.'};reference.instrumentation.scriptClockInputs=reference.runtimeScriptClockObserver.scope;}
 const recordTimers=!!reference.instrumentation&&!process.argv.includes('--no-timer-trace');
@@ -30,6 +34,7 @@ const recordAllBalls=process.argv.includes('--all-ball-state');
 const recordKickers=process.argv.includes('--kickers');
 const recordTrails=process.argv.includes('--ball-trails');
 const recordRng=process.argv.includes('--rng-state');
+if(observeInitialTimerClocks)assert.ok(recordRng,'Initial timer clocks require the read-only native marker observer');
 const recordInternals=process.argv.includes('--native-internals');
 const recordRngSites=process.argv.includes('--native-rng-sites');
 if(recordRngSites){assert.ok(recordInternals);reference.runtimeRngSites=nativeRngSites(await readFile('.work/three-review/reference-engine.wasm'));}
@@ -275,14 +280,17 @@ try{
   // that the authored rolling/spin controller deliberately skips.
   await wait('document.body.classList.contains("ball-in-plunger")');
   if(reference.runtimeInputSequence)await script(reference.runtimeInputSequence.code);
+  if(observeInitialTimerClocks)await script(reference.runtimeInitialTimerClocks.code);
   if(observeScriptClocks){await script(scriptClockObserver+'\nDebug.Print "SCRIPT_CLOCK_OBSERVER_READY|1"');assert.ok((await evaluate('document.getElementById("log").textContent')).includes('SCRIPT_CLOCK_OBSERVER_READY|1'),'native diagnostic function declaration accepted');}
   if(recordRng)await evaluate(`(()=>{
     const memory=window.nativeReferenceMemories.find(m=>m.buffer.byteLength>${reference.nativeRandom.stateAddress+8});if(!memory)throw Error('Native WASM memory was not observed');
-    const element=document.getElementById('log'),descriptor=Object.getOwnPropertyDescriptor(Node.prototype,'textContent');window.nativeRandomRecords=[];window.nativeAnimationRecords=[];window.nativeScriptClocks=[];window.nativeInputRecords=[];window.nativeFlipperContacts=[];window.nativePulseRecords=[];
+    const element=document.getElementById('log'),descriptor=Object.getOwnPropertyDescriptor(Node.prototype,'textContent');window.nativeRandomRecords=[];window.nativeAnimationRecords=[];window.nativeScriptClocks=[];window.nativeInputRecords=[];window.nativeFlipperContacts=[];window.nativePulseRecords=[];window.nativeInitialTimerRecords=[];window.nativeSoundCalls=[];
     ${recordInternals?`window.nativeBallObserver=(${nativeBallMemoryObserver.toString()})(memory,[0,0.17098337411880493,-1.626798152923584],${reference.nativePhysicsMaxLoops},${recordContactSlots},${liveBodyState});window.nativeInternalSnapshots=[];`:''}
     ${recordPlunger?`window.nativePlungerObserver=(${nativePlungerMemoryObserver.toString()})(memory,${JSON.stringify(plungerSpec)});window.nativePlungerLayout=window.nativePlungerObserver.scan();const readBallState=window.nativeBallObserver.read;window.nativeBallObserver.read=rows=>({...readBallState(rows),plunger:window.nativePlungerObserver.read()});`:''}
     Object.defineProperty(element,'textContent',{get(){return descriptor.get.call(this);},set(value){
       const line=String(value).split('\\n').at(-1),match=line.match(/(RNG_FRAME|CONTACT_INIT)\\|(\\d+)/);
+      ${observeSoundCalls?`if(line.includes('CASE_SOUND|')){const [ms,name]=line.slice(line.indexOf('CASE_SOUND|')+11).replace(/'$/,'').split('|');window.nativeSoundCalls.push({ms:Number(ms),name});return;}`:''}
+      ${observeInitialTimerClocks?`if(line.includes('CASE_TIMER|')){const [name,...values]=line.slice(line.indexOf('CASE_TIMER|')+11).replace(/'$/,'').split('|'),[ms,enabled,interval]=values.map(Number);if(!${JSON.stringify(reference.runtimeInitialTimerClocks?.periods)}[name]||![ms,enabled,interval].every(Number.isInteger)||enabled!==1)throw Error('Invalid native initial timer observation');window.nativeInitialTimerRecords.push({name,ms,enabled,interval});return;}`:''}
       ${reference.runtimeInputSequence?`if(line.includes('GAME_PULSE|')){const [ms,phase]=line.slice(line.indexOf('GAME_PULSE|')+11).replace(/'$/,'').split('|');window.nativePulseRecords.push({ms:Number(ms),phase});return;}`:''}
       ${reference.runtimeInputSequence?`if(line.includes('GAME_INPUT|')){const [ms,index,key]=line.slice(line.indexOf('GAME_INPUT|')+11).replace(/'$/,'').split('|').map(Number);if(!Number.isInteger(ms)||!Number.isInteger(index)||!Number.isInteger(key))throw Error('Invalid native input observation');window.nativeInputRecords.push({ms,index,key});return;}if(line.includes('GAME_FLIPPER|')){const [ms,side,speed,id]=line.slice(line.indexOf('GAME_FLIPPER|')+13).replace(/'$/,'').split('|');window.nativeFlipperContacts.push({ms:Number(ms),side,speed:Math.fround(Number(speed)),id:Number(id)});return;}`:''}
       ${reference.instrumentation?.scriptClockInputs?`if(line.includes('SCRIPT_CLOCK|')){const fields=line.slice(line.indexOf('SCRIPT_CLOCK|')+13).replace(/'$/,'').split('|').map(Number);if(fields.length!==3||fields[1]!==4||!fields.every(Number.isFinite))throw Error('Invalid native script clock input');window.nativeScriptClocks.push({ms:fields[0],type:fields[1],value:Math.fround(fields[2])});return;}`:''}
@@ -523,6 +531,14 @@ try{
     results.push({...scenario,initial,actualDelay,...closing,samples,rawSamples,...(initialNativeInternals?{initialNativeInternals}:{}),...(scenario.plunger?{initialPlungerPosition}:{}),...(initialCoilState?{initialCoilState}:{}),...(timerTrace?{timerTrace}:{}),...(recordAllBalls?{initialBallStates,rawInitialBallStates,initialMeasuredBallID}:{}),...(recordTrails?{initialBallTrails,rawInitialBallTrails}:{}),...(recordRng?{initialNativeRandom,nativeRandomFrames}:{}),...(animationFrames?{animationFrames}:{}),...(recordScriptRng?{initialScriptRandom}:{})});console.log(scenario.name,'input at',actualDelay,JSON.stringify(samples.at(-1)));
     if(reference.instrumentation?.scriptClockInputs)results.at(-1).scriptClocks=await evaluate(`window.nativeScriptClocks.filter(row=>row.ms>=${origin}).map(row=>({...row,ms:row.ms-${origin}}))`);
     if(recordRngSites){await evaluate('nativeRngSiteObservation.armed=false');assert.equal(await evaluate('nativeRngSiteObservation.installed'),true);results.at(-1).rngSites=await evaluate('nativeRngSiteObservation.records');results.at(-1).rngSites=results.at(-1).rngSites.filter(row=>row.ms>=0&&row.ms<=(recordThrough??samples.at(-1)[0]));}
+    if(observeInitialTimerClocks){
+      const through=recordThrough??samples.at(-1)[0],observed=await evaluate(`window.nativeInitialTimerRecords.filter(row=>row.ms>${origin}&&row.ms<=${origin+through}).map(row=>({...row,ms:row.ms-${origin}}))`);
+      for(const [name,period]of Object.entries(reference.runtimeInitialTimerClocks.periods)){
+        const rows=observed.filter(row=>row.name===name);assert.ok(rows.length&&rows[0].ms<=period,'actual first callback for '+name);assert.ok(rows.every(row=>row.interval===period));for(let i=1;i<rows.length;i++)assert.equal(rows[i].ms-rows[i-1].ms,period,'every native initial timer callback retained');assert.equal(rows.length,Math.floor((through-rows[0].ms)/period)+1);
+      }
+      results.at(-1).initialTimerClocks=observed;
+    }
+    if(observeSoundCalls)results.at(-1).soundCalls=await evaluate(`window.nativeSoundCalls.filter(row=>row.ms>=${origin}&&row.ms<=${origin+(recordThrough??samples.at(-1)[0])}).map(row=>({...row,ms:row.ms-${origin}}))`);
     if(reference.runtimeInputSequence){
       const observed=await evaluate(`window.nativeInputRecords.filter(row=>row.ms>=${origin}).map(row=>({...row,ms:row.ms-${origin}}))`);
       results.at(-1).inputSequence=observed.map((row,i)=>{assert.equal(row.index,i);const requested=reference.runtimeInputSequence.inputs[i];assert.ok(requested);assert.ok(row.ms>=requested.ms);return {...requested,requestedMilliseconds:requested.ms,ms:row.ms,key:row.key};});

@@ -349,14 +349,14 @@ export class Pinball {
     let state=this.nativeBallStates.get(body);if(!state){state=new NativeBall(body);state.order=this.nativeBallSequence++;this.nativeBallStates.set(body,state);}return state;
   }
 
-  stepPhysics(records){
+  stepPhysics(records,preparedNudge){
     if(this.nativeTreeEnabled&&!this.nativeTree)this.buildNativeTree();
     const state=r=>this.nativeBall(r.body);
     const body=r=>this.nativePositionUnits?state(r).body:r.body;
     for(const spinner of this.spinners)spinner.updateVelocity();
     for(const gate of this.gates)gate.updateVelocity();
     this.plunger?.updateVelocity();
-    const nudge=this.cabinetNudge?.step(this.nativePositionUnits?this.nativeIncline:this.incline)??{x:0,y:0,z:0};
+    const nudge=preparedNudge??this.cabinetNudge?.step(this.nativePositionUnits?this.nativeIncline:this.incline)??{x:0,y:0,z:0};
     if(!this.nativeFlipperContacts){
       if(this.cabinetNudge)for(const r of records)if(!r.held){const v=r.body.linvel();r.body.setLinvel({x:v.x+nudge.x*STEP,y:v.y+nudge.y*STEP,z:v.z+nudge.z*STEP},true);}
       this.world.step(this.events);this.plunger?.displace(STEP);return;

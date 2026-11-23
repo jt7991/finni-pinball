@@ -45,7 +45,17 @@ export function restoreReferenceBalls(game,fixture,scenario,fallback){
   if(!scenario.initialBallStates)return fallback;
   if(scenario.initialScriptRandom!==undefined)game.rules.scriptRandom.restoreState(scenario.initialScriptRandom);
   const records=game.physicalRecords,columns=fixture.initialBallStateColumns;
-  if(scenario.pulseTimerClocks){
+  if(scenario.initialTimerClocks){
+    for(const [name,period]of Object.entries(fixture.runtimeInitialTimerClocks.periods)){
+      const rows=scenario.initialTimerClocks.filter(row=>row.name===name),timer=game.rules.timers.get(name.toLowerCase()),first=rows[0]?.ms;
+      if(!timer||timer.object.interval!==period||!Number.isInteger(first)||first<=0||first>period)throw Error('Native initial timer boundary unavailable: '+name);
+      for(let i=0;i<rows.length;i++)if(rows[i].interval!==period||rows[i].enabled!==1||i&&rows[i].ms-rows[i-1].ms!==period)throw Error('Native initial timer recording is discontinuous: '+name);
+      if(name==='PulseTimer'&&scenario.pulseTimerClocks&&first!==scenario.pulseTimerClocks[0])throw Error('Native PulseTimer observers disagree');
+      // Restore only the independently observed starting deadline. The
+      // original runtime subsequently advances every callback itself.
+      timer.at=game.rules.time+first/1000;
+    }
+  }else if(scenario.pulseTimerClocks){
     const first=scenario.pulseTimerClocks[0],timer=game.rules.timers.get('pulsetimer');if(!timer||!Number.isInteger(first)||first<=0||first>40)throw Error('Native initial PulseTimer boundary unavailable');
     for(let i=1;i<scenario.pulseTimerClocks.length;i++)if(scenario.pulseTimerClocks[i]-scenario.pulseTimerClocks[i-1]!==40)throw Error('Native PulseTimer recording is discontinuous');
     // Initial timer phase is an independently recorded external input, just
