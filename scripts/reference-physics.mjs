@@ -45,6 +45,13 @@ export function restoreReferenceBalls(game,fixture,scenario,fallback){
   if(!scenario.initialBallStates)return fallback;
   if(scenario.initialScriptRandom!==undefined)game.rules.scriptRandom.restoreState(scenario.initialScriptRandom);
   const records=game.physicalRecords,columns=fixture.initialBallStateColumns;
+  if(scenario.pulseTimerClocks){
+    const first=scenario.pulseTimerClocks[0],timer=game.rules.timers.get('pulsetimer');if(!timer||!Number.isInteger(first)||first<=0||first>40)throw Error('Native initial PulseTimer boundary unavailable');
+    for(let i=1;i<scenario.pulseTimerClocks.length;i++)if(scenario.pulseTimerClocks[i]-scenario.pulseTimerClocks[i-1]!==40)throw Error('Native PulseTimer recording is discontinuous');
+    // Initial timer phase is an independently recorded external input, just
+    // like the initial body state; no later deadlines or callbacks are set.
+    timer.at=game.rules.time+first/1000;
+  }
   if(records.length!==scenario.initialBallStates.length)throw Error('native capture/replay body count differs');
   let measured;
   scenario.initialBallStates.forEach((row,index)=>{
@@ -97,7 +104,28 @@ export function restoreReferenceBalls(game,fixture,scenario,fallback){
       for(let index=0;index<through;index++)if(scenario.nativeRandomFrames[index]?.[0]!==index+1)throw Error('Native reference omitted a physics-frame marker');
     }
     const initial=scenario.initialNativeRandom,frames=new Map(scenario.nativeRandomFrames.map(([ms,low,high])=>[ms,[low,high]])),bodyFrames=new Map(scenario.nativeRandomFrames.filter(row=>row[3]).map(row=>[row[0],row[3]])),first=frames.get(1)??[initial.low,initial.high],random=nativeRandom(...first);
+    if(fixture.liveBodyState){
+      const idColumn=columns.indexOf('ID'),ids=new WeakMap(records.map((record,index)=>[record.proxy,scenario.initialBallStates[index][idColumn]]));let nextID=Math.max(...scenario.initialBallStates.map(row=>row[idColumn]))+1;
+      game.referenceBallID=proxy=>ids.get(proxy);
+      const spawn=game.spawn.bind(game);game.spawn=(...args)=>{const proxy=spawn(...args);ids.set(proxy,nextID++);return proxy;};
+    }
     game.random=random;game.nativeRandomAudit=[];game.nativeBodyAudit=[];const step=game.step.bind(game),origin=Math.round(game.time*1000);
+    const observeBodies=ms=>{
+      const observed=bodyFrames.get(ms);if(!observed)return;
+      const active=game.physicalRecords,expectedByID=new Map(observed.balls.map(body=>[body.id,body])),actualIDs=fixture.liveBodyState?active.map(record=>game.referenceBallID(record.proxy)):null;
+      const bodies=active.map((record,index)=>{
+        const native=game.nativeBall(record.body),state=native.snapshot(),reference=fixture.liveBodyState?expectedByID.get(actualIDs[index]):observed.balls[index],error=(a,b)=>Math.hypot(...['x','y','z'].map((key,i)=>a[key]-b[i]));
+        if(!reference)return {id:actualIDs?.[index],missingReference:true,actual:state};
+        return {id:reference.id,positionError:error(state.p,reference.position),velocityError:error(state.v,reference.velocity),momentumError:error(state.m,reference.momentum),...(reference.orientation?{orientationError:Math.max(...Array.from(native.orientation.matrix,(value,index)=>Math.abs(value-reference.orientation[index]))),orientation:Array.from(native.orientation.matrix)}:{}),actual:state,expected:reference};
+      });
+      game.nativeBodyAudit.push({ms,swap:game.ballCollisionSwap,expectedSwap:observed.swapBallCollisions,bodies,...(actualIDs?{actualIDs,expectedIDs:observed.balls.map(body=>body.id),missingIDs:observed.balls.filter(body=>!actualIDs.includes(body.id)).map(body=>body.id),unexpectedIDs:actualIDs.filter(id=>!expectedByID.has(id))}:{})});
+    };
+    if(fixture.liveBodyState){
+      // Native RNG_FRAME reads bodies at the end of this authored timer,
+      // before later timers such as RollingTimer apply spin/speed controls.
+      const execute=game.rules.engine.executeStatementThrows.bind(game.rules.engine);
+      game.rules.engine.executeStatementThrows=(statement,...args)=>{const result=execute(statement,...args);if(/^LeftFlipper_Timer\s*$/i.test(statement))observeBodies(Math.round(game.time*1000)-origin);return result;};
+    }
     let randomObservation;
     if(game.plunger){
       if(scenario.initialNativeInternals?.plunger)game.nativePlungerAudit=[];
@@ -128,14 +156,7 @@ export function restoreReferenceBalls(game,fixture,scenario,fallback){
     }
     game.step=()=>{
       const ms=Math.round(game.time*1000)-origin+1;
-      const observed=bodyFrames.get(ms);
-      if(observed){
-        const bodies=records.map((record,index)=>{
-          const native=game.nativeBall(record.body),state=native.snapshot(),reference=observed.balls[index],error=(a,b)=>Math.hypot(...['x','y','z'].map((key,i)=>a[key]-b[i]));
-          return {id:reference.id,positionError:error(state.p,reference.position),velocityError:error(state.v,reference.velocity),momentumError:error(state.m,reference.momentum),...(reference.orientation?{orientationError:Math.max(...Array.from(native.orientation.matrix,(value,index)=>Math.abs(value-reference.orientation[index]))),orientation:Array.from(native.orientation.matrix)}:{}),actual:state,expected:reference};
-        });
-        game.nativeBodyAudit.push({ms,swap:game.ballCollisionSwap,expectedSwap:observed.swapBallCollisions,bodies});
-      }
+      if(!fixture.liveBodyState)observeBodies(ms);
       const before=random.calls;randomObservation=undefined;step();
       if(!randomObservation)throw Error('Native RNG observation did not reach the mover boundary');
       game.nativeRandomAudit.push({ms,...randomObservation,draws:random.calls-before,state:random.getState(),nextNativeState:frames.get(ms+1)});

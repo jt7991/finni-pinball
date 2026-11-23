@@ -1,0 +1,2 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';import {createHash} from 'node:crypto';
+const [input,output]=process.argv.slice(2),bytes=fs.readFileSync(input),capture=JSON.parse(bytes);assert.deepEqual(capture.errors,[]);assert.equal(capture.events.filter(row=>row.phase==='callback').length,66);assert.ok(capture.events.some(row=>row.label==='child0'));assert.equal(capture.events.filter(row=>row.label==='function37').length,1);fs.writeFileSync(output,JSON.stringify({captureSHA256:createHash('sha256').update(bytes).digest('hex'),...capture},null,2)+'\n');

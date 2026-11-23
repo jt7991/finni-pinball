@@ -1,7 +1,7 @@
 // Read-only observer for the pinned wasm32 VPX binary. Offsets derive from
 // HitObject, CollisionEvent and HitBall in the pinned C++ headers, not from
 // trajectory fitting. Self pointers and all public float state validate them.
-export function nativeBallMemoryObserver(memory,gravity,expectedMaxLoops,recordContactSlots=false){
+export function nativeBallMemoryObserver(memory,gravity,expectedMaxLoops,recordContactSlots=false,liveBodies=false){
   const scratch=new ArrayBuffer(4),number=new Float32Array(scratch),bits=new Uint32Array(scratch),word=value=>{number[0]=value;return bits[0];};
   let layout,bodies,gravityAddress;
   function scan(rows){
@@ -35,11 +35,25 @@ export function nativeBallMemoryObserver(memory,gravity,expectedMaxLoops,recordC
     layout={ballState:offset,collisionBall:first.collisionBall,collisionGap:first.collisionBall+12,moverSelf:offset-4,locked:offset+36,lastEventPosition:offset+52,eventDistance:offset+64,momentum:offset+68,orientation:offset+80};
     if(matches.some(([body])=>body.ballState!==layout.ballState||body.collisionBall!==layout.collisionBall))throw Error('Native HitBall ABI differs between bodies');
     bodies=matches.map(([body],index)=>({id:rows[index][11],address:body.address}));gravityAddress=gravities[0];
-    return {layout,bodies,gravityAddress,swapAddress:gravityAddress+16};
+    if(liveBodies){
+      const active=readLiveBodies(view);if(active.length!==bodies.length||active.some((body,i)=>body.id!==bodies[i].id||body.address!==bodies[i].address))throw Error('Native live ball vector disagrees with the public GetBalls scan');
+    }
+    return {layout,bodies,gravityAddress,swapAddress:gravityAddress+16,...(liveBodies?{liveABI:{playerGlobal:9191328,playerPhysics:333740,playerBalls:333744,hitBall:288,ballID:668,source:'Pinned Ball::get_ID function2486 loads668; compiled player ball iteration functions3221/4365 load333744/333748; native render function2531 reads position416=288+128. Every initial identity/address checked against public GetBalls and both HitBall self pointers.'}}:{})};
+  }
+  function readLiveBodies(view){
+    const player=view.getUint32(9191328,true),begin=view.getUint32(player+333744,true),end=view.getUint32(player+333748,true),capacity=view.getUint32(player+333752,true);
+    if(view.getUint32(player+333740,true)+68!==gravityAddress||begin>end||end>capacity||capacity>memory.buffer.byteLength||(end-begin)%4||(end-begin)/4>100)throw Error('Pinned live Player ball vector ABI validation failed');
+    const active=[];for(let cursor=begin;cursor<end;cursor+=4){
+      const ball=view.getUint32(cursor,true),address=ball+288,id=view.getUint32(ball+668,true);
+      if(view.getUint32(address+layout.collisionBall,true)!==address||view.getUint32(address+layout.moverSelf,true)!==address||view.getUint32(address+64,true)!==ball||view.getFloat32(address+layout.ballState+24,true)!==25||active.some(b=>b.id===id))throw Error('Pinned live HitBall identity ABI validation failed: '+JSON.stringify({ball,address,id,self:view.getUint32(address+layout.collisionBall,true),mover:view.getUint32(address+layout.moverSelf,true),owner:view.getUint32(address+64,true),radius:view.getFloat32(address+layout.ballState+24,true)}));
+      active.push({id,address});
+    }
+    return active;
   }
   function read(rows){
     if(!bodies)throw Error('Native body addresses have not been observed');
     const view=new DataView(memory.buffer),vector=address=>[0,4,8].map(offset=>view.getFloat32(address+offset,true));
+    if(liveBodies)bodies=readLiveBodies(view);
     for(let index=0;index<(rows?.length??0);index++){
       const row=rows[index],body=bodies[index];
       if(body.id!==row[11]||![0,1,2].every(axis=>view.getUint32(body.address+layout.ballState+axis*4,true)===word(row[axis])))throw Error('Native body identity/position changed during snapshot');

@@ -359,7 +359,9 @@ class FullGame extends Pinball {
         this.captures.set(key,rec);this.rules.hit(tag.name,'Hit',rec.proxy);
       }else {if(key==='swplungerrest')rec.inLane=true;this.rules.hit(tag.name,'Hit',rec.proxy);}
     });
-    for(const rec of [...this.records]){
+    // Native play uses the authored Drain kicker and its collision volume.
+    // A screen-space cutoff removes balls early and changes ball-save timing.
+    if(!this.nativePositionUnits)for(const rec of [...this.records]){
       if(rec.held)continue;
       const p=rec.body.translation();
       if(p.y<1||p.x<-.5||p.x>10||p.z<-.5)this.rules.hit('Drain','Hit',rec.proxy);

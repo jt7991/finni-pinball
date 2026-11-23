@@ -9,6 +9,7 @@ import {LightAnimation,nativeColor} from './light-animation.js';
 import {runtimeNativeRandom} from './native-random.js';
 import {nativeFlasherLong} from './native-flasher-state.js';
 import {registerNativeTimer} from './script-timer.js';
+import {createVpmTimer} from './vpm-timer.js';
 
 export const KEY={left:42,right:54,launch:28,start:2,action:57,nudgeLeft:44,nudgeForward:45,nudgeRight:53};
 const empty=()=>{};
@@ -130,6 +131,10 @@ export function createRules(source,specs,host={}) {
   objects.set('hostplunger',impulsePlunger);engine.addObject('HostPlunger',impulsePlunger);
   objects.get('table1').width=952;objects.get('table1').height=2115;
   for(const c of specs.collections)engine.addCode(`Dim ${c.name}\n${c.name}=Array(${c.items.filter(n=>objects.has(n.toLowerCase())).join(',')})`);
+  const vpmTimer=createVpmTimer(execute),pulseTimer=objects.get('pulsetimer');
+  // core.vbs initializes this authored, initially enabled timer at 25Hz.
+  // It precedes subsequently enabled script timers in the active list.
+  if(pulseTimer){generatedEvents.set('pulsetimer_timer',()=>vpmTimer.update());pulseTimer.interval=40;pulseTimer.enabled=true;}
   const natives={
     LoadEM:empty,DOF:empty,SoundFXDOF:name=>name,SoundFX:name=>name,
     PlaySound:(name,loop=0,volume=1,pan=0,randomPitch=0,pitch=0,useExisting=false,restart=false,frontRearFade=0)=>host.sound?.(name,{loop,volume,pan,randomPitch,pitch,useExisting,restart,frontRearFade}),StopSound:name=>host.stopSound?.(name),
@@ -146,7 +151,7 @@ export function createRules(source,specs,host={}) {
     LockBarKey:KEY.action,RightMagnaSave:KEY.action,LeftMagnaSave:29,
     MechanicalTilt:46,AddCreditKey:6,AddCreditKey2:7,DOFPulse:2,DOFOn:1,DOFOff:0,DOFContactors:0,
     ...SEQ,
-    vpmtimer:{addtimer:schedule},ActiveBall:{},
+    vpmtimer:vpmTimer,ActiveBall:{},
     HostShake:strength=>host.shake?.(strength),
     HostFlash:(light,total,period,final)=>{
       const lower=String(light.name).toLowerCase(),spec=byName.get(lower);

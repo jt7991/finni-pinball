@@ -1,0 +1,828 @@
+{
+  "captureSHA256": "c390a3b6ccc0388bcc0c4c67e62e31d5e76d50ac4a0633c9a86d7979a08b8f81",
+  "events": [
+    {
+      "phase": "interval",
+      "ms": 2004,
+      "label": "40"
+    },
+    {
+      "phase": "input",
+      "ms": 2004,
+      "label": "batch"
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 2040,
+      "label": ""
+    },
+    {
+      "phase": "callback",
+      "ms": 2040,
+      "label": "d0"
+    },
+    {
+      "phase": "callback",
+      "ms": 2040,
+      "label": "d1"
+    },
+    {
+      "phase": "callback",
+      "ms": 2040,
+      "label": "d39"
+    },
+    {
+      "phase": "callback",
+      "ms": 2040,
+      "label": "d40"
+    },
+    {
+      "phase": "callback",
+      "ms": 2040,
+      "label": "d41"
+    },
+    {
+      "phase": "callback",
+      "ms": 2040,
+      "label": "d79"
+    },
+    {
+      "phase": "callback",
+      "ms": 2040,
+      "label": "parent"
+    },
+    {
+      "phase": "callback",
+      "ms": 2040,
+      "label": "child0"
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 2040,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 2080,
+      "label": ""
+    },
+    {
+      "phase": "callback",
+      "ms": 2080,
+      "label": "d80"
+    },
+    {
+      "phase": "callback",
+      "ms": 2080,
+      "label": "d81"
+    },
+    {
+      "phase": "callback",
+      "ms": 2080,
+      "label": "child40"
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 2080,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 2120,
+      "label": ""
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 2120,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 2160,
+      "label": ""
+    },
+    {
+      "phase": "callback",
+      "ms": 2160,
+      "label": "d174.5"
+    },
+    {
+      "phase": "callback",
+      "ms": 2160,
+      "label": "d175.5"
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 2160,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 2200,
+      "label": ""
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 2200,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 2240,
+      "label": ""
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 2240,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 2280,
+      "label": ""
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 2280,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 2320,
+      "label": ""
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 2320,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 2360,
+      "label": ""
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 2360,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 2400,
+      "label": ""
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 2400,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 2440,
+      "label": ""
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 2440,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 2480,
+      "label": ""
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 2480,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 2520,
+      "label": ""
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 2520,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 2560,
+      "label": ""
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 2560,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 2600,
+      "label": ""
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 2600,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 2640,
+      "label": ""
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 2640,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 2680,
+      "label": ""
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 2680,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 2720,
+      "label": ""
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 2720,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 2760,
+      "label": ""
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 2760,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 2800,
+      "label": ""
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 2800,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 2840,
+      "label": ""
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 2840,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 2880,
+      "label": ""
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 2880,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 2920,
+      "label": ""
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 2920,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 2960,
+      "label": ""
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 2960,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 3000,
+      "label": ""
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 3000,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 3040,
+      "label": ""
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 3040,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 3080,
+      "label": ""
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 3080,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 3120,
+      "label": ""
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 3120,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 3160,
+      "label": ""
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 3160,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 3200,
+      "label": ""
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 3200,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 3240,
+      "label": ""
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 3240,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 3280,
+      "label": ""
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 3280,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 3320,
+      "label": ""
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 3320,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 3360,
+      "label": ""
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 3360,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 3400,
+      "label": ""
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 3400,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 3440,
+      "label": ""
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 3440,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 3480,
+      "label": ""
+    },
+    {
+      "phase": "callback",
+      "ms": 3480,
+      "label": "d1500"
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 3480,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 3520,
+      "label": ""
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 3520,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 3560,
+      "label": ""
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 3560,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 3600,
+      "label": ""
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 3600,
+      "label": ""
+    },
+    {
+      "phase": "input",
+      "ms": 3621,
+      "label": "after-idle"
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 3640,
+      "label": ""
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 3640,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 3680,
+      "label": ""
+    },
+    {
+      "phase": "callback",
+      "ms": 3680,
+      "label": "after-idle"
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 3680,
+      "label": ""
+    },
+    {
+      "phase": "input",
+      "ms": 3705,
+      "label": "function"
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 3720,
+      "label": ""
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 3720,
+      "label": ""
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 3760,
+      "label": ""
+    },
+    {
+      "phase": "callback",
+      "ms": 3760,
+      "label": "function37"
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 3760,
+      "label": ""
+    },
+    {
+      "phase": "input",
+      "ms": 3789,
+      "label": "capacity"
+    },
+    {
+      "phase": "pulse-before",
+      "ms": 3800,
+      "label": ""
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap1"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap2"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap3"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap4"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap5"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap6"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap7"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap8"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap9"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap10"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap11"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap12"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap13"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap14"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap15"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap16"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap17"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap18"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap19"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap20"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap21"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap22"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap23"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap24"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap25"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap26"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap27"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap28"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap29"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap30"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap31"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap32"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap33"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap34"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap35"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap36"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap37"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap38"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap39"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap40"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap41"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap42"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap43"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap44"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap45"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap46"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap47"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap48"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap49"
+    },
+    {
+      "phase": "callback",
+      "ms": 3800,
+      "label": "cap50"
+    },
+    {
+      "phase": "pulse-after",
+      "ms": 3800,
+      "label": ""
+    }
+  ],
+  "engineSHA256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+  "coreClassSHA256": "db3dadcb8c9328ab4d96e02fb16ef41d7548515f53d13f1b31b57b5c0d592b2a",
+  "declarations": "Dim RefVpmOn,RefVpmIndex\nRefVpmOn=True\nSub RefVpmObserve(label)\n Debug.Print \"VPM_EVENT|callback|\" & GameTime & \"|\" & label\nEnd Sub\nSub RefVpmFunction(id)\n RefVpmObserve \"function\" & id\nEnd Sub\nSub RefVpmParent\n RefVpmObserve \"parent\"\n vpmtimer.addtimer 0,\"RefVpmObserve \"\"child0\"\" '\"\n vpmtimer.addtimer 40,\"RefVpmObserve \"\"child40\"\" '\"\nEnd Sub\nSub PulseTimer_Timer\n If RefVpmOn Then Debug.Print \"VPM_EVENT|pulse-before|\" & GameTime & \"|\"\n vpmTimer.Update\n If RefVpmOn Then Debug.Print \"VPM_EVENT|pulse-after|\" & GameTime & \"|\"\nEnd Sub",
+  "delays": [
+    0,
+    1,
+    39,
+    40,
+    41,
+    79,
+    80,
+    81,
+    1500,
+    174.5,
+    175.5
+  ],
+  "errors": [],
+  "scope": "Actual original core.vbs cvpmTimer, its existing 40ms native PulseTimer and ordinary AddTimer/AddTimer2 calls. The table uses string callbacks; the GetRef control is tested separately after the string queue empties. Generated PulseTimer handler retains its sole vpmTimer.Update call with read-only log markers around it. Other authored Timer objects and light sequences isolated. Actual GameTime clocks retained; no timer phase or outputs replaced."
+}

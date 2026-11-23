@@ -2,22 +2,31 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {createFullGame} from '../three/full-game.js';
 import {STEP} from '../three/physics.js';
+import {KEY} from '../three/rules.js';
 import {applyReferencePhysics,referenceRandom,placeReferenceBall,restoreReferenceBalls,readReferenceFixture,summarizeNativePlunger} from './reference-physics.mjs';
 const fixture=readReferenceFixture(process.argv.slice(2).find(a=>!a.startsWith('--'))??'three/tests/fixtures/vpx-plunger.json');
 const layout=JSON.parse(fs.readFileSync('three/public/layout.json')),objects=JSON.parse(fs.readFileSync('three/public/objects.json')),source=fs.readFileSync('three/public/rules.vbs','utf8');
 applyReferencePhysics(layout,objects,fixture);
 const reports=[];
 for(const scenario of fixture.cases){
-  const g=await createFullGame(layout,objects,source,()=>{});
+  const g=await createFullGame(layout,objects,source,()=>{}),ruleAudit=process.argv.includes('--rule-audit')?[]:null;let failure;
   g.random=referenceRandom();
   try{
-    const ruleAudit=process.argv.includes('--rule-audit')?[]:null,ruleNames=['bSkillShotReady','bBallInPlungerLane','bBallSaverReady','bBallSaverActive','bAutoPlunger','BallSaverTime','Song'];let ruleOrigin;
+    const ruleNames=['bSkillShotReady','bBallInPlungerLane','bBallSaverReady','bBallSaverActive','bAutoPlunger','BallSaverTime','Song'];let ruleOrigin;
     const ruleState=()=>Object.fromEntries(ruleNames.map(name=>[name,g.rules.value(name)]));
     if(ruleAudit){const hit=g.rules.hit.bind(g.rules);g.rules.hit=(name,kind,...args)=>{if(ruleOrigin===undefined||kind==='Animate'&&!/plunger/i.test(name))return hit(name,kind,...args);const row={ms:Math.round(g.time*1000)-ruleOrigin,event:name+'_'+kind,before:ruleState(),scriptBefore:g.rules.scriptRandom.getState()};const result=hit(name,kind,...args);row.after=ruleState();row.scriptAfter=g.rules.scriptRandom.getState();ruleAudit.push(row);return result;};for(const method of ['rnd','randomize']){const original=g.rules.scriptRandom[method].bind(g.rules.scriptRandom);g.rules.scriptRandom[method]=argument=>{const before=g.rules.scriptRandom.getState(),result=original(argument);if(ruleOrigin!==undefined)ruleAudit.push({ms:Math.round(g.time*1000)-ruleOrigin,method,argument,before,after:g.rules.scriptRandom.getState()});return result;};}}
     g.start();for(let i=0;i<2/STEP;i++)g.step();let r=g.records[0];
     placeReferenceBall(g,r,{...scenario,vx:0,vy:0,vz:0});
     const timer=g.rules.objects.get('rollingtimer');timer.enabled=false;timer.enabled=true;
     r=restoreReferenceBalls(g,fixture,scenario,r);
+    const flipperContacts=[];
+    if(scenario.flipperContacts){
+      const origin=Math.round(g.time*1000),hit=g.rules.hit.bind(g.rules),ids=new Map(g.physicalRecords.map((record,i)=>[record.proxy,scenario.initialBallStates[i][fixture.initialBallStateColumns.indexOf('ID')]]));
+      g.rules.hit=(name,kind,ball,...parameters)=>{
+        if(kind==='Collide'&&/^(Left|Right)Flipper$/i.test(name))flipperContacts.push({ms:Math.round(g.time*1000)-origin,side:name.toLowerCase().startsWith('left')?'left':'right',speed:parameters[0],id:g.referenceBallID?.(ball)??ids.get(ball)});
+        return hit(name,kind,ball,...parameters);
+      };
+    }
     if(ruleAudit){ruleOrigin=Math.round(g.time*1000);ruleAudit.push({ms:0,initialRules:ruleState()});}
     let clockInputs=0;
     if(scenario.scriptClocks){
@@ -37,6 +46,14 @@ for(const scenario of fixture.cases){
       g.plunger.updateNativeShapes();
     }
     g.rules.execute('Plunger.PullBack');g.rules.schedule(scenario.actualDelay,'Plunger.Fire');
+    const nativeKeys=new Map();
+    for(const input of scenario.inputSequence??[]){
+      assert.ok(['left','right'].includes(input.action)&&Number.isInteger(input.key));assert.equal(typeof input.down,'boolean');
+      if(nativeKeys.has(input.action))assert.equal(input.key,nativeKeys.get(input.action));else nativeKeys.set(input.action,input.key);
+      // VPX's SDL logical constants (65536/65537) and this host's internal
+      // constants (42/54) identify the same named table actions.
+      g.rules.schedule(input.ms,`Table1_Key${input.down?'Down':'Up'} ${KEY[input.action]}`);
+    }
     let elapsed=0;const samples=[],traceSamples=[],animationAudit=[];
     const animationFrames=scenario.animationFrames?new Map(scenario.animationFrames.map(row=>[row[0],row])):null;
     if(animationFrames){
@@ -62,20 +79,25 @@ for(const scenario of fixture.cases){
     const advanceTo=ms=>{for(let i=0;i<Math.round((ms-elapsed)/1000/STEP);i++){g.step();observeTrace(elapsed+i+1);prepareObservedFrame(elapsed+i+1);}elapsed=ms;};
     for(const expected of scenario.samples){
       const ms=expected[0];advanceTo(ms);
-      const p=r.body.translation(),v=r.body.linvel(),w=r.body.angvel();
-      const actual=[ms,p.x*100,2115-p.y*100,p.z*100,v.x,-v.y,v.z,-w.x/100,w.y/100,-w.z/100,...g.flippers.map(f=>90-f.angle*180/Math.PI),g.plunger.position];
-      samples.push({expected,actual,positionError:Math.hypot(...actual.slice(1,4).map((n,i)=>n-expected[i+1])),velocityError:Math.hypot(...actual.slice(4,7).map((n,i)=>n-expected[i+4])),plungerError:Math.abs(actual[12]-expected[12])});
+      // A native script may retain RefBall after DestroyBall; the port keeps
+      // the same readable final COM state, without accessing a removed body.
+      const b=r.proxy,actual=[ms,b.x,b.y,b.z,b.velx,b.vely,b.velz,b.angvelx,b.angvely,b.angvelz,...g.flippers.map(f=>90-f.angle*180/Math.PI),g.plunger.position];
+      const nativeAngles=['leftflipper','rightflipper'].map(name=>g.rules.objects.get(name).currentangle);
+      samples.push({expected,actual,nativeAngles,positionError:Math.hypot(...actual.slice(1,4).map((n,i)=>n-expected[i+1])),velocityError:Math.hypot(...actual.slice(4,7).map((n,i)=>n-expected[i+4])),plungerError:Math.abs(actual[12]-expected[12])});
     }
     if(fixture.nativeBodyRegression?.throughMilliseconds>elapsed)advanceTo(fixture.nativeBodyRegression.throughMilliseconds);
     const bodies=(g.nativeBodyAudit??[]).flatMap(frame=>frame.bodies),nativeBodySummary={frames:g.nativeBodyAudit?.length??0,bodies:bodies.length};
     for(const key of ['positionError','velocityError','momentumError','orientationError'])nativeBodySummary[key]=Math.max(0,...bodies.map(body=>body[key]??0));
+    if(fixture.liveBodyState)Object.assign(nativeBodySummary,{identityMismatches:g.nativeBodyAudit.filter(frame=>frame.missingIDs.length||frame.unexpectedIDs.length).length,lifecycles:g.nativeBodyAudit.filter((frame,i,a)=>i===0||String(frame.actualIDs)!==String(a[i-1].actualIDs)).map(frame=>({ms:frame.ms,ids:frame.actualIDs}))});
     const nativePlungerSummary=summarizeNativePlunger(g.nativePlungerAudit);
     const report={name:scenario.name,actualDelay:scenario.actualDelay,maxPositionError:Math.max(...samples.map(r=>r.positionError)),maxVelocityError:Math.max(...samples.map(r=>r.velocityError)),maxPlungerError:Math.max(...samples.map(r=>r.plungerError)),maxNativeSpeed:Math.max(...samples.map(r=>Math.hypot(...r.expected.slice(4,6)))),maxModelSpeed:Math.max(...samples.map(r=>Math.hypot(...r.actual.slice(4,6)))),physicsStats:g.physicsStats,samples,...(traceRows.size?{traceSamples}:{}),...(g.nativeRandomAudit?{nativeRandomAudit:g.nativeRandomAudit,nativeBodySummary}:{}),...(nativePlungerSummary?{nativePlungerSummary}:{}),...(process.argv.includes('--body-audit')?{nativeBodyAudit:g.nativeBodyAudit,nativePlungerAudit:g.nativePlungerAudit}:{})};reports.push(report);
     if(animationFrames)Object.assign(report,{animationAudit,animationSummary:{frames:animationAudit.length,offsetError:Math.max(0,...animationAudit.flatMap(row=>row.errors.slice(0,3).map(Math.abs))),stateMismatches:animationAudit.filter(row=>row.errors.slice(3).some(Boolean)).length},nativeScriptRandomAudit:g.nativeScriptRandomAudit});
     if(ruleAudit)report.ruleAudit=ruleAudit;
     if(scenario.scriptClocks)report.scriptClockInputs=clockInputs;
+    if(scenario.inputSequence)report.nativeFlipperSummary={frames:samples.length,angleErrors:[0,1].map(index=>Math.max(0,...samples.map(row=>Math.abs(row.nativeAngles[index]-Math.fround(row.expected[10+index]))))),inputs:scenario.inputSequence.length};
+    if(scenario.flipperContacts)report.flipperContacts=flipperContacts;
     if(!process.argv.includes('--json'))console.log(JSON.stringify({...report,samples:undefined,traceSamples:undefined,nativeRandomAudit:undefined,nativeBodyAudit:undefined,nativePlungerAudit:undefined,animationAudit:undefined,nativeScriptRandomAudit:undefined}));
-  }finally{g.dispose();}
+  }catch(error){failure=error;fs.writeFileSync((process.argv.find(a=>a.startsWith('--report='))?.slice(9)??'.work/three-review/vpx-plunger-comparison.json')+'.partial',JSON.stringify({error:String(error),stack:error.stack,time:g.time,bodyAudit:g.nativeBodyAudit,randomAudit:g.nativeRandomAudit,scriptRandomAudit:g.nativeScriptRandomAudit,ruleAudit,delays:g.rules.delays},null,2));throw error;}finally{try{g.dispose();}catch(error){if(!failure)throw error;}}
 }
 fs.writeFileSync(process.argv.find(a=>a.startsWith('--report='))?.slice(9)??'.work/three-review/vpx-plunger-comparison.json',JSON.stringify(reports,null,2));
 if(process.argv.includes('--json'))console.log(JSON.stringify(reports));
@@ -97,6 +119,7 @@ if(process.argv.includes('--check'))for(const r of reports){
   if(fixture.nativeBodyRegression){
     const limit=fixture.nativeBodyRegression;assert.ok(r.nativeBodySummary.frames>=limit.frames,'complete native physics-frame coverage');
     for(const key of ['positionError','velocityError','momentumError','orientationError'])if(limit[key]!==undefined)assert.ok(r.nativeBodySummary[key]<=limit[key],`${r.name} every native body ${key}: ${r.nativeBodySummary[key]}`);
+    if(fixture.liveBodyState)assert.equal(r.nativeBodySummary.identityMismatches,0,'all live native body identities at every boundary');
   }
   if(fixture.nativePlungerRegression){
     const limit=fixture.nativePlungerRegression;assert.ok(r.nativePlungerSummary?.frames>=limit.frames,'complete native plunger-frame coverage');
@@ -105,5 +128,6 @@ if(process.argv.includes('--check'))for(const r of reports){
   }
   if(fixture.animationRegression){assert.equal(r.animationSummary.frames,fixture.animationRegression.frames);assert.equal(r.animationSummary.offsetError,0);assert.equal(r.animationSummary.stateMismatches,0);}
   if(fixture.scriptClockRegression){assert.equal(r.scriptClockInputs,fixture.scriptClockRegression.calls);assert.equal(r.nativeScriptRandomAudit.length,fixture.nativeBodyRegression.frames);assert.ok(r.nativeScriptRandomAudit.every(row=>row.agrees));}
+  if(fixture.inputSequenceRegression){assert.equal(r.nativeFlipperSummary.inputs,fixture.inputSequenceRegression.inputs);assert.ok(r.nativeFlipperSummary.frames>=fixture.inputSequenceRegression.angleFrames);assert.deepEqual(r.nativeFlipperSummary.angleErrors,[0,0]);assert.deepEqual(r.flipperContacts,fixture.cases.find(c=>c.name===r.name).flipperContacts,'every actual native flipper collision clock, side, speed and body');}
   assert.equal(r.physicsStats.substepBudgetExceeded,0);
 }

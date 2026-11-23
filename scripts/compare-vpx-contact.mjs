@@ -70,6 +70,7 @@ for(const scenario of fixture.cases){
     }
     const bodies=(g.nativeBodyAudit??[]).flatMap(row=>row.bodies),nativeBodySummary={frames:g.nativeBodyAudit?.length??0,bodies:bodies.length};
     for(const key of ['positionError','velocityError','momentumError','orientationError'])nativeBodySummary[key]=Math.max(0,...bodies.map(body=>body[key]??0));
+    if(fixture.liveBodyState)nativeBodySummary.identityMismatches=g.nativeBodyAudit.filter(frame=>frame.missingIDs.length||frame.unexpectedIDs.length).length;
     const report={name:scenario.name,maxPositionError:Math.max(...samples.map(r=>r.positionError)),maxVelocityError:Math.max(...samples.map(r=>r.velocityError)),maxFlipperAngleError:Math.max(...samples.map(r=>r.flipperAngleError)),physicsStats:g.physicsStats,samples,...(fixture.traceRegression?{traceSamples}:{}),...(g.nativeRandomAudit?{nativeRandomAudit:g.nativeRandomAudit,nativeBodySummary,nativePlungerSummary:summarizeNativePlunger(g.nativePlungerAudit)}:{}),...(g.nativeScriptRandomAudit?{nativeScriptRandomAudit:g.nativeScriptRandomAudit}:{}),...(process.argv.includes('--body-audit')?{nativeBodyAudit:g.nativeBodyAudit,nativePlungerAudit:g.nativePlungerAudit}:{})};reports.push(report);
     if(!process.argv.includes('--json'))console.log(JSON.stringify({name:report.name,position:report.maxPositionError,velocity:report.maxVelocityError,end:samples.at(-1).actual}));
   }finally{g.dispose();}
@@ -86,6 +87,7 @@ if(process.argv.includes('--check'))for(const report of reports){
   if(fixture.nativeBodyRegression){
     const limit=fixture.nativeBodyRegression;assert.equal(report.nativeBodySummary.frames,limit.frames,'complete native body-frame coverage');
     for(const key of ['positionError','velocityError','momentumError','orientationError'])assert.ok(report.nativeBodySummary[key]<=limit[key],`${report.name} every native body ${key}`);
+    if(fixture.liveBodyState)assert.equal(report.nativeBodySummary.identityMismatches,0,'all live native identities');
   }
   if(fixture.nativePlungerRegression){
     const limit=fixture.nativePlungerRegression;assert.equal(report.nativePlungerSummary.frames,limit.frames,'complete native rod-frame coverage');

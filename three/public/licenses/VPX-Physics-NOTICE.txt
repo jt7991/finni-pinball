@@ -3,7 +3,7 @@ flipper-contact.js, mesh-contact.js, target-contact.js, target-motion.js, target
 native-ball.js, native-ball-response.js, native-orientation.js, native-angular.js, native-flipper-contact.js,
 native-mesh-contact.js, native-vector.js, native-curve.js, native-ramp.js,
 native-tree.js, native-dynamic-tree.js, native-ball-collision.js, native-random.js, native-hit-event.js,
-native-rubber.js, native-target.js, native-target-event.js, native-bumper.js, native-slingshot.js, native-sound.js, kicker.js, impulse-plunger.js and playfield-contact.js is adapted from
+native-rubber.js, native-target.js, native-target-event.js, native-bumper.js, native-slingshot.js, native-sound.js, kicker.js, impulse-plunger.js, vpm-timer.js and playfield-contact.js is adapted from
 Visual Pinball, copyright its respective contributors, licensed GPLv3 or later.
 These derived modules are distributed under GPL-3.0-or-later.
 native-ball-render.js and native-ball-render-state.js adapt Ball::Render and
