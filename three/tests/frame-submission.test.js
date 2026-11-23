@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import {Worker} from 'node:worker_threads';
 import {createSimulationHost} from '../simulation-host.js';
 import {connectSimulation} from '../game-runtime.js';
+import {snapshotSubmissionBall} from '../game-snapshot.js';
 
 const assets=()=>({
   layout:JSON.parse(fs.readFileSync(new URL('../public/layout.json',import.meta.url))),
@@ -50,6 +51,11 @@ test('submission reads later physical bodies, retains removed kicker balls and e
     assert.deepEqual(retired.position,heldPosition,'removed Rapier body preserves native position bits');
     assert.deepEqual(retired.velocity,{x:Math.fround(heldVelocity.x),y:Math.fround(-heldVelocity.y),z:Math.fround(heldVelocity.z)});
     assert.equal(retired.locked,true,'retain the source locked flag before kicker membership is released');
+    held.velx=7.25;held.angmomz=31;
+    const retained=snapshotSubmissionBall(game,heldRecord);
+    assert.equal(retained.velocity.x,7.25,'retained native state remains readable and writable after the Rapier allocation is freed');
+    assert.equal(held.angmomz,31);
+    assert.deepEqual(retained.position,heldPosition);
     assert.deepEqual({time:game.time,random:game.random.getState(),scriptRandom:game.rules.scriptRandom.getState(),positions:game.physicalRecords.map(record=>({...game.nativeBall(record.body).sync()}))},before);
     await host.receive({type:'frame',retainSubmission:true,id:13});
     const next=messages.find(message=>message.type==='response'&&message.id===13).result;

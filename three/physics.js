@@ -589,7 +589,7 @@ export class Pinball {
       // persistent contact priority on every pass through an embedded pocket.
       if(this.random()>=.5)contacts.reverse();
       for(const {r,hit,f,mesh,plunger,spinner,gate,blocked,trigger}of contacts){
-        if(r.removed)continue;
+        if(r.removed&&!r.detachedNative)continue;
         if(f)supportFlipper(body(r),f,hit,this.world.gravity,f.friction,RADIUS,time);
         else if(plunger)supportSurface(body(r),hit,this.world.gravity,{friction:.3},RADIUS,time);
         else if(spinner)supportSurface(body(r),hit,this.world.gravity,{friction:.3},RADIUS,time);

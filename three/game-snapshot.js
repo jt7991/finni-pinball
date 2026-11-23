@@ -12,7 +12,7 @@ const objectRevisions=new WeakMap();
 export function snapshotSubmissionBall(game,record){
   const f=Math.fround;
   if(record.removed){
-    const state=record.lastState;
+    const state=record.detachedNative?record.proxy:record.lastState;
     return{id:record.body.handle,position:{x:f(state.x),y:f(state.y),z:f(state.z)},velocity:{x:f(state.velx),y:f(state.vely),z:f(state.velz)},radius:f(record.proxy.radius),locked:record.lastRenderLocked};
   }
   const native=game.nativeBall(record.body),velocity=record.body.linvel();

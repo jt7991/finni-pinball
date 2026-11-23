@@ -31,17 +31,17 @@ export class Kicker extends Trigger {
     if(!this.spec.fall_through){
       this.members.set(body,count+1);this.captured=record;record.held=this.key;this.capture(record);
     }
-    // Authored Hit handlers see the incoming velocity and may immediately
-    // destroy or kick the ball; don't overwrite their changes afterward.
+    // Hit sees incoming velocity. Native then resets a captured ball even if
+    // the callback destroyed it; a ball kicked by the callback stays released.
     this.emit('Hit',record);
-    if(record.removed){
+    if(record.removed&&!record.detachedNative){
       const shape=this.shapes[0];Object.assign(record.lastState,{x:shape.c.x,y:shape.c.y,z:f(shape.box.low+rSize(record)),velx:0,vely:0,velz:0,angmomx:0,angmomy:0,angmomz:0,angvelx:0,angvely:0,angvelz:0});return;
     }
     if(record.held===this.key||this.spec.fall_through){
-      record.body.setLinvel({x:0,y:0,z:0},true);body.setAngvel({x:0,y:0,z:0},true);
+      body.setLinvel({x:0,y:0,z:0},true);body.setAngvel({x:0,y:0,z:0},true);
       const shape=this.shapes[0],z=this.spec.fall_through?f(shape.box.low-rSize(record)-5):f(shape.box.low+rSize(record));
       body.setTranslation({x:shape.c.x*.01,y:(2115-shape.c.y)*.01,z:z*.01},true);
-      if(record.held)record.body.setBodyType(RAPIER.RigidBodyType.KinematicPositionBased,true);
+      if(record.held&&!record.removed)record.body.setBodyType(RAPIER.RigidBodyType.KinematicPositionBased,true);
     }else this.captured=null;
   }
   release(record){if(this.captured===record)this.captured=null;}

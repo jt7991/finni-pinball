@@ -202,26 +202,27 @@ class FullGame extends Pinball {
     rec.proxy=new Proxy({radius:25,mass:1,id:body.handle},{
       get:(target,key)=>{
         if(typeof key!=='string')return target[key];key=key.toLowerCase();
-        if(rec.removed)return rec.lastState[key]??target[key]??0;
+        if(rec.removed&&!rec.detachedNative)return rec.lastState[key]??target[key]??0;
         if(Object.hasOwn(rec.render,key))return rec.render[key];
         if(/^ang(mom|vel)[xyz]$/.test(key)){
           const axis=key.at(-1),sign=axis==='y'?1:-1;
           if(this.nativePositionUnits){const native=this.nativeBall(body);native.syncAngular();return key.startsWith('angmom')?native.angularMomentum[axis]:Math.fround(native.angularMomentum[axis]/native.inertia);}
           return body.angvel()[axis]*sign*(key.startsWith('angmom')?2.5*body.mass():.01);
         }
-        const q=(this.nativePositionUnits?this.nativeBall(body).body:body).translation(),v=body.linvel();
+        const q=(this.nativePositionUnits?this.nativeBall(body).body:body).translation(),v=(rec.detachedNative?.rapier??body).linvel();
         return ({x:q.x*100,y:2115-q.y*100,z:q.z*100,velx:v.x,vely:-v.y,velz:v.z})[key]??target[key]??0;
       },
       set:(_target,key,v)=>{key=String(key).toLowerCase();
-        if(rec.removed){rec.lastState[key]=v;return true;}
+        if(rec.removed&&!rec.detachedNative){rec.lastState[key]=v;return true;}
         if(Object.hasOwn(rec.render,key)){rec.render[key]=['visible','reflectionenabled','forcereflection'].includes(key)?!!v:Math.fround(Number(v));return true;}
         if(/^angmom[xyz]$/.test(key)){const axis=key.at(-1);if(this.nativePositionUnits){this.nativeBall(body).setAngularMomentum(axis,v);return true;}const w={...body.angvel()};w[axis]=v*(axis==='y'?1:-1)/(2.5*body.mass());body.setAngvel(w,true);return true;}
         if(/^angvel[xyz]$/.test(key))return true; // Deprecated read-only native properties.
         const positionBody=this.nativePositionUnits?this.nativeBall(body).body:body;
-        const p={...positionBody.translation()},vel={...body.linvel()};
+        const velocityBody=rec.detachedNative?.rapier??body;
+        const p={...positionBody.translation()},vel={...velocityBody.linvel()};
         if(key==='x')p.x=v*.01;if(key==='y')p.y=(2115-v)*.01;if(key==='z')p.z=v*.01;
         if(key==='velx')vel.x=v;if(key==='vely')vel.y=-v;if(key==='velz')vel.z=v;
-        positionBody.setTranslation(p,true);body.setLinvel(vel,true);return true;},
+        positionBody.setTranslation(p,true);velocityBody.setLinvel(vel,true);return true;},
     });
     if(rec.held)body.setBodyType(RAPIER.RigidBodyType.KinematicPositionBased,true);
     (isToy?this.toyRecords:this.records).push(rec);this.physicalRecords.push(rec);this.byCollider.set(collider.handle,rec);this.captures.set(key,rec);this.pendingCreate=rec;if(!isToy)this.ball=body;
@@ -235,6 +236,7 @@ class FullGame extends Pinball {
     // from physics. Rules may still hold ActiveBall during the same callback.
     rec.lastState=Object.fromEntries(['x','y','z','velx','vely','velz','angmomx','angmomy','angmomz','angvelx','angvely','angvelz'].map(key=>[key,rec.proxy[key]]));
     rec.lastRenderLocked=!!rec.held&&rec.held!=='lane';
+    if(this.nativePositionUnits)rec.detachedNative=this.nativeBall(rec.body).detach();
     rec.removed=true;this.physicalRecords.splice(this.physicalRecords.indexOf(rec),1);for(const kicker of this.kickers)kicker.release(rec);
     const list=rec.isToy?this.toyRecords:this.records;this.byCollider.delete(rec.collider.handle);list.splice(list.indexOf(rec),1);
     for(const [key,value]of this.captures)if(value===rec)this.captures.delete(key);

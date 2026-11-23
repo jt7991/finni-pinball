@@ -12,12 +12,27 @@ export class NativeBall {
     this.body.acceptHitEvent=distance=>this.acceptHitEvent(distance);
     this.body.advanceTrigger=()=>this.advanceTrigger();
     this.body.native=this;
-    for(const method of ['linvel','setLinvel','angvel','setAngvel','mass','applyImpulse','applyTorqueImpulse','collider'])this.body[method]=(...args)=>body[method](...args);
+    for(const method of ['linvel','setLinvel','angvel','setAngvel','mass','applyImpulse','applyTorqueImpulse','collider'])this.body[method]=(...args)=>this.rapier[method](...args);
     this.angularMomentum={x:0,y:0,z:0};this.lastAngular=null;
     this.body.angvel=()=>this.angularVelocity();
     this.body.applyTorqueImpulse=impulse=>this.angularImpulse(impulse);
-    this.body.setAngvel=(velocity,wake)=>{body.setAngvel(velocity,wake);this.lastAngular=null;this.syncAngular();};
+    this.body.setAngvel=(velocity,wake)=>{this.rapier.setAngvel(velocity,wake);this.lastAngular=null;this.syncAngular();};
     this.sync();
+  }
+  detach(){
+    // DestroyBall removes the mover immediately, but retained Ball references
+    // and the current physics contact list still address its native state.
+    // Release Rapier without leaving those references pointing into freed WASM.
+    this.sync();this.syncAngular();
+    const copy=v=>({x:f(v.x),y:f(v.y),z:f(v.z)});
+    let position=copy(this.rapier.translation()),velocity=copy(this.rapier.linvel()),angular=copy(this.rapier.angvel());
+    const mass=this.rapier.mass();
+    this.rapier={
+      translation:()=>({...position}),setTranslation:p=>{position=copy(p);},
+      linvel:()=>({...velocity}),setLinvel:v=>{velocity=copy(v);},
+      angvel:()=>({...angular}),setAngvel:w=>{angular=copy(w);},mass:()=>mass,
+    };
+    return this;
   }
   sync(){
     const p=this.rapier.translation(),old=this.lastWorld;
