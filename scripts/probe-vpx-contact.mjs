@@ -21,7 +21,7 @@ if(ballIndex!==undefined)assert.ok(Number.isInteger(ballIndex)&&ballIndex>=0,'Me
 const probeKind=process.argv.includes('--target-events')?'target-events':process.argv.includes('--material-events')?'material-events':process.argv.includes('--flipper-events')?'flipper-events':process.argv.includes('--slingshots')?'slingshots':process.argv.includes('--bumpers')?'bumpers':process.argv.includes('--autofire')?'autofire':process.argv.includes('--ball-pairs')?'ball-pairs':process.argv.includes('--triggers')?'triggers':process.argv.includes('--targets')?'targets':process.argv.includes('--gates')?'gates':process.argv.includes('--spinners')?'spinners':process.argv.includes('--plunger')?'plunger':process.argv.includes('--nudge')?'nudge':'contacts';
 const reference=await(await fetch(new URL('/reference-metadata.json',base))).json();
 const observeMissions=process.argv.includes('--observe-mission-state');
-if(observeMissions){assert.ok(reference.runtimeMarkers);reference.runtimeMissionFrames=nativeMissionFrames(reference.runtimeMarkers.code,process.argv.includes('--observe-multiball-state'));}
+if(observeMissions){assert.ok(reference.runtimeMarkers);reference.runtimeMissionFrames=nativeMissionFrames(reference.runtimeMarkers.code,process.argv.includes('--observe-multiball-state'),process.argv.includes('--observe-nudge-state'));}
 const battlesWonText=process.argv.find(arg=>arg.startsWith('--battles-won='))?.slice(14);
 if(battlesWonText!==undefined){
   const battlesWon=Number(battlesWonText);assert.ok(observeMissions&&Number.isInteger(battlesWon)&&battlesWon>=0&&battlesWon<=7);
@@ -355,6 +355,10 @@ try{
   const state=(await marker('REFERENCE_RULE_STATE')).split(':').map(parseFloat);assert.equal(state.length,4);assert.ok(state.every(Number.isFinite));
   const measuredBallIndex=ballIndex??(rawAnimation?0:state[0]-1);assert.ok(measuredBallIndex<state[0],'Measured native body exists');
   reference.nativeRuleState={ballCount:state[0],measuredBallIndex,measuredBallRole:measuredBallIndex<state[3]?'animation':'playable',rollingTimerEnabled:!!state[1],maxvel:state[2],lockedBallOffset:state[3]};console.log('Native rule state',JSON.stringify(reference.nativeRuleState));
+  await script('Debug.Print "PLAYER_RULE_SETTINGS|" & CStr(CDbl(TiltSensitivity))');
+  const tiltSensitivity=Number((await marker('PLAYER_RULE_SETTINGS')).replace(/'$/,''));
+  assert.ok(Number.isFinite(tiltSensitivity)&&tiltSensitivity>=0);
+  reference.playerSettings={tiltSensitivity};
   reference.comparisonScope=reference.nativeRuleState.measuredBallRole==='animation'?'raw physical ball excluded by the authored playable-ball spin/speed controller':'playable ball including authored spin and speed controls';
   assert.ok(state[0]>state[3],'playable ball exists after the animation balls');
   if(!reference.runtimeMarkers)await script('LeftFlipper.Scatter=0:RightFlipper.Scatter=0');

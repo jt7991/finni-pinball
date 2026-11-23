@@ -9,7 +9,7 @@ const {layout,objects,source}=readReferenceAssets(fixture);
 applyReferencePhysics(layout,objects,fixture);
 const reports=[];
 for(const scenario of fixture.cases){
-  const g=await createFullGame(layout,objects,source,()=>{}),ruleAudit=process.argv.includes('--rule-audit')?[]:null;let failure;
+    const g=await createFullGame(layout,objects,source,()=>{},undefined,{playerSettings:fixture.playerSettings}),ruleAudit=process.argv.includes('--rule-audit')?[]:null;let failure;
   g.random=referenceRandom();
   try{
     const ruleNames=['bSkillShotReady','bBallInPlungerLane','bBallSaverReady','bBallSaverActive','bAutoPlunger','BallSaverTime','Song'];let ruleOrigin;
@@ -133,6 +133,7 @@ if(process.argv.includes('--check'))for(const r of reports){
   if(fixture.animationRegression){assert.equal(r.animationSummary.frames,fixture.animationRegression.frames);assert.equal(r.animationSummary.offsetError,0);assert.equal(r.animationSummary.stateMismatches,0);}
   if(fixture.scriptClockRegression){assert.equal(r.scriptClockInputs,fixture.scriptClockRegression.calls);assert.equal(r.nativeScriptRandomAudit.length,fixture.nativeBodyRegression.frames);assert.ok(r.nativeScriptRandomAudit.every(row=>row.agrees));}
   if(fixture.inputSequenceRegression){assert.equal(r.nativeFlipperSummary.inputs,fixture.inputSequenceRegression.inputs);assert.ok(r.nativeFlipperSummary.frames>=fixture.inputSequenceRegression.angleFrames);assert.deepEqual(r.nativeFlipperSummary.angleErrors,[0,0]);assert.deepEqual(r.flipperContacts,fixture.cases.find(c=>c.name===r.name).flipperContacts,'every actual native flipper collision clock, side, speed and body');}
+  if(fixture.gameStateRegression){assert.equal(r.missionSummary.frames,fixture.gameStateRegression.frames);assert.deepEqual(r.missionSummary.fields,fixture.gameStateRegression.fields);assert.equal(r.missionSummary.mismatches,0,JSON.stringify(r.missionSummary.firstMismatch));}
   assert.equal(r.physicsStats.substepBudgetExceeded,0);
   if(fixture.missionRegression){const c=fixture.cases.find(c=>c.name===r.name);assert.equal(r.nativeFlipperSummary.inputs,fixture.missionRegression.inputs);assert.equal(r.missionSummary.frames,fixture.missionRegression.frames);assert.equal(r.missionSummary.mismatches,0,JSON.stringify(r.missionSummary.firstMismatch));assert.equal(r.scriptClockInputs,fixture.missionRegression.scriptClocks);assert.deepEqual(r.controlledShots,[c.controlledShot]);}
 }

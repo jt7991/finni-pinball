@@ -70,6 +70,7 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--production-dmd-animation' in sys.argv:runner='test-dmd-animation-production.mjs'
         if '--native-tilt-bob' in sys.argv:runner='probe-native-tilt-bob.mjs'
         if '--production-tilt' in sys.argv:runner='test-tilt-production.mjs'
+        if '--main-player' in sys.argv:runner='test-main-player-production.mjs'
         subprocess.run(['node',str(ROOT/'scripts'/runner),f'http://127.0.0.1:{port}',
                         sys.argv[1] if len(sys.argv)>1 else 'http://127.0.0.1:5173/three/',str(OUT),*sys.argv[2:]],check=True,timeout=150)
     finally:

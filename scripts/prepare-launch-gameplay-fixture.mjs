@@ -15,6 +15,11 @@ if(fixture.runtimeMarkers){
 assert.equal(fixture.nativeRandom.engineSha256,'c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8');assert.equal(scenario.actualDelay,600);assert.ok(Number.isInteger(frames)&&frames>=3000);assert.ok(fixture.runtimeScriptClockObserver);assert.ok(scenario.initialNativeInternals.plunger);assert.equal(scenario.initialNativeInternals.balls.length,4);assert.equal(scenario.initialBallTrails.length,10);assert.ok(Number.isInteger(scenario.initialScriptRandom));
 for(let i=0;i<=frames;i++){const row=scenario.nativeRandomFrames[i];assert.equal(row[0],i+1);if(!fixture.liveBodyState)assert.equal(row[3].balls.length,4);assert.ok(Number.isInteger(row[3].scriptRandom));assert.ok(row[3].plunger);}
 scenario.samples=scenario.samples.filter(row=>row[0]<=frames);scenario.rawSamples=scenario.rawSamples.slice(0,scenario.samples.length);scenario.nativeRandomFrames=scenario.nativeRandomFrames.slice(0,frames+1);scenario.animationFrames=scenario.animationFrames.filter(row=>row[0]<=frames);scenario.scriptClocks=scenario.scriptClocks.filter(row=>row.ms<=frames);
+if(scenario.missionFrames){
+ scenario.missionFrames=scenario.missionFrames.filter(row=>row[0]<=frames);
+ assert.deepEqual(scenario.missionFrames.map(row=>row[0]),scenario.animationFrames.map(row=>row[0]),'All observed game-state frames share the native animation clock');
+ fixture.gameStateRegression={frames:scenario.missionFrames.length,fields:Object.keys(fixture.runtimeMissionFrames.fields)};
+}
 if(scenario.inputSequence){
  assert.ok(fixture.liveBodyState&&fixture.nativeMemoryLayout.liveABI);assert.ok(scenario.inputSequence.every(input=>input.ms<=frames));assert.ok(scenario.flipperContacts.some(row=>row.side==='left')&&scenario.flipperContacts.some(row=>row.side==='right'));scenario.flipperContacts=scenario.flipperContacts.filter(row=>row.ms<=frames);
  scenario.pulseTimerClocks=scenario.pulseTimerClocks.filter(ms=>ms<=frames);assert.ok(scenario.pulseTimerClocks.length>100);for(let i=1;i<scenario.pulseTimerClocks.length;i++)assert.equal(scenario.pulseTimerClocks[i]-scenario.pulseTimerClocks[i-1],40);

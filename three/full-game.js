@@ -19,6 +19,7 @@ import {nativePitchFactor} from './native-sound.js';
 import {nativeTargetEvent} from './native-target-event.js';
 import {FlipperAnimation} from './flipper-animation.js';
 import {TriggerAnimation,BumperAnimation} from './mechanism-animation.js';
+import {applyPlayerSettings} from './player-settings.js';
 
 export async function createFullGame(layout,specs,source,emit,media,options={}) {
   await RAPIER.init();
@@ -65,6 +66,7 @@ class FullGame extends Pinball {
     this.frameMechanisms=[...flipperAnimations,...this.targetMotions.values(),...this.visualMotions.values(),...this.rules.sequences.values(),...this.rules.lamps.values()].sort((a,b)=>(a.spec.native_source_order??0)-(b.spec.native_source_order??0));
     this.rules.init();
     this.rules.execute('bFreePlay=True:BallsPerGame=3');
+    applyPlayerSettings(this.rules,options.playerSettings);
     this.sync();
   }
 

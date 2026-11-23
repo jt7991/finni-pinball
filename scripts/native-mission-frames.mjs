@@ -7,7 +7,7 @@ export const missionFields={
   player:'CurrentPlayer',ballNumber:'Balls',
   ...Object.fromEntries(Array.from({length:7},(_,i)=>['mission'+(i+1),`Battle(CurrentPlayer,${i+1})`])),
 };
-export function nativeMissionFrames(source,observeMultiball=false){
+export function nativeMissionFrames(source,observeMultiball=false,observeNudges=false){
   const handlers=source.match(/^Sub Target010_Timer\b[^\n]*\n[\s\S]*?^End Sub/gmi);
   assert.equal(handlers?.length,1,'Existing read-only frame observer');
   const fields=observeMultiball?{...missionFields,
@@ -15,7 +15,11 @@ export function nativeMissionFrames(source,observeMultiball=false){
     multiball:'Abs(CLng(bMultiBallMode))',autoPlunger:'Abs(CLng(bAutoPlunger))',inLane:'Abs(CLng(bBallInPlungerLane))',
     saverReady:'Abs(CLng(bBallSaverReady))',saverActive:'Abs(CLng(bBallSaverActive))',saverTime:'BallSaverTime',
     ...Object.fromEntries(Array.from({length:6},(_,i)=>['shot'+(i+1),`BattleLights(${i+1})`])),
-  }:missionFields;
+  }:{...missionFields};
+  if(observeNudges)Object.assign(fields,{
+    tilted:'Abs(CLng(Tilted))',tiltCount:'Tilt',tiltSensitivity:'TiltSensitivity',
+    tiltRecovery:'Abs(CLng(TiltRecoveryTimer.Enabled))',playing:'Abs(CLng(bGameInPlay))',
+  });
   const original=handlers[0],logger=' If RefTraceOn Then Debug.Print "MISSION_FRAME|" & GameTime & "|" & '+Object.values(fields).map(expression=>'CStr(CDbl('+expression+'))').join(' & "|" & ')+'\n';
   const code=original.replace(/^End Sub/m,logger+'End Sub');
   assert.equal(code.replace(logger,''),original);
