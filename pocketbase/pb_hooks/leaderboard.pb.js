@@ -17,7 +17,7 @@ routerAdd('POST','/api/finni/scores',(e)=>{
   if(!data||typeof data.run!=='string'||typeof data.token!=='string'||!Array.isArray(data.scores)||data.scores.length<1||data.scores.length>4)throw new BadRequestError('Invalid game result.');
   const players={};
   for(const entry of data.scores){
-    if(!entry||!Number.isInteger(entry.score)||entry.score<1||entry.score>999999999999||!Number.isInteger(entry.player)||entry.player<1||entry.player>4||players[entry.player]||typeof entry.initials!=='string'||!(/^[A-Z0-9]{1,3}$/).test(entry.initials))throw new BadRequestError('Invalid score or initials.');
+    if(!entry||!Number.isInteger(entry.score)||entry.score<1||entry.score>999999999999||!Number.isInteger(entry.player)||entry.player<1||entry.player>4||players[entry.player]||typeof entry.initials!=='string'||!(/^[A-Z0-9]{1,12}$/).test(entry.initials))throw new BadRequestError('Invalid score or name (use 1–12 uppercase letters or numbers).');
     players[entry.player]=true;
   }
   let replayed=false;
@@ -43,6 +43,17 @@ routerAdd('POST','/api/finni/scores',(e)=>{
 },$apis.bodyLimit(4096));
 
 routerAdd('GET','/api/finni/leaderboard',(e)=>{
-  const records=$app.findRecordsByFilter('scores','hidden = false','-score,submitted,id',25);
-  return e.json(200,{items:records.map((r)=>({initials:r.getString('initials'),score:r.getFloat('score'),submitted:r.getString('submitted')}))});
+  // Rank names before limiting, so repeated games never crowd out players.
+  // Keep every result for audit and idempotent run submission.
+  const records=arrayOf(new DynamicModel({initials:'',score:0,submitted:''}));
+  $app.db().newQuery(`
+    SELECT initials, score, submitted FROM (
+      SELECT UPPER(TRIM(initials)) AS initials, score, submitted, id,
+        ROW_NUMBER() OVER (
+          PARTITION BY UPPER(TRIM(initials)) ORDER BY score DESC, submitted, id
+        ) AS position
+      FROM scores WHERE hidden = false
+    ) WHERE position = 1 ORDER BY score DESC, submitted, id LIMIT 25
+  `).all(records);
+  return e.json(200,{items:records});
 });
