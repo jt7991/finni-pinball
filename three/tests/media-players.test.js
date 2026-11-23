@@ -15,6 +15,7 @@ async function withAudio(run,{deferred=false}={}){
   decodeAudioData(){decoding.resolve();return deferred?decoded.promise:Promise.resolve({sampleRate:48000,length:480,numberOfChannels:1});}
   createBufferSource(){const source={...chain,playbackRate:{value:1},start(){source.starts=(source.starts??0)+1;},stop(){source.stops=(source.stops??0)+1;},finish(){source.onended?.();}};sources.push(source);return source;}
   createGain(){return {...chain,gain:{value:1}};}createStereoPanner(){return {...chain,pan:{value:0}};}
+  createChannelSplitter(){return {...chain};}createChannelMerger(){return {...chain};}
  };
  globalThis.fetch=async()=>({ok:true,arrayBuffer:async()=>new ArrayBuffer(4)});
  try{const audio=createAudio({effect:{file:'effect.m4a',sampleRate:22050}},'/three/');await audio.unlock();await run({audio,sources,decoded,decoding});audio.stop();}

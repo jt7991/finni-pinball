@@ -48,13 +48,14 @@ test('native pitch consumes two draws in order and rounds COM pitch offsets to e
 
 test('WebAudio uses the native source sample rate after device resampling and updates an existing loop',async()=>{
   const originals={Audio:globalThis.Audio,AudioContext:globalThis.AudioContext,fetch:globalThis.fetch},sources=[];
-  const chain={connect(){return this;}};
+  const chain={connect(){return this;},disconnect(){}};
   globalThis.Audio=class {play(){return Promise.resolve();}pause(){}load(){}};
   globalThis.AudioContext=class {
     currentTime=0;destination={};resume(){return Promise.resolve();}
     decodeAudioData(){return Promise.resolve({sampleRate:48000,length:480,numberOfChannels:1});}
     createBufferSource(){const source={...chain,playbackRate:{value:1},start(){},stop(){}};sources.push(source);return source;}
     createGain(){return {...chain,gain:{value:1}};}createStereoPanner(){return {...chain,pan:{value:0}};}
+    createChannelSplitter(){return {...chain};}createChannelMerger(){return {...chain};}
   };
   globalThis.fetch=async()=>({ok:true,arrayBuffer:async()=>new ArrayBuffer(4)});
   try{

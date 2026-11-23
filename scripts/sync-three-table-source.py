@@ -9,6 +9,7 @@ import argparse,base64,gzip,hashlib,json,struct,zlib
 from pathlib import Path
 import olefile
 from three_rules_adapter import adapt_rules
+from three_sound_settings import sound_settings
 
 ROOT=Path(__file__).resolve().parents[1]
 p=argparse.ArgumentParser(description=__doc__)
@@ -93,7 +94,7 @@ with olefile.OleFileIO(args.old_vpx) as old,olefile.OleFileIO(args.vpx) as new:
         size=struct.unpack_from('<I',data,offset)[0];offset+=4;payload=data[offset:offset+size];assert len(payload)==size
         suffix='.wav' if wav else Path(original.replace('\\','/')).suffix or '.mp3'
         if wav:payload=b'RIFF'+struct.pack('<I',4+8+len(wave_format)+8+size)+b'WAVEfmt '+struct.pack('<I',len(wave_format))+wave_format+b'data'+struct.pack('<I',size)+payload
-        filename=name.lower()+suffix;(out/'sounds'/filename).write_bytes(payload);entry={'name':name,'file':filename,'sha256':sha(payload)}
+        filename=name.lower()+suffix;(out/'sounds'/filename).write_bytes(payload);entry={'name':name,'file':filename,'sha256':sha(payload),**sound_settings(data,offset+size)}
         if unchanged and name.lower() in old_audio:entry['reuse_file']=old_audio[name.lower()]['file']
         sounds.append(entry)
     (out/'sounds.json').write_text(json.dumps(sounds,separators=(',',':')))

@@ -1,0 +1,164 @@
+{
+  "engineSHA256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+  "sourceSHA256": "3ae17f498f745efa19076ca33e08f96f66d766367fc984e37aacf50774a35e14",
+  "captureSHA256": "5c163e0ed56c2c7aef76c634e7bf6944707da100a0654c9b1e12f75eee2eed2d",
+  "scope": "Original native mix-node parameters after twelve public PlaySound calls. Only native parameters are expected values. Recorded device PCM was not isolated from every other source and is not used as an expected waveform.",
+  "cases": [
+    {
+      "sound": "fx_ballrolling3",
+      "outputTarget": "playfield",
+      "volume": 0.37,
+      "pan": 0.03125,
+      "observed": {
+        "address": 464447592,
+        "level": 0.6082762479782104,
+        "balance": 0.7071067690849304,
+        "fade": 0,
+        "mode": 0
+      }
+    },
+    {
+      "sound": "fx_ballrolling3",
+      "outputTarget": "playfield",
+      "volume": 0.37,
+      "pan": -0.03125,
+      "observed": {
+        "address": 464447592,
+        "level": 0.6082762479782104,
+        "balance": -0.7071067690849304,
+        "fade": 0,
+        "mode": 0
+      }
+    },
+    {
+      "sound": "fx_ballrolling3",
+      "outputTarget": "playfield",
+      "volume": 0.37,
+      "pan": 0,
+      "observed": {
+        "address": 464447592,
+        "level": 0.6082762479782104,
+        "balance": 0,
+        "fade": 0,
+        "mode": 0
+      }
+    },
+    {
+      "sound": "fx_ballrolling3",
+      "outputTarget": "playfield",
+      "volume": 0.37,
+      "pan": 1,
+      "observed": {
+        "address": 464447592,
+        "level": 0.6082762479782104,
+        "balance": 1,
+        "fade": 0,
+        "mode": 0
+      }
+    },
+    {
+      "sound": "fx_ballrolling3",
+      "outputTarget": "playfield",
+      "volume": 0.37,
+      "pan": -1,
+      "observed": {
+        "address": 464447592,
+        "level": 0.6082762479782104,
+        "balance": -1,
+        "fade": 0,
+        "mode": 0
+      }
+    },
+    {
+      "sound": "fx_ballrolling3",
+      "outputTarget": "playfield",
+      "volume": 0.09,
+      "pan": 0.03125,
+      "observed": {
+        "address": 464447592,
+        "level": 0.30000001192092896,
+        "balance": 0.7071067690849304,
+        "fade": 0,
+        "mode": 0
+      }
+    },
+    {
+      "sound": "fx_enter",
+      "outputTarget": "backglass",
+      "volume": 0.37,
+      "pan": 0.03125,
+      "observed": {
+        "address": 363421080,
+        "level": 1.216552495956421,
+        "balance": 0.7071067690849304,
+        "fade": 0,
+        "mode": 2
+      }
+    },
+    {
+      "sound": "fx_enter",
+      "outputTarget": "backglass",
+      "volume": 0.37,
+      "pan": -0.03125,
+      "observed": {
+        "address": 363421080,
+        "level": 1.216552495956421,
+        "balance": -0.7071067690849304,
+        "fade": 0,
+        "mode": 2
+      }
+    },
+    {
+      "sound": "fx_enter",
+      "outputTarget": "backglass",
+      "volume": 0.37,
+      "pan": 0,
+      "observed": {
+        "address": 363421080,
+        "level": 1.216552495956421,
+        "balance": 0,
+        "fade": 0,
+        "mode": 2
+      }
+    },
+    {
+      "sound": "fx_enter",
+      "outputTarget": "backglass",
+      "volume": 0.37,
+      "pan": 1,
+      "observed": {
+        "address": 363421080,
+        "level": 1.216552495956421,
+        "balance": 1,
+        "fade": 0,
+        "mode": 2
+      }
+    },
+    {
+      "sound": "fx_enter",
+      "outputTarget": "backglass",
+      "volume": 0.37,
+      "pan": -1,
+      "observed": {
+        "address": 363421080,
+        "level": 1.216552495956421,
+        "balance": -1,
+        "fade": 0,
+        "mode": 2
+      }
+    },
+    {
+      "sound": "fx_enter",
+      "outputTarget": "backglass",
+      "volume": 0.09,
+      "pan": 0.03125,
+      "observed": {
+        "address": 363421080,
+        "level": 0.6000000238418579,
+        "balance": 0.7071067690849304,
+        "fade": 0,
+        "mode": 2
+      }
+    }
+  ]
+}

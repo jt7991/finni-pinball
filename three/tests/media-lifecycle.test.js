@@ -8,13 +8,14 @@ import {createAudio} from '../media.js';
 for(const action of ['named stop','stop all','mute then unmute'])test(`a pending decoded sound cannot survive ${action}`,async()=>{
   const originals={Audio:globalThis.Audio,AudioContext:globalThis.AudioContext,fetch:globalThis.fetch};
   const decoding=Promise.withResolvers(),decoded=Promise.withResolvers(),sources=[];
-  const chain={connect(){return this;}};
+  const chain={connect(){return this;},disconnect(){}};
   globalThis.Audio=class{play(){return Promise.resolve();}pause(){}load(){}};
   globalThis.AudioContext=class{
     currentTime=0;destination={};resume(){return Promise.resolve();}
     decodeAudioData(){decoding.resolve();return decoded.promise;}
     createBufferSource(){const source={...chain,playbackRate:{value:1},start(){source.started=true;},stop(){source.stopped=true;}};sources.push(source);return source;}
     createGain(){return {...chain,gain:{value:1}};}createStereoPanner(){return {...chain,pan:{value:0}};}
+    createChannelSplitter(){return {...chain};}createChannelMerger(){return {...chain};}
   };
   globalThis.fetch=async()=>({ok:true,arrayBuffer:async()=>new ArrayBuffer(4)});
   try{

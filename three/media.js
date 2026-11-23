@@ -2,9 +2,10 @@
 // Sound player selection/repeat semantics follow VPX AudioPlayer/SoundPlayer.
 // See public/licenses/VPX-Physics-NOTICE.txt.
 import {nativeSoundRate} from './native-sound.js';
+import {createNativeSoundMixer} from './native-sound-mix.js';
 
 export function createAudio(manifest,base) {
-  let context,muted=false,primed=false,stopEpoch=0;
+  let context,muted=false,primed=false,stopEpoch=0,musicSource,musicMixer;
   const musicElement=new Audio();
   const cache=new Map(),decodedBytes=new Map(),playing=new Map(),music=new Map(),stops=new Map();
   async function unlock(){
@@ -37,28 +38,26 @@ export function createAudio(manifest,base) {
   function stopPlayer(player){
     player.active=false;
     if(player.source){player.source.onended=null;player.source.stop();player.source.disconnect?.();player.source=null;}
-    player.gain?.disconnect?.();player.panner?.disconnect?.();
+    player.mixer?.disconnect();
   }
   function stop(name){
-    if(name===undefined){stopEpoch++;for(const players of playing.values())for(const player of players)stopPlayer(player);playing.clear();for(const element of music.values()){element.pause();element.removeAttribute('src');element.load();}music.clear();return;}
+    if(name===undefined){stopEpoch++;for(const players of playing.values())for(const player of players)stopPlayer(player);playing.clear();for(const element of music.values()){element.pause();element.removeAttribute('src');element.load();}music.clear();musicMixer?.disconnect();musicSource?.disconnect();musicMixer=null;return;}
     name=String(name).toLowerCase();stops.set(name,(stops.get(name)??0)+1);
-    const element=music.get(String(name).toLowerCase());if(element){element.pause();element.removeAttribute('src');element.load();music.delete(String(name).toLowerCase());}
+    const element=music.get(String(name).toLowerCase());if(element){element.pause();element.removeAttribute('src');element.load();music.delete(String(name).toLowerCase());musicMixer?.disconnect();musicSource?.disconnect();musicMixer=null;}
     for(const player of playing.get(name)??[])stopPlayer(player);playing.delete(name);
   }
   function updatePlayer(player,name){
-    const {source,gain,panner,settings}=player;if(!source)return;
+    const {source,mixer,settings}=player;if(!source)return;
     source.loop=settings.loop<0;
-    gain.gain.value=Math.max(0,Math.min(1,Number(settings.volume)));
-    panner.pan.value=Math.max(-1,Math.min(1,Number(settings.pan)));
+    mixer.set(settings);
     source.playbackRate.value=settings.rate*nativeSoundRate(manifest[name].sampleRate??source.buffer.sampleRate,settings.pitch,settings.pitchFactor);
   }
   function startPlayer(player,name,data){
-    const source=context.createBufferSource(),gain=context.createGain(),panner=context.createStereoPanner();
-    Object.assign(player,{source,gain,panner});source.buffer=data;updatePlayer(player,name);
-    source.connect(gain).connect(panner).connect(context.destination);
+    const source=context.createBufferSource(),mixer=createNativeSoundMixer(context,source,manifest[name],Math.min(context.destination.maxChannelCount??2,2));
+    Object.assign(player,{source,mixer});source.buffer=data;updatePlayer(player,name);
     source.onended=()=>{
       if(!player.active||player.source!==source)return;
-      source.onended=null;source.disconnect?.();gain.disconnect?.();panner.disconnect?.();player.source=null;
+      source.onended=null;source.disconnect?.();mixer.disconnect();player.source=null;
       if(player.remaining>0){player.remaining--;startPlayer(player,name,data);}else player.active=false;
     };
     source.start();
@@ -69,8 +68,11 @@ export function createAudio(manifest,base) {
     try{
       if(manifest[name].music){
         for(const old of [...music.keys()])stop(old);
-        const element=musicElement;element.src=`${base}audio/${manifest[name].file}`;element.loop=loop===-1;
-        element.volume=Math.max(0,Math.min(1,Number(volume)));element.preload='none';music.set(name,element);await element.play();return;
+        musicSource??=context.createMediaElementSource(musicElement);
+        musicMixer?.disconnect();musicSource.disconnect();
+        musicMixer=createNativeSoundMixer(context,musicSource,manifest[name],Math.min(context.destination.maxChannelCount??2,2));musicMixer.set({volume,pan});
+        const element=musicElement;element.src=`${base}audio/${manifest[name].file}`;element.loop=loop<0;
+        element.volume=1;element.preload='none';music.set(name,element);await element.play();return;
       }
       // Native AudioPlayer selects the first player for useSame, or the first
       // idle one otherwise. Looping alone does not request reuse. Reserve the

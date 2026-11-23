@@ -75,6 +75,8 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--profile-postprocess' in sys.argv:runner='test-graphics-profile-postprocess-browser.mjs'
         if '--player-backdrop' in sys.argv:runner='test-native-backdrop-browser.mjs'
         if '--audio-players' in sys.argv:runner='test-audio-players-browser.mjs'
+        if '--native-audio-mix' in sys.argv:runner='probe-native-audio-mix.mjs'
+        if '--audio-mix' in sys.argv:runner='test-native-audio-mix-browser.mjs'
         subprocess.run(['node',str(ROOT/'scripts'/runner),f'http://127.0.0.1:{port}',
                         sys.argv[1] if len(sys.argv)>1 else 'http://127.0.0.1:5173/three/',str(OUT),*sys.argv[2:]],check=True,timeout=150)
     finally:

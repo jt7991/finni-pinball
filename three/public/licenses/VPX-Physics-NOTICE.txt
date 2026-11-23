@@ -10,6 +10,10 @@ media.js retains AudioPlayer::PlaySound's useSame/restart player selection and
 SoundPlayer::Play's loop-count and live-update behavior from the same revision:
 https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/audio/AudioPlayer.cpp
 https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/audio/SoundPlayer.cpp
+native-sound-mix.js retains the same SoundPlayer square-root volume and pan
+curves, decoder channel routing, and vpx_node_process_pcm_frames channel gains.
+scripts/three_sound_settings.py reads PinSound::CreateFromStream serialization:
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/audio/Sound.cpp
 native-ball-render.js and native-ball-render-state.js adapt Ball::Render and
 Renderer::UpdateBallShaderMatrix from the same pinned revision. The compiled
 shaders and original ball mesh in public/native-ball/ derive from:
