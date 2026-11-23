@@ -1,9 +1,9 @@
 import {nativeSoundRate} from './native-sound.js';
 
 export function createAudio(manifest,base) {
-  let context,muted=false,primed=false;
+  let context,muted=false,primed=false,stopEpoch=0;
   const musicElement=new Audio();
-  const cache=new Map(),decodedBytes=new Map(),playing=new Map(),music=new Map(),loops=new Map();
+  const cache=new Map(),decodedBytes=new Map(),playing=new Map(),music=new Map(),loops=new Map(),stops=new Map();
   async function unlock(){
     context??=new AudioContext();const resumed=context.resume();
     // Reuse one gesture-unlocked media element for streamed music on iOS.
@@ -32,8 +32,8 @@ export function createAudio(manifest,base) {
     return cache.get(name);
   }
   function stop(name){
-    if(name===undefined){for(const sources of playing.values())for(const s of sources)s.stop();playing.clear();loops.clear();for(const element of music.values()){element.pause();element.removeAttribute('src');element.load();}music.clear();return;}
-    loops.delete(String(name).toLowerCase());
+    if(name===undefined){stopEpoch++;for(const sources of playing.values())for(const s of sources)s.stop();playing.clear();loops.clear();for(const element of music.values()){element.pause();element.removeAttribute('src');element.load();}music.clear();return;}
+    name=String(name).toLowerCase();stops.set(name,(stops.get(name)??0)+1);loops.delete(name);
     const element=music.get(String(name).toLowerCase());if(element){element.pause();element.removeAttribute('src');element.load();music.delete(String(name).toLowerCase());}
     for(const s of playing.get(String(name).toLowerCase())??[])s.stop();playing.delete(String(name).toLowerCase());
   }
@@ -56,8 +56,10 @@ export function createAudio(manifest,base) {
         }
         loopState={volume,pan,rate,pitch,pitchFactor};loops.set(name,loopState);
       }
-      const requested=context.currentTime,data=await buffer(name);
-      if(muted||context.currentTime-requested>2&&!loopState||loopState&&loops.get(name)!==loopState)return;
+      const requested=context.currentTime,epoch=stopEpoch,stopped=stops.get(name)??0,data=await buffer(name);
+      // Native stop applies to requests already issued, even if this web
+      // buffer is still fetching/decoding. Later requests remain playable.
+      if(muted||epoch!==stopEpoch||stopped!==(stops.get(name)??0)||context.currentTime-requested>2&&!loopState||loopState&&loops.get(name)!==loopState)return;
       const source=context.createBufferSource(),gain=context.createGain(),panner=context.createStereoPanner();
       source.buffer=data;source.loop=loop===-1;gain.gain.value=Math.max(0,Math.min(1,Number(loopState?.volume??volume)));
       panner.pan.value=Math.max(-1,Math.min(1,Number(loopState?.pan??pan)));source.playbackRate.value=loopState?(loopState.rate*nativeSoundRate(manifest[name].sampleRate??data.sampleRate,loopState.pitch,loopState.pitchFactor)):playbackRate(data);
