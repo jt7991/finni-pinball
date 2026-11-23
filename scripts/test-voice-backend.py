@@ -23,9 +23,9 @@ def port():
 
 with tempfile.TemporaryDirectory(prefix='voice-test-', dir=ROOT/'.work') as temp:
     address = f'http://127.0.0.1:{port()}'
-    command = [str(ROOT/'.tools/pocketbase/pocketbase.exe')]
+    command = [str(ROOT/'.tools/pocketbase'/('pocketbase.exe' if os.name == 'nt' else 'pocketbase'))]
     flags = [f'--dir={temp}/data',f'--migrationsDir={ROOT}/pocketbase/pb_migrations',f'--hooksDir={ROOT}/pocketbase/pb_hooks']
-    password = secrets.token_urlsafe(24)
+    password = 'test-' + secrets.token_urlsafe(24)
     subprocess.run(command+['superuser','upsert','voice-test@example.com',password]+flags, check=True, stdout=subprocess.DEVNULL)
     with open(Path(temp)/'server.log','w') as log:
         process = subprocess.Popen(command+['serve',f'--http={address.removeprefix("http://")}']+flags,stdout=log,stderr=log)
@@ -59,7 +59,7 @@ with tempfile.TemporaryDirectory(prefix='voice-test-', dir=ROOT/'.work') as temp
             thread=threading.Thread(target=proxy.serve_forever,daemon=True);thread.start()
             base=f'http://127.0.0.1:{proxy.server_port}'
             try:
-                assert b'Give the party a voice' in request('/voice',base=base)
+                assert b'<h1>Voice studio</h1>' in request('/voice',base=base)
                 assert request('/voice-lines.json',base=base)['vo_ball1locked']
                 assert request('/api/collections/voice_team/auth-with-password',{'identity':'teammate@example.com','password':password},base=base)['token']
                 wav=io.BytesIO()

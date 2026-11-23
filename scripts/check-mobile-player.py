@@ -21,12 +21,18 @@ spec.loader.exec_module(module)
 
 class Handler(module.Handler):
     def do_GET(self):
+        if self.path == '/api/leaderboard':
+            self.send_response(503)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            self.wfile.write(b'{"message":"Scores unavailable in the isolated UI fixture"}')
+            return
         if self.path == '/app.js':
             source = (ROOT/'browser/app.js').read_text(encoding='utf-8')
             source = source.replace('placeFlippers();boot();', 'placeFlippers();')
             source += """
 window.playerTest={scripts:[]};
-engine={ccall:(name,type,args,[script])=>{playerTest.scripts.push(script);return 1;}};
+engine={ccall:(name,type,args,[script])=>{if(playerTest.failNext){const error=playerTest.failNext;delete playerTest.failNext;throw error;}playerTest.scripts.push(script);return 1;}};
 connected=true;paint();views.apply();
 document.body.classList.add('playing','game-in-play');
 document.getElementById('waiting').hidden=true;
@@ -54,11 +60,13 @@ preview.onload=()=>{
 
 parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--renderer', action='store_true', help='Test the real VPX engine and shader programs instead of the UI fixture.')
+parser.add_argument('--profile', action='store_true', help='Compare real engine graphics profiles in desktop Chromium with a phone viewport.')
 args = parser.parse_args()
-output = ROOT/('.work/renderer-review' if args.renderer else '.work/mobile-review')
+real_engine = args.renderer or args.profile
+output = ROOT/('.work/render-profiles' if args.profile else '.work/renderer-review' if args.renderer else '.work/mobile-review')
 output.mkdir(exist_ok=True)
 edge = Path('C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe')
-with ThreadingHTTPServer(('127.0.0.1', 0), module.Handler if args.renderer else Handler) as server:
+with ThreadingHTTPServer(('127.0.0.1', 0), module.Handler if real_engine else Handler) as server:
     threading.Thread(target=server.serve_forever, daemon=True).start()
     try:
         with socket.socket() as sock:
@@ -66,7 +74,7 @@ with ThreadingHTTPServer(('127.0.0.1', 0), module.Handler if args.renderer else 
             debug_port = sock.getsockname()[1]
         with tempfile.TemporaryDirectory(prefix='mobile-player-', dir=ROOT/'.work') as profile:
             process = subprocess.Popen([
-                str(edge), '--headless=new', '--enable-unsafe-swiftshader' if args.renderer else '--disable-gpu', '--no-first-run',
+                str(edge), '--headless=new', '--enable-unsafe-swiftshader' if real_engine else '--disable-gpu', '--no-first-run',
                 f'--user-data-dir={profile}', f'--remote-debugging-port={debug_port}', 'about:blank',
             ], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
             try:
@@ -78,9 +86,9 @@ with ThreadingHTTPServer(('127.0.0.1', 0), module.Handler if args.renderer else 
                         time.sleep(.1)
                 subprocess.run([
                     str(ROOT/'.tools/node-v22.16.0-win-x64/node.exe'),
-                    str(ROOT/'scripts'/('test-renderer-browser.mjs' if args.renderer else 'test-mobile-player.mjs')),
+                    str(ROOT/'scripts'/('profile-renderer-browser.mjs' if args.profile else 'test-renderer-browser.mjs' if args.renderer else 'test-mobile-player.mjs')),
                     f'http://127.0.0.1:{debug_port}', f'http://127.0.0.1:{server.server_port}', str(output),
-                ], check=True, timeout=120 if args.renderer else 90)
+                ], check=True, timeout=240 if args.profile else 120 if real_engine else 90)
             finally:
                 process.terminate()
                 process.wait(timeout=10)

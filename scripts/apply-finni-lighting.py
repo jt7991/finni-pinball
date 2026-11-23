@@ -117,6 +117,55 @@ def install(extracted):
     return changed
 
 
+def visual_light(light):
+    """Apply the selected optical profile; retain light state and fade duration."""
+    obj = dict(light)
+    profile = config().get('appearance')
+    if not profile or obj.get('is_backglass', False):
+        return obj
+    name = obj['name']
+    scale = profile['insert_intensity_scale']
+    if name.startswith('gi'):
+        scale = profile['gi_intensity_scale']
+        obj.update(color=profile['gi_color'], color2=profile['gi_color2'])
+        obj['falloff_radius'] *= profile['gi_radius_scale']
+        obj['bulb_halo_height'] *= profile['gi_halo_height_scale']
+        obj['mesh_radius'] = min(obj['mesh_radius'], profile['gi_mesh_radius'])
+    elif name.startswith('Finni') and 'Fill' in name:
+        scale = profile['fill_intensity_scale']
+        obj.update(color=profile['fill_color'], color2=profile['fill_color2'])
+    for prop in ('intensity', 'fade_speed_up', 'fade_speed_down'):
+        obj[prop] *= scale
+    return obj
+
+
+def visual_flasher(flasher):
+    obj = dict(flasher)
+    profile = config().get('appearance')
+    if profile and not obj.get('is_dmd') and not obj['name'].lower().startswith(('digit', 'dmd')) and obj.get('add_blend') == 'add':
+        obj['alpha'] = round(obj['alpha'] * profile['flasher_alpha_scale'])
+    return obj
+
+
+def install_visuals(extracted):
+    """Run after comic appearance creates its steady fill lights."""
+    extracted = Path(extracted)
+    for kind, transform in [('Light', visual_light), ('Flasher', visual_flasher)]:
+        for path in sorted((extracted/'gameitems').glob(kind+'.*.json')):
+            data = json.loads(path.read_text())
+            updated = transform(data[kind])
+            if updated != data[kind]:
+                data[kind] = updated
+                path.write_text(json.dumps(data, indent=2))
+    profile = config().get('appearance')
+    if profile:
+        file = extracted/'gamedata.json'
+        data = json.loads(file.read_text())
+        for key in ('bloom_strength', 'env_emission_scale'):
+            data[key] = profile[key]
+        file.write_text(json.dumps(data, indent=2))
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--install', type=Path, default=ROOT/'.work/finni-live-extracted')

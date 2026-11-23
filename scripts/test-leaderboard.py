@@ -73,14 +73,14 @@ class LeaderboardTests(unittest.TestCase):
             self.assertEqual(self.submit(run,initials,score)[0],400)
         self.assertEqual(self.submit(run)[0],201)
 
-    def test_suspicious_run_hidden_from_both_read_endpoints(self):
+    def test_short_high_scoring_run_published_to_both_read_endpoints(self):
         run=self.run_record(age=0)
         status,result=self.submit(run,'ZZZ',999999999)
-        self.assertEqual(status,201);self.assertTrue(result['review'])
+        self.assertEqual(status,201);self.assertTrue(result['saved'])
         _,board=self.request('/api/finni/leaderboard')
-        self.assertFalse(any(r['initials']=='ZZZ' for r in board['items']))
+        self.assertTrue(any(r['initials']=='ZZZ' for r in board['items']))
         _,records=self.request('/api/collections/scores/records')
-        self.assertFalse(any(r['initials']=='ZZZ' for r in records['items']))
+        self.assertTrue(any(r['initials']=='ZZZ' for r in records['items']))
 
     def test_public_mutation_locked_and_sessions_private(self):
         self.assertNotEqual(self.request('/api/collections/scores/records',{'initials':'BAD','score':999999})[0],200)

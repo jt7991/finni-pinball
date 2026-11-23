@@ -65,6 +65,10 @@ parts={}
 for name in ('LilHead','LilLeftArm','LilRightArm','Primitive077'):
     path=WORK/'gameitems'/f'Primitive.{name}.json';p=json.loads(path.read_text())['Primitive']
     p['image']='finni-fox-atlas';p['position']['z']+=.0215/.00053975
+    # Draw all fox parts together, including the body, outside the static cache.
+    if p['static_rendering']:
+        p['disable_lighting_below']=1.0  # Match the static pass's lighting.
+    p['static_rendering']=False
     p['is_collidable']=False;p['is_toy']=True;p['use_3d_mesh']=True;p['mesh_file_name']=name+'.obj'
     parts[name]=export_obj(name,[bpy.data.objects[name]],fox=True)
     path.write_text(json.dumps({'Primitive':p},indent=2))
@@ -139,6 +143,7 @@ configuration=json.loads((ROOT/'design/current-assets.json').read_text())
 if configuration.get('appearance')=='comic-party-prep':
     appearance=runpy.run_path(str(ROOT/'scripts/apply-comic-appearance.py'))['install'](WORK,palette_names,configuration)
     (OUT/'appearance-report.json').write_text(json.dumps(appearance,indent=2))
+runpy.run_path(str(ROOT/'scripts/apply-finni-lighting.py'))['install_visuals'](WORK)
 # VPX can prefer a neighboring VBS over the embedded script. Keep it in sync.
 shutil.copyfile(WORK/'script.vbs',OUT/'Finni-Big-Day.vbs')
 # Source rules, lock collision geometry and the real bobble routine must survive.
@@ -151,6 +156,6 @@ for filename in ('Wall.Leftslingshot.json', 'Wall.Rightslingshot.json'):
     assert json.loads((SOURCE/'gameitems'/filename).read_text()) == json.loads((WORK/'gameitems'/filename).read_text()), filename
 for path in (SOURCE/'gameitems').glob('Rubber.*Sling*.json'):
     assert json.loads(path.read_text()) == json.loads((WORK/'gameitems'/path.name).read_text()), path.name
-(OUT/'build-report.json').write_text(json.dumps({'meshes':parts,'finni_dmd':dmd_assets,'party_audio_replacements':audio_count,'finni_voice_slots':voice_count,'funkorama_music_slots':music_count,'source_script_changes':['approved HellHouse scoop kick: 164, 12, 0','small aligned lock-ramp entrance assist (18 entry / 24 climb speed)','Cake Time / Friendship display and voice cues','Ball saved voice on the existing save display','seven approved party-task DMD titles, instructions and completion cues','complete Finni DMD scenes, icons and secondary-feature presentation'],'all_other_script_bytes_unchanged':True,'lock_collisions_unchanged':True,'slingshot_collisions_and_animation_unchanged':True,'sling_covers':'plain rounded triangles over original mounting posts','fox_animation':'original Target012_Hit / LilDPShake / lilShakeTimer'},indent=2))
+(OUT/'build-report.json').write_text(json.dumps({'meshes':parts,'finni_dmd':dmd_assets,'party_audio_replacements':audio_count,'finni_voice_slots':voice_count,'music_trial_slots':music_count,'source_script_changes':['approved HellHouse scoop kick: 164, 12, 0','small aligned lock-ramp entrance assist (18 entry / 24 climb speed)','fixed Friendship, Cake Time, task music priority and playback recovery','Cake Time / Friendship display and voice cues','Ball saved voice on the existing save display','seven approved party-task DMD titles, instructions and completion cues','complete Finni DMD scenes, icons and secondary-feature presentation'],'all_other_script_bytes_unchanged':True,'lock_collisions_unchanged':True,'slingshot_collisions_and_animation_unchanged':True,'sling_covers':'plain rounded triangles over original mounting posts','fox_animation':'original Target012_Hit / LilDPShake / lilShakeTimer'},indent=2))
 print('LIVE_ASSETS_READY',json.dumps(parts),flush=True)
 print('FINNI_LIGHTING',len(lighting),'lamps and flashers; runtime palette and shows themed',flush=True)

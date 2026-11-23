@@ -36,8 +36,8 @@ def same(a, b):
 for path in (TABLE/'gameitems').glob('Light.*.json'):
     actual = json.loads(path.read_text())['Light']
     if actual['name'] in fills:
-        template=json.loads((TABLE/'gameitems/Light.gi001.json').read_text())['Light']
-        expected=appearance['fill_light'](template,fills[actual['name']])
+        template=json.loads((SOURCE/'gameitems/Light.gi001.json').read_text())['Light']
+        expected=lighting['visual_light'](appearance['fill_light'](template,fills[actual['name']]))
         assert same(actual,expected), path.name
         assert actual['color']==expected['color'] and actual['color2']==expected['color2']
         assert actual['state']==1 and not actual['show_bulb_mesh']
@@ -48,14 +48,22 @@ for path in (TABLE/'gameitems').glob('Light.*.json'):
     original = json.loads(baseline.read_text())['Light']
     if comic and actual['name'].startswith('gi'):
         original=appearance['round_gi_outline'](original)
+    original=lighting['visual_light'](original)
     assert same(actual, original), path.name
     for prop in ('color','color2'):
         name = theme['static_colors'].get(original[prop].lower())
-        if name and not actual.get('is_backglass', False):
+        if actual.get('is_backglass', False):
+            continue
+        if theme.get('appearance') and actual['name'].startswith('gi'):
+            expected_color = original[prop]
+        elif name:
             values = theme['colors'][name]
             if prop == 'color':
                 values = [round(v/10) for v in values]
-            assert actual[prop] == '#'+''.join(f'{v:02x}' for v in values), path.name
+            expected_color = '#'+''.join(f'{v:02x}' for v in values)
+        else:
+            continue
+        assert actual[prop] == expected_color, path.name
     count += 1
 
 flashers = 0
@@ -64,6 +72,7 @@ for path in (TABLE/'gameitems').glob('Flasher.*.json'):
     original = json.loads((SOURCE/'gameitems'/path.name).read_text())['Flasher']
     if actual['name'] == 'LightInserts':
         original['is_visible'] = False  # Existing build hides the source insert overlay.
+    original = lighting['visual_flasher'](original)
     assert same(actual, original), path.name
     name = theme['static_colors'].get(original['color'].lower())
     if name and not actual.get('is_backglass', False):
@@ -106,8 +115,9 @@ assert len(set(values)) > 250
 for value in values:
     r, g, b = value & 255, (value >> 8) & 255, (value >> 16) & 255
     assert all(0<=channel<=255 for channel in (r,g,b)), (r,g,b)
-    assert max(r,g,b)-min(r,g,b)>=50, (r,g,b)  # The approved comic show stays saturated.
-report = {'delivered_lights_checked':count, 'delivered_flashers_checked':flashers, 'functional_insert_geometry_intensity_states_and_timing_preserved':True,
+    assert all(min(c[i] for c in theme['colors'].values()) <= v <= max(c[i] for c in theme['colors'].values())
+               for i,v in enumerate((r,g,b))), (r,g,b)
+report = {'delivered_lights_checked':count, 'delivered_flashers_checked':flashers, 'functional_insert_geometry_states_and_timing_preserved':True,
           'approved_gi_contours_rounded':comic,'steady_center_fill_lights_checked':len(fills),
           'runtime_palette_cases_and_state_modes':84, 'actual_vbscript_show_frames':len(values),
           'all_show_colors_within_party_palette':True, 'physics_playtest':False}

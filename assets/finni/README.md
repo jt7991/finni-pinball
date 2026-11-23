@@ -31,3 +31,7 @@ JP Salas's Deadpool 7.0.0 has been downloaded and extracted locally. The table h
 - Reference compositions: original home and provider hero images in AVIF format.
 
 Discovery pages: homepage, `/providers`, `/our-providers`, `/careers`, and `/resources`. The legacy fox and color values were found in the site's linked stylesheet.
+
+## Doorbell recording
+
+`audio/doorbell.wav` is an excerpt of Dub’s public-domain household doorbell recording. It was trimmed, filtered, faded and converted to 32 kHz stereo PCM for the table. [Source recording and license](https://commons.wikimedia.org/wiki/File:Doorbell-classic-dingdong.ogg)

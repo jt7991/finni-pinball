@@ -11,7 +11,7 @@ from PIL import Image, ImageDraw
 art=ROOT/'assets/finni/dmd'
 animations=json.loads((art/'animations.json').read_text())
 manifest=json.loads((art/'manifest.json').read_text())
-required={'selection','envelopes','pinata','mystery','ball_return','timer',
+required={'selection','envelopes','poses_pinata','poses_wrap','ball_return','timer',
           'page_turn','parcels','ribbons','record','steam','friendship',
           'edge_award','edge_bonus','edge_ready','edge_combo'}
 assert required <= {s['effect'] for s in animations.values()}

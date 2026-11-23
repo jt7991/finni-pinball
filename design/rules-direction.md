@@ -41,7 +41,7 @@ The main-mode names above are approved; design/party-tasks.json is the canonical
 
 The approved November 18 multiball stories are implemented as presentation changes: Friendship on the right ramp and Cake Time at the middle toy. Cake Time is decorating before the party, not serving slices or starting the celebration. Its playfield label, DMD title/jackpots and phase-specific voice/display instructions now use this story. Timers never claim the cake was completed; the spinner timer returns to another frosting round.
 
-The center ricochet target feeding toward the Friendship ramp is the **Doorbell**. Its "Ding-dong!" hit callout represents friends arriving early to help; the three actual locks still count friends ready. The shot's original points and physical behavior are retained.
+The center ricochet target feeding toward the Friendship ramp is the **Doorbell**. Its two-tone doorbell sound represents friends arriving early to help; the three actual locks still count friends ready. The shot's original points and physical behavior are retained.
 
 The approved party-supply replacements are installed: Kitchen Timer (Dazzler: extra time), Party Lights (Colossus: double battle points), The Checklist (Wolverine: double battle progress/damage), and Party Favors (Domino: extra points on supported events). Each has its own spoken announcement, DMD name/effect and small supply icon. Existing qualification counters, effects and resets remain source behavior; friends belong to Friendship Multiball.
 

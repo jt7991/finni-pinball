@@ -66,23 +66,56 @@ export function createViews(evaluate, ready, release=()=>{}){
 
 export function createDmd(){
   const canvas=document.getElementById('dmd');
-  // This table uses full-colour bitmap flashers, not hardware DMD pixels.
-    // Composite the installed sprites once at high resolution. No dot texture,
-  // sampling pass, synthetic mask, or additive washout belongs in this path.
+  // Composite the installed full-colour sprites without filtering the pixel art.
   canvas.width=1024;canvas.height=256;
   const context=canvas.getContext('2d');
-  const sprite=new Image();let atlas=null,last='',latest='';
+  const sprite=new Image();let atlas=null,animations={},last='',latest='';
+  let scene='',started=0,firstFrame=0,timer=null;
   const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)');
-  reducedMotion.addEventListener('change',()=>{last='';draw(latest);});
-  const loaded=Promise.all([fetch('/dmd-atlas.json').then(r=>{if(!r.ok)throw Error('DMD sprites missing');return r.json();}),new Promise((resolve,reject)=>{sprite.onload=resolve;sprite.onerror=reject;sprite.src='/dmd-atlas.png';})]).then(([data])=>{atlas=data;}).catch(()=>{document.getElementById('dmd-error').hidden=false;});
+  function stop(){clearTimeout(timer);timer=null;}
+  function restart(){stop();scene='';last='';draw(latest);}
+  reducedMotion.addEventListener('change',restart);
+  document.addEventListener?.('visibilitychange',()=>{if(document.hidden)stop();else restart();});
+  const loaded=Promise.all([
+    fetch('/dmd-atlas.json').then(r=>{if(!r.ok)throw Error('DMD sprites missing');return r.json();}),
+    fetch('/dmd-animations.json').then(r=>{if(!r.ok)throw Error('DMD animations missing');return r.json();}),
+    new Promise((resolve,reject)=>{sprite.onload=resolve;sprite.onerror=reject;sprite.src='/dmd-atlas.png';}),
+  ]).then(([data,motion])=>{
+    atlas=data;
+    // Only play complete loops present in this version of the installed atlas.
+    animations=Object.fromEntries(Object.entries(motion).filter(([,spec])=>
+      spec.frames?.length&&spec.frame_ms>0&&spec.frames.every(name=>atlas[name])));
+    draw(latest);
+  }).catch(()=>{document.getElementById('dmd-error').hidden=false;});
   function draw(state){
     latest=state;
-    if(reducedMotion.matches)state=state.replace(/_anim\d{2}/g,'');
-    if(!atlas||state===last)return;last=state;
-    const names=state.split('|');context.clearRect(0,0,1024,256);context.fillStyle='#100a04';context.fillRect(0,0,1024,256);
-      context.imageSmoothingEnabled=false;
+    if(!atlas||!state)return;
+    const names=state.split('|');
+    const background=(names[40]||'bkempty').toLowerCase();
+    const base=background.replace(/_anim\d{2}$/, '');
+    const now=performance.now();
+    if(base!==scene){
+      stop();scene=base;started=now;
+      firstFrame=Number(background.match(/_anim(\d{2})$/)?.[1]||0);
+    }
+    const spec=animations[base];
+    if(reducedMotion.matches){
+      stop();names[40]=base;
+    }else if(spec){
+      // The browser owns playback; native polling only supplies scene and text.
+      // Repeated score updates must not restart an activity's animation.
+      const elapsed=now-started;
+      names[40]=spec.frames[(firstFrame+Math.floor(elapsed/spec.frame_ms))%spec.frames.length];
+      if(timer===null&&!document.hidden){
+        timer=setTimeout(()=>{timer=null;draw(latest);},spec.frame_ms-elapsed%spec.frame_ms);
+      }
+    }
+    state=names.join('|');
+    if(state===last)return;last=state;
+    context.clearRect(0,0,1024,256);context.fillStyle='#100a04';context.fillRect(0,0,1024,256);
+    context.imageSmoothingEnabled=false;
     const paint=(name,x,y,w,h)=>{const rect=atlas[String(name).toLowerCase()];if(rect)context.drawImage(sprite,...rect,x*4,y*4,w*4,h*4);};
-    paint(names[40]||'bkempty',0,0,256,64);
+    paint(names[40],0,0,256,64);
     for(let i=0;i<40;i++)paint(names[i],8+(i%20)*12,i<20?6:34,12,22);
   }
   return {draw,loaded};

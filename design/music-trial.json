@@ -1,12 +1,95 @@
 {
-  "title": "Funkorama",
-  "artist": "Kevin MacLeod",
-  "source_url": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Funkorama.mp3",
-  "source_page": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100474",
-  "license": "CC BY 4.0",
-  "license_url": "https://creativecommons.org/licenses/by/4.0/",
-  "sha256": "6be229815d85a0b99382b944d31098b882702c04ac7ad899e44ab7f8ba89b5ad",
-  "source_file": "output/free-music-candidates/Funkorama.mp3",
-  "ids": ["mu_hellhouse1", "mu_hellhouse2", "mu_hellhouse3", "mu_hellhouse4", "mu_hellhouse5", "mu_gameover", "mu_sexymf", "mu_xforcesm", "mu_boom-dp-rap"],
-  "changes": "Re-encoded to stereo 32 kHz OGG and loudness normalized. Regular play and all title-screen selections use Funkorama, replacing the original title tracks including Deadpool rap. The fifth title choice is redirected from the shared multiball track to mu_hellhouse5. Original disco, mode and in-game multiball music retained."
+  "direction": "Friendship Multiball first, Cake Time second, then tasks, Disco Multiball, Disco Loops and regular play.",
+  "silent_ids": [
+    "mu_beserkerrage",
+    "mu_bonuscount",
+    "mu_boom-dp-rap",
+    "mu_gameover",
+    "mu_hellhouse2",
+    "mu_hellhouse3",
+    "mu_hellhouse4",
+    "mu_hellhouse5",
+    "mu_mechsuitmb",
+    "mu_shooterlane",
+    "mu_sexymf",
+    "mu_xforcesm"
+  ],
+  "tracks": [
+    {
+      "title": "September",
+      "artist": "Earth, Wind & Fire",
+      "mode": "Friendship Multiball",
+      "ids": [
+        "mu_ninjamb"
+      ],
+      "source_file": ".work/music-sources/september.mp3",
+      "source_url": "https://www.youtube.com/watch?v=Gs069dndIYk",
+      "sha256": "ca5826abf6c503fdd2bc39356556814cbaa9628348f66670dbf458925ae29cd4"
+    },
+    {
+      "title": "Don’t Stop ’Til You Get Enough",
+      "artist": "Michael Jackson",
+      "mode": "Cake Time",
+      "ids": [
+        "mu_multiball"
+      ],
+      "source_file": ".work/music-sources/dont-stop-til-you-get-enough.mp3",
+      "source_url": "https://www.youtube.com/watch?v=yURRmWtbTbo",
+      "sha256": "0356fdbed41227d18fe91a8713eb9b34b15e53267aad8329bdb9a266646ebe38",
+      "start_seconds": 16,
+      "edit": "Skip the quiet spoken opening so Cake Time starts with the full-band entrance."
+    },
+    {
+      "title": "Give Me the Night",
+      "artist": "George Benson",
+      "mode": "All seven party tasks",
+      "ids": [
+        "mu_juggernaut",
+        "mu_mystique",
+        "mu_sabretooth",
+        "mu_trex",
+        "mu_megalodon",
+        "mu_sauronmb",
+        "mu_mrsinister"
+      ],
+      "source_file": ".work/music-sources/give-me-the-night.mp3",
+      "sha256": "ab7a5390ff18b162a91b06852c48abe8bccd920a91dbb0d4f7a7676e985f5415"
+    },
+    {
+      "title": "Funky Disco Beats to Boogie/Woogie to",
+      "artist": "Fupi",
+      "mode": "Disco Loops",
+      "ids": [
+        "mu_discoloops"
+      ],
+      "source_file": ".work/music-sources/fupi-disco-loop.ogg",
+      "source_url": "https://opengameart.org/content/funky-disco-beats-to-boogiewoogie-to",
+      "license": "CC0 1.0",
+      "license_url": "https://creativecommons.org/publicdomain/zero/1.0/",
+      "sha256": "89f796ee542f3cfd0fa587a07b4c5bc8856c076e6c836c44b95a78176f9eded6"
+    },
+    {
+      "title": "Le Freak",
+      "artist": "CHIC",
+      "mode": "Disco Multiball",
+      "ids": [
+        "mu_discomb"
+      ],
+      "source_file": ".work/music-sources/le-freak.mp3",
+      "sha256": "f472bf190a22ba2adbdce01eec13d943fdf60c652f3d0ea7ce9ffaaa78f43abd"
+    },
+    {
+      "title": "Lovely Day",
+      "artist": "Bill Withers",
+      "mode": "Regular play",
+      "ids": [
+        "mu_hellhouse1"
+      ],
+      "source_file": ".work/music-sources/lovely-day.mp3",
+      "target_lufs": -26,
+      "edit": "Supplied instrumental version, mixed 6 LUFS below mode tracks.",
+      "sha256": "8a359423c9c3f0dff1c595fc1cba5c99fe6aefefe34f713b0f5473817eadf721"
+    }
+  ],
+  "missing_source_policy": "Silence pending song slots; never substitute legacy music."
 }

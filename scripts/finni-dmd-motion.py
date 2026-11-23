@@ -1,5 +1,8 @@
 """Small, deterministic pixel-art loops shared by native VPX and the web atlas."""
 import math
+import json
+from functools import lru_cache
+from pathlib import Path
 from PIL import Image, ImageDraw
 
 BG='#10051d'
@@ -51,6 +54,18 @@ def friendship_art(source, count, w, h, frame=None, cheer=False):
 def effect_for(name, art):
     if name.startswith('d_finni_friend') and name[-1:] in ('1','2','3'):return 'friend_arrival_'+name[-1]
     if name=='d_finni_friendship_start':return 'friendship_start'
+    # Replace the illustration with authored character poses. These are not
+    # decorations composited over the original still.
+    if name in ('d_title','d_gameover'):return 'poses_wave'
+    if name.startswith('d_finni_presents') or name in ('d_finni_mystery','d_mystery','d_boom','d_finni_favors','d_domino'):
+        return 'poses_wrap'
+    if name.startswith('d_finni_baking'):return 'poses_cookies'
+    if name in ('d_finni_cake','d_finni_frosting','d_finni_toppings','d_finni_flourish'):
+        return 'poses_frosting'
+    if name in ('d_finni_disco','d_finni_discomb'):return 'poses_disco'
+    if name.startswith('d_finni_decorations'):return 'poses_bunting'
+    if name.startswith('d_finni_balloons'):return 'poses_pump'
+    if name.startswith('d_finni_pinata'):return 'poses_pinata'
     if name.endswith('_done'):return 'confetti'
     if name.endswith('_select') or name=='d_finni_choose':return 'selection'
     if 'mystery' in name or name=='d_boom':return 'mystery'
@@ -126,10 +141,48 @@ def details(d, effect, frame, w, h):
             d.line((x,y,x+1,y+1,x+2,y,x+3,y+1,x+1,y+3,x-1,y+1,x,y),fill=c)
 
 
+POSE_ROWS = {'poses_wave':0, 'poses_wrap':1, 'poses_cookies':2,
+             'poses_frosting':3, 'poses_disco':4, 'poses_bunting':5,
+             'poses_pump':6, 'poses_pinata':7}
+
+
+@lru_cache(maxsize=None)
+def pose_art(effect, w, h):
+    """One shared crop/scale per row keeps the animation's camera registered."""
+    path=Path(__file__).resolve().parents[1]/'assets/finni/dmd/character-motion-reference.png'
+    sheet=Image.open(path).convert('RGB')
+    layout=json.loads(path.with_name('character-motion-layout.json').read_text())
+    assert list(sheet.size)==layout['size'], 'Character sheet dimensions changed'
+    row=POSE_ROWS[effect]
+    top,bottom=layout['row_edges'][row:row+2]
+    cells=[]
+    for col in range(6):
+        cell=sheet.crop((round(col*sheet.width/6),top,
+                         round((col+1)*sheet.width/6),bottom))
+        # Normalize the sheet's dark backdrop to the native display color.
+        cell.putdata([tuple(bytes.fromhex(BG[1:])) if max(pixel)<50 else pixel
+                      for pixel in cell.getdata()])
+        cells.append(cell)
+    from PIL import ImageChops
+    boxes=[ImageChops.difference(cell,Image.new('RGB',cell.size,BG)).getbbox() for cell in cells]
+    assert all(boxes),effect
+    box=(min(b[0] for b in boxes),min(b[1] for b in boxes),
+         max(b[2] for b in boxes),max(b[3] for b in boxes))
+    scale=min((w-4)/(box[2]-box[0]),(h-2)/(box[3]-box[1]))
+    size=(round((box[2]-box[0])*scale),round((box[3]-box[1])*scale))
+    result=[]
+    for cell in cells:
+        layer=Image.new('RGB',(w,h),BG)
+        pic=cell.crop(box).resize(size,Image.Resampling.NEAREST)
+        layer.paste(pic,((w-size[0])//2,h-size[1]-1))
+        result.append(layer)
+    return result
+
+
 def build_frames(sprites, layouts, scenes):
     animations={}
     for name, spec in scenes.items():
-        if name in ('d_tilt','d_gameover','d_jppresents'):
+        if name in ('d_tilt','d_jppresents'):
             continue
         base=sprites[name]
         bounds=spec['bounds']; w,h=bounds[2:]
@@ -152,7 +205,10 @@ def build_frames(sprites, layouts, scenes):
                 layer=Image.new('RGB',(w,h),BG)
                 layer.paste(base.crop(bounds),(shift,0))
             d=ImageDraw.Draw(layer)
-            if effect.startswith('edge_'):
+            if effect in POSE_ROWS:
+                # Fully replace the old illustration, including its props.
+                layer=pose_art(effect,w,h)[frame//2].copy()
+            elif effect.startswith('edge_'):
                 # Confine reward motion to the top/bottom margins and side
                 # gutters. Both complete 240x22 native text rows stay clear.
                 for i in range(9):

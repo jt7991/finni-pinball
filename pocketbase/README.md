@@ -52,12 +52,12 @@ See Coolify's [Compose configuration](https://coolify.io/docs/applications/build
 - `scores`: initials, score, player number, duration, version, run, submission date, `flagged`, `hidden`, and `review_note`.
 - `game_sessions`: anonymous session start, one-use token hash, hashed request address, version, and consumption status. Never make this collection public.
 - To remove a score from the public leaderboard, set `hidden = true`.
-- To approve a flagged score, set `flagged = false`; leave a review note if useful.
+- Scores publish immediately. Legacy `flagged` and `review_note` fields no longer affect visibility.
 - Manual admin edits are reflected on the next leaderboard refresh. Public players cannot create, edit, or delete collection records directly.
 
 ## Submission checks and limits
 
-Custom routes issue unpredictable one-use tokens, reject duplicate runs, validate up to four player results in one transaction, enforce score/initial formats, expire sessions after 24 hours, and flag very short runs or an unusually high scoring rate. Flagged/hidden records are excluded by both the custom leaderboard endpoint and collection read rules. The web proxy rate-limits game routes; PocketBase additionally limits session creation per observed address. Behind Coolify, the immediate proxy address may group visitors, so tune forwarding and limits for the deployment rather than blindly trusting client-provided headers.
+Custom routes issue unpredictable one-use tokens, reject duplicate runs, validate up to four player results in one transaction, enforce score/initial formats, and expire sessions after 24 hours. Scores publish immediately regardless of game duration or scoring rate, including previously flagged scores. Only records explicitly marked `hidden` are excluded by the custom leaderboard endpoint and collection read rules. The web proxy rate-limits game routes; PocketBase additionally limits session creation per observed address. Behind Coolify, the immediate proxy address may group visitors, so tune forwarding and limits for the deployment rather than blindly trusting client-provided headers.
 
 These are casual leaderboard checks, **not replay verification**. A modified browser can fabricate plausible scores. Tokens prevent duplicate submissions, not forged gameplay. Never label these records verified or use them for prizes. The original VPX script and physics remain unchanged; the browser reads final state and uses the original initials-entry handler.
 

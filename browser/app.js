@@ -1,6 +1,6 @@
 import {createLeaderboard} from './leaderboard.js';
 import {createViews,createDmd} from './views.js';
-import {prepareRenderer} from './renderer.js';
+import {prepareRenderer,configureRenderer,startTable} from './renderer.js';
 const actions = [
   ['left','Left flipper','ShiftLeft'],['right','Right flipper','ShiftRight'],
   ['launch','Launch','Enter'],['start','Start','Digit1'],
@@ -24,7 +24,7 @@ try {
   if(saved && actions.every(([id])=>typeof saved.keys?.[id]==='string') && new Set(Object.values(saved.keys)).size===actions.length) settings={...settings,...saved};
 } catch {}
 let listening=null, connected=false, engine=null, hasPlayed=false, replayVisible=false, enginePhase='Loading game';
-const held=new Map(), physical=new Set();
+const held=new Map(), physical=new Set(), pointers=new Map(), swipes=new Map();
 const message=text=>$('message').textContent=text;
 function save(){try{localStorage.setItem('finni-controls-v1',JSON.stringify(settings));}catch{message('Browser storage is unavailable. Settings apply for this session.');}}
 function label(code){return code.replace(/^Key|^Digit/,'').replace('ShiftLeft','Left Shift').replace('ShiftRight','Right Shift').replace('Arrow','');}
@@ -40,12 +40,17 @@ function render(){
   }
   $('latch').checked=settings.latch;$('showTouch').checked=settings.showTouch;$('touch').hidden=!settings.showTouch;
   $('flip-zones').hidden=!settings.showTouch;
-  $('nudge-zone').hidden=!settings.showTouch;
   $('control-hint').textContent=`${label(settings.keys.start)} start · ${label(settings.keys.action)} action · Hold ${label(settings.keys.launch)}, then release to launch`;
 }
-function release(){held.clear();physical.clear();paint();send();}
+function release(){held.clear();physical.clear();pointers.clear();swipes.clear();paint();send();}
 function setAction(id,down,source){
+  // Start confirms the selected roster; it never adds a player during a game.
+  if(id==='start'){
+    if(down&&!$('waiting').hidden&&!$('play').disabled)$('play').click();
+    return;
+  }
   if(!connected)return;
+  if(down&&(!$('waiting').hidden||$('initials-dialog').open||document.querySelector('.panel:popover-open')))return;
   const sources=held.get(id)||new Set();
   if(settings.latch && ['left','right'].includes(id)){
     if(!down)return;
@@ -55,29 +60,65 @@ function setAction(id,down,source){
   paint();send();
 }
 function paint(){document.querySelectorAll('[data-action]').forEach(b=>{const pressed=held.has(b.dataset.action);b.classList.toggle('pressed',pressed);b.setAttribute('aria-pressed',String(pressed));b.disabled=!connected;});}
+function finishPointer(event,cancelled=false){
+  swipes.delete(event.pointerId);
+  const id=pointers.get(event.pointerId);
+  if(!id)return;
+  pointers.delete(event.pointerId);
+  if(cancelled&&settings.latch&&['left','right'].includes(id)){
+    held.delete(id);paint();send();
+  }else setAction(id,false,`pointer:${event.pointerId}`);
+}
+window.addEventListener('pointerup',event=>finishPointer(event));
+window.addEventListener('pointercancel',event=>finishPointer(event,true));
 for(const [id,name] of actions){
   const button=document.createElement('button');button.textContent=name;button.dataset.action=id;button.disabled=true;
+  // Cancelling contextmenu is too late to stop Android's long-press haptic.
+  // Cancel the native touch gesture; pointer events still drive game input.
+  for(const type of ['touchstart','touchend'])button.addEventListener(type,e=>e.preventDefault(),{passive:false});
   button.addEventListener('contextmenu',e=>e.preventDefault());
   button.addEventListener('pointerdown',e=>{
     if(e.pointerType==='mouse'&&e.button!==0)return;
-    e.preventDefault();button.setPointerCapture(e.pointerId);setAction(id,true,`pointer:${e.pointerId}`);
+    e.preventDefault();
+    try{button.setPointerCapture(e.pointerId);}catch{}
+    pointers.set(e.pointerId,id);setAction(id,true,`pointer:${e.pointerId}`);
+    if(['touch','pen'].includes(e.pointerType)&&button.parentElement===$('flip-zones')&&held.has(id)){
+      swipes.set(e.pointerId,{x:e.clientX,y:e.clientY,nudged:false});
+    }
   });
-  for(const type of ['pointerup','pointercancel','lostpointercapture'])button.addEventListener(type,e=>setAction(id,false,`pointer:${e.pointerId}`));
+  button.addEventListener('pointermove',e=>{
+    const swipe=swipes.get(e.pointerId);
+    if(!swipe||swipe.nudged)return;
+    const dx=e.clientX-swipe.x,dy=e.clientY-swipe.y;
+    // Keep upward thumb movement on the flipper separate from forward nudges.
+    if(Math.abs(dx)<24||Math.abs(dx)<=Math.abs(dy)*1.2)return;
+    const action=dx<0?'nudgeLeft':'nudgeRight';
+    swipe.nudged=true;
+    const source=`swipe:${e.pointerId}`;
+    setAction(action,true,source);
+    setAction(action,false,source);
+  });
+  button.addEventListener('pointerup',event=>finishPointer(event));
+  for(const type of ['pointercancel','lostpointercapture'])button.addEventListener(type,event=>finishPointer(event,true));
   button.addEventListener('keydown',e=>{if(['Enter','Space'].includes(e.code)){e.preventDefault();if(!e.repeat)setAction(id,true,'button');}});
   button.addEventListener('keyup',e=>{if(['Enter','Space'].includes(e.code)){e.preventDefault();setAction(id,false,'button');}});
   (id.startsWith('nudge')?$('nudges'):$('touch')).append(button);
 }
 const phoneLayout=matchMedia('(max-width:650px), (pointer:coarse) and (max-width:1024px)');
+let graphics='auto';
+try{const saved=localStorage.getItem('finni-graphics-v1');if(['auto','performance','detailed'].includes(saved))graphics=saved;}catch{}
+$('graphics').value=graphics;
+$('apply-graphics').onclick=()=>{
+  release();
+  try{localStorage.setItem('finni-graphics-v1',$('graphics').value);}catch{message('Browser storage is unavailable. Graphics could not be saved.');return;}
+  location.reload();
+};
 function placeFlippers(){
   release();
   const buttons=['left','right'].map(id=>document.querySelector(`[data-action=${id}]`));
-  const nudge=document.querySelector('[data-action=nudgeCenter]');
   if(phoneLayout.matches)buttons.forEach(button=>$('flip-zones').append(button));
   else buttons.reverse().forEach(button=>$('touch').prepend(button));
-  if(phoneLayout.matches)$('nudge-zone').append(nudge);
-  else $('nudges').insertBefore(nudge,document.querySelector('[data-action=nudgeRight]'));
   $('flip-zones').hidden=!settings.showTouch;
-  $('nudge-zone').hidden=!settings.showTouch;
 }
 phoneLayout.addEventListener('change',placeFlippers);
 window.addEventListener('resize',release);
@@ -97,10 +138,10 @@ window.addEventListener('keyup',e=>{if(!physical.delete(e.code))return;const act
 window.addEventListener('blur',release);document.addEventListener('visibilitychange',()=>{if(document.hidden)release();});
 window.addEventListener('pagehide',release);
 $('latch').onchange=e=>{release();settings.latch=e.target.checked;save();};
-$('showTouch').onchange=e=>{release();settings.showTouch=e.target.checked;save();render();$('flip-zones').hidden=!settings.showTouch;$('nudge-zone').hidden=!settings.showTouch;};
+$('showTouch').onchange=e=>{release();settings.showTouch=e.target.checked;save();render();$('flip-zones').hidden=!settings.showTouch;};
 $('reset').onclick=()=>{release();listening=null;settings={keys:{...defaults},latch:false,showTouch:true};save();render();message('Default controls restored.');};
 $('release').onclick=release;
-let toolbarTimer, screenMessageTimer;
+let toolbarTimer, screenMessageTimer, fullscreenPending=false;
 function screenMessage(text){
   $('screen-message').textContent=text;$('screen-message').hidden=false;
   clearTimeout(screenMessageTimer);
@@ -118,29 +159,38 @@ function syncFullscreen(){
   $('fullscreen').setAttribute('aria-pressed',String(fullscreen));
   $('fullscreen').setAttribute('aria-label',fullscreen?'Exit full screen':'Enter full screen');
   $('fullscreen').title=fullscreen?'Exit full screen':'Full screen';
+  if(fullscreen)$('screen-message').hidden=true;
   if(connected)$('canvas').focus({preventScroll:true});
   showToolbar();
 }
-$('fullscreen').onclick=async()=>{
+async function setFullscreen(fullscreen){
+  if(fullscreen===!!(document.fullscreenElement||document.webkitFullscreenElement))return;
+  if(fullscreenPending)return;
+  fullscreenPending=true;
   release();
-  const fullscreen=!!(document.fullscreenElement||document.webkitFullscreenElement);
   const target=document.documentElement;
   try{
-    if(fullscreen){
+    if(!fullscreen){
       const exit=document.exitFullscreen||document.webkitExitFullscreen;
       if(exit)await exit.call(document);
     }else{
       const enter=target.requestFullscreen||target.webkitRequestFullscreen;
       if(!enter){screenMessage('This browser does not support full screen for games.');return;}
-      await enter.call(target,{navigationUI:'hide'});
+      if(target.requestFullscreen)await enter.call(target,{navigationUI:'hide'});
+      else await enter.call(target);
     }
     syncFullscreen();
   }catch{
-    screenMessage('Could not enter full screen. Tap the full screen button to try again.');
-  }
-};
+    screenMessage(`Could not ${fullscreen?'enter':'exit'} full screen. Tap the full screen button to try again.`);
+  }finally{fullscreenPending=false;}
+}
+$('fullscreen').onclick=()=>setFullscreen(!(document.fullscreenElement||document.webkitFullscreenElement));
 document.addEventListener('fullscreenchange',syncFullscreen);
 document.addEventListener('webkitfullscreenchange',syncFullscreen);
+for(const type of ['fullscreenerror','webkitfullscreenerror'])document.addEventListener(type,()=>{
+  fullscreenPending=false;
+  screenMessage('Could not change full screen. Tap the full screen button to try again.');
+});
 window.addEventListener('pointermove',e=>{
   const atTop=document.body.classList.contains('portrait-rotated')?e.clientX>innerWidth-24:e.clientY<24;
   if(document.fullscreenElement&&atTop)showToolbar();
@@ -149,13 +199,17 @@ document.querySelector('.toolbar').addEventListener('pointerenter',showToolbar);
 document.querySelector('.toolbar').addEventListener('focusin',showToolbar);
 const nativeKeys=['LeftFlipperKey','RightFlipperKey','PlungerKey','StartGameKey','LeftTiltKey','CenterTiltKey','RightTiltKey','LockBarKey'];
 const applied=new Set();
-function evaluate(script){return engine?.ccall('vpinball_wasm_eval_script','number',['string'],[script]);}
+function evaluate(script){
+  try{return engine?.ccall('vpinball_wasm_eval_script','number',['string'],[script]);}
+  catch(error){if(!connected)throw error;fail(error);}
+}
 function send(){
   if(!connected)return;
   for(let i=0;i<actions.length;i++){
     const id=actions[i][0], down=held.has(id);
     if(down!==applied.has(id)){
       evaluate(`${id==='start'&&down?'bFreePlay=True:':''}Table1_Key${down?'Down':'Up'} ${nativeKeys[i]}`);
+      if(!connected)return;
       if(down)applied.add(id);else applied.delete(id);
     }
   }
@@ -169,27 +223,60 @@ const dmd=createDmd();
 // Dialogs and popovers restore focus to toolbar buttons. Return it to the
 // playfield so the next Start key reaches the game rather than a focused tool.
 function focusGame(){if(connected&&!$('initials-dialog').open&&!document.querySelector('.panel:popover-open'))$('canvas').focus({preventScroll:true});}
-function replay(){
+function startSelectedGame(){
+  const players=Number($('player-count').value);
+  const count=Number.isInteger(players)&&players>=1&&players<=4?players:1;
+  // Enroll the entire roster synchronously, before the first-ball timer fires.
+  const start='Table1_KeyDown StartGameKey:Table1_KeyUp StartGameKey';
+  evaluate(`bFreePlay=True:${Array(count).fill(start).join(':')}`);
+}
+function showStartingGame(){
+  $('play').disabled=true;
+  $('play').textContent='Starting game…';
+  $('play').setAttribute('aria-busy','true');
+  $('player-count').disabled=true;
+  $('loading').textContent='Getting the playfield ready…';
+}
+function paintBeforeStarting(){
+  // VPX starts synchronously. Leave a frame for the loading state to paint first.
+  return new Promise(resolve=>{
+    let frame;
+    const done=()=>{cancelAnimationFrame(frame);clearTimeout(timeout);resolve();};
+    const timeout=setTimeout(done,150); // Animation frames pause in background tabs.
+    frame=requestAnimationFrame(()=>{frame=requestAnimationFrame(done);});
+  });
+}
+async function replay(){
+  if($('play').disabled)return;
+  showStartingGame();
+  await setFullscreen(true);
+  await paintBeforeStarting();
+  if(!connected)return;
   release();
-  evaluate('bFreePlay=True:Table1_KeyDown StartGameKey:Table1_KeyUp StartGameKey');
+  startSelectedGame();
+  if(!connected)return;
+  $('play').removeAttribute('aria-busy');
   $('waiting').hidden=true;replayVisible=false;focusGame();
 }
 function updateReplay(playing,entering){
   if(playing){hasPlayed=true;if(replayVisible){$('waiting').hidden=true;replayVisible=false;}return;}
   if(!connected||!hasPlayed||entering||replayVisible)return;
   release();replayVisible=true;
-  document.querySelector('#waiting h2').textContent='Ready for another round?';
-  document.querySelector('#waiting .start-content > p').textContent='There’s still a party to get ready for.';
+  document.querySelector('#waiting h2').textContent='Game over';
+  document.querySelector('#waiting .start-content > p').textContent='Start a new game on this table.';
+  $('player-count').disabled=false;
   $('play').disabled=false;$('play').textContent='Play again';$('play').onclick=replay;
-  $('loading').textContent='Your next game is ready.';$('waiting').hidden=false;
+  $('loading').textContent='Ready to play again.';$('waiting').hidden=false;
 }
 $('initials-dialog').addEventListener('close',focusGame);
 for(const panel of document.querySelectorAll('.panel'))panel.addEventListener('toggle',e=>{if(e.newState==='closed')focusGame();});
 $('touch-help').onclick=()=>{
+  release();
   const showing=document.body.classList.toggle('show-touch-guide');
   $('touch-help').setAttribute('aria-pressed',String(showing));$('touch-guide').hidden=!showing;
+  if(!showing)focusGame();
 };
-$('dismiss-touch-guide').onclick=()=>{document.body.classList.remove('show-touch-guide');$('touch-guide').hidden=true;$('touch-help').setAttribute('aria-pressed','false');};
+$('dismiss-touch-guide').onclick=()=>{document.body.classList.remove('show-touch-guide');$('touch-guide').hidden=true;$('touch-help').setAttribute('aria-pressed','false');focusGame();};
 function log(line){
   const display=String(line).match(/FINNI_DMD\|([^']*)/);
   if(display){dmd.draw(display[1]);return;}
@@ -216,6 +303,7 @@ function describeEngineError(error,depth=0){
   return [message||name,code&&`(${code})`].filter(Boolean).join(' ');
 }
 function fail(error){
+  document.body.classList.add('engine-error');
   const detail=describeEngineError(error)||'The game stopped without an error message.';
   log(`${enginePhase}: ${detail}`);
   if(error&&typeof error==='object'){
@@ -227,9 +315,10 @@ function fail(error){
     }));}catch{}
     if(typeof error.stack==='string')log(error.stack);
   }
-  connected=false;held.clear();physical.clear();applied.clear();paint();
+  connected=false;held.clear();physical.clear();pointers.clear();swipes.clear();applied.clear();paint();
   $('waiting').hidden=false;$('progress').hidden=true;
   $('loading').textContent=`${enginePhase}: ${detail}`;$('status').textContent='Game unavailable';
+  $('play').removeAttribute('aria-busy');
   $('play').disabled=false;$('play').textContent='Reload and retry';$('play').onclick=()=>location.reload();
 }
 $('canvas').addEventListener('webglcontextlost',e=>{
@@ -237,23 +326,44 @@ $('canvas').addEventListener('webglcontextlost',e=>{
 });
 async function boot(){
   try{
-    if(!document.createElement('canvas').getContext('webgl2'))throw Error('WebGL 2 is required. Enable graphics acceleration or try a current desktop browser.');
-    const [factory, response]=await Promise.all([import('/engine/vpinball.js'),fetch('/table.vpx')]);
+    const probe=document.createElement('canvas').getContext('webgl2');
+    if(!probe)throw Error('WebGL 2 is required. Enable graphics acceleration or try a current browser.');
+    probe.getExtension('WEBGL_lose_context')?.loseContext();
+    const [factory, response]=await Promise.all([import('/engine/vpinball.js'),fetch('/table.vpx?v=full-music')]);
     if(!response.ok)throw Error('The Finni VPX table is missing. Build it first (see README).');
-    const table=await response.arrayBuffer();enginePhase='Preparing engine';$('progress').value=55;$('loading').textContent='Preparing the VPX engine…';
-    engine=await factory.default({canvas:$('canvas'),locateFile:path=>`/engine/${path}`,print:log,printErr:log,onAbort:fail,setStatus:text=>{if(text)$('loading').textContent=text;}});
+    let table=await response.arrayBuffer();enginePhase='Preparing engine';$('progress').value=55;$('loading').textContent='Preparing the VPX engine…';
+    engine=await factory.default({canvas:$('canvas'),preRun:[module=>configureRenderer(module,{mobile:phoneLayout.matches,quality:graphics})],locateFile:path=>`/engine/${path}`,print:log,printErr:log,onAbort:fail,setStatus:text=>{if(text)$('loading').textContent=text;}});
     prepareRenderer(engine);
-    engine.FS.mkdirTree('/tables');engine.FS.writeFile('/tables/finni.vpx',new Uint8Array(table));
-    $('progress').value=100;$('progress').hidden=true;$('loading').textContent='Ready when you are.';$('play').disabled=false;$('play').textContent='Start game';$('status').textContent='Ready to play';
-    $('play').onclick=()=>{
-      enginePhase='Starting table';$('play').disabled=true;$('loading').textContent='Starting the table…';
+    // MEMFS can own the download buffer; avoid a second ~166 MB copy on phones.
+    engine.FS.mkdirTree('/tables');engine.FS.writeFile('/tables/finni.vpx',new Uint8Array(table),{canOwn:true});table=null;
+    $('progress').value=100;$('progress').hidden=true;$('loading').textContent='Table loaded.';$('play').disabled=false;$('play').textContent='Start game';$('status').textContent='Ready to play';
+    $('play').onclick=async()=>{
+      if($('play').disabled)return;
+      enginePhase='Starting table';showStartingGame();
       try{
-        const result=engine.ccall('vpinball_wasm_start','number',['string'],['/tables/finni.vpx']);
+        await paintBeforeStarting();
+        if(document.body.classList.contains('engine-error'))return;
+        // Queue fullscreen and SDL startup together so SDL cannot exit an
+        // already settled fullscreen session while creating the native window.
+        void setFullscreen(true);
+        const result=startTable(engine,'/tables/finni.vpx');
         if(result!==1)throw Error(`VPX could not start this table (code ${result}). See the engine log.`);
+        // Legacy tables can import their own trail preference over the global
+        // setting. Keep one sharp ball even when the packed table requests it.
+        evaluate('Table1.BallTrail=0');
+        // New game balls retain their chrome texture without the source
+        // table's dense scratch overlay, which sparkles into a ghostly rim.
+        evaluate('Table1.BallFrontDecal=""');
+        // Zero sensitivity disables penalties from both nudges and mechanical tilt.
+        evaluate('Tilt=0:TiltSensitivity=0');
+        // The native table now owns its decoded art/audio. Replay uses the
+        // running player, so retaining the packed upload only wastes memory.
+        engine.FS.unlink('/tables/finni.vpx');
         evaluate('Dim FinniDmdDigit, FinniDmdState : bFreePlay=True : For Each FinniDmdDigit In Digits : FinniDmdDigit.Visible=False : Next : digitgrid.Visible=False : DMDFlush : ShowTableInfo');
-        connected=true;document.body.classList.add('playing');$('waiting').hidden=true;$('progress').hidden=true;$('status').textContent='Enjoy the party.';document.title='Finni’s Big Day';paint();$('canvas').focus();
+        $('play').removeAttribute('aria-busy');
+        connected=true;document.body.classList.add('playing');$('waiting').hidden=true;$('progress').hidden=true;$('status').textContent='Playing';document.title='Finni’s Big Day';paint();$('canvas').focus();
         views.apply();
-        evaluate('Table1_KeyDown StartGameKey:Table1_KeyUp StartGameKey');
+        startSelectedGame();
         enginePhase='Playing';
       }catch(error){fail(error);}
     };
