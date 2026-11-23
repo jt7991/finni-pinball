@@ -1,7 +1,7 @@
 // Explicit diagnostic input driver. Keep the authored native timer body and
 // issue ordinary table key events at its measured 1ms callback boundaries.
 import assert from 'node:assert/strict';import {createHash} from 'node:crypto';
-const actionKeys={left:'LeftFlipperKey',right:'RightFlipperKey',nudgeLeft:'LeftTiltKey',nudgeForward:'CenterTiltKey',nudgeRight:'RightTiltKey'};
+const actionKeys={left:'LeftFlipperKey',right:'RightFlipperKey',action:'LockBarKey',launch:'PlungerKey',start:'StartGameKey',nudgeLeft:'LeftTiltKey',nudgeForward:'CenterTiltKey',nudgeRight:'RightTiltKey'};
 export function nativeInputSequence(source,inputs){
  assert.ok(Array.isArray(inputs)&&inputs.length>0&&inputs.length<=100);
  for(const [i,input]of inputs.entries()){

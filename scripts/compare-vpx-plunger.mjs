@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {createFullGame} from '../three/full-game.js';
 import {STEP} from '../three/physics.js';
-import {KEY} from '../three/rules.js';
+import {replayReferenceInputs} from './reference-inputs.mjs';
 import {applyReferencePhysics,referenceRandom,placeReferenceBall,restoreReferenceBalls,readReferenceFixture,summarizeNativePlunger} from './reference-physics.mjs';
 const fixture=readReferenceFixture(process.argv.slice(2).find(a=>!a.startsWith('--'))??'three/tests/fixtures/vpx-plunger.json');
 const layout=JSON.parse(fs.readFileSync('three/public/layout.json')),objects=JSON.parse(fs.readFileSync('three/public/objects.json')),source=fs.readFileSync('three/public/rules.vbs','utf8');
@@ -51,25 +51,7 @@ for(const scenario of fixture.cases){
       g.plunger.updateNativeShapes();
     }
     g.rules.execute('Plunger.PullBack');g.rules.schedule(scenario.actualDelay,'Plunger.Fire');
-    const nativeKeys=new Map(),inputFrames=new Map();let appliedInputs=0;
-    for(const input of scenario.inputSequence??[]){
-      assert.ok(['left','right','nudgeLeft','nudgeForward','nudgeRight'].includes(input.action)&&Number.isInteger(input.key));assert.equal(typeof input.down,'boolean');
-      if(nativeKeys.has(input.action))assert.equal(input.key,nativeKeys.get(input.action));else nativeKeys.set(input.action,input.key);
-      // Native SDL logical codes and this host's internal constants identify
-      // the same explicitly named authored table actions.
-      if(!inputFrames.has(input.ms))inputFrames.set(input.ms,[]);inputFrames.get(input.ms).push(input);
-    }
-    if(scenario.inputSequence){
-      assert.match(fixture.runtimeInputSequence.code,/Sub LeftFlipper_Timer\b[^\n]*\n\s+RefInputAdvance/,'native input driver runs before the authored flipper timer body');
-      const origin=Math.round(g.time*1000),execute=g.rules.engine.executeStatementThrows.bind(g.rules.engine);
-      g.rules.engine.executeStatementThrows=(statement,...args)=>{
-        if(/^LeftFlipper_Timer\s*$/i.test(statement)){
-          const ms=Math.round(g.time*1000)-origin,inputs=inputFrames.get(ms)??[];inputFrames.delete(ms);
-          for(const input of inputs){execute(`Table1_Key${input.down?'Down':'Up'} ${KEY[input.action]}`);appliedInputs++;}
-        }
-        return execute(statement,...args);
-      };
-    }
+    const appliedInputs=replayReferenceInputs(g,fixture,scenario);
     let elapsed=0;const samples=[],traceSamples=[],animationAudit=[];
     const animationFrames=scenario.animationFrames?new Map(scenario.animationFrames.map(row=>[row[0],row])):null;
     if(animationFrames){
@@ -110,7 +92,7 @@ for(const scenario of fixture.cases){
     if(animationFrames)Object.assign(report,{animationAudit,animationSummary:{frames:animationAudit.length,offsetError:Math.max(0,...animationAudit.flatMap(row=>row.errors.slice(0,3).map(Math.abs))),stateMismatches:animationAudit.filter(row=>row.errors.slice(3).some(Boolean)).length},nativeScriptRandomAudit:g.nativeScriptRandomAudit});
     if(ruleAudit)report.ruleAudit=ruleAudit;
     if(scenario.scriptClocks)report.scriptClockInputs=clockInputs;
-    if(scenario.inputSequence)report.nativeFlipperSummary={frames:samples.length,angleErrors:[0,1].map(index=>Math.max(0,...samples.map(row=>Math.abs(row.nativeAngles[index]-Math.fround(row.expected[10+index]))))),inputs:appliedInputs};
+    if(scenario.inputSequence)report.nativeFlipperSummary={frames:samples.length,angleErrors:[0,1].map(index=>Math.max(0,...samples.map(row=>Math.abs(row.nativeAngles[index]-Math.fround(row.expected[10+index]))))),inputs:appliedInputs()};
     if(scenario.flipperContacts)report.flipperContacts=flipperContacts;
     if(scatterDraws)report.scatterDraws=scatterDraws;
     if(!process.argv.includes('--json'))console.log(JSON.stringify({...report,samples:undefined,traceSamples:undefined,nativeRandomAudit:undefined,nativeBodyAudit:undefined,nativePlungerAudit:undefined,animationAudit:undefined,nativeScriptRandomAudit:undefined}));
