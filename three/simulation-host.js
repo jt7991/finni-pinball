@@ -97,7 +97,7 @@ export function createSimulationHost(send,{allowDebug=false,now=()=>performance.
       else{
         if(!game||disposed||fatal)throw Error('Simulation is unavailable');
         switch(message.type){
-          case 'start':game.start();break;
+          case 'start':game.start(message.players);break;
           case 'input':game.input(message.action,message.down);break;
           case 'release':game.release();break;
           case 'pause':pause(message.value);break;

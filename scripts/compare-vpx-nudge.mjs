@@ -2,9 +2,9 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {createFullGame} from '../three/full-game.js';
 import {STEP} from '../three/physics.js';
-import {applyReferencePhysics,referenceRandom,placeReferenceBall,restoreReferenceBalls,readReferenceFixture,summarizeNativePlunger} from './reference-physics.mjs';
+import {applyReferencePhysics,referenceRandom,placeReferenceBall,restoreReferenceBalls,readReferenceFixture,summarizeNativePlunger,readReferenceAssets} from './reference-physics.mjs';
 const fixture=readReferenceFixture(process.argv.slice(2).find(a=>!a.startsWith('--'))??'three/tests/fixtures/vpx-nudge.json');
-const layout=JSON.parse(fs.readFileSync('three/public/layout.json')),objects=JSON.parse(fs.readFileSync('three/public/objects.json')),source=fs.readFileSync('three/public/rules.vbs','utf8');applyReferencePhysics(layout,objects,fixture);
+const {layout,objects,source}=readReferenceAssets(fixture);applyReferencePhysics(layout,objects,fixture);
 const reports=[];
 for(const c of fixture.cases){
   const g=await createFullGame(layout,objects,source,()=>{});

@@ -13,14 +13,16 @@ const directory=path.resolve(root,values.directory);
 if(values.build){const {build}=await import('vite');await build({root:path.join(root,'three'),configFile:path.join(root,'vite.config.js'),build:{outDir:directory}});}
 await stat(path.join(directory,'index.html'));
 const compressed=new Map();
-const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.vbs':'text/plain','.glsl':'text/plain','.wasm':'application/wasm','.glb':'model/gltf-binary','.webp':'image/webp','.png':'image/png','.m4a':'audio/mp4','.ttf':'font/ttf'};
+const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.vbs':'text/plain','.glsl':'text/plain','.wasm':'application/wasm','.glb':'model/gltf-binary','.webp':'image/webp','.png':'image/png','.ico':'image/x-icon','.txt':'text/plain','.m4a':'audio/mp4','.ttf':'font/ttf'};
 const api={'/api/leaderboard':'/api/finni/leaderboard','/api/runs':'/api/finni/runs','/api/scores':'/api/finni/scores'};
-const voice=new Map(['/voice','/voice.html','/voice.css','/voice.js','/voice-audio.js','/voice-lines.json'].map(route=>[route,path.join(root,'browser',route==='/voice'?'voice.html':route.slice(1))]));
+const voice=new Map(['/voice','/voice.html','/voice.css','/voice.js','/voice-audio.js','/voice-lines.json','/voice-cast.json','/voice-pitch-worker.js','/vendor/voice-pitch.js','/favicon.ico','/favicon.png'].map(route=>[route,path.join(root,'browser',route==='/voice'?'voice.html':route.slice(1))]));
 voice.set('/chewy.ttf',path.join(root,'assets/fonts/chewy/Chewy-Regular.ttf'));
+voice.set('/vendor/voice-pitch-LICENSES.txt',path.join(root,'browser/vendor/voice-pitch-LICENSES.txt'));
 const server=http.createServer(async(req,res)=>{
   try{
     const url=new URL(req.url,'http://localhost');
     if(url.pathname.startsWith('/api/')){
+      if(url.pathname.startsWith('/api/voice-ai/')){res.writeHead(503,{'Content-Type':'application/json'});res.end(JSON.stringify({message:'ElevenLabs is available locally when the native server is started with --voice-ai.'}));return;}
       if(!['GET','POST'].includes(req.method)){res.writeHead(405);res.end();return;}
       if(req.method==='POST'&&req.headers.origin&&req.headers.origin!==`http://${req.headers.host}`){res.writeHead(403);res.end();return;}
       const allowed=api[url.pathname]||/^\/api\/(?:collections\/(?:voice_team\/auth-with-password|voice_takes\/records)|files\/)/.test(url.pathname);

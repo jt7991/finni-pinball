@@ -1,13 +1,13 @@
 import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import {createHash} from 'node:crypto';
-import {readReferenceFixture} from '../../scripts/reference-physics.mjs';import {computeNativeCamera} from '../native-camera.js';import {nativeReflectionCamera} from '../native-reflection.js';import {nativeBallMatrices,nativeBallLightState,nativeBallOrientation} from '../native-ball-render-state.js';
+import {readReferenceFixture,readReferenceAssets,readOriginalRenderAsset} from '../../scripts/reference-physics.mjs';import {computeNativeCamera} from '../native-camera.js';import {nativeReflectionCamera} from '../native-reflection.js';import {nativeBallMatrices,nativeBallLightState,nativeBallOrientation} from '../native-ball-render-state.js';
 import {createFullGame} from '../full-game.js';
-const read=name=>JSON.parse(fs.readFileSync(new URL('../public/'+name,import.meta.url))),fixture=readReferenceFixture(new URL('fixtures/vpx-ball-render-native.json.gz',import.meta.url));
+const read=readOriginalRenderAsset,fixture=readReferenceFixture(new URL('fixtures/vpx-ball-render-native.json.gz',import.meta.url));
 test('ball cameras and nearest-light uniforms match all eight original native main/reflection draws',async()=>{
  assert.equal(fixture.engineSHA256,'c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8');assert.equal(fixture.references.length,8);
  const metadata=read('native-ball/native-ball.json'),lighting=read('native-lighting.json'),camera=computeNativeCamera(read('camera-bounds.json'),fixture.viewport.width/fixture.viewport.height);let matrixFields=0,lightFields=0;
  // Table1_Init executes ChangeGi white. Resolve those colors through the real
  // authored rules, rather than mistaking post-init colors for editor defaults.
- const game=await createFullGame(read('layout.json'),read('objects.json'),fs.readFileSync(new URL('../public/rules.vbs',import.meta.url),'utf8'),()=>{},null,{storage:{load:()=>'',save:()=>{}}});
+ const game=await createFullGame(...(({layout,objects,source})=>[layout,objects,source])(readReferenceAssets({sourceSha256:'6300d64767894aebcf82f378985cb63e8a540fa373365c7a82c189f78dadfd5a'})),()=>{},null,{storage:{load:()=>'',save:()=>{}}});
  try{
  for(const ref of fixture.references){
   const native=new Float32Array(new Uint32Array(ref.matrixBits).buffer),view=native[10]<0?nativeReflectionCamera(camera,[0,0,1,0]):camera,matrices=nativeBallMatrices(view);assert.deepEqual(Array.from(new Uint32Array(matrices.buffer)),ref.matrixBits);matrixFields+=64;

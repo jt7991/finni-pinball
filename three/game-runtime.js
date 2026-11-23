@@ -90,7 +90,7 @@ export function connectSimulation(worker,init,emit=()=>{},media){
   worker.onmessage=({data})=>receive(data);
   worker.onerror=event=>fail(Error(event.message||'Simulation worker failed'));
   worker.onmessageerror=()=>fail(Error('Simulation data could not be read'));
-  game.start=()=>post({type:'start'});game.input=(action,down)=>post({type:'input',action,down});game.release=()=>{if(!game.error)post({type:'release'});};
+  game.start=(players=1)=>post({type:'start',players});game.input=(action,down)=>post({type:'input',action,down});game.release=()=>{if(!game.error)post({type:'release'});};
   game.setPaused=value=>{if(paused!==value){paused=value;if(!game.error)post({type:'pause',value});}};
   game.flush=()=>request({type:'barrier'});
   game.prepareFrame=()=>request({type:'frame'});

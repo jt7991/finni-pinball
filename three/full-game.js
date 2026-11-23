@@ -259,7 +259,10 @@ class FullGame extends Pinball {
     this.captures.delete(key);
   }
 
-  start(){this.input('start',true);this.input('start',false);}
+  start(players=1){
+    const count=Number.isInteger(players)&&players>=1&&players<=4?players:1;
+    for(let i=0;i<count;i++){this.input('start',true);this.input('start',false);}
+  }
   input(action,down){if(action==='launch'&&down===this.held.launch)return;this.rules.key(action,down);this.sync();}
   release(){
     this.charge=0;this.held.launch=false;

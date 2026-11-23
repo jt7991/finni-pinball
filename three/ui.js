@@ -15,7 +15,7 @@ export function prepareUI(){
       const b=document.querySelector(`[data-input=${action}]`);
       (phone.matches?byId('flip-zones'):byId('touch')).append(b);
     }
-    const nudge=document.querySelector('[data-input=nudgeForward]');(phone.matches?byId('nudge-zone'):byId('nudges')).append(nudge);
+    const nudge=document.querySelector('[data-input=nudgeForward]');(phone.matches&&byId('nudge-zone')?byId('nudge-zone'):byId('nudges')).append(nudge);
     if(phone.matches){byId('camera-controls').append(picker);picker.classList.add('in-controls');}
     else{anchor.after(picker);picker.classList.remove('in-controls');}
   }
@@ -32,7 +32,7 @@ export function prepareUI(){
     const visible=document.body.classList.toggle('show-touch-guide');byId('touch-guide').hidden=!visible;byId('touch-help').setAttribute('aria-pressed',String(visible));
   };
   byId('dismiss-touch-guide').onclick=()=>{document.body.classList.remove('show-touch-guide');byId('touch-guide').hidden=true;byId('touch-help').setAttribute('aria-pressed','false');};
-  byId('showTouch').onchange=()=>{byId('release').click();for(const id of ['touch','flip-zones','nudge-zone'])byId(id).hidden=!byId('showTouch').checked;};
+  byId('showTouch').onchange=()=>{byId('release').click();for(const id of ['touch','flip-zones','nudge-zone'])if(byId(id))byId(id).hidden=!byId('showTouch').checked;};
   let toolbarTimer;
   const revealToolbar=()=>{document.body.classList.add('toolbar-visible');clearTimeout(toolbarTimer);toolbarTimer=setTimeout(()=>document.body.classList.remove('toolbar-visible'),1600);};
   document.addEventListener('fullscreenchange',revealToolbar);

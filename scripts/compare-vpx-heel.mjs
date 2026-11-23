@@ -2,9 +2,9 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {createFullGame} from '../three/full-game.js';
 import {STEP} from '../three/physics.js';
-import {referenceRandom,placeReferenceBall} from './reference-physics.mjs';
+import {referenceRandom,placeReferenceBall,readReferenceAssets} from './reference-physics.mjs';
 const fixture=JSON.parse(fs.readFileSync('three/tests/fixtures/vpx-heel-milliseconds.json'));
-const layout=JSON.parse(fs.readFileSync('three/public/layout.json')),objects=JSON.parse(fs.readFileSync('three/public/objects.json')),source=fs.readFileSync('three/public/rules.vbs','utf8');Object.assign(layout.physics,fixture.controlledOverrides);
+const {layout,objects,source}=readReferenceAssets(fixture);Object.assign(layout.physics,fixture.controlledOverrides);
 const scenario=fixture.cases[0],g=await createFullGame(layout,objects,source,()=>{}),samples=[];
 g.random=referenceRandom();
 try{

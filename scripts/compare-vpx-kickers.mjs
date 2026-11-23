@@ -1,9 +1,9 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {createFullGame} from '../three/full-game.js';
-import {applyReferencePhysics,referenceRandom,placeReferenceBall,restoreReferenceBalls} from './reference-physics.mjs';
+import {applyReferencePhysics,referenceRandom,placeReferenceBall,restoreReferenceBalls,readReferenceAssets} from './reference-physics.mjs';
 const path=process.argv.slice(2).find(a=>!a.startsWith('--'))??'three/tests/fixtures/vpx-kickers.json',fixture=JSON.parse(fs.readFileSync(path));
-const layout=JSON.parse(fs.readFileSync('three/public/layout.json')),objects=JSON.parse(fs.readFileSync('three/public/objects.json')),source=fs.readFileSync('three/public/rules.vbs','utf8');
+const {layout,objects,source}=readReferenceAssets(fixture);
 applyReferencePhysics(layout,objects,fixture);
 assert.deepEqual(fixture.columns.slice(12),['ball_count','score','balls_in_hole']);
 const reports=[];

@@ -19,11 +19,12 @@ socket.addEventListener('message',async event=>{
 });
 const call=(method,params={},sessionId)=>new Promise((resolve,reject)=>{const id=++seq;pending.set(id,{resolve,reject});socket.send(JSON.stringify({id,method,params,...sessionId?{sessionId}:{}}));});
 const evaluate=async expression=>{const r=await call('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true,userGesture:true});if(r.exceptionDetails)throw Error(JSON.stringify(r.exceptionDetails));return r.result.value;};
-const wait=async expression=>{for(let i=0;i<400;i++){if(await evaluate(expression))return;await new Promise(r=>setTimeout(r,50));}throw Error(`Timed out: ${expression}`);};
+const wait=async expression=>{for(let i=0;i<400;i++){if(await evaluate(expression))return;await new Promise(r=>setTimeout(r,50));}const state=await evaluate('({play:document.getElementById("play")?.textContent,loading:document.getElementById("loading")?.textContent,log:document.getElementById("log")?.textContent?.slice(-1500)})');console.log(JSON.stringify({timeout:expression,state,errors}));throw Error(`Timed out: ${expression}`);};
 const center=selector=>evaluate(`(()=>{const r=document.querySelector(${JSON.stringify(selector)}).getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}})()`);
 const touch=points=>call('Input.dispatchTouchEvent',{type:points.length?'touchStart':'touchEnd',touchPoints:points.map((p,i)=>({...p,id:i+1,radiusX:4,radiusY:4,force:1}))});
 try{
   await call('Page.enable');await call('Runtime.enable');await call('Network.enable');await call('Emulation.setFocusEmulationEnabled',{enabled:true});
+  await call('Page.addScriptToEvaluateOnNewDocument',{source:`(()=>{const NativeWorker=window.Worker,s=window.testWorker={starts:[],inputs:[],latest:null,fatal:[]};window.Worker=class extends NativeWorker{constructor(...args){super(...args);this.addEventListener('message',({data})=>{if(data.type==='fatal')s.fatal.push(data.message);if(data.type==='snapshot')s.latest={time:data.snapshot.time,tilted:data.snapshot.tilted,held:data.snapshot.held};});}postMessage(message,...args){if(message.type==='start')s.starts.push(message.players);if(message.type==='input')s.inputs.push({action:message.action,down:message.down});return super.postMessage(message,...args);}};})()`});
   await call('Target.setAutoAttach',{autoAttach:true,waitForDebuggerOnStart:true,flatten:true});
   await call('Network.setCacheDisabled',{cacheDisabled:true});
   await call('Page.addScriptToEvaluateOnNewDocument',{source:`window.testDraws=0;window.testShaderErrors=[];for(const Context of [WebGLRenderingContext,WebGL2RenderingContext]){const draw=Context.prototype.drawElements;Context.prototype.drawElements=function(...args){window.testDraws++;return draw.apply(this,args);};const compile=Context.prototype.compileShader;Context.prototype.compileShader=function(shader){compile.call(this,shader);if(!this.getShaderParameter(shader,this.COMPILE_STATUS))window.testShaderErrors.push(this.getShaderInfoLog(shader));};const link=Context.prototype.linkProgram;Context.prototype.linkProgram=function(program){link.call(this,program);if(!this.getProgramParameter(program,this.LINK_STATUS))window.testShaderErrors.push(this.getProgramInfoLog(program));};}`});
@@ -39,8 +40,9 @@ try{
     assert.equal(await evaluate('document.documentElement.scrollWidth<=innerWidth&&document.documentElement.scrollHeight<=innerHeight'),true,`${name} start screen no overflow`);
     measurement.startScreenReadyMs=Date.now()-started;measurement.startScreenTransferredBytes=pageTransferred+workerTransferred;
     await writeFile(`${output}/main-ui-start-${name}.png`,Buffer.from((await call('Page.captureScreenshot',{format:'png'})).data,'base64'));console.log('START_SCREEN',JSON.stringify({viewport:name,readyMs:measurement.startScreenReadyMs,transferredBytes:measurement.startScreenTransferredBytes}));
-    await evaluate('document.getElementById("play").click()');
+    await evaluate(`document.getElementById('player-count').value='${name==='phone'?4:1}';document.getElementById('play').click()`);
     await wait('document.body.classList.contains("ball-in-plunger")');
+    assert.equal(await evaluate('testWorker.starts.at(-1)'),name==='phone'?4:1,'main player selector reaches the simulation worker');
     assert.equal(await evaluate('document.documentElement.scrollWidth<=innerWidth&&document.documentElement.scrollHeight<=innerHeight'),true,`${name} no overflow`);
     if(name==='phone'||name==='small-phone'){
       const left=await center('#flip-zones [data-input=left]'),right=await center('#flip-zones [data-input=right]');
@@ -50,6 +52,18 @@ try{
       }
       await call('Input.dispatchTouchEvent',{type:'touchCancel',touchPoints:[]});
       assert.equal(await evaluate('document.querySelectorAll("#flip-zones .pressed").length'),0);
+      if(name==='phone'){
+        await touch([left]);
+        await wait('testWorker.latest.held.left');
+        await call('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{...left,x:left.x+50,id:1,radiusX:4,radiusY:4,force:1}]});
+        await call('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{...left,x:left.x+70,id:1,radiusX:4,radiusY:4,force:1}]});
+        await wait('testWorker.inputs.some(input=>input.action==="nudgeRight"&&input.down)');
+        await new Promise(resolve=>setTimeout(resolve,350));
+        assert.equal(await evaluate('testWorker.inputs.filter(input=>input.action==="nudgeRight"&&input.down).length'),1,'one nudge per swipe');
+        assert.equal(await evaluate('testWorker.latest.held.left'),true,'swipe keeps the flipper held');
+        assert.equal(await evaluate('testWorker.latest.tilted'),false,'main disables tilt penalties');
+        await touch([]);await wait('!testWorker.latest.held.left');
+      }
       if(await evaluate('!!window.finniThree?.game.workerSimulation')){
         await evaluate('finniThree.game.flush()');assert.equal(await evaluate('finniThree.game.held.left||finniThree.game.held.right'),false,'physical flippers release after touch cancellation');
         await touch([left]);await evaluate('window.dispatchEvent(new Event("blur"));finniThree.game.flush()');await touch([]);

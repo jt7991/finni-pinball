@@ -12,11 +12,12 @@ ROOT=Path(__file__).resolve().parents[1]
 parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--source-dir',type=Path,default=ROOT/'.work/finni-live-extracted',help='Extracted table directory containing sounds and sounds.json.')
 parser.add_argument('--metadata-only',action='store_true',help='Update metadata for existing AAC files without re-encoding them.')
+parser.add_argument('--ffmpeg',type=Path,help='Explicit encoder executable.')
 args=parser.parse_args()
 SOURCE=args.source_dir/'sounds'
 OUT=ROOT/'three/public/audio'
 OUT.mkdir(parents=True,exist_ok=True)
-encoder=shutil.which('ffmpeg')
+encoder=str(args.ffmpeg) if args.ffmpeg else shutil.which('ffmpeg')
 if not encoder and not args.metadata_only:raise SystemExit('ffmpeg is required to rebuild browser audio.')
 files={p.stem.lower():p for p in SOURCE.iterdir() if p.is_file()}
 entries=json.loads((SOURCE.parent/'sounds.json').read_text())
@@ -40,14 +41,15 @@ def encode(entry):
     name=entry['name'].lower()
     source=files.get(name)
     if source is None:raise RuntimeError('Missing installed sound '+name)
-    filename=hashlib.sha256(name.encode()).hexdigest()[:16]+'.m4a'
+    source_hash=hashlib.sha256(source.read_bytes()).hexdigest()
+    filename=entry.get('reuse_file') or hashlib.sha256(name.encode()+b'\0'+source_hash.encode()).hexdigest()[:16]+'.m4a'
     target=OUT/filename
     if not target.exists():
         if args.metadata_only:raise RuntimeError('Missing previously encoded audio '+str(target))
         subprocess.run([encoder,'-hide_banner','-loglevel','error','-y','-i',str(source),
                         '-c:a','aac','-b:a','96k' if name.startswith('mu_') else '64k',
                         '-movflags','+faststart',str(target)],check=True)
-    metadata={'file':filename,'music':name.startswith('mu_')}
+    metadata={'file':filename,'music':name.startswith('mu_'),'sourceSHA256':source_hash}
     rate=sample_rate(source)
     if rate:metadata['sampleRate']=rate
     return name,metadata

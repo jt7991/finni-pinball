@@ -6,7 +6,8 @@ import {prepareUI} from './ui.js';
 
 const $=prepareUI();
 let game,view,audio,display,leaderboard,paused=false,frames=0,sampleStart=0;
-const sources=new Map(),buttons=[...document.querySelectorAll('[data-input]')];
+const sources=new Map(),swipes=new Map(),buttons=[...document.querySelectorAll('[data-input]')];
+const selectedPlayers=()=>Number($('player-count')?.value??1);
 const defaultKeys={ShiftLeft:'left',ShiftRight:'right',Enter:'launch',Digit1:'start',Space:'action',KeyZ:'nudgeLeft',KeyX:'nudgeForward',Slash:'nudgeRight'},keys={...defaultKeys};
 const read=(key,fallback)=>{try{return localStorage.getItem(`finni-three-${key}`)||fallback;}catch{return fallback;}};
 const save=(key,value)=>{try{localStorage.setItem(`finni-three-${key}`,value);}catch{}};
@@ -38,14 +39,16 @@ function event(e){
   const lines={start:'Hold Launch, then release.',tilt:'Tilt · flippers disabled',over:'Game over'};
   if(lines[e.type])message(lines[e.type]);
   if(e.type==='message')message(e.text);
-  if(e.type==='start'){$('overlay').hidden=true;document.body.classList.add('playing');$('table').focus({preventScroll:true});}
+  if(e.type==='start'){$('overlay').hidden=true;$('play').disabled=false;$('player-count').disabled=true;document.body.classList.add('playing');$('table').focus({preventScroll:true});}
   if(e.type==='over'){
+    $('player-count').disabled=false;$('play').disabled=false;
     release();document.body.classList.remove('playing');$('overlay').hidden=false;
     $('load-status').textContent=`Final score: ${game.score.toLocaleString()}`;$('play').textContent='Play again';
   }
 }
 function input(action,down,source){
   if(!game||paused)return;
+  if(action==='start'&&down&&game.state!=='playing'){game.start(selectedPlayers());return;}
   if($('latch').checked&&(action==='left'||action==='right')){
     if(down){const key=`latched:${action}`,held=sources.has(key);if(held)sources.delete(key);else sources.set(key,action);game.input(action,!held);paint();}
     return;
@@ -56,14 +59,22 @@ function input(action,down,source){
   if(before!==held)game.input(action,held);
   paint();
 }
-function paint(){for(const b of buttons)b.classList.toggle('pressed',[...sources.values()].includes(b.dataset.input));}
-function release(){sources.clear();game?.release();paint();}
+function paint(){for(const b of buttons){const held=[...sources.values()].includes(b.dataset.input);b.classList.toggle('pressed',held);b.classList.toggle('held',held);}}
+function release(){sources.clear();swipes.clear();game?.release();paint();}
 for(const button of buttons){
   button.addEventListener('pointerdown',e=>{
     if(e.button!==0)return;e.preventDefault();button.setPointerCapture(e.pointerId);
     audio?.unlock();input(button.dataset.input,true,`pointer:${e.pointerId}`);
+    if(['touch','pen'].includes(e.pointerType)&&button.parentElement===$('flip-zones')&&['left','right'].includes(button.dataset.input))swipes.set(e.pointerId,{x:e.clientX,y:e.clientY,nudged:false});
+  });
+  button.addEventListener('pointermove',e=>{
+    const swipe=swipes.get(e.pointerId);if(!swipe||swipe.nudged)return;
+    const dx=e.clientX-swipe.x,dy=e.clientY-swipe.y;
+    if(Math.abs(dx)<24||Math.abs(dx)<=Math.abs(dy)*1.2)return;
+    swipe.nudged=true;const action=dx<0?'nudgeLeft':'nudgeRight',source=`swipe:${e.pointerId}`;input(action,true,source);input(action,false,source);
   });
   for(const type of ['pointerup','pointercancel','lostpointercapture'])button.addEventListener(type,e=>{
+    swipes.delete(e.pointerId);
     if(type==='pointerup')input(button.dataset.input,false,`pointer:${e.pointerId}`);
     else if(sources.has(`pointer:${e.pointerId}`))release();
   });
@@ -80,7 +91,7 @@ window.addEventListener('keydown',e=>{
     for(const [code,action]of Object.entries(keys))if(action===rebinding)delete keys[code];keys[e.code]=rebinding;rebinding=null;
     save('bindings',JSON.stringify(Object.fromEntries(Object.entries(keys).map(([code,action])=>[action,code]))));$('binding-status').textContent='Binding saved.';bindings();return;
   }
-  if($('controls-panel').open||$('initials-dialog').open||e.ctrlKey||e.metaKey||e.altKey)return;
+  if(e.target.closest?.('button,input,select,summary')||$('controls-panel').open||$('initials-dialog').open||e.ctrlKey||e.metaKey||e.altKey)return;
   if(keys[e.code]&&!e.repeat){e.preventDefault();input(keys[e.code],true,`key:${e.code}`);}
 });
 window.addEventListener('keyup',e=>{if(keys[e.code]){e.preventDefault();input(keys[e.code],false,`key:${e.code}`);}});
@@ -93,7 +104,7 @@ $('settings').onclick=()=>{release();pause(true);};
 $('controls-panel').addEventListener('close',()=>{pause(document.hidden);$('table').focus({preventScroll:true});});
 $('controls-panel').addEventListener('toggle',()=>{release();pause($('controls-panel').open||document.hidden);});
 $('initials-dialog').addEventListener('close',()=>$('table').focus({preventScroll:true}));
-$('play').onclick=()=>{release();audio?.unlock();game?.start();};
+$('play').onclick=()=>{release();audio?.unlock();$('play').disabled=true;$('play').textContent='Starting game…';game?.start(selectedPlayers());};
 $('camera').value=read('camera','balanced');$('quality').value=read('quality','auto');
 if($('camera').value==='')$('camera').value='balanced';
 const cameraMode=()=>$('camera').value;

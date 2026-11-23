@@ -230,7 +230,7 @@ Sub Table1_KeyDown(ByVal Keycode)
         If keycode = LeftTiltKey Then CheckTilt 'only check the tilt during game
         If keycode = RightTiltKey Then CheckTilt
         If keycode = CenterTiltKey Then CheckTilt
-        If keycode = MechanicalTilt Then Tilt = 16:CheckTilt
+        If keycode = MechanicalTilt And TiltSensitivity > 0 Then Tilt = 16:CheckTilt
 
         If keycode = LeftFlipperKey Then SolLFlipper 1:InstantInfoTimer.Enabled = True:RotateLaneLights 1:UpdateGates 1
         If keycode = RightFlipperKey Then SolRFlipper 1:InstantInfoTimer.Enabled = True:RotateLaneLights 0
@@ -482,6 +482,7 @@ End Sub
 'NOTE: The TiltDecreaseTimer Subtracts .01 from the "Tilt" variable every round
 
 Sub CheckTilt                                    'Called when table is nudged
+    If TiltSensitivity <= 0 Then Exit Sub
     Tilt = Tilt + TiltSensitivity                'Add to tilt count
     TiltDecreaseTimer.Enabled = True
     If(Tilt> TiltSensitivity) AND(Tilt <15) Then 'show a warning
@@ -552,6 +553,10 @@ Dim Song
 Song = ""
 
 Sub PlaySong(name)
+    ' Task selection and saved-ball launches must not interrupt multiballs.
+    If name = "mu_shooterlane" Then
+        If FinniMultiballSong() <> "" Then name = FinniMultiballSong()
+    End If
     If bMusicOn Then
         If Song <> name Then
             StopSound Song
@@ -561,24 +566,36 @@ Sub PlaySong(name)
     End If
 End Sub
 
+
+' Fixed soundtrack priority: three-lock Friendship, Cake Time, then tasks.
+Function FinniMultiballSong()
+    FinniMultiballSong = ""
+    If bNinjaMB Then
+        FinniMultiballSong = "mu_ninjamb"
+    ElseIf bLilDPMB Then
+        FinniMultiballSong = "mu_multiball"
+    End If
+End Function
+
 Sub ChangeSong
     Dim a
+    a = FinniMultiballSong()
+    If a <> "" Then
+        PlaySong a
+        Exit Sub
+    End If
     Select Case Battle(CurrentPlayer, 0)
         Case 0 'no battle active so play the standard songs or the multiball songs
-            If bBerserker Then
-                PLaySong "mu_beserkerrage"
+            If bDiscoMBEnabled Then
+                PlaySong "mu_discomb"
             ElseIf bDiscoLoopsEnabled Then
                 PlaySong "mu_discoloops"
-            ElseIf bDiscoMBEnabled Then
-                PlaySong "mu_discomb"
             ElseIf bMechSuitMBStarted Then
                 PlaySong "mu_mechsuitmb"
-            ElseIf bNinjaMB Then
-                PlaySong "mu_ninjamb"
-            ElseIf bLilDPMB Then
-                PlaySong "mu_multiball"
-            Else 'play default music
-                PlaySong "mu_hellhouse" &Balls
+            ElseIf bBerserker Then
+                PlaySong "mu_beserkerrage"
+            Else 'play the regular-play track on every ball
+                PlaySong "mu_hellhouse1"
             End If
         Case 1 'Juggernaut
             PlaySong "mu_juggernaut"
@@ -2404,6 +2421,7 @@ Function FinniDmdAnimated(scene)
     FinniDmdAnimated = False
     Select Case LCase(scene)
         Case "d_title": FinniDmdAnimated = True
+        Case "d_gameover": FinniDmdAnimated = True
         Case "d_finni_presents": FinniDmdAnimated = True
         Case "d_finni_presents_select": FinniDmdAnimated = True
         Case "d_finni_presents_done": FinniDmdAnimated = True
@@ -2651,41 +2669,41 @@ Const ledwhite = 12
 Sub SetLightColor(n, col, stat) 'stat 0 = off, 1 = on, 2 = blink, -1= no change
     Select Case col
         Case red
-            n.color = RGB(26, 4, 10)
-            n.colorfull = RGB(255, 45, 104)
+            n.color = RGB(22, 7, 4)
+            n.colorfull = RGB(224, 68, 45)
         Case orange
-            n.color = RGB(26, 14, 3)
-            n.colorfull = RGB(255, 145, 30)
+            n.color = RGB(23, 14, 6)
+            n.colorfull = RGB(230, 140, 55)
         Case amber
-            n.color = RGB(26, 20, 4)
-            n.colorfull = RGB(255, 195, 36)
+            n.color = RGB(24, 18, 8)
+            n.colorfull = RGB(235, 179, 78)
         Case yellow
-            n.color = RGB(26, 23, 0)
-            n.colorfull = RGB(255, 230, 0)
+            n.color = RGB(24, 20, 11)
+            n.colorfull = RGB(240, 203, 107)
         Case darkgreen
-            n.color = RGB(2, 14, 8)
-            n.colorfull = RGB(20, 145, 75)
+            n.color = RGB(4, 12, 7)
+            n.colorfull = RGB(42, 121, 68)
         Case green
-            n.color = RGB(4, 23, 11)
-            n.colorfull = RGB(45, 230, 110)
+            n.color = RGB(7, 18, 10)
+            n.colorfull = RGB(72, 177, 100)
         Case blue
-            n.color = RGB(0, 11, 26)
-            n.colorfull = RGB(0, 112, 255)
+            n.color = RGB(7, 14, 19)
+            n.colorfull = RGB(71, 137, 192)
         Case darkblue
-            n.color = RGB(7, 6, 22)
-            n.colorfull = RGB(71, 55, 225)
+            n.color = RGB(6, 9, 15)
+            n.colorfull = RGB(56, 91, 149)
         Case purple
-            n.color = RGB(19, 6, 26)
-            n.colorfull = RGB(194, 65, 255)
+            n.color = RGB(14, 10, 16)
+            n.colorfull = RGB(135, 99, 157)
         Case white 'bulb
-            n.color = RGB(24, 25, 26)
-            n.colorfull = RGB(239, 247, 255)
+            n.color = RGB(22, 24, 24)
+            n.colorfull = RGB(224, 235, 239)
         Case teal
-            n.color = RGB(3, 22, 24)
-            n.colorfull = RGB(30, 215, 235)
+            n.color = RGB(7, 15, 16)
+            n.colorfull = RGB(68, 154, 155)
         Case ledwhite
-            n.color = RGB(26, 25, 24)
-            n.colorfull = RGB(255, 250, 240)
+            n.color = RGB(24, 23, 20)
+            n.colorfull = RGB(241, 226, 201)
     End Select
     If stat <> -1 Then
         n.State = 0
@@ -2696,29 +2714,29 @@ End Sub
 Sub SetFlashColor(n, col, stat) 'stat 0 = off, 1 = on, -1= no change - no blink for the flashers, use FlashForMs
     Select Case col
         Case red
-            n.color = RGB(255, 45, 104)
+            n.color = RGB(224, 68, 45)
         Case orange
-            n.color = RGB(255, 145, 30)
+            n.color = RGB(230, 140, 55)
         Case amber
-            n.color = RGB(255, 195, 36)
+            n.color = RGB(235, 179, 78)
         Case yellow
-            n.color = RGB(255, 230, 0)
+            n.color = RGB(240, 203, 107)
         Case darkgreen
-            n.color = RGB(20, 145, 75)
+            n.color = RGB(42, 121, 68)
         Case green
-            n.color = RGB(45, 230, 110)
+            n.color = RGB(72, 177, 100)
         Case blue
-            n.color = RGB(0, 112, 255)
+            n.color = RGB(71, 137, 192)
         Case darkblue
-            n.color = RGB(71, 55, 225)
+            n.color = RGB(56, 91, 149)
         Case purple
-            n.color = RGB(194, 65, 255)
+            n.color = RGB(135, 99, 157)
         Case white 'bulb
-            n.color = RGB(239, 247, 255)
+            n.color = RGB(224, 235, 239)
         Case teal
-            n.color = RGB(30, 215, 235)
+            n.color = RGB(68, 154, 155)
         Case ledwhite
-            n.color = RGB(255, 250, 240)
+            n.color = RGB(241, 226, 201)
     End Select
     If stat <> -1 Then
         n.Visible = stat
@@ -4674,6 +4692,7 @@ End Sub
 Sub StopLilDPMB 'end of LilDP multiball
     LilDPHits = 0
     bLilDPMB = False
+    ChangeSong
     LilDPTimer.Enabled = 0
     LilDPSpinner.Enabled = 0
     For x = 1 to 6:LilDPLights(x) = 0:Next
@@ -5420,8 +5439,8 @@ Sub StopSpots
     Camera1.RotZ = 210
     Spot2.RotZ = 170
     Camera2.RotZ = 170
-    Spot1.color = RGB(255, 250, 240)
-    Spot2.color = RGB(255, 250, 240)
+    Spot1.color = RGB(241, 226, 201)
+    Spot2.color = RGB(241, 226, 201)
 End Sub
 
 Sub Spots_Timer()
@@ -5994,6 +6013,7 @@ Sub Table1_OptionEvent(ByVal eventId)
         ChangeSong
     Else
         StopSound Song
+        Song = ""
     End If
 
     ' Table's Slope
@@ -6009,28 +6029,28 @@ Function FinniShowColor(stage, r, g, b, level)
     Select Case stage
         Case 0
             t = g / 255
-            c0 = Array(255, 45, 104)
-            c1 = Array(255, 195, 36)
+            c0 = Array(235, 179, 78)
+            c1 = Array(230, 140, 55)
         Case 1
             t = 1 - r / 255
-            c0 = Array(255, 195, 36)
-            c1 = Array(45, 230, 110)
+            c0 = Array(230, 140, 55)
+            c1 = Array(224, 68, 45)
         Case 2
             t = b / 255
-            c0 = Array(45, 230, 110)
-            c1 = Array(30, 215, 235)
+            c0 = Array(224, 68, 45)
+            c1 = Array(241, 226, 201)
         Case 3
             t = 1 - g / 255
-            c0 = Array(30, 215, 235)
-            c1 = Array(0, 112, 255)
+            c0 = Array(241, 226, 201)
+            c1 = Array(224, 235, 239)
         Case 4
             t = r / 255
-            c0 = Array(0, 112, 255)
-            c1 = Array(71, 55, 225)
+            c0 = Array(224, 235, 239)
+            c1 = Array(240, 203, 107)
         Case 5
             t = 1 - b / 255
-            c0 = Array(71, 55, 225)
-            c1 = Array(255, 45, 104)
+            c0 = Array(240, 203, 107)
+            c1 = Array(235, 179, 78)
     End Select
     FinniShowColor = RGB(CInt((c0(0) + (c1(0) - c0(0)) * t) * level), CInt((c0(1) + (c1(1) - c0(1)) * t) * level), CInt((c0(2) + (c1(2) - c0(2)) * t) * level))
 End Function

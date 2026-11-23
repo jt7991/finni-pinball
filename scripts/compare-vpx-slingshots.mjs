@@ -1,10 +1,10 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {createFullGame} from '../three/full-game.js';
-import {applyReferencePhysics,placeReferenceBall,restoreReferenceBalls} from './reference-physics.mjs';
+import {applyReferencePhysics,placeReferenceBall,restoreReferenceBalls,readReferenceAssets} from './reference-physics.mjs';
 const fixture=JSON.parse(fs.readFileSync(process.argv.slice(2).find(a=>!a.startsWith('--'))??'three/tests/fixtures/vpx-slingshots-native-state.json'));
 assert.equal(fixture.probeKind,'slingshots');
-const layout=JSON.parse(fs.readFileSync('three/public/layout.json')),objects=JSON.parse(fs.readFileSync('three/public/objects.json')),source=fs.readFileSync('three/public/rules.vbs','utf8');
+const {layout,objects,source}=readReferenceAssets(fixture);
 applyReferencePhysics(layout,objects,fixture);const reports=[];
 for(const scenario of fixture.cases){
   const game=await createFullGame(layout,objects,source,()=>{});

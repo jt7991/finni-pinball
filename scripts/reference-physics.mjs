@@ -7,6 +7,25 @@ export function readReferenceFixture(path){
   const data=fs.readFileSync(path),decoded=data[0]===31&&data[1]===139?gunzipSync(data):data;
   return JSON.parse(decoded.toString('utf8'));
 }
+let originalRenderAssets;
+// Original GPU recordings refer to the original authored light colors and meshes.
+// Keep their source inputs intact when main changes the live table appearance.
+export function readOriginalRenderAsset(name){
+  originalRenderAssets??=readReferenceFixture(new URL('../three/tests/fixtures/source-render-6300.json.gz',import.meta.url));
+  return structuredClone(originalRenderAssets.assets[name]??JSON.parse(fs.readFileSync(new URL('../three/public/'+name,import.meta.url))));
+}
+let originalTableAssets;
+// Recordings made before main's rule/art changes keep their exact authored
+// input table. Current product tests use current public assets independently.
+export function readReferenceAssets(fixture){
+  const originalSHA='6300d64767894aebcf82f378985cb63e8a540fa373365c7a82c189f78dadfd5a';
+  if(fixture.sourceSha256===originalSHA){
+    originalTableAssets??=readReferenceFixture(new URL('../three/tests/fixtures/source-table-6300.json.gz',import.meta.url));
+    if(originalTableAssets.sourceSha256!==originalSHA)throw Error('Reference table source mismatch');
+    const {layout,objects,source}=structuredClone(originalTableAssets);return {layout,objects,source};
+  }
+  return {layout:JSON.parse(fs.readFileSync('three/public/layout.json')),objects:JSON.parse(fs.readFileSync('three/public/objects.json')),source:fs.readFileSync('three/public/rules.vbs','utf8')};
+}
 export function summarizeNativePlunger(frames){
   if(!frames)return undefined;
   const keys=['pos','speed','travelLimit','pullForce','reverseImpulse','fireTimer','fireSpeed','fireBounce'];
