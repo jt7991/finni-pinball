@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#050712"><title>High Scores · Finni’s Big Day</title>
+<link rel="icon" href="/favicon.ico"><link rel="stylesheet" href="/high-scores.css">
+<script type="module" src="/high-scores.js"></script>
+</head>
+<body>
+<main class="cabinet">
+<nav aria-label="Game"><a href="/">← Play Finni’s Big Day</a><span>FREE PLAY</span></nav>
+<header><p class="eyebrow">FINNI’S BIG DAY</p><h1>HIGH SCORES</h1><p class="subtitle">The party’s greatest players</p></header>
+<section class="record" aria-label="All-time high score"><p>HIGH SCORE</p><strong id="record-score">—</strong><span id="record-name">YOUR NAME COULD BE HERE</span></section>
+<section class="rankings" aria-labelledby="rankings-title">
+<div class="board-heading"><h2 id="rankings-title">TOP 25</h2><span>ALL TIME</span></div>
+<p id="scores-status" role="status" aria-live="polite">Loading high scores…</p>
+<table id="scores-table" hidden><caption class="sr-only">All-time best scores, one entry per name</caption><thead><tr><th scope="col">RANK</th><th scope="col" class="score">SCORE</th><th scope="col" class="name">NAME</th></tr></thead><tbody id="scores-rows"></tbody></table>
+</section>
+<footer><div class="actions"><a href="/">PLAY NOW</a><button id="refresh-scores" type="button">REFRESH SCORES</button></div></footer>
+</main>
+</body>
+</html>

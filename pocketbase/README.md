@@ -49,7 +49,7 @@ See Coolify's [Compose configuration](https://coolify.io/docs/applications/build
 
 ## Dashboard
 
-- `scores`: initials, score, player number, duration, version, run, submission date, `flagged`, `hidden`, and `review_note`.
+- `scores`: player name (stored in the legacy `initials` field, 1–12 uppercase letters or numbers), score, player number, duration, version, run, submission date, `flagged`, `hidden`, and `review_note`.
 - `game_sessions`: anonymous session start, one-use token hash, hashed request address, version, and consumption status. Never make this collection public.
 - To remove a score from the public leaderboard, set `hidden = true`.
 - Scores publish immediately. Legacy `flagged` and `review_note` fields no longer affect visibility.
@@ -57,7 +57,7 @@ See Coolify's [Compose configuration](https://coolify.io/docs/applications/build
 
 ## Submission checks and limits
 
-Custom routes issue unpredictable one-use tokens, reject duplicate runs, validate up to four player results in one transaction, enforce score/initial formats, and expire sessions after 24 hours. Scores publish immediately regardless of game duration or scoring rate, including previously flagged scores. Only records explicitly marked `hidden` are excluded by the custom leaderboard endpoint and collection read rules. The web proxy rate-limits game routes; PocketBase additionally limits session creation per observed address. Behind Coolify, the immediate proxy address may group visitors, so tune forwarding and limits for the deployment rather than blindly trusting client-provided headers.
+Custom routes issue unpredictable one-use tokens, reject duplicate runs, validate up to four player results in one transaction, enforce score/initial formats, and expire sessions after 24 hours. Scores publish immediately regardless of game duration or scoring rate, including previously flagged scores. Only records explicitly marked `hidden` are excluded by the custom leaderboard endpoint and collection read rules. The leaderboard groups visible results by name and returns the best 25 distinct names; ties use earliest submission, then record ID. Hiding a name’s best result reveals its next-best visible result. Raw collection reads still expose individual game results. The player-name migration expands the existing field without deleting scores; its rollback intentionally preserves longer saved names. The web proxy rate-limits game routes; PocketBase additionally limits session creation per observed address. Behind Coolify, the immediate proxy address may group visitors, so tune forwarding and limits for the deployment rather than blindly trusting client-provided headers.
 
 These are casual leaderboard checks, **not replay verification**. A modified browser can fabricate plausible scores. Tokens prevent duplicate submissions, not forged gameplay. Never label these records verified or use them for prizes. The original VPX script and physics remain unchanged; the browser reads final state and uses the original initials-entry handler.
 

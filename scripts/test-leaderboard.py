@@ -69,7 +69,7 @@ class LeaderboardTests(unittest.TestCase):
     def test_bad_token_and_input_do_not_consume_run(self):
         run=self.run_record()
         self.assertEqual(self.submit({**run,'token':'wrong'})[0],403)
-        for initials,score in [('<X>',10),('ABCD',10),('ABC',-1),('ABC',1.5),('ABC',True),('ABC',1e15)]:
+        for initials,score in [('<X>',10),('ABCDEFGHIJKLM',10),('ABC',-1),('ABC',1.5),('ABC',True),('ABC',1e15)]:
             self.assertEqual(self.submit(run,initials,score)[0],400)
         self.assertEqual(self.submit(run)[0],201)
 
