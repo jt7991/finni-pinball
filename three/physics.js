@@ -575,7 +575,11 @@ export class Pinball {
       const f=event.f;pose(f);
       if(event.r){
         const contact=f.nativeMotion?event.hit.profile:flipperContact(body(event.r).translation(),f,f.angle,RADIUS);
-        if(contact&&contact.gap<=.0005){
+        // HitCircle keeps the base's separation at the start of the sweep.
+        // Its solved future hit can therefore retain a positive gap. The
+        // native solver already validated that time; rejecting it here skips
+        // heel impacts and changes later floor contact and friction.
+        if(contact&&(f.nativeMotion||contact.gap<=.0005)){
           this.ballSpin.impact(body(event.r),contact.gap);
           const state=this.rules?.objects.get(`${f.side}flipper`);
           resolveFlipperContact(body(event.r),f,contact,{elasticity:state?Number(state.elasticity):f.elasticity,elasticity_falloff:f.falloff??0,friction:f.friction},RADIUS,Math.round(this.time*1000),(kind,speed)=>this.rules?.hit(f.side+'Flipper',kind,event.r.proxy,...(kind==='Collide'?[speed]:[])));

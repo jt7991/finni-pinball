@@ -119,6 +119,7 @@ if(reference.runtimeMarkers){
 const runtimeOverrides=reference.runtimeMarkers?{}:{'LeftFlipper.Scatter':0,'RightFlipper.Scatter':0};
 reference.flipperAngleScalarEncoding='Native Float32 COM angles formatted through CStr(CDbl()), preserving every Single bit after parsing as Float32.';
 const columns=['ms','x','y','z','vx','vy','vz','wx','wy','wz','left','right',...(probeKind==='triggers'?['balls_over']:probeKind==='plunger'?['plunger_position']:probeKind==='targets'?['target009_dropped','target010_dropped','target011_dropped','target009_offset','target010_offset','target011_offset','score']:['spinners','gates'].includes(probeKind)?[probeKind==='gates'?'gate_angle':'spinner_angle','score','left_spinner_count']:[])];
+reference.samplePositionEncoding='Native Float32 COM position getters cast to Double before CStr, retaining every Single bit in text. Physical positions and sample clocks are unchanged.';
 if(probeKind==='autofire')columns.push('plunger_position','coil_balls');
 if(probeKind==='bumpers')columns.push('score','bumper_hits');
 if(probeKind==='slingshots'||probeKind==='material-events'||probeKind==='target-events')columns.push('score');
@@ -132,7 +133,7 @@ let seq=0;const pending=new Map();
 socket.addEventListener('message',event=>{const d=JSON.parse(event.data);if(d.id){const p=pending.get(d.id);pending.delete(d.id);d.error?p.reject(Error(d.error.message)):p.resolve(d.result);}});
 const call=(method,params={})=>new Promise((resolve,reject)=>{const id=++seq;pending.set(id,{resolve,reject});socket.send(JSON.stringify({id,method,params}));});
 const evaluate=async expression=>{const r=await call('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true,userGesture:true});if(r.exceptionDetails)throw Error(JSON.stringify(r.exceptionDetails));return r.result.value;};
-const wait=async expression=>{for(let i=0;i<1200;i++){if(await evaluate(expression))return;await new Promise(r=>setTimeout(r,50));}throw Error(`Timed out: ${expression}`);};
+const wait=async expression=>{for(let i=0;i<1200;i++){if(await evaluate(expression))return;await new Promise(r=>setTimeout(r,50));}const state=await evaluate('({url:location.href,loading:document.getElementById("loading")?.textContent,play:document.getElementById("play")?.textContent,log:document.getElementById("log")?.textContent.slice(-1600)})');throw Error(`Timed out: ${expression}; native state: ${JSON.stringify(state)}`);};
 const script=code=>evaluate(`finni.evaluate(${JSON.stringify(code)})`);
 const marker=async label=>evaluate(`document.getElementById('log').textContent.split(${JSON.stringify(label+'|')}).at(-1).split(String.fromCharCode(10))[0]`);
 const reset=(x,y,vx,vy,z=25,vz=0)=>`RefBall.X=${x}:RefBall.Y=${y}:RefBall.Z=${z}:RefBall.VelX=${vx}:RefBall.VelY=${vy}:RefBall.VelZ=${vz}:RefBall.AngMomX=0:RefBall.AngMomY=0:RefBall.AngMomZ=0`;
@@ -278,6 +279,10 @@ if(exactDelay!==undefined){
 }
 try{
   await call('Page.enable');await call('Emulation.setFocusEmulationEnabled',{enabled:true});
+  if(process.argv.includes('--phone-viewport')){
+    reference.viewport={width:390,height:844,deviceScaleFactor:2,mobile:true};
+    await call('Emulation.setDeviceMetricsOverride',reference.viewport);
+  }
   if(recordRng)await call('Page.addScriptToEvaluateOnNewDocument',{source:`
     window.nativeReferenceMemories=[];
     for(const method of ['instantiate','instantiateStreaming']){
@@ -516,7 +521,7 @@ try{
       const targetFields=scenario.target?['Target009','Target010','Target011'].map(n=>`CLng(${n}.IsDropped)`).concat(['Target009','Target010','Target011'].map(n=>`CLng(${n}.CurrentAnimOffset*1000000)`),'Score(CurrentPlayer)'):null;
       const pairFields=scenario.otherBall?['X','Y','Z',...['VelX','VelY','VelZ','AngVelX','AngVelY','AngVelZ']].map((p,i)=>i<3?`RefOtherBall.${p}`:`CLng(RefOtherBall.${p}*1000000)`):null;
       const extra=pairFields?' & ":" & '+pairFields.join(' & ":" & '):['material-events','target-events'].includes(probeKind)?" & \":\" & Score(CurrentPlayer)":scenario.slingshot?" & \":\" & Score(CurrentPlayer)":scenario.bumper?' & ":" & Score(CurrentPlayer) & ":" & BumperHits(CurrentPlayer)':scenario.autofire?' & ":" & Plunger.Position & ":" & (UBound(PlungerIM.Balls)+1)':scenario.kicker?' & ":" & (UBound(GetBalls)+1) & ":" & Score(CurrentPlayer) & ":" & BallsInHole':scenario.trigger?` & ":" & ${scenario.trigger}.BallCntOver`:mechanism?` & ":" & CLng(${mechanism}.CurrentAngle*1000000) & ":" & Score(CurrentPlayer) & ":" & LeftSpinnerCount(CurrentPlayer)`:targetFields?' & ":" & '+targetFields.join(' & ":" & '):scenario.plunger?' & ":" & Plunger.Position':'';
-      await script(park+'Debug.Print "CONTACT_SAMPLE|" & GameTime & ":" & RefBall.X & ":" & RefBall.Y & ":" & RefBall.Z & ":" & CLng(RefBall.VelX*1000000) & ":" & CLng(RefBall.VelY*1000000) & ":" & CLng(RefBall.VelZ*1000000) & ":" & CLng(RefBall.AngVelX*1000000) & ":" & CLng(RefBall.AngVelY*1000000) & ":" & CLng(RefBall.AngVelZ*1000000) & ":" & CStr(CDbl(LeftFlipper.CurrentAngle)) & ":" & CStr(CDbl(RightFlipper.CurrentAngle))'+extra);
+      await script(park+'Debug.Print "CONTACT_SAMPLE|" & GameTime & ":" & CStr(CDbl(RefBall.X)) & ":" & CStr(CDbl(RefBall.Y)) & ":" & CStr(CDbl(RefBall.Z)) & ":" & CLng(RefBall.VelX*1000000) & ":" & CLng(RefBall.VelY*1000000) & ":" & CLng(RefBall.VelZ*1000000) & ":" & CLng(RefBall.AngVelX*1000000) & ":" & CLng(RefBall.AngVelY*1000000) & ":" & CLng(RefBall.AngVelZ*1000000) & ":" & CStr(CDbl(LeftFlipper.CurrentAngle)) & ":" & CStr(CDbl(RightFlipper.CurrentAngle))'+extra);
       const raw=await marker('CONTACT_SAMPLE');rawSamples.push(raw);
       const values=raw.split(':').map(parseFloat);assert.equal(values.length,columns.length);assert.ok(values.every(Number.isFinite));for(let k=4;k<10;k++)values[k]/=1000000;values[0]-=origin;samples.push(values);
       if(pairFields)for(let k=15;k<21;k++)values[k]/=1000000;
