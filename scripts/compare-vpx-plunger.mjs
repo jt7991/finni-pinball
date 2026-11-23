@@ -64,7 +64,10 @@ for(const scenario of fixture.cases){
     const prepareObservedFrame=ms=>{
       const expected=animationFrames?.get(ms);if(!expected)return;
       g.prepareFrame();
-      const mission=missionFrames.get(ms);if(mission){const actual=Object.values(fixture.runtimeMissionFrames.fields).map(expression=>g.rules.value(expression));missionAudit.push({ms,expected:mission.slice(1),actual,errors:actual.map((value,i)=>value-mission[i+1])});}
+      // Match the native sampler's explicit CDbl conversion, including VB
+      // Empty -> 0 before mBalls2Eject has first been assigned. Keep non-finite
+      // values as mismatches instead of letting NaN pass a truthiness check.
+      const mission=missionFrames.get(ms);if(mission){const actual=Object.values(fixture.runtimeMissionFrames.fields).map(expression=>g.rules.value(`CDbl(${expression})`));missionAudit.push({ms,expected:mission.slice(1),actual,errors:actual.map((value,i)=>value-mission[i+1])});}
       const names=fixture.instrumentation.animationFrameTrace.targets??['Target009','Target010','Target011'],targets=names.map(name=>g.targetMotions.get(name.toLowerCase())),actual=[ms,expected[1],...targets.map(target=>target.offset),...targets.map(target=>Number(target.dropped)),g.rules.value('Score(CurrentPlayer)')];
       animationAudit.push({ms,expected,actual,errors:actual.slice(2).map((value,i)=>value-(i<3?Math.fround(expected[i+2]):expected[i+2]))});
     };
@@ -87,7 +90,7 @@ for(const scenario of fixture.cases){
       samples.push({expected,actual,nativeAngles,positionError:Math.hypot(...actual.slice(1,4).map((n,i)=>n-expected[i+1])),velocityError:Math.hypot(...actual.slice(4,7).map((n,i)=>n-expected[i+4])),angularError:Math.hypot(...actual.slice(7,10).map((n,i)=>n-expected[i+7])),plungerError:Math.abs(actual[12]-expected[12])});
     }
     if(fixture.nativeBodyRegression?.throughMilliseconds>elapsed)advanceTo(fixture.nativeBodyRegression.throughMilliseconds);
-    const bodies=(g.nativeBodyAudit??[]).flatMap(frame=>frame.bodies),nativeBodySummary={frames:g.nativeBodyAudit?.length??0,bodies:bodies.length};
+    const bodyFrames=g.nativeBodyAudit??[],bodies=bodyFrames.flatMap(frame=>frame.bodies),nativeBodySummary={frames:bodyFrames.length,bodies:bodies.length,missingReferences:bodies.filter(body=>body.missingReference).length,missingIDs:bodyFrames.reduce((n,frame)=>n+(frame.missingIDs?.length??0),0),unexpectedIDs:bodyFrames.reduce((n,frame)=>n+(frame.unexpectedIDs?.length??0),0),swapMismatches:bodyFrames.filter(frame=>Boolean(frame.swap)!==Boolean(frame.expectedSwap)).length};
     for(const key of ['positionError','velocityError','momentumError','orientationError'])nativeBodySummary[key]=bodies.reduce((max,body)=>Math.max(max,body[key]??0),0);
     if(fixture.liveBodyState)Object.assign(nativeBodySummary,{identityMismatches:g.nativeBodyAudit.filter(frame=>frame.missingIDs.length||frame.unexpectedIDs.length).length,lifecycles:g.nativeBodyAudit.filter((frame,i,a)=>i===0||String(frame.actualIDs)!==String(a[i-1].actualIDs)).map(frame=>({ms:frame.ms,ids:frame.actualIDs}))});
     const nativePlungerSummary=summarizeNativePlunger(g.nativePlungerAudit);
@@ -99,7 +102,7 @@ for(const scenario of fixture.cases){
     if(scenario.flipperContacts)report.flipperContacts=flipperContacts;
     if(scatterDraws)report.scatterDraws=scatterDraws;
     if(scenario.controlledShot)report.controlledShots=appliedInputs.controlledShots;
-    if(scenario.missionFrames)report.missionSummary={frames:missionAudit.length,fields:Object.keys(fixture.runtimeMissionFrames.fields),mismatches:missionAudit.filter(row=>row.errors.some(Boolean)).length,firstMismatch:missionAudit.find(row=>row.errors.some(Boolean)),last:missionAudit.at(-1)};
+    if(scenario.missionFrames)report.missionSummary={frames:missionAudit.length,fields:Object.keys(fixture.runtimeMissionFrames.fields),nonFiniteFields:missionAudit.reduce((n,row)=>n+row.actual.filter(value=>!Number.isFinite(value)).length,0),mismatches:missionAudit.filter(row=>row.errors.some(error=>error!==0)).length,firstMismatch:missionAudit.find(row=>row.errors.some(error=>error!==0)),last:missionAudit.at(-1)};
     if(!process.argv.includes('--json'))console.log(JSON.stringify({...report,samples:undefined,traceSamples:undefined,nativeRandomAudit:undefined,nativeBodyAudit:undefined,nativePlungerAudit:undefined,animationAudit:undefined,nativeScriptRandomAudit:undefined}));
   }catch(error){failure=error;fs.writeFileSync((process.argv.find(a=>a.startsWith('--report='))?.slice(9)??'.work/three-review/vpx-plunger-comparison.json')+'.partial',JSON.stringify({error:String(error),stack:error.stack,time:g.time,bodyAudit:g.nativeBodyAudit,randomAudit:g.nativeRandomAudit,scriptRandomAudit:g.nativeScriptRandomAudit,ruleAudit,delays:g.rules.delays},null,2));throw error;}finally{try{g.dispose();}catch(error){if(!failure)throw error;}}
 }
@@ -123,6 +126,7 @@ if(process.argv.includes('--check'))for(const r of reports){
   if(fixture.nativeBodyRegression){
     const limit=fixture.nativeBodyRegression;assert.ok(r.nativeBodySummary.frames>=limit.frames,'complete native physics-frame coverage');
     for(const key of ['positionError','velocityError','momentumError','orientationError'])if(limit[key]!==undefined)assert.ok(r.nativeBodySummary[key]<=limit[key],`${r.name} every native body ${key}: ${r.nativeBodySummary[key]}`);
+    for(const key of ['missingReferences','missingIDs','unexpectedIDs','swapMismatches'])assert.equal(r.nativeBodySummary[key],0,`${r.name} ${key}`);
     if(fixture.liveBodyState)assert.equal(r.nativeBodySummary.identityMismatches,0,'all live native body identities at every boundary');
   }
   if(fixture.nativePlungerRegression){
@@ -133,7 +137,7 @@ if(process.argv.includes('--check'))for(const r of reports){
   if(fixture.animationRegression){assert.equal(r.animationSummary.frames,fixture.animationRegression.frames);assert.equal(r.animationSummary.offsetError,0);assert.equal(r.animationSummary.stateMismatches,0);}
   if(fixture.scriptClockRegression){assert.equal(r.scriptClockInputs,fixture.scriptClockRegression.calls);assert.equal(r.nativeScriptRandomAudit.length,fixture.nativeBodyRegression.frames);assert.ok(r.nativeScriptRandomAudit.every(row=>row.agrees));}
   if(fixture.inputSequenceRegression){assert.equal(r.nativeFlipperSummary.inputs,fixture.inputSequenceRegression.inputs);assert.ok(r.nativeFlipperSummary.frames>=fixture.inputSequenceRegression.angleFrames);assert.deepEqual(r.nativeFlipperSummary.angleErrors,[0,0]);assert.deepEqual(r.flipperContacts,fixture.cases.find(c=>c.name===r.name).flipperContacts,'every actual native flipper collision clock, side, speed and body');}
-  if(fixture.gameStateRegression){assert.equal(r.missionSummary.frames,fixture.gameStateRegression.frames);assert.deepEqual(r.missionSummary.fields,fixture.gameStateRegression.fields);assert.equal(r.missionSummary.mismatches,0,JSON.stringify(r.missionSummary.firstMismatch));}
+  if(fixture.gameStateRegression){assert.equal(r.missionSummary.frames,fixture.gameStateRegression.frames);assert.deepEqual(r.missionSummary.fields,fixture.gameStateRegression.fields);assert.equal(r.missionSummary.nonFiniteFields,0,'all observed authored state fields exist and remain finite');assert.equal(r.missionSummary.mismatches,0,JSON.stringify(r.missionSummary.firstMismatch));}
   assert.equal(r.physicsStats.substepBudgetExceeded,0);
   if(fixture.missionRegression){const c=fixture.cases.find(c=>c.name===r.name);assert.equal(r.nativeFlipperSummary.inputs,fixture.missionRegression.inputs);assert.equal(r.missionSummary.frames,fixture.missionRegression.frames);assert.equal(r.missionSummary.mismatches,0,JSON.stringify(r.missionSummary.firstMismatch));assert.equal(r.scriptClockInputs,fixture.missionRegression.scriptClocks);assert.deepEqual(r.controlledShots,[c.controlledShot]);}
 }

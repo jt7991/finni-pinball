@@ -8,6 +8,7 @@ import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {nativeBallMemoryObserver} from './native-ball-memory-observer.mjs';
 import {nativePlungerMemoryObserver} from './native-plunger-memory-observer.mjs';
+import {nativePackedCapture} from './native-packed-capture.mjs';
 import {nativeInputSequence} from './native-input-sequence.mjs';
 import {nativeInitialTimerClocks} from './native-initial-timer-clocks.mjs';
 import {nativeMissionFrames} from './native-mission-frames.mjs';
@@ -21,7 +22,7 @@ if(ballIndex!==undefined)assert.ok(Number.isInteger(ballIndex)&&ballIndex>=0,'Me
 const probeKind=process.argv.includes('--target-events')?'target-events':process.argv.includes('--material-events')?'material-events':process.argv.includes('--flipper-events')?'flipper-events':process.argv.includes('--slingshots')?'slingshots':process.argv.includes('--bumpers')?'bumpers':process.argv.includes('--autofire')?'autofire':process.argv.includes('--ball-pairs')?'ball-pairs':process.argv.includes('--triggers')?'triggers':process.argv.includes('--targets')?'targets':process.argv.includes('--gates')?'gates':process.argv.includes('--spinners')?'spinners':process.argv.includes('--plunger')?'plunger':process.argv.includes('--nudge')?'nudge':'contacts';
 const reference=await(await fetch(new URL('/reference-metadata.json',base))).json();
 const observeMissions=process.argv.includes('--observe-mission-state');
-if(observeMissions){assert.ok(reference.runtimeMarkers);reference.runtimeMissionFrames=nativeMissionFrames(reference.runtimeMarkers.code,process.argv.includes('--observe-multiball-state'),process.argv.includes('--observe-nudge-state'));}
+if(observeMissions){assert.ok(reference.runtimeMarkers);reference.runtimeMissionFrames=nativeMissionFrames(reference.runtimeMarkers.code,process.argv.includes('--observe-multiball-state'),process.argv.includes('--observe-nudge-state'),process.argv.includes('--observe-mission-details'));}
 const battlesWonText=process.argv.find(arg=>arg.startsWith('--battles-won='))?.slice(14);
 if(battlesWonText!==undefined){
   const battlesWon=Number(battlesWonText);assert.ok(observeMissions&&Number.isInteger(battlesWon)&&battlesWon>=0&&battlesWon<=7);
@@ -55,6 +56,8 @@ const recordContactSlots=process.argv.includes('--contact-slots');
 const recordPlunger=process.argv.includes('--plunger-state');
 const recordAnimationFrames=process.argv.includes('--animation-frames');
 const recordScriptRng=process.argv.includes('--script-rng-state');
+const compactNativeState=process.argv.includes('--compact-native-state');
+if(compactNativeState){assert.ok(recordInternals&&liveBodyState&&recordPlunger&&recordScriptRng&&!recordContactSlots);assert.ok(process.argv.some(arg=>arg.startsWith('--case=')),'Packed capture requires one explicitly selected case');}
 if(recordScriptRng)assert.ok(recordInternals&&reference.instrumentation?.nativeScriptRngMarkers,'script state requires the separately instrumented table and full memory capture');
 if(recordAnimationFrames)assert.ok(recordRng&&reference.instrumentation?.animationFrameTrace,'animation clocks require the separately instrumented native table and RNG observer');
 if(recordPlunger)assert.ok(recordInternals,'plunger state requires pinned native memory capture');
@@ -320,6 +323,7 @@ try{
     const element=document.getElementById('log'),descriptor=Object.getOwnPropertyDescriptor(Node.prototype,'textContent');window.nativeRandomRecords=[];window.nativeAnimationRecords=[];window.nativeMissionRecords=[];window.nativeShotRecords=[];window.nativeScriptClocks=[];window.nativeInputRecords=[];window.nativeFlipperContacts=[];window.nativePulseRecords=[];window.nativeInitialTimerRecords=[];window.nativeSoundCalls=[];
     ${recordInternals?`window.nativeBallObserver=(${nativeBallMemoryObserver.toString()})(memory,[0,0.17098337411880493,-1.626798152923584],${reference.nativePhysicsMaxLoops},${recordContactSlots},${liveBodyState});window.nativeInternalSnapshots=[];`:''}
     ${recordPlunger?`window.nativePlungerObserver=(${nativePlungerMemoryObserver.toString()})(memory,${JSON.stringify(plungerSpec)});window.nativePlungerLayout=window.nativePlungerObserver.scan();const readBallState=window.nativeBallObserver.read;window.nativeBallObserver.read=rows=>({...readBallState(rows),plunger:window.nativePlungerObserver.read()});`:''}
+    ${compactNativeState?`window.nativeCompactCapture=(${nativePackedCapture.toString()})(window.nativeBallObserver,window.nativePlungerObserver);`:''}
     Object.defineProperty(element,'textContent',{get(){return descriptor.get.call(this);},set(value){
       const line=String(value).split('\\n').at(-1),match=line.match(/(RNG_FRAME|CONTACT_INIT)\\|(\\d+)/);
       ${observeSoundCalls?`if(line.includes('CASE_SOUND|')){const [ms,name]=line.slice(line.indexOf('CASE_SOUND|')+11).replace(/'$/,'').split('|');window.nativeSoundCalls.push({ms:Number(ms),name});return;}`:''}
@@ -337,8 +341,9 @@ try{
       if(match?.[1]!=='RNG_FRAME')descriptor.set.call(this,value);if(!match)return;
       const data=new DataView(memory.buffer),low=data.getUint32(${reference.nativeRandom.stateAddress},true),high=data.getUint32(${reference.nativeRandom.stateAddress+4},true);
       ${recordRngSites?`if(match[1]==='CONTACT_INIT'){nativeRngSiteObservation.records.length=0;nativeRngSiteObservation.origin=Number(match[2]);nativeRngSiteObservation.armed=true;}`:''}
-      const record={kind:match[1],ms:Number(match[2]),low,high${recordInternals?`,internals:window.nativeBallLayout?window.nativeBallObserver.read():undefined`:''}};
-      ${recordScriptRng?`if(match[1]==='RNG_FRAME'){const state=Number(line.slice(line.indexOf('RNG_FRAME|')).replace(/'$/,'').split('|')[2]);if(!Number.isInteger(state)||state<0||state>=16777216)throw Error('Invalid native script RNG state');if(record.internals)record.internals.scriptRandom=state;}`:''}
+      const record={kind:match[1],ms:Number(match[2]),low,high${recordInternals?`,internals:window.nativeBallLayout&&!${compactNativeState}?window.nativeBallObserver.read():undefined`:''}};let frameScriptRandom;
+      ${recordScriptRng?`if(match[1]==='RNG_FRAME'){const state=Number(line.slice(line.indexOf('RNG_FRAME|')).replace(/'$/,'').split('|')[2]);if(!Number.isInteger(state)||state<0||state>=16777216)throw Error('Invalid native script RNG state');frameScriptRandom=state;if(record.internals)record.internals.scriptRandom=state;}`:''}
+      ${compactNativeState?`if(window.nativeBallLayout)record.packed=window.nativeCompactCapture.capture(frameScriptRandom);`:''}
       window.nativeRandomRecords.push(record);
     }});return true;
   })()`);
@@ -556,7 +561,7 @@ try{
     const closing=scenario.closeDelay?{actualCloseDelay:closeAt-origin}:{};if(scenario.closeDelay)assert.ok(Number.isFinite(closing.actualCloseDelay)&&closing.actualCloseDelay>0,'observed native gate-close clock');
     let nativeRandomFrames,initialNativeRandom;
     if(recordRng){
-      const rows=await evaluate('window.nativeRandomRecords');initialNativeRandom=rows.find(r=>r.kind==='CONTACT_INIT'&&r.ms===origin);assert.ok(initialNativeRandom,'observed initial native random state');
+      const rows=await evaluate('window.nativeRandomRecords'+(compactNativeState?'.map(row=>window.nativeCompactCapture.hydrate(row))':''));initialNativeRandom=rows.find(r=>r.kind==='CONTACT_INIT'&&r.ms===origin);assert.ok(initialNativeRandom,'observed initial native random state');
       nativeRandomFrames=rows.filter(r=>r.kind==='RNG_FRAME').map(({ms,low,high,internals})=>[ms-origin,low,high,...(internals?[internals]:[])]);
       assert.ok(nativeRandomFrames.length&&nativeRandomFrames[0][0]===1,'native random state for the first physics frame');
       if(captureThrough!==undefined)for(let frame=1;frame<=captureThrough;frame++)assert.equal(nativeRandomFrames[frame-1]?.[0],frame,'Requested native RNG/body capture has no missing physics boundaries');
@@ -596,6 +601,7 @@ try{
     }
     const suffix=probeKind==='ball-pairs'?`ball-pairs-${selected??'reference'}`:recordKickers?'kickers-reference':rawAnimation&&selected?`raw-${recordTimers?'timing-':''}${selected}`:reference.geometryProbe&&selected?`geometry-${recordTimers?'timing-':''}${selected}`:reference.shooterProbe&&selected?`${recordTimers?'timing-':''}${selected}`:['spinners','gates','targets','triggers','flipper-events','material-events','target-events'].includes(probeKind)&&selected?`${probeKind}-${reference.instrumentation?.spinnerTraceColumns?'timing-':''}${reference.animationBallIsolation?'isolated-animation-':''}${selected}`:`${reference.geometryProbe?'geometry':probeKind==='contacts'?'contact':probeKind}-reference`;
     const captureName=outputName??`vpx-${suffix}${recordAllBalls?'-all-balls':''}${recordTrails?'-trails':''}${recordRng?'-rng':''}${recordInternals?'-internals':''}${recordPlunger?'-plunger-state':''}${recordAnimationFrames?'-animation-frames':''}${recordScriptRng?'-script-rng':''}${recordContactSlots?'-contact-slots':''}${recordTimers&&traceMilliseconds!==70?`-${traceMilliseconds}ms`:''}${traceFrom?`-from${traceFrom}ms`:''}.json`;
+    if(compactNativeState)reference.packedNativeCapture=await evaluate('window.nativeCompactCapture.summary()');
     await writeFile(`${output}/${captureName}`,JSON.stringify({...reference,probeKind,runtimeOverrides,columns,cases:results},null,2));
     if(recordThrough!==undefined){assert.ok(samples.at(-1)[0]>=recordThrough);for(let frame=1;frame<=recordThrough;frame++)assert.equal(nativeRandomFrames[frame-1]?.[0],frame,'Long native recording retains every physical boundary');}
   }

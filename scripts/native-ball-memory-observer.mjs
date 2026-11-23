@@ -79,5 +79,39 @@ export function nativeBallMemoryObserver(memory,gravity,expectedMaxLoops,recordC
       return {id,address,orientation,position:vector(address+layout.ballState),velocity:vector(address+layout.ballState+12),momentum:vector(address+layout.momentum),collisionGap:view.getFloat32(address+layout.collisionGap,true),eventPosition:vector(address+layout.lastEventPosition),eventDistance:view.getFloat32(address+layout.eventDistance,true),locked:!!view.getUint8(address+layout.locked)};
     })};
   }
-  return {scan,read};
+  // The 1kHz diagnostic callback is included in VPX's script-time budget.
+  // Write the same fields into a packed host buffer; construct JSON objects
+  // after recording, avoiding thousands of temporary vectors per second.
+  let packedBuffer,packedView;
+  function readPacked(target,at){
+    if(!bodies||recordContactSlots)throw Error('Packed bodies require scanned state without contact-slot diagnostics');
+    if(packedBuffer!==memory.buffer){packedBuffer=memory.buffer;packedView=new DataView(packedBuffer);}
+    const view=packedView;if(liveBodies)bodies=readLiveBodies(view);
+    target[at++]=gravityAddress;
+    for(let axis=0;axis<3;axis++)target[at++]=view.getFloat32(gravityAddress+axis*4,true);
+    target[at++]=Number(!!view.getUint8(gravityAddress+16));target[at++]=bodies.length;
+    for(let index=0;index<bodies.length;index++){
+      const {id,address}=bodies[index];target[at++]=id;target[at++]=address;
+      const orientation=at;
+      for(let i=0;i<9;i++){const value=view.getFloat32(address+layout.orientation+i*4,true);if(!Number.isFinite(value))throw Error('Native orientation ABI validation failed');target[at++]=value;}
+      const a=target[orientation],b=target[orientation+1],c=target[orientation+2],d=target[orientation+3],e=target[orientation+4],g=target[orientation+6],h=target[orientation+7],i=target[orientation+8],f=target[orientation+5];
+      if(Math.abs(a*(e*i-f*h)-b*(d*i-f*g)+c*(d*h-e*g)-1)>.00001)throw Error('Native orientation ABI validation failed');
+      for(let axis=0;axis<3;axis++)target[at++]=view.getFloat32(address+layout.ballState+axis*4,true);
+      for(let axis=0;axis<3;axis++)target[at++]=view.getFloat32(address+layout.ballState+12+axis*4,true);
+      for(let axis=0;axis<3;axis++)target[at++]=view.getFloat32(address+layout.momentum+axis*4,true);
+      target[at++]=view.getFloat32(address+layout.collisionGap,true);
+      for(let axis=0;axis<3;axis++)target[at++]=view.getFloat32(address+layout.lastEventPosition+axis*4,true);
+      target[at++]=view.getFloat32(address+layout.eventDistance,true);target[at++]=Number(!!view.getUint8(address+layout.locked));
+    }
+    return at;
+  }
+  function unpackPacked(source,at){
+    const gravityAddress=source[at++],gravity=Array.from(source.subarray(at,at+=3)),swapBallCollisions=!!source[at++],count=source[at++],balls=[];
+    for(let i=0;i<count;i++){
+      const id=source[at++],address=source[at++],orientation=Array.from(source.subarray(at,at+=9)),position=Array.from(source.subarray(at,at+=3)),velocity=Array.from(source.subarray(at,at+=3)),momentum=Array.from(source.subarray(at,at+=3)),collisionGap=source[at++],eventPosition=Array.from(source.subarray(at,at+=3)),eventDistance=source[at++],locked=!!source[at++];
+      balls.push({id,address,orientation,position,velocity,momentum,collisionGap,eventPosition,eventDistance,locked});
+    }
+    return {state:{gravityAddress,gravity,swapBallCollisions,balls},end:at};
+  }
+  return {scan,read,readPacked,unpackPacked};
 }

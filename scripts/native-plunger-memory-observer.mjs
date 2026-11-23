@@ -30,5 +30,27 @@ export function nativePlungerMemoryObserver(memory,spec){
     state.fireTimer=view.getInt32(mover+748,true);state.autoFireTimer=view.getInt32(mover+756,true);state.addRetractMotion=!!view.getUint8(mover+800);state.retractMotion=!!view.getUint8(mover+801);
     state.position=f(25*Math.max(0,Math.min(1,f(f(state.pos-state.end)/state.length))));return state;
   }
-  return {scan,read};
+  let packedBuffer,packedView;
+  const packedOffsets=[728,732,736,740,744,752,764,768,772,776,780,788];
+  function readPacked(target,at){
+    if(mover===undefined)throw Error('Native plunger ABI has not been observed');
+    if(packedBuffer!==memory.buffer){packedBuffer=memory.buffer;packedView=new DataView(packedBuffer);}
+    const view=packedView;
+    if(view.getUint32(part+404,true)!==mover-64)throw Error('Native plunger identity changed');
+    const start=at,fireTimer=view.getInt32(mover+748,true);
+    for(let i=0;i<packedOffsets.length;i++){
+      const value=view.getFloat32(mover+packedOffsets[i],true);
+      if(!Number.isFinite(value)&&!(i===6&&fireTimer===0))throw Error('Invalid native plunger scalar state');
+      target[at++]=value;
+    }
+    target[at++]=fireTimer;target[at++]=view.getInt32(mover+756,true);target[at++]=Number(!!view.getUint8(mover+800));target[at++]=Number(!!view.getUint8(mover+801));
+    target[at++]=f(25*Math.max(0,Math.min(1,f(f(target[start]-target[start+9])/target[start+10]))));
+    return at;
+  }
+  function unpackPacked(source,at){
+    const names=['pos','speed','travelLimit','pullForce','reverseImpulse','fireSpeed','fireBounce','rest','start','end','length','scatterVelocity','fireTimer','autoFireTimer','addRetractMotion','retractMotion','position'],state={};
+    for(let i=0;i<names.length;i++)state[names[i]]=i===14||i===15?!!source[at++]:source[at++];
+    return {state,end:at};
+  }
+  return {scan,read,readPacked,unpackPacked};
 }

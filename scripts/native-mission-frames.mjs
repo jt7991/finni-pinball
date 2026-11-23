@@ -7,7 +7,7 @@ export const missionFields={
   player:'CurrentPlayer',ballNumber:'Balls',
   ...Object.fromEntries(Array.from({length:7},(_,i)=>['mission'+(i+1),`Battle(CurrentPlayer,${i+1})`])),
 };
-export function nativeMissionFrames(source,observeMultiball=false,observeNudges=false){
+export function nativeMissionFrames(source,observeMultiball=false,observeNudges=false,observeDetails=false){
   const handlers=source.match(/^Sub Target010_Timer\b[^\n]*\n[\s\S]*?^End Sub/gmi);
   assert.equal(handlers?.length,1,'Existing read-only frame observer');
   const fields=observeMultiball?{...missionFields,
@@ -19,6 +19,11 @@ export function nativeMissionFrames(source,observeMultiball=false,observeNudges=
   if(observeNudges)Object.assign(fields,{
     tilted:'Abs(CLng(Tilted))',tiltCount:'Tilt',tiltSensitivity:'TiltSensitivity',
     tiltRecovery:'Abs(CLng(TiltRecoveryTimer.Enabled))',playing:'Abs(CLng(bGameInPlay))',
+  });
+  if(observeDetails)Object.assign(fields,{
+    ...Object.fromEntries(Array.from({length:7},(_,i)=>['life'+(i+1),`LifeLeft(CurrentPlayer,${i+1})`])),
+    attackPower:'AttackPower',wolverineValue:'WolverineValue',dazzlerValue:'dazzlerValue',
+    partyTimerEnabled:'Abs(CLng(MrSinisterTimer.Enabled))',partyTimerInterval:'MrSinisterTimer.Interval',
   });
   const original=handlers[0],logger=' If RefTraceOn Then Debug.Print "MISSION_FRAME|" & GameTime & "|" & '+Object.values(fields).map(expression=>'CStr(CDbl('+expression+'))').join(' & "|" & ')+'\n';
   const code=original.replace(/^End Sub/m,logger+'End Sub');
