@@ -17,11 +17,12 @@ for(const file of ['native-table/native-table.json','native-flashers/native-flas
 for(const item of JSON.parse(fs.readFileSync('three/public/layout.json')).items)if(item.kind==='Flipper')visualNames.add(item.name.toLowerCase());
 for(const item of missing)assert.ok(!visualNames.has(item.name.toLowerCase()),'Do not silently omit a rendered native input: '+item.name);
 const balls=[];for(const match of capture.stateLog.matchAll(/WHOLE_BALL\|([^']+)'/g)){
- const [id,...raw]=match[1].split('|'),[x,y,z,radius,color,visible,reflectionenabled,forcereflection,bulbintensityscale,playfieldreflectionscale]=raw,position={x:Math.fround(Number(x)),y:Math.fround(Number(y)),z:Math.fround(Number(z))};
+ const [id,...raw]=match[1].split('|'),[x,y,z,radius,color,visible,reflectionenabled,forcereflection,bulbintensityscale,playfieldreflectionscale,frontdecal]=raw,position={x:Math.fround(Number(x)),y:Math.fround(Number(y)),z:Math.fround(Number(z))};
  const rows=capture.balls.records.filter(row=>['x','y','z'].every((axis,index)=>Object.is(row.position[index],position[axis])));assert.ok(rows.length,'native body linked by exact Float32 position');
  const row=rows[0],rotation=nativeBallRotationScale(row.currentOrientation,Number(radius));assert.deepEqual(Array.from(new Uint32Array(rotation.buffer)),Array.from(new Uint32Array(Float32Array.from(row.rotScale).buffer)),'paused native rotation agrees without pose fitting');
  assert.ok(rows.every(row=>row.clocks.length===0));for(const observed of rows){assert.deepEqual(observed.currentOrientation,row.currentOrientation,'frozen native orientation stays unchanged');assert.deepEqual(observed.velocity,row.velocity,'frozen native velocity stays unchanged');}
  balls.push({id:Number(id),position,orientation:row.currentOrientation,velocity:Object.fromEntries(['x','y','z'].map((axis,index)=>[axis,row.velocity[index]])),radius:Number(radius),locked:row.locked,color:Number(color),visible:visible==='True',reflectionenabled:reflectionenabled==='True',forcereflection:forcereflection==='True',bulbintensityscale:Math.fround(Number(bulbintensityscale)),playfieldreflectionscale:Math.fround(Number(playfieldreflectionscale))});
+ if(capture.control.ballFields?.includes('FrontDecal')){assert.equal(raw.length,capture.control.ballFields.length,'Every observed ball property is preserved');assert.equal(typeof frontdecal,'string');balls.at(-1).frontdecal=frontdecal;}
 }
 assert.equal(balls.length,4);const fields=Object.values(states).reduce((sum,state)=>sum+Object.keys(state).length,0);assert.equal(fields+missing.length,capture.control.requested.length);
 const clear=capture.frame.clears?.find(clear=>clear.target===capture.frame.images.hdr.id&&(clear.mask&0x4000)&&!clear.scissorEnabled);

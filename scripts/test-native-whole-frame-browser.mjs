@@ -8,6 +8,7 @@ const [debug,base,output]=process.argv.slice(2),captureName=process.argv.find(va
 const compareCache=process.argv.includes('--compare-cache');
 const requireExact=process.argv.includes('--require-exact');
 const nativePrepass=process.argv.includes('--native-prepass');
+const nativeUniformABI=process.argv.includes('--native-uniform-abi');
 const tracePixel=process.argv.find(value=>value.startsWith('--trace-pixel='))?.slice(14).split(',').map(Number);
 const traceReflection=process.argv.includes('--trace-reflection');
 if(tracePixel)assert.ok(tracePixel.length===2&&tracePixel.every(Number.isInteger));
@@ -24,7 +25,7 @@ socket.addEventListener('message',event=>{const data=JSON.parse(event.data);if(d
 const call=(method,params={})=>new Promise((resolve,reject)=>{const id=++sequence;pending.set(id,{resolve,reject});socket.send(JSON.stringify({id,method,params}));});
 const evaluate=async expression=>{const result=await call('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true});if(result.exceptionDetails)throw Error(JSON.stringify(result.exceptionDetails));return result.result.value;};
 try{
- await call('Page.enable');await call('Runtime.enable');await call('Emulation.setFocusEmulationEnabled',{enabled:true});await call('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:2,mobile:true});await call('Page.addScriptToEvaluateOnNewDocument',{source:'('+installNativePostprocessObserver.toString()+')({highPrecisionDepth:true});'});await call('Page.navigate',{url:base});
+ await call('Page.enable');await call('Runtime.enable');await call('Emulation.setFocusEmulationEnabled',{enabled:true});await call('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:2,mobile:true});await call('Page.addScriptToEvaluateOnNewDocument',{source:(process.argv.includes('--detailed')?"if(location.protocol==='http:'||location.protocol==='https:')localStorage.setItem('finni-three-quality','detailed');":'')+'('+installNativePostprocessObserver.toString()+')({highPrecisionDepth:true});'});await call('Page.navigate',{url:base});
  for(let i=0;i<600;i++){if(await evaluate('!!window.finniThree'))break;await new Promise(resolve=>setTimeout(resolve,50));}
  await evaluate('document.getElementById("play").click()');
  for(let i=0;i<600;i++){if(await evaluate('finniThree.game.inLane'))break;if(i===599)throw Error('Port did not reach the native ball-in-plunger control state');await new Promise(resolve=>setTimeout(resolve,50));}
@@ -33,6 +34,9 @@ try{
   const source=await(await fetch('/three/scene.js')).text(),THREE=await import(source.match(/import \\* as THREE from "([^"]+)"/)[1]),{applyNativeCamera}=await import('/three/camera-render.js'),fixture=${JSON.stringify(fixture)},base=${JSON.stringify(assetsURL)},renderer=view.renderer,gl=renderer.getContext(),images={},owned=[];
   for(const [name,image]of Object.entries(fixture.images)){const response=await fetch(base+image.file);if(!response.ok)throw Error('Frame image unavailable '+name);images[name]=new (image.arrayType==='Float32Array'?Float32Array:Uint8Array)(await response.arrayBuffer());}
   const w=fixture.canvas.width,h=fixture.canvas.height;renderer.setPixelRatio(1);renderer.setSize(w,h,false);view.resizeTargets();applyNativeCamera(view.camera,view.cameraBounds,w/h,fixture.cameraPreset??'balanced');view.setCacheEnabled(${JSON.stringify(cacheEnabled)});view.setStaticPrerenderEnabled(${JSON.stringify(nativePrepass)});view.lightFrame.setHistoryEnabled(false);
+  if(${nativeUniformABI}&&fixture.renderMode.uniformAlignmentReference)throw Error('Raw native upload mode conflicts with an aligned reference');
+  if(fixture.renderMode.uniformAlignmentReference)view.classicLights.setUniformAlignmentReferenceEnabled(true);
+  else if(view.classicLights.uniformAlignmentReferenceEnabled)throw Error('Runtime default must preserve original native uploads');
   const texture=(data,width,height,type,format=THREE.RGBAFormat)=>{const value=new THREE.DataTexture(data,width,height,format,type);value.flipY=false;value.generateMipmaps=false;value.minFilter=value.magFilter=THREE.NearestFilter;value.needsUpdate=true;value.colorSpace=THREE.NoColorSpace;owned.push(value);return value;};
   const seedHalf=(name,target)=>{const ref=fixture.images[name];if(!ref)return;renderer.initRenderTarget(target);renderer.copyTextureToTexture(texture(Uint16Array.from(images[name],THREE.DataUtils.toHalfFloat),ref.width,ref.height,THREE.HalfFloatType),target.texture);};
   seedHalf('previousHDR',view.lightFrame.previous);seedHalf('priorTransmissionFiltered',view.nativeTransmission.targets[1]);seedHalf('initialReflection',view.reflectionPass.target);seedHalf('priorReflectionTransmission',view.nativeTransmission.targets[0]);
@@ -60,7 +64,7 @@ try{
    const camera=args[0],target=renderer.getRenderTarget(),watch=!!camera.userData.nativeCamera&&!!camera.userData.nativeCamera.reflection===${JSON.stringify(traceReflection)}&&target?.width===w&&target.height===h&&(!${JSON.stringify(nativePrepass)}||target===view.lightFrame.target||target===view.reflectionPass.target),before=watch?new Float32Array(4):null;
    if(watch)gl.readPixels(pixel[0],pixel[1],1,1,gl.RGBA,gl.FLOAT,before);
    const result=renderDirect.apply(this,args);
-   if(watch){const after=new Float32Array(4);gl.readPixels(pixel[0],pixel[1],1,1,gl.RGBA,gl.FLOAT,after);if(after.some((value,i)=>value!==before[i])){const part=view.nativeTable.parts.find(part=>part.material===args[3]);traces.push({phase:tracePhase,target:target===view.lightFrame.target?'main':'cache',name:part?.spec.name??args[4].name,role:part?.record.role,order:args[4].renderOrder,kind:part?.spec.kind,before:Array.from(before),after:Array.from(after)});}}
+   if(watch){const after=new Float32Array(4);gl.readPixels(pixel[0],pixel[1],1,1,gl.RGBA,gl.FLOAT,after);if(after.some((value,i)=>value!==before[i])){const part=view.nativeTable.parts.find(part=>part.material===args[3]),program=gl.getParameter(gl.CURRENT_PROGRAM),uniforms={};for(let i=0;i<gl.getProgramParameter(program,gl.ACTIVE_UNIFORMS);i++){const active=gl.getActiveUniform(program,i),location=gl.getUniformLocation(program,active.name);if(location!==null){const value=gl.getUniform(program,location);uniforms[active.name]=ArrayBuffer.isView(value)?Array.from(value):value;}}traces.push({phase:tracePhase,target:target===view.lightFrame.target?'main':'cache',name:part?.spec.name??args[4].name,role:part?.record.role,order:args[4].renderOrder,kind:part?.spec.kind,before:Array.from(before),after:Array.from(after),uniforms,blend:{enabled:gl.isEnabled(gl.BLEND),src:gl.getParameter(gl.BLEND_SRC_RGB),dst:gl.getParameter(gl.BLEND_DST_RGB),srcAlpha:gl.getParameter(gl.BLEND_SRC_ALPHA),dstAlpha:gl.getParameter(gl.BLEND_DST_ALPHA),equation:gl.getParameter(gl.BLEND_EQUATION_RGB),equationAlpha:gl.getParameter(gl.BLEND_EQUATION_ALPHA)}});}}
    return result;
   };
   try{

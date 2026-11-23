@@ -18,7 +18,7 @@ function deduplicate(mesh){
   for(let i=0;i<raw.length;i+=32){const vertex=raw.subarray(i,i+32),k=vertex.toString('base64');let index=lookup.get(k);if(index===undefined){index=lookup.size;lookup.set(k,index);chunks.push(vertex);}remap.push(index);}
   const mapped=Buffer.alloc(indices.length);for(let i=0;i<indices.length;i+=4)mapped.writeUInt32LE(remap[indices.readUInt32LE(i)],i);return {vertex:Buffer.concat(chunks),index:mapped};
 }
-const chunks=[];let offset=0,matched=0;const meshChanges=[];
+const chunks=[];let offset=0,matched=0;const meshChanges=[],environment=capture.draws.find(draw=>draw.uniforms.fenvEmissionScale_TexWidth)?.uniforms.fenvEmissionScale_TexWidth;assert.ok(environment);
 for(const part of table.parts){
   const name=part.spec.name,change=update.meshes[name];let vertex=original.subarray(part.vertexByteOffset,part.vertexByteOffset+part.vertices*32),index=original.subarray(part.indexByteOffset,part.indexByteOffset+part.indices*4);
   if(change){const old=deduplicate(change.old),next=deduplicate(change.new);assert.ok([sha(old.vertex),sha(next.vertex)].includes(part.vertexSHA256),name+' recognized vertex identity');assert.ok([sha(old.index),sha(next.index)].includes(part.indexSHA256),name+' recognized index identity');vertex=next.vertex;index=next.index;part.sourceVertexSHA256=change.new.vertexSHA256;part.sourceIndexSHA256=change.new.indexSHA256;part.sourceVertices=Buffer.from(change.new.vertices,'base64').length/32;meshChanges.push({name,vertices:vertex.length/32,indices:index.length/4});}
@@ -36,6 +36,8 @@ for(const part of table.parts){
   const draw=filtered.length===1?filtered[0]:candidates.length===1?candidates[0]:undefined;
   if(draw){matched++;for(const k of Object.keys(part.uniforms))if(k in draw.uniforms&&!['matProj[0]','w_h_height','balls[0]'].includes(k))part.uniforms[k]=draw.uniforms[k];if(part.textures.tex_base_color&&draw.textures.tex_base_color)part.textures.tex_base_color={...part.textures.tex_base_color,id:texture(draw.textures.tex_base_color.id)};}
   if(change)assert.ok(draw,'Changed mesh has an independent current native draw: '+name);
+  // Renderer::UpdateShaders supplies this global even for currently hidden parts.
+  if(part.uniforms.fenvEmissionScale_TexWidth)part.uniforms.fenvEmissionScale_TexWidth=environment;
   part.vertices=vertex.length/32;part.indices=index.length/4;part.vertexByteOffset=offset;part.indexByteOffset=offset+vertex.length;part.vertexSHA256=sha(vertex);part.indexSHA256=sha(index);chunks.push(vertex,index);offset+=vertex.length+index.length;
 }
 const geometry=Buffer.concat(chunks),encoded=encodeNativeGeometry(geometry,table.parts);assert.ok(Buffer.from(decodeNativeGeometry(encoded,table.parts)).equals(geometry));fs.writeFileSync(root+'/native-table/'+table.geometry.file,encoded);Object.assign(table.geometry,{bytes:geometry.length,sha256:sha(geometry),encodedSHA256:sha(encoded)});table.sourceTableSHA256=update.sourceSha256;

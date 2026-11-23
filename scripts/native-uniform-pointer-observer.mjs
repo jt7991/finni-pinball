@@ -13,6 +13,6 @@ export function installNativeUniformPointerObserver(){
   if(!window.nativeWholeFrame?.armed||nativeWholeFrame.done||!active)return original.apply(this,arguments);
   const info=locations.get(location);if(!info||!['lightColor_intensity','lightColor2_falloff_power','lightCenter_maxRange'].includes(info.name))return original.apply(this,arguments);
   let row;try{const view=new DataView(array.buffer),n=active.count*Number(method[7]),basic=this.getUniformBlockIndex(info.program,'basicMatrixBlock')!==this.INVALID_INDEX;row={...active,uniform:info.name,method,basic,pointerAlignment:active.pointer%4,arrayByteOffset:array.byteOffset,arrayOffset:offset,byteAddressSent:array.byteOffset+offset*4,intended:Array.from({length:n},(_,i)=>view.getFloat32(active.pointer+i*4,true)),intendedBits:Array.from({length:n},(_,i)=>view.getUint32(active.pointer+i*4,true)),sent:Array.from(array.subarray(offset,offset+n)),sentBits:Array.from(new Uint32Array(array.buffer,array.byteOffset+offset*4,n))};}catch(error){data.errors.push(error.message);}
-  const result=original.apply(this,arguments);if(row){const value=this.getUniform(info.program,location);row.uploaded=Array.from(value);row.uploadedBits=Array.from(new Uint32Array(value.buffer));data.rows.push(row);}return result;
+  const result=original.apply(this,arguments);if(row){const value=this.getUniform(info.program,location);row.prefixByte=new DataView(array.buffer).getUint8(active.pointer-1);row.uploaded=Array.from(value);row.uploadedBits=Array.from(new Uint32Array(value.buffer));data.rows.push(row);}return result;
  };}
 }

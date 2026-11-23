@@ -15,10 +15,15 @@ const nativePrepass=process.argv.includes('--native-prepass'),allInserts=process
 const alignmentReference=process.argv.includes('--uniform-alignment-reference');if(alignmentReference)assert.ok(process.argv.includes('--observe-uniform-pointers'),'Compatibility reference requires original pointer evidence');
 const classicVariant=process.argv.find(value=>value.startsWith('--classic-variant='))?.slice(18);if(classicVariant){assert.equal(classicVariant,'fade-color');assert.ok(lit&&allInserts);}
 const mechanismPoses=process.argv.includes('--observe-mechanism-poses');
+const requestedQuality=process.argv.includes('--detailed')?'detailed':null;
+const tracePixel=process.argv.find(value=>value.startsWith('--trace-pixel='))?.slice(14).split(',').map(Number);if(tracePixel)assert.ok(tracePixel.length===2&&tracePixel.every(Number.isInteger));
+const ballFields=['X','Y','Z','Radius','Color','Visible','ReflectionEnabled','ForceReflection','BulbIntensityScale','PlayfieldReflectionScale','FrontDecal'];
+const imageModeLight=process.argv.find(value=>value.startsWith('--classic-image-mode='))?.slice(21);if(imageModeLight)assert.ok(lit&&allInserts);
 const cameraPreset=process.argv.find(value=>value.startsWith('--camera-preset='))?.slice(16);if(cameraPreset)assert.ok(['classic','balanced','topdown','playfield'].includes(cameraPreset));
 assert.ok(!allInserts||lit,'All-insert control requires --lit');
 const objects=JSON.parse(fs.readFileSync('three/public/objects.json')).objects,layout=JSON.parse(fs.readFileSync('three/public/layout.json')),items=[...new Map([...layout.items,...objects].filter(item=>item.name).map(item=>[item.name.toLowerCase(),item])).values()];
 const classicNames=JSON.parse(fs.readFileSync('three/public/native-classic/native-classic.json')).parts.map(part=>part.spec.name);
+if(imageModeLight)assert.ok(classicNames.includes(imageModeLight),'Explicit source classic light');
 const fields={Timer:['Enabled'],Primitive:['Visible','RotX','RotY','RotZ'],Wall:['Visible','SideVisible'],Ramp:['Visible'],Rubber:['Visible'],Light:['Visible','State','Color','ColorFull','Intensity','IntensityScale','GetInPlayIntensity','GetInPlayStateBool'],Flasher:['Visible','ImageA','ImageB','Color','Opacity','Amount','Filter','AddBlend','ModulateVsAdd','Height'],HitTarget:['Visible','IsDropped'],Flipper:['Visible','CurrentAngle'],Gate:['Visible','ShowBracket','CurrentAngle'],Spinner:['Visible','CurrentAngle'],Trigger:['Visible'],Bumper:['BaseVisible','CapVisible','RingVisible','SkirtVisible']};
 const tabs=await(await fetch(debug+'/json/list')).json(),socket=new WebSocket(tabs.find(tab=>tab.type==='page').webSocketDebuggerUrl);await new Promise(resolve=>socket.addEventListener('open',resolve,{once:true}));let sequence=0;const pending=new Map(),errors=[];
 socket.addEventListener('message',event=>{const data=JSON.parse(event.data);if(data.id){const entry=pending.get(data.id);pending.delete(data.id);data.error?entry.reject(Error(data.error.message)):entry.resolve(data.result);}if(data.method==='Runtime.exceptionThrown')errors.push(data.params);});
@@ -28,25 +33,27 @@ const wait=async expression=>{for(let i=0;i<1200;i++){if(await evaluate(expressi
 const native=statement=>evaluate('finni.evaluate('+JSON.stringify(statement)+')');
 try{
  await call('Page.enable');await call('Runtime.enable');await call('Emulation.setFocusEmulationEnabled',{enabled:true});await call('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:2,mobile:true});
+ if(requestedQuality)await call('Page.addScriptToEvaluateOnNewDocument',{source:`if(location.protocol==='http:'||location.protocol==='https:')localStorage.setItem('finni-graphics-v1',${JSON.stringify(requestedQuality)});`});
  await call('Page.addScriptToEvaluateOnNewDocument',{source:'('+installNativePostprocessObserver.toString()+')({highPrecisionDepth:true});('+installNativeBallPresentationObserver.toString()+')();('+installNativeWholeFrameObserver.toString()+')();'+(alignmentReference?'('+installNativeUniformAlignmentReference.toString()+')();':'')+(process.argv.includes('--observe-uniform-pointers')?'('+installNativeUniformPointerObserver.toString()+')();':'')+(mechanismPoses?'('+installNativeMechanismPoseObserver.toString()+')();':'')});
  await call('Page.navigate',{url:base});await wait('!!window.finni&&!document.getElementById("play").disabled');await evaluate('document.getElementById("play").click()');await wait('document.body.classList.contains("ball-in-plunger")');
  if(cameraPreset)await evaluate('(()=>{const select=document.getElementById("camera-view");select.value='+JSON.stringify(cameraPreset)+';select.dispatchEvent(new Event("change",{bubbles:true}));})()');
  const select=item=>'Set WholeSetupObj=GetElementByName("'+item+'")';
  const setup=['Dim WholeSetupObj',...(!nativePrepass?['DisableStaticPrerendering=True']:[]),...items.filter(item=>item.kind==='Timer').flatMap(item=>[select(item.name),'WholeSetupObj.Enabled=False']),...items.filter(item=>item.kind==='LightSequencer').flatMap(item=>[select(item.name),'WholeSetupObj.StopPlay']),...items.filter(item=>item.kind==='Light'&&(!classicNames.includes(item.name)||allInserts)).flatMap(item=>[select(item.name),'WholeSetupObj.State=1']),...(!lit?classicNames:[]).flatMap(item=>[select(item),'WholeSetupObj.Visible=False'])];
  if(classicVariant)setup.push(...classicNames.flatMap(name=>[select(name),'WholeSetupObj.Color=&H2D8711','WholeSetupObj.ColorFull=&HF1A842','WholeSetupObj.IntensityScale=0.37']));
+ if(imageModeLight)setup.push(select(imageModeLight),'WholeSetupObj.ImageMode=True');
  await native(setup.join(':'));await evaluate('(async()=>{for(let i=0;i<40;i++)await new Promise(requestAnimationFrame);})()');await call('Emulation.setFocusEmulationEnabled',{enabled:false});await evaluate('(async()=>{for(let i=0;i<3;i++)await new Promise(requestAnimationFrame);nativeBallPresentation.install();})()');
  await native('Dim WholeObj,WholeValue,WholeText,WholeBalls,WholeBall:On Error Resume Next');
- const requested=items.flatMap(item=>(fields[item.kind]??[]).map(field=>({name:item.name,kind:item.kind,field}))),observedLines=new Set();
+ const requested=items.flatMap(item=>(fields[item.kind]??[]).concat(imageModeLight&&item.kind==='Light'?['ImageMode']:[]).map(field=>({name:item.name,kind:item.kind,field}))),observedLines=new Set();
  const collect=async()=>{for(const line of (await evaluate('document.getElementById("log").textContent')).split(/\r?\n/))if(/WHOLE_(PROP|MISSING|BALL)\|/.test(line))observedLines.add(line);};
  for(let offset=0;offset<requested.length;offset+=8){
   const script=['On Error Resume Next'];
   for(const {name,field}of requested.slice(offset,offset+8)){
-   const key=name+'|'+field,isString=['ImageA','ImageB','Filter'].includes(field),isBoolean=['Enabled','Visible','SideVisible','ShowBracket','IsDropped','BaseVisible','CapVisible','RingVisible','SkirtVisible','GetInPlayStateBool','AddBlend'].includes(field);
+   const key=name+'|'+field,isString=['ImageA','ImageB','Filter'].includes(field),isBoolean=['Enabled','Visible','SideVisible','ShowBracket','IsDropped','BaseVisible','CapVisible','RingVisible','SkirtVisible','GetInPlayStateBool','AddBlend','ImageMode'].includes(field);
    script.push('Err.Clear','Set WholeObj=GetElementByName("'+name+'")','WholeValue=WholeObj.'+field,'WholeText='+(isString||isBoolean?'CStr(WholeValue)':'FormatNumber(WholeValue,12,-1,0,0)'),'If Err.Number=0 Then Debug.Print "WHOLE_PROP|'+key+'|" & WholeText Else Debug.Print "WHOLE_MISSING|'+key+'|" & Err.Description');
   }
   await native(script.join('\n'));await collect();
  }
- await native('WholeBalls=GetBalls:For Each WholeBall In WholeBalls:Debug.Print "WHOLE_BALL|" & WholeBall.ID & "|" & '+['X','Y','Z','Radius','Color','Visible','ReflectionEnabled','ForceReflection','BulbIntensityScale','PlayfieldReflectionScale'].map(field=>['Visible','ReflectionEnabled','ForceReflection'].includes(field)?'CStr(WholeBall.'+field+')':'FormatNumber(WholeBall.'+field+',12,-1,0,0)').join(' & "|" & ')+':Next:On Error Goto 0');
+ await native('WholeBalls=GetBalls:For Each WholeBall In WholeBalls:Debug.Print "WHOLE_BALL|" & WholeBall.ID & "|" & '+ballFields.map(field=>['Visible','ReflectionEnabled','ForceReflection','FrontDecal'].includes(field)?'CStr(WholeBall.'+field+')':'FormatNumber(WholeBall.'+field+',12,-1,0,0)').join(' & "|" & ')+':Next:On Error Goto 0');
  await collect();const stateLog=Array.from(observedLines).join('\n');
  await native('Debug.Print "WHOLE_STATIC_DISABLED|" & CStr(DisableStaticPrerendering)');
  const actualStaticDisabled=(await evaluate('document.getElementById("log").textContent')).match(/WHOLE_STATIC_DISABLED\|(True|False)/)?.[1];assert.ok(actualStaticDisabled,'Observe the actual source render mode');
@@ -54,6 +61,8 @@ try{
  for(const item of items.filter(item=>item.kind==='Timer'))assert.ok(stateLog.includes('WHOLE_PROP|'+item.name+'|Enabled|False'),'source timer stopped: '+item.name);
  if(!lit)for(const item of classicNames)assert.ok(stateLog.includes('WHOLE_PROP|'+item+'|Visible|False'),'source classic control applied: '+item);
  assert.equal([...stateLog.matchAll(/WHOLE_(?:PROP|MISSING)\|/g)].length,requested.length,'every requested native property is observed or explicitly missing');
+ if(tracePixel)await evaluate('nativeWholeFrame.tracePixel='+JSON.stringify(tracePixel));
+ if(process.argv.includes('--observe-light-geometry'))await evaluate('nativeWholeFrame.captureLightGeometry=true');
  await evaluate('nativeBallPresentation.armed=true;nativeWholeFrame.armed=true');
  await wait('nativeWholeFrame.done&&nativeBallPresentation.records.length>=7');
  const capture=await evaluate('({frame:nativeWholeFrame,balls:nativeBallPresentation,nativeTextures:nativePostprocess.textures,canvas:{width:document.getElementById("canvas").width,height:document.getElementById("canvas").height}})');
@@ -62,6 +71,8 @@ try{
  capture.control.nativePrepass=nativePrepass;capture.control.staticDisabled=actualStaticDisabled==='True';capture.control.allInserts=allInserts;
  capture.control.uniformAlignmentReference=alignmentReference;
  capture.control.classicVariant=classicVariant??'authored';
+ capture.control.requestedQuality=requestedQuality;capture.control.imageModeLight=imageModeLight??null;
+ capture.control.ballFields=ballFields;
  capture.control.cameraPreset=await evaluate('document.getElementById("camera-view").value');if(cameraPreset)assert.equal(capture.control.cameraPreset,cameraPreset);
  if(lit)capture.control.scope='Controlled native frame with classic inserts '+(allInserts?'explicitly set on.':'at authored visibility/state.')+' Non-classic bulbs set on, timers/sequences stopped, then physics defocused. '+(nativePrepass?'Original native static prerender mode retained.':'Static prerender explicitly disabled for the render-all control.')+' Native uniforms, draw commands, body state and clocks execute unchanged.';
  if(classicVariant)capture.control.scope+=' Explicit insert color and 0.37 intensity-scale variant.';

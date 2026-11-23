@@ -38,7 +38,7 @@ export function createNativeTransmission(renderer,assets,stateFor){
     const material=new THREE.RawShaderMaterial({glslVersion:THREE.GLSL3,vertexShader:assets.programs.bulb.vertex,fragmentShader:assets.programs.bulb.fragment,
       uniforms:{matWorldViewProj:{value:new Float32Array(16)},layer:{value:0},lightColor_intensity:{value:new Float32Array(4)},lightColor2_falloff_power:{value:new Float32Array(4)},lightCenter_maxRange:{value:new Float32Array([spec.center.x,spec.center.y,f(f(spec.surface_height)+f(spec.height)),f(1/Math.max(f(spec.falloff_radius),f(.1)))])},blend_modulate_vs_add:{value:f(.0001)}},
       depthTest:false,depthWrite:false,side:THREE.BackSide,transparent:true,blending:THREE.CustomBlending,
-      blendEquation:THREE.ReverseSubtractEquation,blendSrc:THREE.SrcAlphaFactor,blendDst:THREE.OneMinusSrcColorFactor,
+      blendEquation:THREE.ReverseSubtractEquation,blendSrc:THREE.SrcAlphaFactor,blendDst:THREE.OneMinusSrcColorFactor,blendSrcAlpha:THREE.ZeroFactor,blendDstAlpha:THREE.OneFactor,
     });
     const mesh=new THREE.Mesh(geometry,material);mesh.name=spec.name;mesh.frustumCulled=false;mesh.renderOrder=parts.length;scene.add(mesh);parts.push({spec,mesh,material,state:stateFor(spec.name)});
   }

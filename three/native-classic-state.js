@@ -8,3 +8,14 @@ export function nativeClassicMaterialState(material,globals,imageMode=false){
 export function nativeClassicLightState(spec,state,{skipOff=true}={}){
  const intensity=f(state.inplayintensity),a=nativeColor(state.color),b=nativeColor(state.colorfull);return{visible:!!state.visible&&(!skipOff||intensity!==0&&((a|b)&0xffffff)!==0),lightColor_intensity:color(a,intensity),lightColor2_falloff_power:color(b,spec.falloff_power),lightCenter_maxRange:nativeShaderArray([spec.center.x,spec.center.y,f(f(spec.surface_height)+f(spec.height)),f(1/Math.max(f(spec.falloff_radius),f(.1)))])};
 }
+
+// The pinned WASM ShaderState stores lightingOff as one byte immediately
+// before these three vectors. Its Emscripten glUniform4fv glue floors each
+// pointer to four-byte alignment. Preserve that original GPU upload separately
+// from the intended CPU state; no second low-precision clamp occurs afterward.
+export function nativeClassicUploadState(values,lightingOff=false,target){
+ if(!target){const buffer=new ArrayBuffer(52);target={data:new DataView(buffer),lightColor_intensity:new Float32Array(buffer,0,4),lightColor2_falloff_power:new Float32Array(buffer,16,4),lightCenter_maxRange:new Float32Array(buffer,32,4)};}
+ const data=target.data;data.setUint8(0,Number(!!lightingOff));let offset=1;
+ for(const name of ['lightColor_intensity','lightColor2_falloff_power','lightCenter_maxRange'])for(const value of values[name]){data.setFloat32(offset,value,true);offset+=4;}
+ return target;
+}
