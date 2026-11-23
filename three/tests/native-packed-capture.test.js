@@ -1,7 +1,8 @@
-import fs from 'node:fs';import test from 'node:test';import assert from 'node:assert/strict';
+import fs from 'node:fs';import {createHash} from 'node:crypto';import test from 'node:test';import assert from 'node:assert/strict';
 import {nativeBallMemoryObserver} from '../../scripts/native-ball-memory-observer.mjs';
 import {nativePlungerMemoryObserver} from '../../scripts/native-plunger-memory-observer.mjs';
 import {nativePackedCapture} from '../../scripts/native-packed-capture.mjs';
+import {nativePackedFrameDecoder,expandNativePackedFrames,NATIVE_PACKED_FRAME_FORMAT} from '../../scripts/native-packed-frames.mjs';
 import {readReferenceFixture} from '../../scripts/reference-physics.mjs';
 
 // Relocate independently captured native values into a small synthetic ABI
@@ -50,6 +51,8 @@ function setup(){
   view:()=>view,grow(){memory.buffer=memory.buffer.slice(0);view=new DataView(memory.buffer);}};
 }
 
+function transfer(packed){return{format:NATIVE_PACKED_FRAME_FORMAT,pageLength:65536,pages:Array.from({length:packed.summary().pages},(_,index)=>{const data=packed.exportPage(index);return{data,sha256:createHash('sha256').update(Buffer.from(data,'base64')).digest('hex')};})};}
+
 test('packed capture preserves independent object reads across pages without writing source memory',()=>{
  const s=setup(),before=new Uint8Array(s.memory.buffer).slice(),expected=s.balls.read();
  const first=s.packed.capture(undefined);assert.deepEqual(s.packed.unpack(first),expected);
@@ -60,6 +63,10 @@ test('packed capture preserves independent object reads across pages without wri
  assert.deepEqual(new Uint8Array(s.memory.buffer),before,'all source bytes remain unchanged');
  const hydrated=s.packed.hydrate({kind:'RNG_FRAME',ms:1,low:3,high:4,packed:first});
  assert.deepEqual(hydrated,{kind:'RNG_FRAME',ms:1,low:3,high:4,internals:expected});
+ const storage=transfer(s.packed),decode=nativePackedFrameDecoder(storage);assert.deepEqual(decode(first),expected);
+ const fixture={nativePackedFrameStorage:storage,cases:[{nativeRandomFrames:[[1,3,4,first]],initialNativeRandom:{low:3,high:4,packed:first}}]};
+ expandNativePackedFrames(fixture);assert.deepEqual(fixture.cases[0].nativeRandomFrames[0][3],expected);assert.deepEqual(fixture.cases[0].initialNativeRandom.internals,expected);assert.equal(fixture.nativePackedFrameStorage,undefined);
+ assert.deepEqual(new Uint8Array(s.memory.buffer),before,'transport and offline decoding also leave original memory unchanged');
 });
 
 test('packed capture retains roster changes, source-buffer replacement, signed zero and inactive NaN',()=>{
@@ -75,4 +82,6 @@ test('packed capture retains roster changes, source-buffer replacement, signed z
  assert.equal(Object.is(state.balls[1].velocity[0],-0),true);assert.equal(Object.is(state.plunger.speed,-0),true);assert.ok(Number.isNaN(state.plunger.fireBounce));
  assert.equal(state.balls[1].position[1],1600);assert.equal(state.plunger.pullForce,.75);
  assert.deepEqual(s.packed.unpack(old),oldState,'earlier observations cannot change with the live heap');
+ const decode=nativePackedFrameDecoder(transfer(s.packed));assert.deepEqual(decode(old),oldState);assert.deepEqual(decode(current),state);
+ assert.equal(Object.is(decode(current).balls[1].velocity[0],-0),true);assert.ok(Number.isNaN(decode(current).plunger.fireBounce));
 });

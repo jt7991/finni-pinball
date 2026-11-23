@@ -1,11 +1,12 @@
 import {nativeRandom} from '../three/native-random.js';
 import fs from 'node:fs';
 import {gunzipSync} from 'node:zlib';
+import {expandNativePackedFrames} from './native-packed-frames.mjs';
 // Dense native memory recordings are stored losslessly compressed. Older
 // plain JSON recordings keep the same parser and replay behavior.
 export function readReferenceFixture(path){
   const data=fs.readFileSync(path),decoded=data[0]===31&&data[1]===139?gunzipSync(data):data;
-  return JSON.parse(decoded.toString('utf8'));
+  return expandNativePackedFrames(JSON.parse(decoded.toString('utf8')));
 }
 let originalRenderAssets;
 // Original GPU recordings refer to the original authored light colors and meshes.
@@ -29,7 +30,7 @@ export function readReferenceAssets(fixture){
 export function summarizeNativePlunger(frames){
   if(!frames)return undefined;
   const keys=['pos','speed','travelLimit','pullForce','reverseImpulse','fireTimer','fireSpeed','fireBounce'];
-  return {frames:frames.length,observations:Object.fromEntries(keys.map(key=>[key,frames.filter(frame=>Number.isFinite(frame.errors[key])).length])),errors:Object.fromEntries(keys.map(key=>[key,Math.max(0,...frames.map(frame=>frame.errors[key]??0))]))};
+  return {frames:frames.length,observations:Object.fromEntries(keys.map(key=>[key,frames.filter(frame=>Number.isFinite(frame.errors[key])).length])),errors:Object.fromEntries(keys.map(key=>[key,frames.reduce((max,frame)=>Math.max(max,frame.errors[key]??0),0)]))};
 }
 // Measurement overrides are applied only by comparison tools, never gameplay.
 export function applyReferencePhysics(layout,objects,fixture){

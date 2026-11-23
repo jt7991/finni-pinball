@@ -8,6 +8,25 @@ const json=name=>JSON.parse(fs.readFileSync(new URL(`../public/${name}.json`,imp
 const source=fs.readFileSync(new URL('../public/rules.vbs',import.meta.url),'utf8');
 const ticks=(g,s)=>{for(let i=0;i<s/STEP;i++)g.step();};
 
+test('native ball properties retain Single Variants through authored speed-control arithmetic',async()=>{
+  const g=await createFullGame(json('layout'),json('objects'),source,()=>{});
+  try{
+    g.start();ticks(g,2);const ball=g.records[0].proxy;g.rules.execute('Dim TypedBall');g.rules.engine.addObject('TypedBall',ball);
+    for(const name of ['X','Y','Z','VelX','VelY','VelZ','AngMomX','AngMomY','AngMomZ','AngVelX','AngVelY','AngVelZ','Radius','Mass','BulbIntensityScale','PlayfieldReflectionScale'])assert.equal(g.rules.value(`VarType(TypedBall.${name})`),4,name);
+    assert.equal(g.rules.value('VarType(TypedBall.ID)'),3);assert.equal(g.rules.value('VarType(TypedBall.Visible)'),11);assert.equal(g.rules.value('VarType(TypedBall.FrontDecal)'),8);
+    assert.deepEqual(g.physicalRecords.map(record=>record.proxy.getProperty('ID').value),[0,1,2,3],'native script identities follow creation order independently of recycled physics handles');
+    assert.equal(g.rules.value('TypedBall.ID'),3);
+    // Independently recorded third-launch velocity before the original table's
+    // 52 VPU/VPT cap. Integer / Single and Single * Single round in Float32.
+    const vx=-0.0014228353975340724,vy=-67.72794342041016;ball.velx=vx;ball.vely=vy;
+    g.rules.execute('Dim TypedFactor:TypedFactor=Abs(52/TypedBall.VelY):TypedBall.VelX=TypedBall.VelX*TypedFactor');
+    assert.equal(g.rules.value('VarType(TypedFactor)'),4);
+    assert.equal(ball.velx,Math.fround(vx*Math.fround(Math.abs(52/vy))));
+    assert.notEqual(ball.velx,Math.fround(vx*Math.abs(52/vy)),'the old Double bridge loses one native ULP');
+    assert.equal(typeof ball.velx,'number','JavaScript callers keep ordinary numeric properties');
+  }finally{g.dispose();}
+});
+
 test('unchanged drop flags preserve a pending hit and scripted drops complete once before delayed raising',async()=>{
   const fixture=JSON.parse(fs.readFileSync(new URL('fixtures/vpx-targets.json',import.meta.url))),layout=json('layout'),objects=json('objects');applyReferencePhysics(layout,objects,fixture);
   const g=await createFullGame(layout,objects,source,()=>{});g.random=referenceRandom();

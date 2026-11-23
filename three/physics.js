@@ -596,9 +596,11 @@ export class Pinball {
         if(r.removed&&!r.detachedNative)continue;
         if(f)supportFlipper(body(r),f,hit,this.world.gravity,f.friction,RADIUS,time);
         else if(plunger)supportSurface(body(r),hit,this.world.gravity,{friction:.3},RADIUS,time);
-        else if(spinner)supportSurface(body(r),hit,this.world.gravity,{friction:.3},RADIUS,time);
+        // Native HitSpinner::Contact and HitGate::Contact are empty. Their
+        // crossing sensors can record contacts but exert no supporting force.
+        else if(spinner){}
         else if(trigger)supportSurface(body(r),hit,this.world.gravity,{friction:.3},RADIUS,time);
-        else if(gate)supportSurface(body(r),hit,this.world.gravity,blocked?gate.material:{friction:.3},RADIUS,time);
+        else if(gate){if(blocked)supportSurface(body(r),hit,this.world.gravity,gate.material,RADIUS,time);}
         else if(mesh)supportSurface(body(r),hit,this.world.gravity,mesh.material,RADIUS,time);
         else if(this.playfieldMesh)supportSurface(body(r),hit,this.world.gravity,this.playfieldMaterial,RADIUS,time);
         else supportPlayfield(body(r),hit,this.world.gravity,this.playfieldMaterial,time);

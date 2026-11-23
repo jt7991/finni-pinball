@@ -27,5 +27,10 @@ export function nativePackedCapture(bodies,plunger){
   if(changed){lastIDs=[];for(let i=0;i<count;i++)lastIDs.push(page[start+6+i*26]);}
   return index;
  }
- return {capture,unpack,validation,hydrate(row){if(row.packed===undefined)return row;const {packed,...rest}=row;return {...rest,internals:unpack(packed)};},summary(){return {...validation,pages:pages.length,bytes:pages.length*pageLength*8,scope:'Same original native read fields packed into host Float64 pages, then decoded after recording. Original object reader verifies every scalar at the first32boundaries, every page boundary and every roster change, including signed zero and inactive NaN. No source clock, callback, body, native memory or random state is written.'};}};
+ function exportPage(index){
+  if(!Number.isInteger(index)||!pages[index])throw Error('Native packed page unavailable');
+  if(new Uint8Array(new Uint16Array([0x0102]).buffer)[0]!==2)throw Error('Native packed transport requires a little-endian host');
+  const bytes=new Uint8Array(pages[index].buffer);let result='';for(let i=0;i<bytes.length;i+=0x8000)result+=String.fromCharCode(...bytes.subarray(i,i+0x8000));return btoa(result);
+ }
+ return {capture,unpack,validation,exportPage,hydrate(row){if(row.packed===undefined)return row;const {packed,...rest}=row;return {...rest,internals:unpack(packed)};},summary(){return {...validation,pages:pages.length,bytes:pages.length*pageLength*8,scope:'Same original native read fields packed into host Float64 pages, then decoded after recording. Original object reader verifies every scalar at the first32boundaries, every page boundary and every roster change, including signed zero and inactive NaN. No source clock, callback, body, native memory or random state is written.'};}};
 }

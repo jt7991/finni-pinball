@@ -7,7 +7,7 @@ export const missionFields={
   player:'CurrentPlayer',ballNumber:'Balls',
   ...Object.fromEntries(Array.from({length:7},(_,i)=>['mission'+(i+1),`Battle(CurrentPlayer,${i+1})`])),
 };
-export function nativeMissionFrames(source,observeMultiball=false,observeNudges=false,observeDetails=false){
+export function nativeMissionFrames(source,observeMultiball=false,observeNudges=false,observeDetails=false,observeLifecycle=false){
   const handlers=source.match(/^Sub Target010_Timer\b[^\n]*\n[\s\S]*?^End Sub/gmi);
   assert.equal(handlers?.length,1,'Existing read-only frame observer');
   const fields=observeMultiball?{...missionFields,
@@ -24,6 +24,14 @@ export function nativeMissionFrames(source,observeMultiball=false,observeNudges=
     ...Object.fromEntries(Array.from({length:7},(_,i)=>['life'+(i+1),`LifeLeft(CurrentPlayer,${i+1})`])),
     attackPower:'AttackPower',wolverineValue:'WolverineValue',dazzlerValue:'dazzlerValue',
     partyTimerEnabled:'Abs(CLng(MrSinisterTimer.Enabled))',partyTimerInterval:'MrSinisterTimer.Interval',
+  });
+  if(observeLifecycle)Object.assign(fields,{
+    remaining:'BallsRemaining(CurrentPlayer)',playerCount:'PlayersPlayingGame',firstBall:'Abs(CLng(bOnTheFirstBall))',
+    highScoreEntry:'Abs(CLng(hsbModeActive))',highScoreDigit:'hsCurrentDigit',games:'TotalGamesPlayed',
+    bonus:'BonusPoints(CurrentPlayer)',bonusHeld:'BonusHeldPoints(CurrentPlayer)',bonusMultiplier:'BonusMultiplier(CurrentPlayer)',
+    playfieldMultiplier:'PlayfieldMultiplier(CurrentPlayer)',extraBalls:'ExtraBallsAwards(CurrentPlayer)',
+    ...Object.fromEntries(Array.from({length:4},(_,i)=>['score'+(i+1),`Score(${i+1})`])),
+    ...Object.fromEntries(Array.from({length:4},(_,i)=>['remaining'+(i+1),`BallsRemaining(${i+1})`])),
   });
   const original=handlers[0],logger=' If RefTraceOn Then Debug.Print "MISSION_FRAME|" & GameTime & "|" & '+Object.values(fields).map(expression=>'CStr(CDbl('+expression+'))').join(' & "|" & ')+'\n';
   const code=original.replace(/^End Sub/m,logger+'End Sub');

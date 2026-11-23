@@ -77,8 +77,12 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--audio-players' in sys.argv:runner='test-audio-players-browser.mjs'
         if '--native-audio-mix' in sys.argv:runner='probe-native-audio-mix.mjs'
         if '--audio-mix' in sys.argv:runner='test-native-audio-mix-browser.mjs'
+        timeout=150
+        if '--native-contact' in sys.argv and '--packed-frames' in sys.argv:
+            record_ms=next((int(arg.split('=',1)[1]) for arg in sys.argv if arg.startswith('--record-through-ms=')),0)
+            timeout=max(timeout,record_ms/1000+90)
         subprocess.run(['node',str(ROOT/'scripts'/runner),f'http://127.0.0.1:{port}',
-                        sys.argv[1] if len(sys.argv)>1 else 'http://127.0.0.1:5173/three/',str(OUT),*sys.argv[2:]],check=True,timeout=150)
+                        sys.argv[1] if len(sys.argv)>1 else 'http://127.0.0.1:5173/three/',str(OUT),*sys.argv[2:]],check=True,timeout=timeout)
     finally:
         process.terminate()
         try:process.wait(timeout=10)

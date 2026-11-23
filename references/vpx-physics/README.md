@@ -306,3 +306,36 @@ native Timer's actual variant type is also observed. These component clocks
 never alter the reference system clock or replace the production wall clock.
 Run `node --test three/tests/script-timer.test.js`; refresh its native evidence
 with `check-three.py NATIVE_URL --native-timer`.
+
+The current-table `vpx-main-99eff88-natural-game-replay-120000-native.json.gz`
+fixture follows ordinary launch/Start keys through three balls, high-score
+entry, game-over at108943ms, and a new game at109944ms. There are no initial or
+later ball resets, injected qualifications, nudges or rescue calls. Its275
+independent object-reader checkpoints validate the lossless Float64 transport,
+including page boundaries and roster changes. The retained recording contains
+120000 consecutive physics boundaries,452355 live-body observations,7192
+animation/state frames,68 authored game-state fields,26 key events and13 actual
+flipper contacts. Both random streams and every body/rod field are exact gates.
+
+This recording exposed unwanted static forces on gate/spinner crossing sensors:
+native `HitGate::Contact` and `HitSpinner::Contact` do nothing. The separate
+one-way gate blocking wall still applies its authored contact material. It also
+exposed one Float32 ULP lost in the scripted speed cap because ball COM getters
+were exposed as Double. Native ball numeric properties now retain Single
+Variants through script arithmetic; JavaScript properties remain numbers.
+Script ball IDs follow creation order independently of recycled physics handles.
+
+Run `node --test three/tests/native-full-game-replay.test.js`. Capture with
+`check-three.py NATIVE_URL --native-contact --game-lifecycle
+--case=natural-lifecycle --all-ball-state --rng-state --native-internals
+--plunger-state --ball-trails --script-rng-state --live-body-state
+--animation-frames --no-state-trace --observe-initial-timer-clocks
+--observe-script-clocks --observe-sound-calls --observe-mission-state
+--observe-multiball-state --observe-nudge-state --observe-mission-details
+--compact-native-state --packed-frames --trace-ms=70 --record-through-ms=120000
+--output-name=NEW.json`, then retain it with
+`prepare-native-lifecycle-fixture.mjs RAW NEW_FIXTURE.json.gz`. The preparer
+requires actual game-over and replay, uninterrupted observations and unchanged
+source provenance. Existing partial-state limits stay unchanged. This proves
+the recorded post-initialization lifecycle, not startup or uninterrupted
+rendered-frame parity.

@@ -203,8 +203,11 @@ class FullGame extends Pinball {
     const isToy=['he','la','ra'].includes(key),rec={body,collider,isToy,held:key,inLane:false,previous:{...p},cooldowns:new Map(),laneTime:this.time};
     const tableDecal=this.rules?.objects.get('table1').ballfrontdecal;
     rec.render={visible:true,color:0xffffff,reflectionenabled:true,forcereflection:false,bulbintensityscale:Math.fround(this.specs.ball_settings?.default_bulb_intensity_scale_on_ball??.15),playfieldreflectionscale:1,frontdecal:typeof tableDecal==='string'?tableDecal:this.specs.ball_settings?.ball_image_front??''};
+    this.scriptBallSequence??=0;
+    rec.scriptID=this.scriptBallSequence++;
     rec.proxy=new Proxy({radius:25,mass:1,id:body.handle},{
       get:(target,key)=>{
+        if(key==='getProperty'||key==='setProperty'||key==='hasMethod')return target[key];
         if(typeof key!=='string')return target[key];key=key.toLowerCase();
         if(rec.removed&&!rec.detachedNative)return rec.lastState[key]??target[key]??0;
         if(Object.hasOwn(rec.render,key))return rec.render[key];
@@ -227,6 +230,15 @@ class FullGame extends Pinball {
         if(key==='x')p.x=v*.01;if(key==='y')p.y=(2115-v)*.01;if(key==='z')p.z=v*.01;
         if(key==='velx')vel.x=v;if(key==='vely')vel.y=-v;if(key==='velz')vel.z=v;
         positionBody.setTranslation(p,true);velocityBody.setLinvel(vel,true);return true;},
+    });
+    // Ball's native COM getters return VT_R4 even for integral values. Keep
+    // that Variant type through authored arithmetic (for example speed caps),
+    // while JavaScript and render callers continue to receive plain numbers.
+    const singleProperty=key=>/^(?:[xyz]|vel[xyz]|ang(?:mom|vel)[xyz]|radius|mass|bulbintensityscale|playfieldreflectionscale)$/.test(key);
+    Object.defineProperties(rec.proxy,{
+      hasMethod:{value:()=>false},
+      getProperty:{value:name=>{const key=String(name).toLowerCase(),value=key==='id'?rec.scriptID:rec.proxy[key];return {type:singleProperty(key)?'Single':typeof value==='boolean'?'Boolean':typeof value==='string'?'String':Number.isInteger(value)?'Long':'Double',value:singleProperty(key)?Math.fround(value):value};}},
+      setProperty:{value:(name,variant)=>{const key=String(name).toLowerCase();rec.proxy[key]=singleProperty(key)?Math.fround(variant.value):variant.value;}},
     });
     if(rec.held)body.setBodyType(RAPIER.RigidBodyType.KinematicPositionBased,true);
     (isToy?this.toyRecords:this.records).push(rec);this.physicalRecords.push(rec);this.byCollider.set(collider.handle,rec);this.captures.set(key,rec);this.pendingCreate=rec;if(!isToy)this.ball=body;

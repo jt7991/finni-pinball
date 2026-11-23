@@ -11,8 +11,9 @@ applyReferencePhysics(layout,objects,fixture);
 if(process.argv.includes('--native-contact-solver'))layout.physics.native_flipper_contacts=true;
 const reports=[],resetClockDiagnostic=process.argv.includes('--native-reset-clock-diagnostic');
 for(const scenario of fixture.cases){
-  const g=await createFullGame(layout,objects,source,()=>{});
+  const g=await createFullGame(layout,objects,source,()=>{},undefined,{playerSettings:fixture.playerSettings});
   g.random=referenceRandom();
+  let diagnostic=()=>({}),failure;
   try{
     const warmupMilliseconds=resetClockDiagnostic?scenario.initial?.[0]:2000;if(!Number.isInteger(warmupMilliseconds)||warmupMilliseconds<2000)throw Error('An independently observed native reset clock is required');
     g.start();for(let ms=0;ms<warmupMilliseconds;ms++)g.step();g.launch();let r=g.records[0];
@@ -59,11 +60,14 @@ for(const scenario of fixture.cases){
     if(scenario.scriptClocks)g.rules.engine._registerFunction('Timer',()=>{
       const clock=scenario.scriptClocks[clockInputs++];assert.ok(clock,'observed native Timer input exists');assert.equal(clock.type,4);assert.equal(Math.round(g.time*1000)-origin,clock.ms);return {type:'Single',value:clock.value};
     });
-    const missionFrames=new Map((scenario.missionFrames??[]).map(row=>[row[0],row])),missionAudit=[];
+    const missionFrames=new Map((scenario.missionFrames??[]).map(row=>[row[0],row])),missionAudit=[],animationAudit=[],animationFrames=new Map((scenario.animationFrames??[]).map(row=>[row[0],row]));
+    diagnostic=()=>({firstMissionMismatch:missionAudit.find(row=>row.errors.some(error=>error!==0)),lastMission:missionAudit.at(-1),flipperContacts,scriptClockInputs:clockInputs});
     const prepareFrame=ms=>{
       if(!frameClocks.has(ms))return;
-      g.prepareFrame();const expected=missionFrames.get(ms);if(!expected)return;
-      const actual=Object.values(fixture.runtimeMissionFrames.fields).map(expression=>g.rules.value(expression));
+      g.prepareFrame();
+      if(fixture.animationRegression){const expected=animationFrames.get(ms),names=fixture.instrumentation.animationFrameTrace.targets??['Target009','Target010','Target011'],targets=names.map(name=>g.targetMotions.get(name.toLowerCase())),actual=[ms,expected[1],...targets.map(target=>target.offset),...targets.map(target=>Number(target.dropped)),g.rules.value('Score(CurrentPlayer)')];animationAudit.push({ms,expected,actual,errors:actual.slice(2).map((value,i)=>value-(i<3?Math.fround(expected[i+2]):expected[i+2]))});}
+      const expected=missionFrames.get(ms);if(!expected)return;
+      const actual=Object.values(fixture.runtimeMissionFrames.fields).map(expression=>g.rules.value(`CDbl(${expression})`));
       missionAudit.push({ms,expected:expected.slice(1),actual,errors:actual.map((value,i)=>value-expected[i+1])});
     };
     let elapsed=0;const samples=[],traceSamples=[];
@@ -92,16 +96,19 @@ for(const scenario of fixture.cases){
       assert.ok(Number.isInteger(through)&&through>=elapsed,'native coverage ends after the last public sample');
       for(let ms=elapsed+1;ms<=through;ms++){g.step();prepareFrame(ms);if(fixture.traceRegression)observeTrace(ms);}
     }
-    const bodies=(g.nativeBodyAudit??[]).flatMap(row=>row.bodies),nativeBodySummary={frames:g.nativeBodyAudit?.length??0,bodies:bodies.length};
-    for(const key of ['positionError','velocityError','momentumError','orientationError'])nativeBodySummary[key]=Math.max(0,...bodies.map(body=>body[key]??0));
-    if(fixture.liveBodyState)nativeBodySummary.identityMismatches=g.nativeBodyAudit.filter(frame=>frame.missingIDs.length||frame.unexpectedIDs.length).length;
+    const bodyFrames=g.nativeBodyAudit??[],bodies=bodyFrames.flatMap(row=>row.bodies),nativeBodySummary={frames:bodyFrames.length,bodies:bodies.length,missingReferences:bodies.filter(body=>body.missingReference).length,missingIDs:bodyFrames.reduce((n,frame)=>n+(frame.missingIDs?.length??0),0),unexpectedIDs:bodyFrames.reduce((n,frame)=>n+(frame.unexpectedIDs?.length??0),0),swapMismatches:bodyFrames.filter(frame=>Boolean(frame.swap)!==Boolean(frame.expectedSwap)).length};
+    for(const key of ['positionError','velocityError','momentumError','orientationError'])nativeBodySummary[key]=bodies.reduce((max,body)=>Math.max(max,body[key]??0),0);
+    const firstBodyMismatch=bodyFrames.find(frame=>frame.bodies.some(body=>body.missingReference||['positionError','velocityError','momentumError','orientationError'].some(key=>body[key]!==0)));if(firstBodyMismatch)nativeBodySummary.firstMismatch={ms:firstBodyMismatch.ms,bodies:firstBodyMismatch.bodies.filter(body=>body.missingReference||['positionError','velocityError','momentumError','orientationError'].some(key=>body[key]!==0))};
+    if(fixture.liveBodyState)Object.assign(nativeBodySummary,{identityMismatches:g.nativeBodyAudit.filter(frame=>frame.missingIDs.length||frame.unexpectedIDs.length).length,lifecycles:g.nativeBodyAudit.filter((frame,i,a)=>i===0||String(frame.actualIDs)!==String(a[i-1].actualIDs)).map(frame=>({ms:frame.ms,ids:frame.actualIDs}))});
     const report={name:scenario.name,maxPositionError:Math.max(...samples.map(r=>r.positionError)),maxVelocityError:Math.max(...samples.map(r=>r.velocityError)),maxFlipperAngleError:Math.max(...samples.map(r=>r.flipperAngleError)),physicsStats:g.physicsStats,samples,...(fixture.traceRegression?{traceSamples}:{}),...(g.nativeRandomAudit?{nativeRandomAudit:g.nativeRandomAudit,nativeBodySummary,nativePlungerSummary:summarizeNativePlunger(g.nativePlungerAudit)}:{}),...(g.nativeScriptRandomAudit?{nativeScriptRandomAudit:g.nativeScriptRandomAudit}:{}),...(process.argv.includes('--body-audit')?{nativeBodyAudit:g.nativeBodyAudit,nativePlungerAudit:g.nativePlungerAudit}:{})};if(resetClockDiagnostic)report.resetClockDiagnostic={milliseconds:scenario.initial[0],scope:'Observed reset clock only; missing starting bodies, native RNG and startup-input times are not reconstructed.'};reports.push(report);
     if(scenario.inputSequence)report.inputCount=appliedInputs();
     if(scenario.scriptClocks)report.scriptClockInputs=clockInputs;
     if(scenario.flipperContacts)report.flipperContacts=flipperContacts;
-    if(scenario.missionFrames)report.missionSummary={frames:missionAudit.length,fields:Object.keys(fixture.runtimeMissionFrames.fields),mismatches:missionAudit.filter(row=>row.errors.some(Boolean)).length,firstMismatch:missionAudit.find(row=>row.errors.some(Boolean)),last:missionAudit.at(-1)};
+    if(fixture.animationRegression)report.animationSummary={frames:animationAudit.length,offsetError:Math.max(0,...animationAudit.flatMap(row=>row.errors.slice(0,3).map(Math.abs))),stateMismatches:animationAudit.filter(row=>row.errors.slice(3).some(error=>error!==0)).length};
+    if(scenario.missionFrames)report.missionSummary={frames:missionAudit.length,fields:Object.keys(fixture.runtimeMissionFrames.fields),nonFiniteFields:missionAudit.reduce((n,row)=>n+row.actual.filter(value=>!Number.isFinite(value)).length,0),mismatches:missionAudit.filter(row=>row.errors.some(error=>error!==0)).length,firstMismatch:missionAudit.find(row=>row.errors.some(error=>error!==0)),last:missionAudit.at(-1)};
+    if(fixture.fullGameRegression){const fields=Object.keys(fixture.runtimeMissionFrames.fields),indices=['playing','ballNumber','remaining','highScoreEntry','games'].map(name=>fields.indexOf(name));assert.ok(indices.every(index=>index>=0));let previous;report.fullGameTransitions=[];for(const row of missionAudit){const values=indices.map(index=>row.actual[index]);if(String(values)!==String(previous))report.fullGameTransitions.push({ms:row.ms,playing:values[0],ballNumber:values[1],remaining:values[2],highScoreEntry:values[3],games:values[4]});previous=values;}}
     if(!process.argv.includes('--json'))console.log(JSON.stringify({name:report.name,position:report.maxPositionError,velocity:report.maxVelocityError,end:samples.at(-1).actual}));
-  }finally{g.dispose();}
+  }catch(error){failure=error;const frames=g.nativeBodyAudit??[],mismatch=frame=>frame.bodies.some(body=>body.missingReference||['positionError','velocityError','momentumError','orientationError'].some(key=>body[key]!==0));fs.writeFileSync((process.argv.find(a=>a.startsWith('--report='))?.slice(9)??'.work/three-review/vpx-contact-comparison.json')+'.partial',JSON.stringify({error:String(error),time:g.time,bodyFrames:frames.length,firstBodyMismatch:frames.find(mismatch),lastBodies:frames.slice(-2),lastRandom:g.nativeRandomAudit?.slice(-3),lastScriptRandom:g.nativeScriptRandomAudit?.slice(-3),...diagnostic()},null,2));throw error;}finally{try{g.dispose();}catch(error){if(!failure)throw error;}}
 }
 const reportPath=process.argv.find(a=>a.startsWith('--report='))?.slice(9)??'.work/three-review/vpx-contact-comparison.json';
 fs.writeFileSync(reportPath,JSON.stringify(reports,null,2));
@@ -113,9 +120,15 @@ if(process.argv.includes('--check'))for(const report of reports){
   if(limit.flipperAngle!==undefined)assert.ok(report.maxFlipperAngleError<=limit.flipperAngle,`${report.name} native flipper angle ${report.maxFlipperAngleError}`);
   assert.equal(report.physicsStats.substepBudgetExceeded,0,'collision iteration budget');
   if(fixture.missionRegression){assert.equal(report.inputCount,fixture.missionRegression.inputs);assert.equal(report.missionSummary.frames,fixture.missionRegression.frames);assert.equal(report.missionSummary.mismatches,0,JSON.stringify(report.missionSummary.firstMismatch));assert.equal(report.scriptClockInputs,fixture.missionRegression.scriptClocks);assert.deepEqual(report.flipperContacts,fixture.cases.find(c=>c.name===report.name).flipperContacts);}
+  if(fixture.gameStateRegression){assert.equal(report.missionSummary.frames,fixture.gameStateRegression.frames);assert.deepEqual(report.missionSummary.fields,fixture.gameStateRegression.fields);assert.equal(report.missionSummary.nonFiniteFields,0,'all observed authored state fields exist and remain finite');assert.equal(report.missionSummary.mismatches,0,JSON.stringify(report.missionSummary.firstMismatch));}
+  if(fixture.inputSequenceRegression){assert.equal(report.inputCount,fixture.inputSequenceRegression.inputs);assert.deepEqual(report.flipperContacts,fixture.cases.find(c=>c.name===report.name).flipperContacts,'every actual native flipper collision clock, side, speed and body');}
+  if(fixture.scriptClockRegression)assert.equal(report.scriptClockInputs,fixture.scriptClockRegression.calls);
+  if(fixture.animationRegression){assert.equal(report.animationSummary.frames,fixture.animationRegression.frames);assert.equal(report.animationSummary.offsetError,0);assert.equal(report.animationSummary.stateMismatches,0);}
+  if(fixture.fullGameRegression){assert.deepEqual(report.fullGameTransitions,fixture.fullGameRegression.stateTransitions);assert.deepEqual(report.nativeBodySummary.lifecycles,fixture.lifecycleRegression);assert.equal(report.nativeBodySummary.bodies,fixture.fullGameRegression.bodyObservations);}
   if(fixture.nativeBodyRegression){
     const limit=fixture.nativeBodyRegression;assert.equal(report.nativeBodySummary.frames,limit.frames,'complete native body-frame coverage');
     for(const key of ['positionError','velocityError','momentumError','orientationError'])assert.ok(report.nativeBodySummary[key]<=limit[key],`${report.name} every native body ${key}`);
+    for(const key of ['missingReferences','missingIDs','unexpectedIDs','swapMismatches'])assert.equal(report.nativeBodySummary[key],0,`${report.name} ${key}`);
     if(fixture.liveBodyState)assert.equal(report.nativeBodySummary.identityMismatches,0,'all live native identities');
   }
   if(fixture.nativePlungerRegression){

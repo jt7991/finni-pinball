@@ -10,6 +10,8 @@ import {nativeBallMemoryObserver} from './native-ball-memory-observer.mjs';
 import {nativePlungerMemoryObserver} from './native-plunger-memory-observer.mjs';
 import {nativePackedCapture} from './native-packed-capture.mjs';
 import {nativeInputSequence} from './native-input-sequence.mjs';
+import {nativeLifecycleInputs} from './native-lifecycle-inputs.mjs';
+import {NATIVE_PACKED_FRAME_FORMAT} from './native-packed-frames.mjs';
 import {nativeInitialTimerClocks} from './native-initial-timer-clocks.mjs';
 import {nativeMissionFrames} from './native-mission-frames.mjs';
 import {nativeControlledShot} from './native-controlled-shot.mjs';
@@ -21,15 +23,17 @@ const requestedBallIndex=process.argv.find(a=>a.startsWith('--ball-index='))?.sl
 if(ballIndex!==undefined)assert.ok(Number.isInteger(ballIndex)&&ballIndex>=0,'Measured native body index must be a nonnegative integer');
 const probeKind=process.argv.includes('--target-events')?'target-events':process.argv.includes('--material-events')?'material-events':process.argv.includes('--flipper-events')?'flipper-events':process.argv.includes('--slingshots')?'slingshots':process.argv.includes('--bumpers')?'bumpers':process.argv.includes('--autofire')?'autofire':process.argv.includes('--ball-pairs')?'ball-pairs':process.argv.includes('--triggers')?'triggers':process.argv.includes('--targets')?'targets':process.argv.includes('--gates')?'gates':process.argv.includes('--spinners')?'spinners':process.argv.includes('--plunger')?'plunger':process.argv.includes('--nudge')?'nudge':'contacts';
 const reference=await(await fetch(new URL('/reference-metadata.json',base))).json();
+const gameLifecycle=process.argv.includes('--game-lifecycle'),packedFrames=process.argv.includes('--packed-frames');
 const observeMissions=process.argv.includes('--observe-mission-state');
-if(observeMissions){assert.ok(reference.runtimeMarkers);reference.runtimeMissionFrames=nativeMissionFrames(reference.runtimeMarkers.code,process.argv.includes('--observe-multiball-state'),process.argv.includes('--observe-nudge-state'),process.argv.includes('--observe-mission-details'));}
+if(observeMissions){assert.ok(reference.runtimeMarkers);reference.runtimeMissionFrames=nativeMissionFrames(reference.runtimeMarkers.code,process.argv.includes('--observe-multiball-state'),process.argv.includes('--observe-nudge-state'),process.argv.includes('--observe-mission-details'),gameLifecycle);}
 const battlesWonText=process.argv.find(arg=>arg.startsWith('--battles-won='))?.slice(14);
 if(battlesWonText!==undefined){
   const battlesWon=Number(battlesWonText);assert.ok(observeMissions&&Number.isInteger(battlesWon)&&battlesWon>=0&&battlesWon<=7);
   reference.startingProgress={battlesWon,scope:'Explicit initial player qualification for this controlled scenario, applied once at the approach reset. Mission selection, rules, physical ball creation and every subsequent state remain under ordinary authored logic.'};
 }
+if(gameLifecycle){assert.ok(observeMissions);reference.runtimeInputSequence=nativeLifecycleInputs(await readFile('.work/vpx-animation-frame-rng-reference/extracted/script.vbs','utf8'));reference.gameLifecycleControl={initialPoseReset:false,laterPoseResets:false,policy:reference.runtimeInputSequence.lifecyclePolicy};}
 const inputSequencePath=process.argv.find(a=>a.startsWith('--input-sequence='))?.slice(17);
-if(inputSequencePath){
+if(inputSequencePath){assert.ok(!gameLifecycle);
  assert.ok(['plunger','contacts'].includes(probeKind));
  reference.runtimeInputSequence=nativeInputSequence(await readFile('.work/vpx-animation-frame-rng-reference/extracted/script.vbs','utf8'),JSON.parse(await readFile(inputSequencePath,'utf8')));
 }
@@ -57,6 +61,8 @@ const recordPlunger=process.argv.includes('--plunger-state');
 const recordAnimationFrames=process.argv.includes('--animation-frames');
 const recordScriptRng=process.argv.includes('--script-rng-state');
 const compactNativeState=process.argv.includes('--compact-native-state');
+if(packedFrames)assert.ok(compactNativeState,'Packed frame transport requires the independently validated packed capture');
+if(gameLifecycle)assert.ok(packedFrames&&recordInternals&&recordAllBalls&&liveBodyState&&recordPlunger&&recordScriptRng&&recordAnimationFrames&&observeInitialTimerClocks&&observeScriptClocks);
 if(compactNativeState){assert.ok(recordInternals&&liveBodyState&&recordPlunger&&recordScriptRng&&!recordContactSlots);assert.ok(process.argv.some(arg=>arg.startsWith('--case=')),'Packed capture requires one explicitly selected case');}
 if(recordScriptRng)assert.ok(recordInternals&&reference.instrumentation?.nativeScriptRngMarkers,'script state requires the separately instrumented table and full memory capture');
 if(recordAnimationFrames)assert.ok(recordRng&&reference.instrumentation?.animationFrameTrace,'animation clocks require the separately instrumented native table and RNG observer');
@@ -104,8 +110,8 @@ if(captureThrough!==undefined){assert.ok(recordTimers&&Number.isInteger(captureT
 // expensive text trace has its own short RefTraceUntil window. Keep the
 // original trace-window gate and independently validate this longer recording.
 const recordThroughText=process.argv.find(a=>a.startsWith('--record-through-ms='))?.split('=')[1],recordThrough=recordThroughText===undefined?undefined:Number(recordThroughText);
-if(recordThrough!==undefined){assert.ok(recordRng&&recordInternals&&recordAnimationFrames&&Number.isInteger(recordThrough)&&recordThrough>=1&&recordThrough<=30000,'Long recording requires complete native body/RNG and animation clocks, at most30s');reference.recordThroughMilliseconds=recordThrough;}
-if(reference.runtimeInputSequence)assert.ok(recordThrough>=reference.runtimeInputSequence.inputs.at(-1).ms,'Native input sequence fits the complete capture window');
+if(recordThrough!==undefined){assert.ok(recordRng&&recordInternals&&recordAnimationFrames&&Number.isInteger(recordThrough)&&recordThrough>=1&&recordThrough<=(packedFrames?120000:30000),'Long recording requires complete native state; more than30s additionally requires packed frame transport, at most120s');reference.recordThroughMilliseconds=recordThrough;}
+if(reference.runtimeInputSequence&&!gameLifecycle)assert.ok(recordThrough>=reference.runtimeInputSequence.inputs.at(-1).ms,'Native input sequence fits the complete capture window');
 const traceFrom=Number(process.argv.find(a=>a.startsWith('--trace-from-ms='))?.split('=')[1]??0);
 assert.ok(Number.isInteger(traceMilliseconds)&&traceMilliseconds>=1&&traceMilliseconds<=1000,'trace duration must be 1..1000ms');
 assert.ok(Number.isInteger(traceFrom)&&traceFrom>=0&&traceFrom<traceMilliseconds,'trace start must precede its end');
@@ -276,6 +282,7 @@ if(probeKind==='targets'){
   cases.push({name:'Target011-timed-hold',target:'Target011',x:612.3,y:803.1,z:25,vx:0,vy:0,sampleCount:540,setupCode:'bLilDPMB=True:bMultiBallMode=True:LilDPHits=4:LilDPHitsNeeded(CurrentPlayer)=1:LilDPJackpot(CurrentPlayer)=500000:LilDPTimer.Enabled=False:LilDPTimer.Interval=100:LilDPTimer.Enabled=True'});
   cases.push({name:'Target011-soak-hold',target:'Target011',x:612.3,y:803.1,z:25,vx:0,vy:0,sampleCount:1080,setupCode:'bLilDPMB=True:bMultiBallMode=True:LilDPHits=4:LilDPHitsNeeded(CurrentPlayer)=3:LilDPJackpot(CurrentPlayer)=790000:LilDPTimer.Enabled=False:LilDPTimer.Interval=350:LilDPTimer.Enabled=True'});
 }
+if(gameLifecycle){assert.equal(probeKind,'contacts');cases.length=0;cases.push({name:'natural-lifecycle',x:0,y:0,z:25,vx:0,vy:0,sampleCount:12});}
 if(process.argv.includes('--continuous-gate')){
   assert.equal(probeKind,'gates');assert.ok(selected,'Continuous gate control requires one explicitly selected approach');
   for(const scenario of cases)delete scenario.parkFromSample;
@@ -329,6 +336,7 @@ try{
       ${observeSoundCalls?`if(line.includes('CASE_SOUND|')){const [ms,name]=line.slice(line.indexOf('CASE_SOUND|')+11).replace(/'$/,'').split('|');window.nativeSoundCalls.push({ms:Number(ms),name});return;}`:''}
       ${observeInitialTimerClocks?`if(line.includes('CASE_TIMER|')){const [name,...values]=line.slice(line.indexOf('CASE_TIMER|')+11).replace(/'$/,'').split('|'),[ms,enabled,interval]=values.map(Number);if(!${JSON.stringify(reference.runtimeInitialTimerClocks?.periods)}[name]||![ms,enabled,interval].every(Number.isInteger)||enabled!==1)throw Error('Invalid native initial timer observation');window.nativeInitialTimerRecords.push({name,ms,enabled,interval});return;}`:''}
       ${reference.runtimeInputSequence?`if(line.includes('GAME_PULSE|')){const [ms,phase]=line.slice(line.indexOf('GAME_PULSE|')+11).replace(/'$/,'').split('|');window.nativePulseRecords.push({ms:Number(ms),phase});return;}`:''}
+      ${gameLifecycle?`if(line.includes('LIFECYCLE_INPUT|')){const [clock,index,action,down,key]=line.slice(line.indexOf('LIFECYCLE_INPUT|')+16).replace(/'$/,'').split('|');if(!['launch','start','action'].includes(action)||!['0','1'].includes(down)||![clock,index,key].every(value=>Number.isInteger(Number(value))&&Number(value)>=0))throw Error('Invalid native lifecycle input');window.nativeInputRecords.push({ms:Number(clock),index:Number(index),action,down:down==='1',key:Number(key)});return;}`:''}
       ${reference.runtimeInputSequence?`if(line.includes('GAME_INPUT|')){const [ms,index,key]=line.slice(line.indexOf('GAME_INPUT|')+11).replace(/'$/,'').split('|').map(Number);if(!Number.isInteger(ms)||!Number.isInteger(index)||!Number.isInteger(key))throw Error('Invalid native input observation');window.nativeInputRecords.push({ms,index,key});return;}if(line.includes('GAME_FLIPPER|')){const [ms,side,speed,id]=line.slice(line.indexOf('GAME_FLIPPER|')+13).replace(/'$/,'').split('|');window.nativeFlipperContacts.push({ms:Number(ms),side,speed:Math.fround(Number(speed)),id:Number(id)});return;}`:''}
       ${reference.instrumentation?.scriptClockInputs?`if(line.includes('SCRIPT_CLOCK|')){const fields=line.slice(line.indexOf('SCRIPT_CLOCK|')+13).replace(/'$/,'').split('|').map(Number);if(fields.length!==3||fields[1]!==4||!fields.every(Number.isFinite))throw Error('Invalid native script clock input');window.nativeScriptClocks.push({ms:fields[0],type:fields[1],value:Math.fround(fields[2])});return;}`:''}
       ${recordAnimationFrames?`if(line.includes('ANIMATION_FRAME|')){const row=line.slice(line.indexOf('ANIMATION_FRAME|')+16).replace(/'$/,'').split('|').map(Number);if(row.length!==9||!row.every(Number.isFinite))throw Error('Invalid native animation-frame observation');window.nativeAnimationRecords.push(row);return;}`:''}
@@ -435,7 +443,7 @@ try{
   for(const scenario of cases.filter(s=>!selected||s.name===selected)){
     if(recordRng)await evaluate('window.nativeRandomRecords.length=0;window.nativeAnimationRecords.length=0;window.nativeMissionRecords.length=0;window.nativeShotRecords.length=0;window.nativeScriptClocks.length=0;window.nativeInputRecords.length=0;window.nativeFlipperContacts.length=0;window.nativePulseRecords.length=0');
     if(recordTrails)await script('RefTrailOn=True');
-    await script(`SolLFlipper 0:SolRFlipper 0:${reset(430,1400,0,0)}`);await new Promise(r=>setTimeout(r,400));
+    if(!gameLifecycle)await script(`SolLFlipper 0:SolRFlipper 0:${reset(430,1400,0,0)}`);await new Promise(r=>setTimeout(r,400));
     if(scenario.plunger){await script('Plunger.Fire');await new Promise(r=>setTimeout(r,600));}
     if(scenario.startRaised){await script(`Sol${scenario.side==='left'?'L':'R'}Flipper 1`);await new Promise(r=>setTimeout(r,200));}
     if(scenario.gate){
@@ -500,9 +508,9 @@ try{
     const finishTrail=recordTrails?'RefTrailOn=False:RefTrailBalls=GetBalls:RefTrailRow=CStr(GameTime) & "|":For RefTrailIndex=0 To UBound(RefTrailBalls):Set RefTrailBall=RefTrailBalls(RefTrailIndex):RefTrailRow=RefTrailRow & RefTrailBall.ID & ":" & CStr(CDbl(RefTrailBall.X)) & ":" & CStr(CDbl(RefTrailBall.Y)) & ":" & CStr(CDbl(RefTrailBall.Z)) & ";":Next:RefTrailSlots((GameTime\\10) Mod 10)=RefTrailRow:':'';
     const other=scenario.otherBall,otherReset=other?(other.spawn?`Set RefOtherBall=${other.spawn}.CreateBall:`:'')+reset(other.x,other.y,other.vx,other.vy,other.z,other.vz).replaceAll('RefBall.','RefOtherBall.')+':':'';
     const qualification=reference.startingProgress?`BattlesWon(CurrentPlayer)=${reference.startingProgress.battlesWon}:Debug.Print "QUALIFICATION_INIT|" & BattlesWon(CurrentPlayer):`:'';
-    await script(`${finishTrail}${trace}${qualification}RollingTimer.Enabled=False:RollingTimer.Enabled=True:${reset(scenario.x,scenario.y,scenario.vx,scenario.vy,scenario.z,scenario.vz)}:${otherReset}${allBalls}${plungerInit}${coilInit}${drive?drive+':':''}${scriptRngInit}Debug.Print "CONTACT_INIT|" & GameTime & ":" & RefBall.AngMomX & ":" & RefBall.AngMomY & ":" & RefBall.AngMomZ & ":" & RefBall.X & ":" & RefBall.Y & ":" & RefBall.Z`);
+    await script(`${finishTrail}${trace}${qualification}RollingTimer.Enabled=False:RollingTimer.Enabled=True:${gameLifecycle?'':reset(scenario.x,scenario.y,scenario.vx,scenario.vy,scenario.z,scenario.vz)}:${otherReset}${allBalls}${plungerInit}${coilInit}${drive?drive+':':''}${scriptRngInit}Debug.Print "CONTACT_INIT|" & GameTime & ":" & RefBall.AngMomX & ":" & RefBall.AngMomY & ":" & RefBall.AngMomZ & ":" & RefBall.X & ":" & RefBall.Y & ":" & RefBall.Z`);
     if(reference.startingProgress)assert.equal(Number((await marker('QUALIFICATION_INIT')).replace(/'$/,'')),reference.startingProgress.battlesWon);
-    const initial=(await marker('CONTACT_INIT')).split(':').map(parseFloat);assert.equal(initial.length,7);assert.deepEqual(initial.slice(1,4),[0,0,0],'native spin reset');
+    const initial=(await marker('CONTACT_INIT')).split(':').map(parseFloat);assert.equal(initial.length,7);if(!gameLifecycle)assert.deepEqual(initial.slice(1,4),[0,0,0],'native spin reset');else [scenario.x,scenario.y,scenario.z]=initial.slice(4,7);
     const initialScriptRandom=recordScriptRng?Number((await marker('SCRIPT_RANDOM_INIT')).replace(/'$/,'')):undefined;
     if(recordScriptRng)assert.ok(Number.isInteger(initialScriptRandom)&&initialScriptRandom>=0&&initialScriptRandom<16777216,'observed initial native script RNG state');
     for(const [actual,expected]of [[initial[4],scenario.x],[initial[5],scenario.y],[initial[6],scenario.z??25]])assert.ok(Math.abs(actual-expected)<.001,`native initial position ${actual} vs ${expected}`);
@@ -561,8 +569,8 @@ try{
     const closing=scenario.closeDelay?{actualCloseDelay:closeAt-origin}:{};if(scenario.closeDelay)assert.ok(Number.isFinite(closing.actualCloseDelay)&&closing.actualCloseDelay>0,'observed native gate-close clock');
     let nativeRandomFrames,initialNativeRandom;
     if(recordRng){
-      const rows=await evaluate('window.nativeRandomRecords'+(compactNativeState?'.map(row=>window.nativeCompactCapture.hydrate(row))':''));initialNativeRandom=rows.find(r=>r.kind==='CONTACT_INIT'&&r.ms===origin);assert.ok(initialNativeRandom,'observed initial native random state');
-      nativeRandomFrames=rows.filter(r=>r.kind==='RNG_FRAME').map(({ms,low,high,internals})=>[ms-origin,low,high,...(internals?[internals]:[])]);
+      const rows=await evaluate('window.nativeRandomRecords'+(compactNativeState&&!packedFrames?'.map(row=>window.nativeCompactCapture.hydrate(row))':''));initialNativeRandom=rows.find(r=>r.kind==='CONTACT_INIT'&&r.ms===origin);assert.ok(initialNativeRandom,'observed initial native random state');
+      nativeRandomFrames=rows.filter(r=>r.kind==='RNG_FRAME').map(({ms,low,high,internals,packed})=>[ms-origin,low,high,...(packedFrames?[packed]:internals?[internals]:[])]);
       assert.ok(nativeRandomFrames.length&&nativeRandomFrames[0][0]===1,'native random state for the first physics frame');
       if(captureThrough!==undefined)for(let frame=1;frame<=captureThrough;frame++)assert.equal(nativeRandomFrames[frame-1]?.[0],frame,'Requested native RNG/body capture has no missing physics boundaries');
     }
@@ -593,8 +601,8 @@ try{
     if(observeSoundCalls)results.at(-1).soundCalls=await evaluate(`window.nativeSoundCalls.filter(row=>row.ms>=${origin}&&row.ms<=${origin+(recordThrough??samples.at(-1)[0])}).map(row=>({...row,ms:row.ms-${origin}}))`);
     if(reference.runtimeInputSequence){
       const observed=await evaluate(`window.nativeInputRecords.filter(row=>row.ms>=${origin}).map(row=>({...row,ms:row.ms-${origin}}))`);
-      results.at(-1).inputSequence=observed.map((row,i)=>{assert.equal(row.index,i);const requested=reference.runtimeInputSequence.inputs[i];assert.ok(requested);assert.ok(row.ms>=requested.ms);return {...requested,requestedMilliseconds:requested.ms,ms:row.ms,key:row.key};});
-      assert.equal(observed.length,reference.runtimeInputSequence.inputs.length,'every requested native input actually executed');
+      results.at(-1).inputSequence=observed.map((row,i)=>{assert.equal(row.index,i);if(gameLifecycle){assert.ok(row.ms>0&&Number.isInteger(row.key));return row;}const requested=reference.runtimeInputSequence.inputs[i];assert.ok(requested);assert.ok(row.ms>=requested.ms);return {...requested,requestedMilliseconds:requested.ms,ms:row.ms,key:row.key};});
+      if(!gameLifecycle)assert.equal(observed.length,reference.runtimeInputSequence.inputs.length,'every requested native input actually executed');else {assert.ok(observed.length>=2);reference.runtimeInputSequence.inputs=observed.map(({ms,action,down})=>({ms,action,down}));}
       results.at(-1).flipperContacts=await evaluate(`window.nativeFlipperContacts.filter(row=>row.ms>=${origin}).map(row=>({...row,ms:row.ms-${origin}}))`);
       results.at(-1).pulseTimerClocks=await evaluate(`window.nativePulseRecords.filter(row=>row.ms>=${origin}&&row.phase==='after').map(row=>row.ms-${origin})`);
       assert.ok(results.at(-1).pulseTimerClocks.length>0);for(let i=1;i<results.at(-1).pulseTimerClocks.length;i++)assert.equal(results.at(-1).pulseTimerClocks[i]-results.at(-1).pulseTimerClocks[i-1],40,'every original core timer pulse retained');
@@ -602,6 +610,7 @@ try{
     const suffix=probeKind==='ball-pairs'?`ball-pairs-${selected??'reference'}`:recordKickers?'kickers-reference':rawAnimation&&selected?`raw-${recordTimers?'timing-':''}${selected}`:reference.geometryProbe&&selected?`geometry-${recordTimers?'timing-':''}${selected}`:reference.shooterProbe&&selected?`${recordTimers?'timing-':''}${selected}`:['spinners','gates','targets','triggers','flipper-events','material-events','target-events'].includes(probeKind)&&selected?`${probeKind}-${reference.instrumentation?.spinnerTraceColumns?'timing-':''}${reference.animationBallIsolation?'isolated-animation-':''}${selected}`:`${reference.geometryProbe?'geometry':probeKind==='contacts'?'contact':probeKind}-reference`;
     const captureName=outputName??`vpx-${suffix}${recordAllBalls?'-all-balls':''}${recordTrails?'-trails':''}${recordRng?'-rng':''}${recordInternals?'-internals':''}${recordPlunger?'-plunger-state':''}${recordAnimationFrames?'-animation-frames':''}${recordScriptRng?'-script-rng':''}${recordContactSlots?'-contact-slots':''}${recordTimers&&traceMilliseconds!==70?`-${traceMilliseconds}ms`:''}${traceFrom?`-from${traceFrom}ms`:''}.json`;
     if(compactNativeState)reference.packedNativeCapture=await evaluate('window.nativeCompactCapture.summary()');
+    if(packedFrames){reference.nativePackedFrameStorage={format:NATIVE_PACKED_FRAME_FORMAT,pageLength:65536,pages:[]};for(let index=0;index<reference.packedNativeCapture.pages;index++){const data=await evaluate('window.nativeCompactCapture.exportPage('+index+')'),bytes=Buffer.from(data,'base64');reference.nativePackedFrameStorage.pages.push({data,sha256:createHash('sha256').update(bytes).digest('hex')});if(index%64===0)console.log('Packed native page transfer',index,reference.packedNativeCapture.pages);}}
     await writeFile(`${output}/${captureName}`,JSON.stringify({...reference,probeKind,runtimeOverrides,columns,cases:results},null,2));
     if(recordThrough!==undefined){assert.ok(samples.at(-1)[0]>=recordThrough);for(let frame=1;frame<=recordThrough;frame++)assert.equal(nativeRandomFrames[frame-1]?.[0],frame,'Long native recording retains every physical boundary');}
   }
