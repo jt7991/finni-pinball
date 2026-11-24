@@ -2,6 +2,7 @@
 // Visual Pinball contributors' Gate/LineSeg behavior, revision
 // 195f214dd4849b8ef6113fd377258b78d0dec3bf. See licenses/VPX-Physics-NOTICE.txt.
 import {Spinner} from './spinner.js';
+import {nativeAngleSin} from './native-angle-math.js';
 const f=Math.fround,degrees=f(180/Math.PI);
 export class Gate extends Spinner {
   constructor(spec,height,emit=()=>{}){
@@ -42,7 +43,7 @@ export class Gate extends Spinner {
   updateVelocity(){
     if(this.open)return;
     if(Math.abs(this.angle)<f(this.min+f(.01))&&Math.abs(this.speed)<f(.01)){this.angle=this.min;this.speed=0;}
-    if(Math.abs(this.speed)!==0&&this.angle!==this.min){this.speed=f(this.speed-f(f(f(Math.sin(this.angle))*f(this.spec.gravity_factor))*f(.001)));this.speed=f(this.speed*this.damping);}
+    if(Math.abs(this.speed)!==0&&this.angle!==this.min){this.speed=f(this.speed-f(f(nativeAngleSin(this.angle)*f(this.spec.gravity_factor))*f(.001)));this.speed=f(this.speed*this.damping);}
   }
   displace(duration){
     const direction=this.spec.two_way?(this.angle<0?-1:1):this.hitDirection?-1:1;

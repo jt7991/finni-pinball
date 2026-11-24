@@ -13,6 +13,7 @@ const game=await createFullGame(load('layout.json'),load('objects.json'),fs.read
 if(contactAudit){const hit=game.rules.hit.bind(game.rules);game.rules.hit=(name,kind,ball,...parameters)=>{if(kind==='Collide'&&/^(Left|Right)Flipper$/i.test(name))contactAudit.push({ms:Math.round(game.time*1000),name,speed:parameters[0]});return hit(name,kind,ball,...parameters);};}
 const timers=new Set(fixture.timers.events.filter(row=>row.interval>=0).map(row=>row.ms));
 let ticks=0,inputIndex=0,intervalsChecked=0,framesChecked=0;
+let moverStatesChecked=0,moverFieldsChecked=0;
 const pendingAnimationBoundaries=new Map();
 const cursor=clock=>Number((BigInt(clock.current)-BigInt(clock.start))/1000n);
 // A clock import inside an ordinary UI call can observe that call's effects
@@ -38,6 +39,7 @@ function compare(row,phase){
  }
  const random=game.random.getState();if(random.some((word,i)=>word!==row.random[i]))differences.push({key:'random',actual:random,expected:row.random});
  if(row.flippers)for(const expected of row.flippers){const flipper=game.flippers.find(f=>f.side===expected.name),actual={angle:flipper.nativeAngle,momentum:-flipper.nativeMotion.momentum,speed:-flipper.nativeMotion.speed,inertia:flipper.nativeMotion.inertia};for(const [key,value]of Object.entries(actual))if(value!==expected[key])differences.push({flipper:expected.name,key,actual:value,expected:expected[key]});const renderAngle=Math.fround(Math.PI/2-flipper.angle);if(renderAngle!==expected.angle)differences.push({flipper:expected.name,key:'renderAngle',actual:renderAngle,expected:expected.angle});}
+ if(row.movers)for(const expected of row.movers){const mover=[...game.gates,...game.spinners].find(m=>m.spec.name===expected.name);assert.ok(mover,'Observed authored mover exists');moverStatesChecked++;for(const key of ['angle','speed','damping','min','max',...(expected.kind==='gate'?['gravity','open','forced','hitDirection']:[])]){moverFieldsChecked++;const actual=key==='gravity'?Math.fround(mover.spec.gravity_factor):mover[key];if(actual!==expected[key])differences.push({mover:expected.name,key,actual,expected:expected[key]});}}
  if(phase!=='interval'||differences.length)write({frame:row.frameIndex,phase,ticks,ms:row.ms,differences,objects:observeObjects.map(name=>{const object=game.rules.objects.get(name.toLowerCase());return {name,visible:object.visible,uservalue:object.uservalue,timerenabled:object.timerenabled,timerinterval:object.timerinterval,next:game.rules.timers.get(name.toLowerCase()+':timer')?.at};})});
  return differences.length===0;
 }
@@ -56,7 +58,7 @@ try{
  }
  if(clocks){assert.equal(randomizeIndex,clocks.observedRandomizeClocks.length);assert.equal(timerIndex,clocks.observedTimerSeconds.length);}
  assert.equal(pendingAnimationBoundaries.size,0,'Every native physical boundary is checked');
- return {framesChecked,intervalsChecked,ticks,randomizeClockSamples:randomizeIndex,timerClockSamples:timerIndex};
+ return {framesChecked,intervalsChecked,ticks,randomizeClockSamples:randomizeIndex,timerClockSamples:timerIndex,...(moverStatesChecked?{moverStatesChecked,moverFieldsChecked}:{})};
 }finally{game.dispose();}
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){const result=await compareNativeHistoryState(JSON.parse(fs.readFileSync(process.argv[2])),{write:row=>console.log(JSON.stringify(row)),observeObjects:process.argv.filter(arg=>arg.startsWith('--observe=')).map(arg=>arg.slice(10))});console.log(JSON.stringify({result}));}

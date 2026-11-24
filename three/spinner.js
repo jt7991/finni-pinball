@@ -2,6 +2,7 @@
 // Spinner crossing tests, motion and events adapted from Visual Pinball
 // collide.cpp/collideex.cpp and parts/spinner.cpp, revision
 // 195f214dd4849b8ef6113fd377258b78d0dec3bf. See licenses/VPX-Physics-NOTICE.txt.
+import {nativeAngleSin} from './native-angle-math.js';
 const f=Math.fround,pi=f(Math.PI),tau=f(2*Math.PI),degrees=f(180/Math.PI);
 export class Spinner {
   constructor(spec,height,emit=()=>{}){
@@ -42,7 +43,7 @@ export class Spinner {
     if(hit.side===0)this.speed=-this.speed;
   }
   updateVelocity(){
-    this.speed=f(this.speed-f(f(Math.sin(this.angle))*f(.00025)));
+    this.speed=f(this.speed-f(nativeAngleSin(this.angle)*f(.00025)));
     this.speed=f(this.speed*this.damping);
   }
   displace(duration){
