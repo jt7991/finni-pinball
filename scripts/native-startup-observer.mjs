@@ -19,7 +19,7 @@ export function installNativeStartupObserver(throughMilliseconds=1){
    balls.push(row);
   }
   const physics=view.getUint32(player+333740,true),physicsClock=valid(physics,128)?{gravity:vector(physics+68),start:String(view.getBigUint64(physics+104,true)),current:String(view.getBigUint64(physics+112,true)),next:String(view.getBigUint64(physics+120,true))}:null;
-  return {ms,seconds,player,physicsClock,random:[view.getUint32(7661264,true),view.getUint32(7661268,true)],balls};
+  return {ms,seconds,player,lastAnimationMilliseconds:view.getUint32(player+44,true),physicsClock,random:[view.getUint32(7661264,true),view.getUint32(7661268,true)],balls};
  }
  const observe=importName=>{
   if(data.done)return;data.clocks++;

@@ -59,6 +59,9 @@ export function createRules(source,specs,host={}) {
       currentangle:0,startangle:0,endangle:0,transz:0,height:spec.height??50,sequenceactive:false,sequencestate:['Flasher','Primitive'].includes(spec.kind)?Number(spec.is_visible??true):spec.state??0,
       threshold:spec.threshold??0,force:spec.force??0,scatter:spec.scatter??0,hashitevent:spec.use_hit_event??spec.hit_event??false,hitthreshold:0,disabled:false,slingshotthreshold:spec.slingshot_threshold??0};
     if(spec.kind==='Flasher'){const filter=spec.filter??'none';Object.assign(state,{color:nativeColor(spec.color??0xffffff),rotx:spec.rot_x??0,roty:spec.rot_y??0,imagea:spec.image_a??'',imageb:spec.image_b??'',opacity:spec.alpha??100,modulatevsadd:spec.modulate_vs_add??.9,addblend:spec.add_blend==='add',filter:filter[0].toUpperCase()+filter.slice(1),amount:spec.filter_amount??100});}
+    // Native COM coordinates and rotations are float fields, including the
+    // kicker centers subtracted by the authored toy-arm animation timer.
+    for(const key of ['x','y','z','radius','height','rotx','roty','rotz'])state[key]=Math.fround(state[key]);
     const actions={
       createball:()=>host.createBall?.(name)??{x:state.x,y:state.y,z:25,velx:0,vely:0,velz:0},
       createsizedballwithmass:()=>host.createBall?.(name)??{x:state.x,y:state.y,z:25,velx:0,vely:0,velz:0},
@@ -87,6 +90,7 @@ export function createRules(source,specs,host={}) {
           else if(k==='filter'){const filter=String(v).toLowerCase();target[k]=['none','additive','overlay','multiply','screen'].includes(filter)?filter[0].toUpperCase()+filter.slice(1):previous;}
           else if(['visible','addblend'].includes(k))target[k]=!!v;
         }
+        if(spec.kind==='Primitive'&&['x','y','z','rotx','roty','rotz'].includes(k))target[k]=Math.fround(Number(v));
         if(spec.kind==='LightSequencer'){
           const seq=sequences.get(lower);
           if(k==='updateinterval'){target[k]=Math.max(1,Math.trunc(v));if(seq)seq.updateInterval=target[k];}
