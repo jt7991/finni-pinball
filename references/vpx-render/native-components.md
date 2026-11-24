@@ -1,5 +1,16 @@
 # Native renderer integration checkpoint
 
+The shared DMD atlas loader preserves the encoded image and both original
+decoder paths. Complete current-atlas Canvas observations and the retained
+old/new display APIs agree across 185,597,952 RGBA channels and all 1,218 sprite
+names. For the older source-6300 flasher capture, use its matching original atlas
+(PNG SHA256 `0fe1eba9dcfffb9c17c6fda7fd684c257467f66875bff50d4bcefe858331841b`)
+from commit 46bea5a with `--atlas-url`. All 63 native draws, 317,709 compared
+channels and thirteen texture hashes remain exact. Pairing that old capture
+with current-main artwork fails identically with the unchanged old loader;
+those rejected controls remain evidence, not updated goldens. The diagnostic
+also accepts `--flasher-module` for the independent old-loader control.
+
 This is development evidence for the full port. `three/scene.js` now loads the
 complete original basic geometry instead of the joined GLB: 682 meshes include
 558 main-view parts and 124 reflection-only wall bottoms. Six source flipper

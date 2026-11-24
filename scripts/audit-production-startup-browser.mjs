@@ -4,6 +4,8 @@ import assert from 'node:assert/strict';
 import {writeFile} from 'node:fs/promises';
 const [debug,base,output]=process.argv.slice(2);
 const cacheDisabled=!process.argv.includes('--allow-http-cache');
+const requiredAtlasTransfers=process.argv.find(arg=>arg.startsWith('--require-atlas-transfers='))?.split('=')[1];
+if(requiredAtlasTransfers!==undefined)assert.ok(Number.isInteger(Number(requiredAtlasTransfers))&&Number(requiredAtlasTransfers)>0);
 const name=process.argv.find(arg=>arg.startsWith('--output-name='))?.slice(14)??'production-startup-resources.json';
 assert.match(name,/^[a-z0-9.-]+\.json$/i);
 const tabs=await(await fetch(debug+'/json/list')).json(),socket=new WebSocket(tabs.find(tab=>tab.type==='page').webSocketDebuggerUrl);
@@ -43,7 +45,9 @@ try{
  assert.deepEqual(errors,[]);
  const rows=[...resources.values()].map(row=>({...row,pending:row.finishTime===undefined&&!row.failure,observedBytes:row.transferredBytes??row.receivedBodyBytes??0})).sort((a,b)=>b.observedBytes-a.observedBytes);
  assert.ok(rows.some(row=>row.target==='worker'&&row.transferredBytes>0),'Worker requests are included');
- const report={scope:'Cold production startup to enabled Start and first WebGL draw. Phone-sized desktop Edge viewport and empty browser profile; HTTP cache policy is recorded separately. Completed transfer sizes include headers; pending requests retain observed encoded body bytes separately. Not phone hardware or cellular speed. No game starts and no source clock/RNG/state is replaced.',base,httpCacheDisabled:cacheDisabled,coldStartupMilliseconds:Date.now()-started,viewport:{width:390,height:844,deviceScaleFactor:2,mobile:true},transferredBytes:rows.reduce((sum,row)=>sum+(row.transferredBytes??0),0),pendingBodyBytes:rows.filter(row=>row.pending).reduce((sum,row)=>sum+(row.receivedBodyBytes??0),0),rows,errors};
+ const atlasTransfers=rows.filter(row=>new URL(row.url).pathname.endsWith('/dmd-atlas.png'));
+ const report={scope:'Cold production startup to enabled Start and first WebGL draw. Phone-sized desktop Edge viewport and empty browser profile; HTTP cache policy is recorded separately. Completed transfer sizes include headers; pending requests retain observed encoded body bytes separately. Not phone hardware or cellular speed. No game starts and no source clock/RNG/state is replaced.',base,httpCacheDisabled:cacheDisabled,coldStartupMilliseconds:Date.now()-started,viewport:{width:390,height:844,deviceScaleFactor:2,mobile:true},transferredBytes:rows.reduce((sum,row)=>sum+(row.transferredBytes??0),0),pendingBodyBytes:rows.filter(row=>row.pending).reduce((sum,row)=>sum+(row.receivedBodyBytes??0),0),atlasTransfers:atlasTransfers.length,rows,errors};
  await writeFile(output+'/'+name,JSON.stringify(report,null,2));console.log(JSON.stringify({coldStartupMilliseconds:report.coldStartupMilliseconds,transferredBytes:report.transferredBytes,largest:rows.slice(0,10)}));
  assert.ok(rows.every(row=>!row.failure&&(row.pending||row.status<400)),'Every completed startup request succeeds');
+ if(requiredAtlasTransfers!==undefined)assert.equal(atlasTransfers.length,Number(requiredAtlasTransfers),'Actual startup atlas transfer count');
 }finally{socket.close();}

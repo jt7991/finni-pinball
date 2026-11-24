@@ -1,0 +1,8 @@
+{
+  "sourceCommit": "15a93815b30f7de8cbfd068190a128b2878fea4b",
+  "sourceFile": "three/media.js",
+  "sourceFileSHA256": "b49170a82bd27a008dece2dec055845046fe42860753c224504260c1348ad938",
+  "componentSHA256": "b4c2acdc3c54ba9a360720ef6834dbcfdff0fb0feb9a766fd7206cd39ddf0871",
+  "scope": "Unmodified display function from the preceding implementation, retained only as an independent regression reference. The new loader must reproduce its original URL Image decoding and drawing for the unchanged authored atlas.",
+  "source": "export async function createDisplay(canvas,objects,base) {\n  const [atlas,sprite]=await Promise.all([\n    fetch(`${base}dmd-atlas.json`).then(r=>{if(!r.ok)throw Error('DMD atlas unavailable');return r.json();}),\n    new Promise((resolve,reject)=>{const image=new Image();image.onload=()=>resolve(image);image.onerror=reject;image.src=`${base}dmd-atlas.png`;}),\n  ]);\n  canvas.width=1024;canvas.height=256;\n  const context=canvas.getContext('2d'),reduced=matchMedia('(prefers-reduced-motion: reduce)');\n  let last='';\n  function draw(){\n    const names=Array.from({length:41},(_,i)=>String(objects.get(`digit${String(i+1).padStart(3,'0')}`)?.imagea||'d_empty').toLowerCase()\n      .replace(reduced.matches?/_anim\\d{2}/g:/$^/,''));\n    const state=names.join('|');if(state===last)return;last=state;\n    context.fillStyle='#100a04';context.clearRect(0,0,1024,256);context.fillRect(0,0,1024,256);context.imageSmoothingEnabled=false;\n    function paint(name,x,y,w,h){const rect=atlas[name];if(rect)context.drawImage(sprite,...rect,x*4,y*4,w*4,h*4);}\n    paint(names[40]==='d_empty'?'bkempty':names[40],0,0,256,64);\n    for(let i=0;i<40;i++)paint(names[i],8+i%20*12,i<20?6:34,12,22);\n  }\n  return {draw};\n}\n"
+}

@@ -80,6 +80,7 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--native-timer-interval' in sys.argv:runner='probe-native-timer-interval.mjs'
         if '--native-initial-timers' in sys.argv:runner='probe-native-initial-timers.mjs'
         if '--production-dmd-animation' in sys.argv:runner='test-dmd-animation-production.mjs'
+        if '--dmd-atlas-conformance' in sys.argv:runner='test-dmd-atlas-browser.mjs'
         if '--native-tilt-bob' in sys.argv:runner='probe-native-tilt-bob.mjs'
         if '--production-tilt' in sys.argv:runner='test-tilt-production.mjs'
         if '--main-player' in sys.argv:runner='test-main-player-production.mjs'
