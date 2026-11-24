@@ -74,6 +74,7 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--worker-throttle-coverage' in sys.argv:runner='probe-worker-throttle-browser.mjs'
         if '--startup-resource-audit' in sys.argv:runner='audit-production-startup-browser.mjs'
         if '--startup-profile' in sys.argv:runner='profile-production-startup-browser.mjs'
+        if '--dmd-decode-performance' in sys.argv:runner='benchmark-dmd-decode-browser.mjs'
         if '--native-colon-calls' in sys.argv:runner='probe-native-colon-calls.mjs'
         if '--native-flash-timers' in sys.argv:runner='probe-native-flash-timers.mjs'
         if '--native-vpm-timers' in sys.argv:runner='probe-native-vpm-timers.mjs'

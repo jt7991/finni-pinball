@@ -164,10 +164,9 @@ async function boot(){
     const manifest=await load('audio.json');
     audio=createAudio(manifest,base);game=await createRuntimeGame(base,event,audio);
     leaderboard=createLeaderboard(statement=>game.rules.execute(statement),release);
-    display=await createDisplay($('dmd'),game.rules.objects,base);
     $('load-status').textContent='Loading artwork and table model…';
     const quality=$('quality').value==='auto'?(matchMedia('(max-width:650px), (pointer:coarse) and (max-width:1024px)').matches?'performance':'detailed'):$('quality').value;
-    view=await createView($('table'),game,{quality});view.applyPlayerCamera(cameraMode());
+    [display,view]=await Promise.all([createDisplay($('dmd'),game.rules.objects,base),createView($('table'),game,{quality})]);view.applyPlayerCamera(cameraMode());
     const seconds=((performance.now()-startTime)/1000).toFixed(1);
     $('load-status').textContent=`Ready in ${seconds}s. Hold Launch, then release to shoot.`;
     $('play').disabled=false;$('play').textContent='Start game';$('progress').hidden=true;message('Ready to play');

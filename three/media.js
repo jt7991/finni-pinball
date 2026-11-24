@@ -3,7 +3,7 @@
 // See public/licenses/VPX-Physics-NOTICE.txt.
 import {nativeSoundRate} from './native-sound.js';
 import {createNativeSoundMixer} from './native-sound-mix.js';
-import {loadDmdAtlasImage,DMD_ATLAS_FILE} from './dmd-atlas.js';
+import {loadDmdAtlasDisplayBitmap,DMD_ATLAS_FILE} from './dmd-atlas.js';
 
 export function createAudio(manifest,base) {
   let context,muted=false,primed=false,stopEpoch=0,musicSource,musicMixer;
@@ -102,7 +102,7 @@ export function createAudio(manifest,base) {
 export async function createDisplay(canvas,objects,base) {
   const [atlas,sprite]=await Promise.all([
     fetch(`${base}dmd-atlas.json`).then(r=>{if(!r.ok)throw Error('DMD atlas unavailable');return r.json();}),
-    loadDmdAtlasImage(`${base}${DMD_ATLAS_FILE}`),
+    loadDmdAtlasDisplayBitmap(`${base}${DMD_ATLAS_FILE}`),
   ]);
   canvas.width=1024;canvas.height=256;
   const context=canvas.getContext('2d'),reduced=matchMedia('(prefers-reduced-motion: reduce)');
@@ -116,5 +116,5 @@ export async function createDisplay(canvas,objects,base) {
     paint(names[40]==='d_empty'?'bkempty':names[40],0,0,256,64);
     for(let i=0;i<40;i++)paint(names[i],8+i%20*12,i<20?6:34,12,22);
   }
-  return {draw};
+  return {draw,dispose(){sprite.close();}};
 }

@@ -5,6 +5,7 @@
 import fs from 'node:fs';import path from 'node:path';import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 const [debug,base,output]=process.argv.slice(2),referenceFile=path.resolve('.work/three-review/dmd-display-original-reference.mjs');
+const reducedMotion=process.argv.includes('--reduced-motion');
 const reference=JSON.parse(fs.readFileSync(new URL('../three/tests/fixtures/dmd-display-original.json',import.meta.url)));
 assert.equal(reference.sourceCommit,'15a93815b30f7de8cbfd068190a128b2878fea4b');
 assert.equal(reference.componentSHA256,'b4c2acdc3c54ba9a360720ef6834dbcfdff0fb0feb9a766fd7206cd39ddf0871');
@@ -18,12 +19,12 @@ const call=(method,params={})=>new Promise((resolve,reject)=>{const id=++serial;
 const evaluate=async expression=>{const r=await call('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true});assert.ok(!r.exceptionDetails,JSON.stringify(r.exceptionDetails));return r.result.value;};
 try{
  await call('Page.enable');await call('Runtime.enable');
- await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'no-preference'}]});
+ await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:reducedMotion?'reduce':'no-preference'}]});
  await call('Page.navigate',{url:base});let ready=false;
  for(let i=0;i<400;i++){if(await evaluate('!!window.finniThree')){ready=true;break;}await new Promise(resolve=>setTimeout(resolve,50));}assert.ok(ready);
  const result=await evaluate(`(async()=>{
-  const {loadDmdAtlasBlob,loadDmdAtlasImage,DMD_ATLAS_FILE}=await import('/three/dmd-atlas.js'),actualMedia=await import('/three/media.js'),referenceMedia=await import(${JSON.stringify('/three/@fs/'+referenceFile.replaceAll('\\','/'))});
-  const url='/three/'+DMD_ATLAS_FILE,originalURL='/three/dmd-atlas.png',blob=await loadDmdAtlasBlob(url),image=await loadDmdAtlasImage(url),originalImage=await new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=reject;img.src=originalURL+'?direct-image-reference';});
+  const {loadDmdAtlasBlob,loadDmdAtlasDisplayBitmap,DMD_ATLAS_FILE}=await import('/three/dmd-atlas.js'),actualMedia=await import('/three/media.js'),referenceMedia=await import(${JSON.stringify('/three/@fs/'+referenceFile.replaceAll('\\','/'))});
+  const url='/three/'+DMD_ATLAS_FILE,originalURL='/three/dmd-atlas.png',blob=await loadDmdAtlasBlob(url),image=await loadDmdAtlasDisplayBitmap(url),originalImage=await new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=reject;img.src=originalURL+'?direct-image-reference';});
   const options={imageOrientation:'none',premultiplyAlpha:'none',colorSpaceConversion:'none'},bitmap=await createImageBitmap(blob,options),response=await fetch(originalURL+'?direct-bitmap-reference');if(!response.ok)throw Error('Original atlas unavailable');const originalBitmap=await createImageBitmap(await response.blob(),options);
   const compareDecoded=(a,b)=>{
    if(a.width!==b.width||a.height!==b.height)throw Error('Atlas dimensions changed');
@@ -42,12 +43,13 @@ try{
     const error=gl.getError();if(error)throw Error('Raw atlas GL error '+error);const sha256=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',actual)),v=>v.toString(16).padStart(2,'0')).join('');return{width:a.width,height:a.height,channels,differences,sha256,format:'SRGB8_ALPHA8, non-premultiplied raw GPU readback including transparent RGB'};
    }finally{for(const texture of textures)gl.deleteTexture(texture);gl.deleteFramebuffer(fbo);gl.getExtension('WEBGL_lose_context')?.loseContext();}
   };
-  const rawGPU=await compareGPU(bitmap,originalBitmap);bitmap.close();originalBitmap.close();
+  const rawGPU=await compareGPU(bitmap,originalBitmap);image.close();bitmap.close();originalBitmap.close();
   const atlas=await(await fetch('/three/dmd-atlas.json')).json(),names=Object.keys(atlas),objects=new Map(Array.from({length:41},(_,i)=>['digit'+String(i+1).padStart(3,'0'),{imagea:'d_empty'}]));
   const canvases=[0,1].map(()=>document.createElement('canvas')),displays=await Promise.all([actualMedia.createDisplay(canvases[0],objects,'/three/'),referenceMedia.createDisplay(canvases[1],objects,'/three/')]);
   const contexts=canvases.map(canvas=>canvas.getContext('2d',{willReadFrequently:true}));let frames=0,channels=0,differences=0;
   for(let start=0;start<names.length;start+=40){for(let i=0;i<40;i++)objects.get('digit'+String(i+1).padStart(3,'0')).imagea=names[start+i]??'d_empty';objects.get('digit041').imagea=names[(start*7)%names.length];displays.forEach(display=>display.draw());const pixels=contexts.map(context=>context.getImageData(0,0,1024,256).data);for(let i=0;i<pixels[0].length;i++){if(pixels[0][i]!==pixels[1][i])differences++;channels++;}frames++;}
-  return{scope:'Original PNG Image/Bitmap decoding versus the lossless delivery atlas. Complete raw native-format GPU bytes include hidden transparent RGB. Real old/new display APIs use common controlled image names; production game state is untouched.',deliveryURL:url,displayDecode,nativeDecode,rawGPU,display:{sprites:names.length,frames,channels,differences}};
+  displays.forEach(display=>display.dispose?.());
+  return{scope:'Original PNG Image versus default display ImageBitmap decoding, plus independent raw native ImageBitmap decoding. Complete raw native-format GPU bytes include hidden transparent RGB. Real old/new display APIs use common controlled image names; production game state is untouched.',reducedMotion:${reducedMotion},deliveryURL:url,displayDecode,nativeDecode,rawGPU,display:{sprites:names.length,frames,channels,differences}};
  })()`);
  const provenance={sourceCommit:reference.sourceCommit,sourceFileSHA256:reference.sourceFileSHA256,componentSHA256:reference.componentSHA256};
  fs.writeFileSync(output+'/shared-dmd-atlas-pixels.json',JSON.stringify({result,reference:provenance,errors},null,2));console.log(JSON.stringify({result,reference:provenance,errors}));
