@@ -3,6 +3,9 @@
 export const mainPlayerSettings=Object.freeze({tiltSensitivity:0});
 export const mainBallSettings=Object.freeze({frontDecal:''});
 export const mainSceneSettings=Object.freeze({hideNativeDmd:true});
+// Original main player/native captures use mode2. Frame-pacing(3)
+// bypasses the native timer budget; it is not the current player's mode.
+export const mainScriptBudget=Object.freeze({videoSyncMode:2});
 
 export function applyPlayerSettings(rules,settings){
   if(settings?.tiltSensitivity===undefined)return;

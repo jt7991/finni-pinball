@@ -3,7 +3,7 @@
 const fields=['state','visible','sidevisible','basevisible','capvisible','ringvisible','skirtvisible','showbracket','imagea','color','colorfull','rotx','roty','rotz','isdropped','sequenceactive','sequencestate','blinkinterval','blinkpattern','intensity','intensityscale','inplayintensity','inplayon'];
 const flasherFields=[...fields,'imageb','opacity','amount','filter','addblend','modulatevsadd','height'];
 const fieldsFor=(game,name)=>game.nativeParts.get(name)?.kind==='Flasher'?flasherFields:fields;
-const roots=['time','state','score','player','ballNumber','charge','inLane','tilted','gameState','held','physicsStats'];
+const roots=['time','state','score','player','ballNumber','charge','inLane','tilted','gameState','held','physicsStats','scriptStats'];
 // Cache only object-property reads, separately for each delta consumer. Live
 // getters remain uncached; physical steps and publication cadence are unchanged.
 const objectRevisions=new WeakMap();

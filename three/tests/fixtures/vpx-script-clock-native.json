@@ -1,0 +1,32 @@
+{
+  "engineSHA256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+  "loaderSHA256": "145702bf2806fbe7cd0904533fb88e1f38d5e18de9e32ca352f38aac1bda4117",
+  "clockImport": {
+    "index": 344,
+    "module": "env",
+    "name": "emscripten_date_now",
+    "kind": "function"
+  },
+  "shim": "_emscripten_date_now=()=>Date.now()",
+  "bodies": [
+    {
+      "index": 12023,
+      "bytes": 75,
+      "sha256": "cf9fc1039b759ff125c5e2d89fb8d419f21023c90ab6913c181d5db68e64485d",
+      "base64": "AQJ+QeyRswQtAAAEfhCkbEGAkrMEKQMAfSEAQfiRswQpAwAiAUL/wdcvWARAIABCwIQ9fiABgA8LIABC6Ad+IAFC6AeAgAUgAAsL"
+    },
+    {
+      "index": 13860,
+      "bytes": 135,
+      "sha256": "1a5fa0284efed4441a1e320cf002607e6fd59d8478f5139eba5e9058d424c658",
+      "base64": "AgF/AX4jAEEQayIAJABBpIW5BC0AAEUEQEEEIAAQj5IBRQRAQaWFuQRBAToAAAtBpIW5BEEBOgAACwJ+QaWFuQQtAAAEQEEEIAAQj5IBGiAANAIIIAApAwBCgJTr3AN+fAwBCyAAEJ2SASAANAIIIAApAwBCwIQ9fnwLIQEgAEEQaiQAIAEL"
+    },
+    {
+      "index": 18717,
+      "bytes": 57,
+      "sha256": "f4dac89613b39368b9c01f9e5fdba120fd58f54b64f7c78f90479263cb32cc08",
+      "base64": "AgF8AX4gABDYAiIBRAAAAAAAQI9Ao/wGIgI3AwAgACABIAJC6Ad+uaFEAAAAAABAj0Ci/AI2AggL"
+    }
+  ],
+  "scope": "Original fallback SDL clock chain observed in the independent native startup stack. Native function18717 converts the original Date.now import into timeval seconds/microseconds. Isolated component tests supply clock inputs in separate WASM memory; live native game clocks are never replaced."
+}

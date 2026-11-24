@@ -3,7 +3,7 @@ import {STEP} from './game-constants.js';
 import {describeGame,snapshotGame,snapshotSubmissionBall} from './game-snapshot.js';
 
 // The same host runs in browser Workers and the Node protocol regression tests.
-export function createSimulationHost(send,{allowDebug=false,now=()=>performance.now(),wallNow=()=>Date.now()}={}){
+export function createSimulationHost(send,{allowDebug=false,now=()=>performance.now(),wallNow=()=>Date.now(),scriptClock}={}){
   let game,paused=true,disposed=false,fatal=false,timer,queued=false,anchorWall=0,anchorTick=0,tick=0,lastPublish=0;
   const epochMilliseconds=wallNow();let lastPhysicsMilliseconds=epochMilliseconds;
   let nextFrame=0,retainedFrame;
@@ -67,7 +67,10 @@ export function createSimulationHost(send,{allowDebug=false,now=()=>performance.
     }
     game=await createFullGame(assets.layout,assets.specs,assets.source,event=>effects.push({type:'event',event}),{
       play:(name,settings)=>effects.push({type:'play',name,settings}),stop:name=>effects.push({type:'stop',name}),
-    },{storage,frameAnimations:true,playerSettings:message.playerSettings,ballSettings:message.ballSettings,sceneSettings:message.sceneSettings});
+    },{storage,frameAnimations:true,playerSettings:message.playerSettings,ballSettings:message.ballSettings,sceneSettings:message.sceneSettings,scriptBudget:message.scriptBudget,scriptClock});
+    // Native startup prepares its renderer after Table1_Init and before
+    // starting physics. That frame clears initialization's script cost.
+    if(game.scriptProfiler)game.prepareFrame();
     const description=describeGame(game);for(const [name,state]of description.objects)objectStates.set(name,{...state});send({type:'ready',description});publish();
   }
   function debug(command){
@@ -76,7 +79,7 @@ export function createSimulationHost(send,{allowDebug=false,now=()=>performance.
       if(!paused)throw Error('Pause before advancing the simulation');
       if(!Number.isSafeInteger(command.ticks)||command.ticks<0||command.ticks>100000)throw Error('Invalid tick count');
       if(command.dispatchTimers!==undefined&&(!Array.isArray(command.dispatchTimers)||command.dispatchTimers.length!==command.ticks||command.dispatchTimers.some(value=>typeof value!=='boolean')))throw Error('Invalid observed timer delivery inputs');
-      for(let i=0;i<command.ticks;i++){lastPhysicsMilliseconds=wallNow();game.step({dispatchTimers:command.dispatchTimers?.[i]??true});tick++;stats.ticks++;}return;
+      for(let i=0;i<command.ticks;i++){lastPhysicsMilliseconds=wallNow();game.step(command.dispatchTimers?{dispatchTimers:command.dispatchTimers[i]}:undefined);tick++;stats.ticks++;}return;
     }
     if(command.action==='value')return game.rules.value(command.expression);
     if(command.action==='run')return game.rules.run(command.name,...(command.args??[]));

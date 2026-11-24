@@ -24,7 +24,7 @@ const center=selector=>evaluate(`(()=>{const r=document.querySelector(${JSON.str
 const touch=points=>call('Input.dispatchTouchEvent',{type:points.length?'touchStart':'touchEnd',touchPoints:points.map((p,i)=>({...p,id:i+1,radiusX:4,radiusY:4,force:1}))});
 try{
   await call('Page.enable');await call('Runtime.enable');await call('Network.enable');await call('Emulation.setFocusEmulationEnabled',{enabled:true});
-  await call('Page.addScriptToEvaluateOnNewDocument',{source:`(()=>{const NativeWorker=window.Worker,s=window.testWorker={starts:[],inputs:[],latest:null,fatal:[],nativeDmd:[]};window.Worker=class extends NativeWorker{constructor(...args){super(...args);this.addEventListener('message',({data})=>{if(data.type==='fatal')s.fatal.push(data.message);if(data.type==='ready')s.nativeDmd=data.description.objects.filter(([name])=>/^digit(?:\\d{3}|grid)$/.test(name)).map(([name,state])=>({name,visible:state.visible}));if(data.type==='snapshot')s.latest={time:data.snapshot.time,tilted:data.snapshot.tilted,held:data.snapshot.held,paused:data.paused,ticks:data.stats.ticks};});}postMessage(message,...args){if(message.type==='start')s.starts.push(message.players);if(message.type==='input')s.inputs.push({action:message.action,down:message.down});return super.postMessage(message,...args);}};})()`});
+  await call('Page.addScriptToEvaluateOnNewDocument',{source:`(()=>{const NativeWorker=window.Worker,s=window.testWorker={starts:[],inputs:[],latest:null,fatal:[],nativeDmd:[]};window.Worker=class extends NativeWorker{constructor(...args){super(...args);this.addEventListener('message',({data})=>{if(data.type==='fatal')s.fatal.push(data.message);if(data.type==='ready')s.nativeDmd=data.description.objects.filter(([name])=>/^digit(?:\\d{3}|grid)$/.test(name)).map(([name,state])=>({name,visible:state.visible}));if(data.type==='snapshot')s.latest={time:data.snapshot.time,tilted:data.snapshot.tilted,held:data.snapshot.held,paused:data.paused,ticks:data.stats.ticks,scriptStats:data.snapshot.scriptStats};});}postMessage(message,...args){if(message.type==='start')s.starts.push(message.players);if(message.type==='input')s.inputs.push({action:message.action,down:message.down});return super.postMessage(message,...args);}};})()`});
   await call('Target.setAutoAttach',{autoAttach:true,waitForDebuggerOnStart:true,flatten:true});
   await call('Network.setCacheDisabled',{cacheDisabled:true});
   await call('Page.addScriptToEvaluateOnNewDocument',{source:`window.testDraws=0;window.testShaderErrors=[];for(const Context of [WebGLRenderingContext,WebGL2RenderingContext]){const draw=Context.prototype.drawElements;Context.prototype.drawElements=function(...args){window.testDraws++;return draw.apply(this,args);};const compile=Context.prototype.compileShader;Context.prototype.compileShader=function(shader){compile.call(this,shader);if(!this.getShaderParameter(shader,this.COMPILE_STATUS))window.testShaderErrors.push(this.getShaderInfoLog(shader));};const link=Context.prototype.linkProgram;Context.prototype.linkProgram=function(program){link.call(this,program);if(!this.getProgramParameter(program,this.LINK_STATUS))window.testShaderErrors.push(this.getProgramInfoLog(program));};}`});
@@ -44,6 +44,8 @@ try{
     assert.deepEqual(await evaluate('({paused:testWorker.latest.paused,time:testWorker.latest.time,ticks:testWorker.latest.ticks})'),{paused:true,time:0,ticks:0},'the start preview does not consume native startup physics or RNG');
     assert.equal(await evaluate('testWorker.nativeDmd.length'),42,'main DMD display settings reach the production worker');
     assert.equal(await evaluate('testWorker.nativeDmd.every(row=>row.visible===false)'),true,'native table digits remain hidden beneath the shared DMD');
+    assert.equal(await evaluate('testWorker.latest.scriptStats.videoSyncMode'),2,'production uses the native synchronization policy');
+    assert.equal(await evaluate('testWorker.latest.scriptStats.budgetMicroseconds'),5000,'automatic script budget reaches the production worker');
     await evaluate(`document.getElementById('player-count').value='${name==='phone'?4:1}';document.getElementById('play').click()`);
     await wait('document.body.classList.contains("ball-in-plunger")');
     assert.equal(await evaluate('testWorker.starts.at(-1)'),name==='phone'?4:1,'main player selector reaches the simulation worker');
@@ -104,6 +106,8 @@ try{
     if(name!=='desktop')await evaluate('document.getElementById("dismiss-touch-guide").click()');
     await writeFile(`${output}/main-ui-${name}.png`,Buffer.from((await call('Page.captureScreenshot',{format:'png'})).data,'base64'));
     assert.deepEqual(await evaluate('window.testShaderErrors'),[],`${name} all shaders compile and link`);
+    measurement.scriptBudget=await evaluate('testWorker.latest.scriptStats');
+    assert.equal(await evaluate('Math.round(testWorker.latest.time*1000)+1===testWorker.latest.ticks'),true,'timer deferral never drops a physical interval');
     console.log('PASS',name,'main UI, real controls, launch and settings');
   }
   if(await evaluate('!!window.finniThree')){
@@ -152,7 +156,9 @@ try{
       await advance(17);await advance(17);await advance(17);view.render(1);
       const sequenceBlink={script:lamp.state,locked:lamp.sequenceactive,display:lamp.sequencestate};
       await set('LightSeqInserts.StopPlay');
-      await set('li044.Intensity=90:li044.IntensityScale=1:li044.State=0');await advance(1000);view.render(1);
+      // Explicit component inputs: main's current li044 uses intensity50.4
+      // and5.04/.504 fades, while this90-unit handoff check uses9/.9 fades.
+      await set('li044.Intensity=90:li044.IntensityScale=1:li044.FadeSpeedUp=9:li044.FadeSpeedDown=0.9:li044.State=0');await advance(1000);view.render(1);
       const index=view.bulbHalos.lamps.findIndex(l=>l.spec.name==='li044'),readLamp=()=>({intensity:lamp.inplayintensity,on:lamp.inplayon,textureIntensity:view.bulbHalos.parts[index].values.lightColor_intensity[3]});
       const off=readLamp();await set('li044.State=1');await advance(17);view.render(1);const full=readLamp();
       await set('li044.State=0');await advance(17);view.render(1);const fading=readLamp();

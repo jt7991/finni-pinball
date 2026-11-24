@@ -25,7 +25,7 @@ export function createRules(source,specs,host={}) {
   const methods=new Set([...source.matchAll(/^\s*(?:Sub|Function)[ \t]+(\w+)/gmi)].map(m=>m[1].toLowerCase()));
   const functions=new Set([...source.matchAll(/^\s*Function[ \t]+(\w+)/gmi)].map(m=>m[1].toLowerCase()));
   let time=0,activeBall=null;
-  const run=(name,...args)=>{
+  const runCallback=(name,...args)=>{
     const generated=generatedEvents.get(name.toLowerCase());if(generated)return generated(...args);
     if(!methods.has(name.toLowerCase()))return;
     try{
@@ -38,6 +38,7 @@ export function createRules(source,specs,host={}) {
       return engine.executeStatementThrows(`${name} ${parameters.join(',')}`);
     }catch(error){throw new Error(`Rules ${name}: ${error.message}`,{cause:error});}
   };
+  const run=host.scriptProfiler?(name,...args)=>host.scriptProfiler.measure(()=>runCallback(name,...args)):runCallback;
   const qualify=statement=>statement.replace(/(?<![\w.])[A-Za-z_]\w*/g,name=>nativeFunctions.has(name.toLowerCase())?`Native.${nativeFunctions.get(name.toLowerCase())}`:name);
   const execute=statement=>engine.executeStatementThrows(qualify(statement));
   const value=expression=>{const result=engine.eval(expression);if(engine.error)throw Error(JSON.stringify(engine.error));return result;};
@@ -230,8 +231,9 @@ export function createRules(source,specs,host={}) {
   function tick(dt,dispatchTimers=true){
     time+=dt;
     for(const delay of [...delays])if(delay.at<=time+1e-9){delays.splice(delays.indexOf(delay),1);execute(delay.statement);}
-    // An independently observed delivery gate is used by native diagnostics.
-    // Ordinary production physics dispatches on every processed1ms interval.
+    // Production supplies the native script-budget gate; reference diagnostics
+    // can instead supply independently observed timer-delivery clocks. The
+    // physical1ms interval is processed regardless of positive timer delivery.
     if(!dispatchTimers)return;
     for(const [key,t]of [...timers])if(t.at<=time+1e-9&&timers.get(key)===t){
       const next=t.at;run(t.handler);

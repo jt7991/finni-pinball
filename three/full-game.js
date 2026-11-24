@@ -20,6 +20,7 @@ import {nativeTargetEvent} from './native-target-event.js';
 import {FlipperAnimation} from './flipper-animation.js';
 import {TriggerAnimation,BumperAnimation} from './mechanism-animation.js';
 import {applyPlayerSettings,applyBallSettings,applySceneSettings} from './player-settings.js';
+import {ScriptProfiler} from './script-profiler.js';
 
 export async function createFullGame(layout,specs,source,emit,media,options={}) {
   await RAPIER.init();
@@ -36,6 +37,7 @@ class FullGame extends Pinball {
     this.records=[];this.toyRecords=[];this.physicalRecords=[];this.byCollider=new Map();this.captures=new Map();this.mechanisms=new Map(this.nativeMeshes.map(m=>[this.colliderLabels.get(m.collider.handle)?.toLowerCase(),m.collider]));
     this.targetFronts=new Map();this.targetMotions=new Map();this.targetEventBall=null;
     this.frameAnimations=!!options.frameAnimations;this.lastAnimationTime=0;
+    this.scriptProfiler=options.scriptBudget?new ScriptProfiler({...options.scriptBudget,...options.scriptClock?{clock:options.scriptClock}:{}}):undefined;
     this.specs=specs;this.media=media;this.soundNames=new Set(specs.sound_names??[]);this.pendingCreate=null;this.syncCount=0;
     for(const spec of specs.objects)this.nativeParts.set(spec.name.toLowerCase(),{...this.nativeParts.get(spec.name.toLowerCase()),...spec});
     for(const spec of specs.objects)this.addMechanism(spec);
@@ -47,6 +49,7 @@ class FullGame extends Pinball {
       save:(key,v)=>{try{localStorage.setItem(`finni-three-rule-${key}`,JSON.stringify(v));}catch{}},
     };
     this.rules=createRules(source,specs,{
+      scriptProfiler:this.scriptProfiler,
       createBall:name=>this.spawn(name),destroyBall:(name,ball)=>this.remove(name,ball),
       kick:(name,ball,angle,speed,inclination)=>this.kick(name,ball,angle,speed,inclination),
       flipper:(side,down)=>{this.held[side]=down;},plunger:down=>{this.held.launch=down;if(down)this.plunger.pull();else this.launch();},
@@ -316,11 +319,15 @@ class FullGame extends Pinball {
   }
 
   prepareFrame(){
+    this.scriptProfiler?.beginFrame();
     const now=Math.round(this.time*1000),elapsed=now-this.lastAnimationTime;this.lastAnimationTime=now;
     if(elapsed>0)this.updateAnimations(Math.fround(elapsed));
   }
 
-  step({dispatchTimers=true}={}){
+  get scriptStats(){return this.scriptProfiler?.snapshot()??null;}
+
+  step({dispatchTimers}={}){
+    if(dispatchTimers===undefined){dispatchTimers=this.scriptProfiler?.timersAllowed??true;if(!dispatchTimers)this.scriptProfiler.deferTimers();}
     // Native PhysicsEngine processes its first physical interval at GameTime0.
     // Subsequent intervals advance the clock before running authored timers.
     if(this.physicsStarted){this.time+=STEP;this.rules.tick(STEP,dispatchTimers);}

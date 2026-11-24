@@ -71,6 +71,7 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--native-tilt-bob' in sys.argv:runner='probe-native-tilt-bob.mjs'
         if '--production-tilt' in sys.argv:runner='test-tilt-production.mjs'
         if '--main-player' in sys.argv:runner='test-main-player-production.mjs'
+        if '--production-lifecycle' in sys.argv:runner='test-automatic-budget-gameplay.mjs'
         if '--high-scores' in sys.argv:runner='test-high-scores-browser.mjs'
         if '--native-startup' in sys.argv:runner='probe-native-startup.mjs'
         if '--native-scene-startup' in sys.argv:runner='probe-native-scene-startup.mjs'
@@ -81,6 +82,7 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--native-audio-mix' in sys.argv:runner='probe-native-audio-mix.mjs'
         if '--audio-mix' in sys.argv:runner='test-native-audio-mix-browser.mjs'
         timeout=150
+        if '--production-lifecycle' in sys.argv:timeout=260
         if '--native-contact' in sys.argv and '--packed-frames' in sys.argv:
             record_ms=next((int(arg.split('=',1)[1]) for arg in sys.argv if arg.startswith('--record-through-ms=')),0)
             timeout=max(timeout,record_ms/1000+90)

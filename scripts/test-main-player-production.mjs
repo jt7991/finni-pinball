@@ -24,7 +24,7 @@ try{
       constructor(...args){super(...args);this.addEventListener('message',({data})=>{
         if(data.type==='fatal')s.fatal.push(data.message);
         if(data.type!=='snapshot')return;
-        const v=data.snapshot;s.latest={time:v.time,tilted:v.tilted,held:v.held,state:v.state,physicsStats:v.physicsStats};
+        const v=data.snapshot;s.latest={time:v.time,tilted:v.tilted,held:v.held,state:v.state,physicsStats:v.physicsStats,scriptStats:v.scriptStats,ticks:data.stats.ticks};
         if(s.firstNudge){s.samples.push(s.latest);if(v.tilted&&!s.firstTilt)s.firstTilt=s.latest;}
       });}
       postMessage(message,...args){
@@ -46,6 +46,7 @@ try{
   assert.equal(result.firstTilt,null,'main player disables tilt penalties');
   assert.equal(result.latest.held.left,true,'repeated nudges keep the held flipper enabled');
   assert.equal(result.latest.state,'playing');
+  assert.equal(result.latest.scriptStats.videoSyncMode,2);assert.equal(result.latest.scriptStats.budgetMicroseconds,5000);assert.equal(Math.round(result.latest.time*1000)+1,result.latest.ticks);
   assert.ok(result.latest.time-result.firstNudge.time>1.5);
   assert.equal(result.latest.physicsStats.substepBudgetExceeded,0);
   await key('ShiftLeft','keyUp');await wait('!productionMainPlayer.latest.held.left');
