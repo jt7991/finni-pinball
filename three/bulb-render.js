@@ -37,7 +37,14 @@ void main(){if(blendVisible.y==0.||lowColor.w==0.)discard;float len=length(table
 
 export function createLightFrame(renderer,assets,sharedTargets){
   const target=new THREE.WebGLRenderTarget(1,1,{type:THREE.HalfFloatType,depthTexture:new THREE.DepthTexture(1,1,THREE.UnsignedShortType)});
-  const previous=new THREE.WebGLRenderTarget(1,1,{type:THREE.HalfFloatType,depthBuffer:false,minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter});let historyEnabled=true;
+  const previous=new THREE.WebGLRenderTarget(1,1,{type:THREE.HalfFloatType,depthBuffer:false,minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter});let historyEnabled=true,historyInitialized=false;
   const postprocess=createNativePostprocess(renderer,assets,target,sharedTargets);let frameIndex=0;
-  return{target,previous,postprocess,setHistoryEnabled(value){historyEnabled=!!value;},prepare:()=>postprocess.prepare(),resize(){const size=renderer.getDrawingBufferSize(new THREE.Vector2());target.setSize(size.x,size.y);previous.setSize(size.x,size.y);postprocess.resize(size.x,size.y);const before=renderer.getRenderTarget(),clear=renderer.getClearColor(new THREE.Color()),alpha=renderer.getClearAlpha();try{renderer.setRenderTarget(previous);renderer.setClearColor(0,0);renderer.clear(true,false,false);}finally{renderer.setRenderTarget(before);renderer.setClearColor(clear,alpha);}},render(world,view,draw,cabinetOffset){renderer.setRenderTarget(target);if(draw)draw(target);else renderer.render(world,view);if(historyEnabled)renderer.copyTextureToTexture(target.texture,previous.texture);postprocess.setCabinetOffset(cabinetOffset);postprocess.update(++frameIndex);postprocess.render();renderer.setRenderTarget(null);}};
+  return{target,previous,postprocess,setHistoryEnabled(value){historyEnabled=!!value;},prepare:()=>postprocess.prepare(),resize(){
+    const size=renderer.getDrawingBufferSize(new THREE.Vector2()),resetHistory=!historyInitialized||previous.width!==size.x||previous.height!==size.y;
+    target.setSize(size.x,size.y);previous.setSize(size.x,size.y);postprocess.resize(size.x,size.y);
+    // A camera/quality update can call resize without reallocating a texture.
+    // VPX retains its previous HDR across those updates; only new storage
+    // starts black. Clearing here unconditionally destroys ball reflections.
+    if(resetHistory){const before=renderer.getRenderTarget(),clear=renderer.getClearColor(new THREE.Color()),alpha=renderer.getClearAlpha();try{renderer.setRenderTarget(previous);renderer.setClearColor(0,0);renderer.clear(true,false,false);historyInitialized=true;}finally{renderer.setRenderTarget(before);renderer.setClearColor(clear,alpha);}}
+  },render(world,view,draw,cabinetOffset){renderer.setRenderTarget(target);if(draw)draw(target);else renderer.render(world,view);if(historyEnabled)renderer.copyTextureToTexture(target.texture,previous.texture);postprocess.setCabinetOffset(cabinetOffset);postprocess.update(++frameIndex);postprocess.render();renderer.setRenderTarget(null);}};
 }

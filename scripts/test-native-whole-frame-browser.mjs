@@ -65,6 +65,10 @@ try{
   if(fixture.renderMode.uniformAlignmentReference)view.classicLights.setUniformAlignmentReferenceEnabled(true);
   else if(view.classicLights.uniformAlignmentReferenceEnabled)throw Error('Runtime default must preserve original native uploads');
   const texture=(data,width,height,type,format=THREE.RGBAFormat)=>{const value=new THREE.DataTexture(data,width,height,format,type);value.flipY=false;value.generateMipmaps=false;value.minFilter=value.magFilter=THREE.NearestFilter;value.needsUpdate=true;value.colorSpace=THREE.NoColorSpace;owned.push(value);return value;};
+  // This controlled frame occurs after native startup's first tonemap. Run
+  // the fresh model's own first draw before supplying the declared history,
+  // so the shared FB exposure has passed through the same source ordering.
+  if(${modelStartup}){view.render(1);modelInputs.ownExposureWarmupDraws=1;}
   const seedHalf=(name,target)=>{const ref=fixture.images[name];if(!ref)return;renderer.initRenderTarget(target);renderer.copyTextureToTexture(texture(Uint16Array.from(images[name],THREE.DataUtils.toHalfFloat),ref.width,ref.height,THREE.HalfFloatType),target.texture);};
   seedHalf('previousHDR',view.lightFrame.previous);seedHalf('priorTransmissionFiltered',view.nativeTransmission.targets[1]);seedHalf('initialReflection',view.reflectionPass.target);seedHalf('priorReflectionTransmission',view.nativeTransmission.targets[0]);
   const ao=fixture.images.priorAO;if(ao){const red=Uint8Array.from({length:w*h},(_,i)=>images.priorAO[i*4]);renderer.initRenderTarget(view.lightFrame.postprocess.aoTargets[1]);renderer.copyTextureToTexture(texture(red,w,h,THREE.UnsignedByteType,THREE.RedFormat),view.lightFrame.postprocess.aoTargets[1].texture);}

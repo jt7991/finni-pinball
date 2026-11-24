@@ -43,4 +43,7 @@ export function installNativeStartupObserver(throughMilliseconds=1){
   const result=await original.apply(this,args);remember(Object.values((result.instance??result).exports??{}));return result;
  };}
  data.read=snapshot;
+ // Pinned original ScriptGlobalTable::get_FrameIndex function1347 reads
+ // Player+334768. Verified independently by nativeFrameClockLayout.
+ data.frameIndex=()=>{const memory=memories.find(memory=>memory.buffer.byteLength>9191332);if(!memory)return null;const view=new DataView(memory.buffer),player=view.getUint32(9191328,true);return player>=65536&&player+334772<=memory.buffer.byteLength?view.getUint32(player+334768,true):null;};
 }
