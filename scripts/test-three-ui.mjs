@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {writeFile} from 'node:fs/promises';
 const [debug,base,output]=process.argv.slice(2);
+const cacheDisabled=!process.argv.includes('--allow-http-cache');
 const tabs=await(await fetch(`${debug}/json/list`)).json();
 const socket=new WebSocket(tabs.find(t=>t.type==='page').webSocketDebuggerUrl);
 await new Promise(r=>socket.addEventListener('open',r,{once:true}));
@@ -12,7 +13,7 @@ socket.addEventListener('message',async event=>{
   if(d.method==='Network.loadingFinished'){if(d.sessionId)workerTransferred+=d.params.encodedDataLength;else pageTransferred+=d.params.encodedDataLength;}
   if(d.method==='Target.attachedToTarget'){
     const session=d.params.sessionId;
-    try{await call('Network.enable',{},session);await call('Network.setCacheDisabled',{cacheDisabled:true},session);}
+    try{await call('Network.enable',{},session);await call('Network.setCacheDisabled',{cacheDisabled},session);}
     catch(error){errors.push({workerNetwork:error.message});}
     finally{await call('Runtime.runIfWaitingForDebugger',{},session);}
   }
@@ -26,7 +27,7 @@ try{
   await call('Page.enable');await call('Runtime.enable');await call('Network.enable');await call('Emulation.setFocusEmulationEnabled',{enabled:true});
   await call('Page.addScriptToEvaluateOnNewDocument',{source:`(()=>{const NativeWorker=window.Worker,s=window.testWorker={starts:[],inputs:[],latest:null,fatal:[],nativeDmd:[]};window.Worker=class extends NativeWorker{constructor(...args){super(...args);this.addEventListener('message',({data})=>{if(data.type==='fatal')s.fatal.push(data.message);if(data.type==='ready')s.nativeDmd=data.description.objects.filter(([name])=>/^digit(?:\\d{3}|grid)$/.test(name)).map(([name,state])=>({name,visible:state.visible}));if(data.type==='snapshot')s.latest={time:data.snapshot.time,tilted:data.snapshot.tilted,held:data.snapshot.held,paused:data.paused,ticks:data.stats.ticks,scriptStats:data.snapshot.scriptStats};});}postMessage(message,...args){if(message.type==='start')s.starts.push(message.players);if(message.type==='input')s.inputs.push({action:message.action,down:message.down});return super.postMessage(message,...args);}};})()`});
   await call('Target.setAutoAttach',{autoAttach:true,waitForDebuggerOnStart:true,flatten:true});
-  await call('Network.setCacheDisabled',{cacheDisabled:true});
+  await call('Network.setCacheDisabled',{cacheDisabled});
   await call('Page.addScriptToEvaluateOnNewDocument',{source:`window.testDraws=0;window.testShaderErrors=[];for(const Context of [WebGLRenderingContext,WebGL2RenderingContext]){const draw=Context.prototype.drawElements;Context.prototype.drawElements=function(...args){window.testDraws++;return draw.apply(this,args);};const compile=Context.prototype.compileShader;Context.prototype.compileShader=function(shader){compile.call(this,shader);if(!this.getShaderParameter(shader,this.COMPILE_STATUS))window.testShaderErrors.push(this.getShaderInfoLog(shader));};const link=Context.prototype.linkProgram;Context.prototype.linkProgram=function(program){link.call(this,program);if(!this.getProgramParameter(program,this.LINK_STATUS))window.testShaderErrors.push(this.getProgramInfoLog(program));};}`});
   for(const [width,height,name]of [[390,844,'phone'],[320,568,'small-phone'],[844,390,'landscape'],[1440,900,'desktop']]){
     await call('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:2,mobile:name!=='desktop'});
@@ -34,7 +35,7 @@ try{
     pageTransferred=0;workerTransferred=0;const started=Date.now();
     await call('Page.navigate',{url:base});await wait('document.getElementById("play")?.textContent==="Start game"');
     await wait('window.testDraws>0');
-    const measurement={viewport:name,coldStartupMs:Date.now()-started,transferredBytes:pageTransferred+workerTransferred,pageTargetTransferredBytes:pageTransferred,workerTargetsTransferredBytes:workerTransferred,pageTargetJSHeapBytes:await evaluate('performance.memory?.usedJSHeapSize??null')};measurements.push(measurement);console.log('STARTUP',JSON.stringify(measurement));
+    const elapsed=Date.now()-started,measurement={viewport:name,httpCacheDisabled:cacheDisabled,visit:measurements.length,startupMs:elapsed,...cacheDisabled||!measurements.length?{coldStartupMs:elapsed}:{},transferredBytes:pageTransferred+workerTransferred,pageTargetTransferredBytes:pageTransferred,workerTargetsTransferredBytes:workerTransferred,pageTargetJSHeapBytes:await evaluate('performance.memory?.usedJSHeapSize??null')};measurements.push(measurement);console.log('STARTUP',JSON.stringify(measurement));
     await wait('[...document.querySelectorAll(".start-content img")].every(image=>image.complete&&image.naturalWidth>0)');await evaluate('document.fonts.ready');
     assert.equal(await evaluate('getComputedStyle(document.body).fontFamily.includes("DM Sans")&&getComputedStyle(document.querySelector(".start-content h2")).fontFamily.includes("Pixel")'),true,'main arcade fonts load');
     assert.equal(await evaluate('document.documentElement.scrollWidth<=innerWidth&&document.documentElement.scrollHeight<=innerHeight'),true,`${name} start screen no overflow`);

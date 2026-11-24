@@ -1,6 +1,6 @@
 # VPX physics reference
 
-The latest complete-state checkpoint passes all 376 Node tests, without skips
+The latest complete-state checkpoint passes all 379 Node tests, without skips
 or cancellations. Earlier partial-state measurements remain unchanged as
 diagnostics; their full scenario sets now have complete independent regressions
 as described below. These checks do not establish every gameplay path or
