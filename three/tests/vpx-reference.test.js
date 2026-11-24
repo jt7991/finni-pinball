@@ -30,12 +30,11 @@ test('physical plunger follows six native pull/release recordings and initial la
 // state and zero-error body/RNG/rod gates. The partial vpx-spinners.json and
 // its CLI comparison remain available unchanged as historical diagnostics.
 
-test('twenty native gate recordings verify blocking, pass-through, open/close motion and overhead misses',()=>{
-  const reports=JSON.parse(execFileSync(process.execPath,['scripts/compare-vpx-gates.mjs','--check','--json'],{cwd:root,encoding:'utf8',maxBuffer:2*1024*1024}));
-  assert.equal(reports.length,20);assert.equal(reports.reduce((n,r)=>n+r.samples.length,0),2400);
-  assert.equal(reports.filter(r=>r.name.endsWith('-overhead')).length,4);
-  assert.equal(reports.filter(r=>r.name.endsWith('-open-close')).length,4);
-});
+// The twenty gate cases now run in native-gate-original-controls.test.js.
+// Original blocking/pass-through/open/close/overhead inputs, mechanism settings
+// and all 2,400 public samples remain checked, with complete independent native
+// state and zero-error body/RNG/rod gates. The original partial vpx-gates.json
+// and its CLI remain available unchanged as historical diagnostics.
 
 // All four switch scenarios now run in native-mechanism-clock-replay.test.js.
 // Their original declared inputs, 40 samples each and isolation controls are

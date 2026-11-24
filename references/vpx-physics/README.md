@@ -9,6 +9,13 @@ original measurements and limits as a partial-state diagnostic. Earlier
 checkpoint notes below describe the verification state at those checkpoints;
 they do not imply that incomplete recordings initialize exact replays.
 
+`native-gate-original-controls.test.js` applies the same complete-state method
+to all twenty historical gate scenarios and 2,400 public samples. Original
+controls, shot inputs, native role and mechanism settings are required unchanged.
+All 154,972 body observations, both random streams, observed rod fields and
+recorded frame outputs match exactly; four forced-open/close cycles must finish
+closed. The partial `vpx-gates.json` is retained as an unchanged diagnostic.
+
 The collision response and target geometry in the Three.js experiment derive
 from Visual Pinball contributors' GPLv3-or-later sources at commit
 `195f214dd4849b8ef6113fd377258b78d0dec3bf`, the revision pinned by
