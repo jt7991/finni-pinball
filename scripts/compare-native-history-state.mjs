@@ -5,6 +5,16 @@ import path from 'node:path';import {fileURLToPath} from 'node:url';
 import assert from 'node:assert/strict';
 import {createFullGame} from '../three/full-game.js';
 import {nativeScriptClockInputs} from './native-script-clock-inputs.mjs';
+import {readNativeHistoryCapture} from './native-history-pages.mjs';
+// References are consumed in physical/frame order. Retain only the current
+// group so long recordings do not need a second copy of every native body.
+function orderedRows(rows,key,{last=true}={}){
+ const iterator=rows[Symbol.iterator]();let next=iterator.next(),current,previous=-Infinity,requested=-Infinity;
+ return {get(wanted){assert.ok(wanted>=requested,'Reference cursor moved backward');requested=wanted;
+  while(!next.done&&key(next.value)<=wanted){const row=next.value,k=key(row);assert.ok(k>=previous,'Reference rows moved backward');if(last||k!==previous)current=row;previous=k;next=iterator.next();}
+  return current&&key(current)===wanted?current:undefined;
+ }};
+}
 export async function compareNativeHistoryState(fixture,{write=()=>{},observeObjects=[],contactAudit}={}){
 const load=name=>JSON.parse(fs.readFileSync(new URL('../three/public/'+name,import.meta.url)));
 const clocks=fixture.randomizeClocks?.timerRecords?nativeScriptClockInputs(fixture.randomizeClocks,{lastFrame:fixture.frames.at(-1).frameIndex,lastMilliseconds:fixture.frames.at(-1).snapshot.ms}):null;let randomizeIndex=0,timerIndex=0;
@@ -20,7 +30,8 @@ const cursor=clock=>Number((BigInt(clock.current)-BigInt(clock.start))/1000n);
 // at the same physical cursor. Compare those rows after the recorded UI calls,
 // rather than comparing their post-input RNG to the preceding physical step.
 const uiTicks=new Set(fixture.playerInputs.filter(input=>input.frameIndex>2).map(input=>input.ms+1));
-const boundaries=new Map((fixture.startup?.boundaries??[]).filter(row=>row.ms>=1).map(row=>[cursor(row.physicsClock),row]));
+const boundaries=orderedRows((function*(){for(const row of fixture.startup?.boundaries??[])if(row.ms>=1)yield row;})(),row=>cursor(row.physicsClock));
+const preparations=orderedRows(fixture.clock.preparedFrames,row=>row.frameIndex,{last:false});
 const advance=due=>{assert.ok(due>=ticks,'Physical cursor moved backward');while(ticks<due){assert.equal(pendingAnimationBoundaries.size,0,'Recorded frame animation must precede the next physical interval');game.step({dispatchTimers:timers.has(ticks)});ticks++;const boundary=boundaries.get(ticks);if(boundary&&!uiTicks.has(ticks)){
  // The first clock import of a physical interval can follow PrepareFrame at
  // the same physical cursor. A Dropped callback can already have changed
@@ -68,7 +79,7 @@ try{
  game.prepareFrame();
  for(const [i,frame] of fixture.frames.entries()){
   while(inputIndex<fixture.playerInputs.length&&fixture.playerInputs[inputIndex].frameIndex<frame.frameIndex){const input=fixture.playerInputs[inputIndex++];if(input.frameIndex>2)advance(input.ms+1);if(!input.script.split(':').some(statement=>statement.startsWith('DisableStaticPrerendering=')))await game.rules.execute(input.script);if(input.ruleState)compareRuleState(input);if(input.uiState){const balls=game.rules.value('Balls'),actual={score:game.rules.value('Score(CurrentPlayer)'),ball:balls===0?'—':String(balls),playing:game.rules.value('bGameInPlay'),plunger:game.rules.value('bBallInPlungerLane')};assert.deepEqual(actual,input.uiState,'Ordinary player state poll at '+input.ms+'ms');}if(input.frameIndex>2&&fixture.playerInputs[inputIndex]?.ms!==input.ms){const boundary=boundaries.get(ticks);if(boundary){intervalsChecked++;if(!compare(boundary,'after-ui'))throw Error('Native UI boundary differs at '+ticks);}}}
-  const preparation=fixture.clock.preparedFrames.find(row=>row.frameIndex===frame.frameIndex);
+  const preparation=preparations.get(frame.frameIndex);assert.ok(preparation,'Every submitted frame has its native preparation');
   advance(i<2?0:cursor(preparation.physicsClock));
   if(!compare(preparation,'prepare'))throw Error('Native frame state differs at '+frame.frameIndex);
   if(i>0){game.prepareFrame();game.sync();}
@@ -82,4 +93,4 @@ try{
  return {framesChecked,intervalsChecked,ticks,randomizeClockSamples:randomizeIndex,timerClockSamples:timerIndex,...(ruleObservationsChecked?{ruleObservationsChecked}:{}),...(ruleVariantFieldsChecked?{ruleVariantFieldsChecked}:{}),...(scriptRandomStatesChecked?{scriptRandomStatesChecked}:{}),...(moverStatesChecked?{moverStatesChecked,moverFieldsChecked}:{})};
 }finally{game.dispose();}
 }
-if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){const result=await compareNativeHistoryState(JSON.parse(fs.readFileSync(process.argv[2])),{write:row=>console.log(JSON.stringify(row)),observeObjects:process.argv.filter(arg=>arg.startsWith('--observe=')).map(arg=>arg.slice(10))});console.log(JSON.stringify({result}));}
+if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){const result=await compareNativeHistoryState(readNativeHistoryCapture(process.argv[2]),{write:row=>console.log(JSON.stringify(row)),observeObjects:process.argv.filter(arg=>arg.startsWith('--observe=')).map(arg=>arg.slice(10))});console.log(JSON.stringify({result}));}

@@ -18,6 +18,7 @@ export function installNativeRandomizeClockObserver(){
   const table=tables[0],matches=[];for(let i=0;i<table.length;i++)if(table.get(i)?.name==='18195')matches.push(i);if(matches.length!==1)throw Error('Pinned original Randomize callback is not unique');
   const index=matches[0],original=table.get(index);
   const observe=(context,argument,count,result)=>{
+   if(data.stopped)return original(context,argument,count,result);
    const row={frameIndex:window.nativeStartup.frameIndex(),ms:window.nativeStartup.read()?.ms,count,clocks:[]};active=row;
    try{return original(context,argument,count,result);}finally{active=undefined;data.records.push(row);}
   };
@@ -26,6 +27,7 @@ export function installNativeRandomizeClockObserver(){
   const timerMatches=[];for(let i=0;i<table.length;i++)if(table.get(i)?.name==='18219')timerMatches.push(i);if(timerMatches.length!==1)throw Error('Pinned original Timer callback is not unique');
   const timerIndex=timerMatches[0],timer=table.get(timerIndex);
   const observeTimer=(context,argument,count,result)=>{
+   if(data.stopped)return timer(context,argument,count,result);
    const row={frameIndex:window.nativeStartup.frameIndex(),ms:window.nativeStartup.read()?.ms,clocks:[]},previous=active;active=row;
    try{return timer(context,argument,count,result);}finally{active=previous;if(result){const view=new DataView(memories[0].buffer);row.type=view.getUint16(result,true);row.seconds=view.getFloat32(result+8,true);if(row.type!==4||!Number.isFinite(row.seconds))throw Error('Original Timer Single ABI failed validation');data.timerRecords.push(row);}}
   };

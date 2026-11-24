@@ -107,6 +107,9 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--audio-mix' in sys.argv:runner='test-native-audio-mix-browser.mjs'
         timeout=150
         if '--native-gameplay-history' in sys.argv:timeout=240
+        if '--native-gameplay-history' in sys.argv and '--paged-history' in sys.argv:
+            through_ms=next((int(arg.split('=',1)[1]) for arg in sys.argv if arg.startswith('--through-ms=')),30000)
+            timeout=max(timeout,through_ms/1000*2+120)
         if '--production-lifecycle' in sys.argv:timeout=260
         if '--native-frame-history' in sys.argv:
             frame_count=next((int(arg.split('=',1)[1]) for arg in sys.argv if arg.startswith('--frames=')),6)

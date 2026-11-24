@@ -33,7 +33,15 @@ export function createRules(source,specs,host={}) {
   const sequenceRandom=host.random??runtimeNativeRandom();
   const methods=new Set([...source.matchAll(/^\s*(?:Sub|Function)[ \t]+(\w+)/gmi)].map(m=>m[1].toLowerCase()));
   const functions=new Set([...source.matchAll(/^\s*Function[ \t]+(\w+)/gmi)].map(m=>m[1].toLowerCase()));
-  let time=0,activeBall=null;
+  let time=0,milliseconds=0,activeBall=null;
+  const intervalMilliseconds=value=>Math.max(1,Number(value));
+  const createTimer=(object,handler,interval,property)=>{
+    const timer={object,handler,nextMilliseconds:milliseconds+intervalMilliseconds(interval),property};
+    // Keep the seconds-based diagnostic accessor; runtime delivery uses the
+    // same millisecond units as native HitTimer, without repeated fractions.
+    Object.defineProperty(timer,'at',{enumerable:true,get(){return this.nextMilliseconds/1000;},set(value){this.nextMilliseconds=Number(value)*1000;}});
+    return timer;
+  };
   // ScriptGlobalTable::get_GameTime exposes the player's millisecond clock
   // as a signed COM LONG, independently of the wall-clock Timer function.
   engine._getContext().functionRegistry.register('GameTime',()=>({type:'Long',value:Math.round(time*1000)|0}),{minArgs:0,maxArgs:0});
@@ -129,7 +137,7 @@ export function createRules(source,specs,host={}) {
           // IEditable::put_TimerEnabled changes scheduling only when the
           // Boolean state changes. Repeated True must retain its deadline.
           if(enabled!==!!previous){
-            if(enabled)timers.set(timerKey,{object:proxy,handler:`${name}_Timer`,at:time+Math.max(.001,Number(k==='enabled'?target.interval:target.timerinterval)/1000),property:k});
+            if(enabled)timers.set(timerKey,createTimer(proxy,`${name}_Timer`,k==='enabled'?target.interval:target.timerinterval,k));
             else timers.delete(timerKey);
           }
         }
@@ -137,7 +145,7 @@ export function createRules(source,specs,host={}) {
           // IEditable::put_TimerInterval always calls HitTimer::SetInterval,
           // even for the same value and from inside the timer callback.
           const timer=timers.get(k==='interval'?lower:`${lower}:timer`);
-          if(timer)timer.at=time+Math.max(.001,Number(v)/1000);
+          if(timer)timer.nextMilliseconds=milliseconds+intervalMilliseconds(v);
         }
         if(k==='isdropped'||k==='collidable'||k==='open'||k==='enabled'&&['Trigger','Kicker'].includes(spec.kind))host.mechanism?.(name,k,v);
         if(spec.kind==='Bumper'&&['threshold','force','scatter','hashitevent','enableskirtanimation','ringspeed','ringdropoffset'].includes(k))host.mechanism?.(name,k,v);
@@ -255,20 +263,20 @@ export function createRules(source,specs,host={}) {
     if(!groups.some(({collection})=>collection.stop_single_events))return run(`${name}_${kind}`);
   }
   function tick(dt,dispatchTimers=true){
-    time+=dt;
+    milliseconds+=dt*1000;time=milliseconds/1000;
     for(const delay of [...delays])if(delay.at<=time+1e-9){delays.splice(delays.indexOf(delay),1);execute(delay.statement);}
     // Production supplies the native script-budget gate; reference diagnostics
     // can instead supply independently observed timer-delivery clocks. The
     // physical1ms interval is processed regardless of positive timer delivery.
     if(!dispatchTimers)return;
-    for(const [key,t]of [...timers])if(t.at<=time+1e-9&&timers.get(key)===t){
-      const next=t.at;run(t.handler);
-      const milliseconds=Number(t.property==='enabled'?t.object.interval:t.object.timerinterval);
+    for(const [key,t]of [...timers])if(t.nextMilliseconds<=milliseconds+1e-6&&timers.get(key)===t){
+      const next=t.nextMilliseconds;run(t.handler);
+      const interval=intervalMilliseconds(t.property==='enabled'?t.object.interval:t.object.timerinterval);
       // Timer aliases are bound to their authored object when assets are
       // prepared. HitTimer::Update fires an overdue callback once, then moves
       // its unchanged deadline beyond the current clock; missed calls do not
       // run in a burst. Callback interval/enable changes retain their deadline.
-      if(t.at===next&&timers.get(key)===t)while(t.at<=time+1e-9)t.at+=Math.max(.001,milliseconds/1000);
+      if(t.nextMilliseconds===next&&timers.get(key)===t)while(t.nextMilliseconds<=milliseconds+1e-6)t.nextMilliseconds+=interval;
     }
   }
   return {engine,objects,run,execute,value,tick,hit,schedule,scriptRandom,sequences,lamps,
