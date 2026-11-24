@@ -10,6 +10,7 @@ import{installNativeCollisionGeometryObserver}from './native-collision-geometry-
 import{installNativeFlipperMotionObserver}from './native-flipper-motion-observer.mjs';
 import{installNativeMoverMotionObserver}from './native-mover-motion-observer.mjs';
 import{missionCompletionScenario,installMissionCompletionController}from './native-mission-completion-controller.mjs';
+import{partyChooserScript}from'../browser/party-chooser.js';
 
 function installGameplayFrames(through){
  const data=window.nativeGameplay={frames:[],errors:[],done:false,actions:[]},programs=new WeakMap();
@@ -34,6 +35,7 @@ const cadence=Number(process.argv.find(arg=>arg.startsWith('--cadence-ms='))?.sl
 const actionEvery=Number(process.argv.find(arg=>arg.startsWith('--action-every-ms='))?.slice(18)??0);
 const completionText=process.argv.find(arg=>arg.startsWith('--complete-mission='))?.slice('--complete-mission='.length),legacyCompletion=process.argv.includes('--complete-mission1');assert.ok(!(legacyCompletion&&completionText!==undefined));
 const completeMission=legacyCompletion||completionText!==undefined,completionScenario=completeMission?missionCompletionScenario(JSON.parse(fs.readFileSync('three/public/objects.json')).objects,legacyCompletion?1:Number(completionText)):null;
+const guardPartyChooser=process.argv.includes('--guard-party-chooser');
 if(completeMission)assert.ok(!nudgeEvery&&!actionEvery&&!replay&&!process.argv.some(arg=>arg.startsWith('--cadence-ms=')),'Completion and ordinary gameplay controllers are separate input modes');
 assert.ok(actionEvery===0||Number.isInteger(actionEvery)&&actionEvery>=500&&actionEvery<=10000);
 assert.match(name,/^[a-z0-9-]+$/);assert.ok(Number.isInteger(through)&&through>=10000&&through<=120000);
@@ -51,6 +53,7 @@ try{
  await call('Page.addScriptToEvaluateOnNewDocument',{source});await call('Page.navigate',{url:base});await wait('!!window.finni&&!document.getElementById("play").disabled');
  await evaluate(`(()=>{nativeRandomizeClocks.install();window.nativePlayerInputs=[];const engine=finni.engine,raw=engine.ccall;engine.ccall=function(...args){let row;if(args[0]==='vpinball_wasm_eval_script')nativePlayerInputs.push(row={frameIndex:nativeStartup.frameIndex(),ms:nativeStartup.read()?.ms,script:args[3][0]});const result=raw.apply(this,args);if(row?.script.startsWith('Debug.Print "FINNI_STATE|'))row.uiState={score:Number(document.getElementById('score').textContent.replace(/,/g,'')),ball:document.getElementById('ball').textContent,playing:document.body.classList.contains('game-in-play'),plunger:document.body.classList.contains('ball-in-plunger')};return result;};})()`);
  await evaluate('document.getElementById("play").click()');await wait('document.body.classList.contains("ball-in-plunger")');
+ if(guardPartyChooser)await evaluate('finni.evaluate('+JSON.stringify(partyChooserScript)+')');
  // The controller dispatches ordinary player keyboard events. Its actual UI
  // calls/times are recorded independently, rather than imposed on physics.
  if(completeMission)await evaluate('('+installMissionCompletionController.toString()+')('+JSON.stringify(completionScenario)+')');
@@ -68,6 +71,7 @@ try{
  meta.scope='Uninterrupted original initialization and full-table gameplay. Only ordinary UI keyboard events; all actual UI calls, script clocks, timer delivery and frame preparation recorded. Native bodies/RNG are expectations, never replay inputs. No image or native state restoration.';
  if(completeMission){meta.scope=completionScenario.scope;meta.completionControllerSourceSHA256=createHash('sha256').update(fs.readFileSync('scripts/native-mission-completion-controller.mjs')).digest('hex');}
  meta.controller=completeMission?{kind:'controlled-physical-mission-completion',mission:completionScenario.mission,...(completionScenario.mission>=4?{missionSequence:Array.from({length:completionScenario.mission},(_,i)=>i+1)}:{})}:{cadenceMilliseconds:cadence,nudgeEveryMilliseconds:nudgeEvery,actionEveryMilliseconds:actionEvery,replay};
+ if(guardPartyChooser){meta.playerCorrections={partyChooserSHA256:createHash('sha256').update(partyChooserScript).digest('hex')};meta.scope+=' The shared player chooser correction is installed before the first chooser through the ordinary script channel and retained verbatim among the external inputs. No table bytes, native physics algorithm, clock result or random word is replaced.';}
  fs.writeFileSync(path.join(directory,'capture.json'),JSON.stringify(meta));assert.deepEqual(errors,[]);for(const key of ['errors'])assert.deepEqual(meta[key],[]);for(const key of ['clock','timers','startup','randomizeClocks'])assert.deepEqual(meta[key].errors,[]);
  for(const key of ['flipperMotion','collisionGeometry','moverMotion'])if(meta[key])assert.deepEqual(meta[key].errors,[]);
  if(completeMission){assert.deepEqual(meta.completionController.errors,[]);assert.equal(meta.completionController.completed,true,'Native full-counter mission and physical scoop jackpot complete within the recorded window');}

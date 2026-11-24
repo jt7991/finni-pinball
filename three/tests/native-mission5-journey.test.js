@@ -1,0 +1,30 @@
+import test from'node:test';import assert from'node:assert/strict';import fs from'node:fs';import{gunzipSync}from'node:zlib';
+import{unpackNativeHistoryState}from'../../scripts/native-history-state-package.mjs';import{compareNativeHistoryState}from'../../scripts/compare-native-history-state.mjs';
+test('continuous native missions 1–5 preserve physical loop exit, moving blue shot, cookie awards and five scoop jackpots',async()=>{
+ const packet=JSON.parse(gunzipSync(fs.readFileSync(new URL('fixtures/vpx-main-missions1-through5-native.json.gz',import.meta.url))));assert.equal(packet.sourceSHA256,'1afa276d11fb7038a3ffe6a8a441e78fc04bef6fda024021a63bdb90ed8ec4cd');assert.equal(packet.sourceBytes,360175354);
+ const fixture=unpackNativeHistoryState(packet),controller=fixture.completionController;
+ assert.equal(fixture.engineSHA256,'c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8');assert.equal(fixture.reference.sourceSha256,'3ae17f498f745efa19076ca33e08f96f66d766367fc984e37aacf50774a35e14');assert.equal(fixture.reference.controlledSha256,fixture.reference.sourceSha256);assert.deepEqual(fixture.reference.controlledOverrides,{});
+ for(const observer of [fixture,fixture.startup,fixture.clock,fixture.timers,fixture.randomizeClocks,fixture.flipperMotion,fixture.moverMotion,controller])assert.deepEqual(observer.errors,[]);assert.deepEqual(fixture.browserErrors,[]);
+ assert.deepEqual(fixture.controller,{kind:'controlled-physical-mission-completion',mission:5,missionSequence:[1,2,3,4,5]});assert.equal(controller.completed,true);assert.equal(controller.completedAt,65936);assert.equal(fixture.frames.length,5356);assert.equal(fixture.frames.at(-1).snapshot.ms,90007);
+ assert.deepEqual(controller.completions,[{mission:1,ms:12631,score:3076000,won:1,choices:3},{mission:2,ms:25043,score:6438000,won:2,choices:3},{mission:3,ms:41660,score:10704220,won:3,choices:3},{mission:4,ms:53356,score:14067220,won:4,choices:6},{mission:5,ms:65936,score:17557220,won:5,choices:6}]);
+ // All position inputs are explicit approaches. Progress, trigger membership,
+ // random words and observed native bodies are never restored or supplied.
+ const shots=controller.actions.filter(a=>a.kind==='shot');for(const shot of shots)assert.deepEqual(shot.pose,controller.scenario.shots[shot.shot]);
+ for(const mission of [2,3,4,5])assert.deepEqual(shots.filter(a=>a.mission===mission&&/^Target00[1-4]$/.test(a.shot)).map(a=>a.shot),['Target001','Target002','Target003','Target004']);
+ const mission5=shots.filter(a=>a.mission===5);assert.deepEqual(mission5.map(a=>a.shot),['Target001','Target002','Target003','Target004','scoop','wolverine','loopExit','loop','ramp','outerLoop','ramp','scoop']);
+ assert.equal(controller.loopExits.length,1);const exit=controller.loopExits[0],down=mission5.find(a=>a.shot==='loopExit'),up=mission5.find(a=>a.shot==='loop'),bounds=controller.scenario.clearance.loop;
+ assert.equal(down.pose.vy,8);assert.equal(up.pose.vy,-8);assert.equal(exit.ballID,down.ballID);assert.equal(up.ballID,down.ballID);assert.equal(down.ballID,13);assert.ok(exit.ms-down.ms>=80);assert.equal(up.ms,exit.ms);assert.equal(exit.life,8);assert.ok(exit.position[1]>bounds.maxY,'Observed native position clears the entire trigger margin before upward re-entry');
+ for(const input of fixture.playerInputs){assert.doesNotMatch(input.script,/\b(?:LifeLeft|BattlesWon|Battle|Dead|BumperHits|bFirstBattle|MegaJackpot)\s*\([^)]*\)\s*=|\b(?:Battlenr|bChooseBattle|BattlesToChoose|bBattleReady|MegaSuperJCount|MegaSuperJValue)\s*=|\b(?:StartBattle|CheckBattle|WinBattle|CheckDead|HellHouse_Hit|Target\d+_Hit|Trigger\d+_Hit|Bumper\d+_Hit|AwardMegaJackpot|AwardSuperMegaJackpot)\b/i);assert.doesNotMatch(input.script,/\bRandomize\b/);}
+ const observations=fixture.playerInputs.filter(i=>i.ruleState);assert.equal(observations.length,610);const states=observations.map(i=>Object.fromEntries(i.ruleState.names.map((n,j)=>[n,i.ruleState.values[j]])));
+ for(const [i,state]of states.entries()){
+  const r=observations[i].ruleState;assert.equal(new Set(r.names).size,46);assert.equal(r.types.length,46);assert.equal(r.expressions[r.names.indexOf('scriptRandom')],'CLng(Rnd(0)*16777216)');assert.equal(r.types[r.names.indexOf('scriptRandom')],3);assert.equal(r.types[r.names.indexOf('balloonState')],4);assert.equal(r.types[r.names.indexOf('megaJackpot')],3);assert.equal(r.types[r.names.indexOf('megaCount')],2);
+  assert.ok(Number.isInteger(state.scriptRandom)&&state.scriptRandom>=0&&state.scriptRandom<16777216);assert.equal(state.player,1);assert.equal(state.ball,1);for(const mission of [6,7]){assert.equal(state['life'+mission],10);assert.equal(state['mission'+mission],0);}
+ }
+ const sequence=[];for(const s of states)if(sequence.at(-1)!==s.life5)sequence.push(s.life5);assert.deepEqual(sequence,[10,8,6,4,2,0]);
+ assert.deepEqual([...new Set(observations.map(i=>i.ruleState.types[i.ruleState.names.indexOf('megaSuperValue')]))],[0,3],'Native Empty becomes Long after an actual super-jackpot calculation');
+ assert.deepEqual(states.filter((s,i)=>i&&s.ready&&states[i-1].ready===0).map(s=>s.won),[1,2,3,4]);const active5=states.find(s=>s.active===5);assert.ok(active5);assert.equal(active5.won,4);assert.equal(active5.choices,6);for(const mission of [1,2,3,4]){assert.equal(active5['life'+mission],0);assert.equal(active5['mission'+mission],1);}
+ for(const [key,value]of Object.entries({active:0,won:5,life5:0,mission5:1,score:17557220,endJackpot:0,jackpot:3000000,inHole:1,megaJackpot:60000,megaCount:1,megaSuperValue:60000}))assert.equal(states.at(-1)[key],value,key);
+ // Includes ordinary post-completion frames through 90 seconds. Physics RNG
+ // is checked every retained interval; script RNG directly at 610 checkpoints.
+ assert.deepEqual(await compareNativeHistoryState(fixture),{framesChecked:5356,intervalsChecked:90008,ticks:90008,randomizeClockSamples:2,timerClockSamples:39,ruleObservationsChecked:610,ruleVariantFieldsChecked:28060,scriptRandomStatesChecked:610,moverStatesChecked:604320,moverFieldsChecked:4633120});
+});
