@@ -1,5 +1,14 @@
 # VPX physics reference
 
+Current spinner regressions use `native-spinner-original-controls.test.js`:
+ten complete independent recordings retain the historical controls, shot
+inputs, mechanism properties and all 1,560 public samples. All 101,900 body
+observations, both RNG streams, observed rod state and recorded frame outputs
+match exactly. The original `vpx-spinners.json` remains available with its
+original measurements and limits as a partial-state diagnostic. Earlier
+checkpoint notes below describe the verification state at those checkpoints;
+they do not imply that incomplete recordings initialize exact replays.
+
 The collision response and target geometry in the Three.js experiment derive
 from Visual Pinball contributors' GPLv3-or-later sources at commit
 `195f214dd4849b8ef6113fd377258b78d0dec3bf`, the revision pinned by

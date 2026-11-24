@@ -453,7 +453,13 @@ try{
   }
   const results=[];
   for(const scenario of cases.filter(s=>!selected||s.name===selected)){
-    if(isolationControls){const historical=isolationControls.cases.find(row=>row.name===scenario.name);assert.ok(historical,'Historical scenario exists');for(const key of ['x','y','z','vx','vy','vz','sampleCount','parkFromSample','gate','spinner','trigger','direction','speed','open','closeDelay'])assert.equal(scenario[key],historical[key],'Original declared input '+key);}
+    if(isolationControls){
+      const historical=isolationControls.cases.find(row=>row.name===scenario.name);assert.ok(historical,'Historical scenario exists');
+      // Both JSON and the original script interpolation submit -0 as "0".
+      // Normalize only these declared inputs; native state gates stay exact.
+      const submitted=value=>value===0?0:value;
+      for(const key of ['x','y','z','vx','vy','vz','sampleCount','parkFromSample','gate','spinner','trigger','direction','speed','open','closeDelay'])assert.equal(submitted(scenario[key]),submitted(historical[key]),'Original declared input '+key);
+    }
     if(recordRng)await evaluate('window.nativeRandomRecords.length=0;window.nativeAnimationRecords.length=0;window.nativeMissionRecords.length=0;window.nativeShotRecords.length=0;window.nativeScriptClocks.length=0;window.nativeInputRecords.length=0;window.nativeFlipperContacts.length=0;window.nativePulseRecords.length=0');
     if(recordTrails)await script('RefTrailOn=True');
     if(!gameLifecycle)await script(`SolLFlipper 0:SolRFlipper 0:${reset(430,1400,0,0)}`);await new Promise(r=>setTimeout(r,400));

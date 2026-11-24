@@ -24,14 +24,11 @@ test('physical plunger follows six native pull/release recordings and initial la
   assert.equal(reports.length,6);assert.ok(reports[0].maxModelSpeed<.1);assert.ok(reports.at(-1).maxModelSpeed>65);
 });
 
-test('ten independent native spinner recordings retain every scored rotation, coasting and overhead misses',()=>{
-  const reports=JSON.parse(execFileSync(process.execPath,['scripts/compare-vpx-spinners.mjs','--check','--json'],{cwd:root,encoding:'utf8',maxBuffer:2*1024*1024}));
-  assert.equal(reports.length,10);
-  assert.equal(reports.reduce((n,r)=>n+r.samples.length,0),1560);
-  assert.equal(reports.filter(r=>r.name.includes('overhead')).length,2);
-  for(const r of reports.filter(r=>r.name.includes('overhead')))assert.equal(r.spins,0);
-  for(const r of reports.filter(r=>r.name.includes('forward-24')))assert.equal(r.spins,9);
-});
+// The ten spinner cases now run in native-spinner-original-controls.test.js.
+// All 1,560 public observations, original controls/shot inputs, overhead misses
+// and nine-rotation fast shots remain checked, with complete native initial
+// state and zero-error body/RNG/rod gates. The partial vpx-spinners.json and
+// its CLI comparison remain available unchanged as historical diagnostics.
 
 test('twenty native gate recordings verify blocking, pass-through, open/close motion and overhead misses',()=>{
   const reports=JSON.parse(execFileSync(process.execPath,['scripts/compare-vpx-gates.mjs','--check','--json'],{cwd:root,encoding:'utf8',maxBuffer:2*1024*1024}));
