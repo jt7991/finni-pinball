@@ -9,7 +9,16 @@ assert.equal(capture.engineSHA256,'c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7
 const game=await createFullGame(JSON.parse(fs.readFileSync('three/public/layout.json')),JSON.parse(fs.readFileSync('three/public/objects.json')),fs.readFileSync('three/public/rules.vbs','utf8'),()=>{},{play(){},stop(){}},{frameAnimations:true,playerSettings:mainPlayerSettings,ballSettings:mainBallSettings,sceneSettings:mainSceneSettings});
 try{
  game.start();let ticks=0;
- const advance=ms=>{assert.ok(Number.isInteger(ms)&&ms>=Math.round(game.time*1000));while(!game.physicsStarted||Math.round(game.time*1000)<ms){game.step();ticks++;}};
+ const zero=values=>values.map(value=>value===0?0:value);
+ const bodies=()=>game.physicalRecords.map(record=>{const ball=game.nativeBall(record.body),state=ball.snapshot();return{id:record.proxy.getProperty('ID').value,position:zero(Object.values(state.p)),velocity:zero(Object.values(state.v)),momentum:zero(Object.values(state.m)),orientation:zero([...ball.orientation.matrix]),locked:!!record.held};});
+ const observed=rows=>rows.map(({id,position,velocity,momentum,orientation,locked})=>({id,position,velocity,momentum,orientation,locked}));
+ const boundaries={frames:0,bodies:0,bodyMismatches:0,randomMismatches:0,examples:[]};
+ const advance=ms=>{assert.ok(Number.isInteger(ms)&&ms>=Math.round(game.time*1000));while(!game.physicsStarted||Math.round(game.time*1000)<ms){
+  game.step();ticks++;const row=capture.startup.boundaries[ticks-1];if(!row)continue;
+  assert.equal(row.ms,ticks);boundaries.frames++;boundaries.bodies+=row.balls.length;
+  const actual=bodies(),expected=observed(row.balls);try{assert.deepEqual(actual,expected);}catch{boundaries.bodyMismatches++;if(boundaries.examples.length<4)boundaries.examples.push({ms:row.ms,actual,expected});}
+  if(game.random.getState().some((word,i)=>word!==row.random[i]))boundaries.randomMismatches++;
+ }};
  for(const frame of capture.clock.animationFrames){advance(frame.ms);game.prepareFrame();}
  advance(capture.freeze.after.ms);
  const rows=[],missing=[];
@@ -26,10 +35,9 @@ try{
   const allowance=typeof expected==='number'?5e-13+Number.EPSILON*Math.abs(expected):0;
   rows.push({name,field,expected,actual,error:Number.isFinite(error)?error:null,allowance,agrees:error<=allowance});
  }
- const zero=values=>values.map(value=>value===0?0:value),actualBodies=game.physicalRecords.map(record=>{const ball=game.nativeBall(record.body),state=ball.snapshot();return{id:record.proxy.getProperty('ID').value,position:zero(Object.values(state.p)),velocity:zero(Object.values(state.v)),momentum:zero(Object.values(state.m)),orientation:zero([...ball.orientation.matrix]),locked:!!record.held};});
- const expectedBodies=capture.freeze.after.balls.map(({id,position,velocity,momentum,orientation,locked})=>({id,position,velocity,momentum,orientation,locked}));
+ const actualBodies=bodies(),expectedBodies=observed(capture.freeze.after.balls);
  let bodiesAgree=true;try{assert.deepEqual(actualBodies,expectedBodies);}catch{bodiesAgree=false;}
- const report={input,ms:capture.freeze.after.ms,ticks,animationFrames:capture.clock.animationFrames.length,properties:rows.length,mismatches:rows.filter(row=>!row.agrees),missing,bodyComparison:{agrees:bodiesAgree,actual:actualBodies,expected:expectedBodies},random:{actual:game.random.getState(),expected:capture.freeze.after.random},rows,scope:'Ordinary production FullGame initialization and Start, every physical interval through the native endpoint, and read-only observed PrepareFrame clocks. No initial or later state restoration, native scene-property copies, clock fitting, lamp controls, pose setters or RNG overrides. Numeric allowance is the half-unit rounding error of native FormatNumber12 plus one JS parse ULP; body JSON values are exact apart from signed-zero normalization.'};
+ const report={input,ms:capture.freeze.after.ms,ticks,boundaries,animationFrames:capture.clock.animationFrames.length,properties:rows.length,mismatches:rows.filter(row=>!row.agrees),missing,bodyComparison:{agrees:bodiesAgree,actual:actualBodies,expected:expectedBodies},random:{actual:game.random.getState(),expected:capture.freeze.after.random},rows,scope:'Ordinary production FullGame initialization and Start, every physical interval through the native endpoint, and read-only observed PrepareFrame clocks. Every retained physical boundary compares bodies and RNG as well as the endpoint scene properties. No initial or later state restoration, native scene-property copies, clock fitting, lamp controls, pose setters or RNG overrides. Numeric allowance is the half-unit rounding error of native FormatNumber12 plus one JS parse ULP; body JSON values are exact apart from signed-zero normalization.'};
  fs.writeFileSync(output,JSON.stringify(report,null,2));console.log(JSON.stringify({ms:report.ms,ticks,animationFrames:report.animationFrames,properties:rows.length,mismatches:report.mismatches.length,examples:report.mismatches.slice(0,16),bodiesAgree,random:report.random}));
- if(process.argv.includes('--check')){assert.equal(report.mismatches.length,0);assert.equal(bodiesAgree,true);assert.deepEqual(report.random.actual,report.random.expected);}
+ if(process.argv.includes('--check')){assert.equal(report.mismatches.length,0);assert.equal(bodiesAgree,true);assert.deepEqual(report.random.actual,report.random.expected);assert.equal(boundaries.frames,capture.startup.boundaries.length);assert.equal(boundaries.bodyMismatches,0);assert.equal(boundaries.randomMismatches,0);}
 }finally{game.dispose();}
