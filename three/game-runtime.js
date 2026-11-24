@@ -11,7 +11,7 @@ export async function createRuntimeGame(base,emit,media){
       try{stored.push([key.slice('finni-three-rule-'.length),JSON.parse(localStorage.getItem(key))]);}catch{}
     }
   }catch{}
-  return connectSimulation(worker,{base:new URL(base,location.href).href,storage:stored,playerSettings:mainPlayerSettings,ballSettings:mainBallSettings,sceneSettings:mainSceneSettings,scriptBudget:mainScriptBudget},emit,media);
+  return connectSimulation(worker,{base:new URL(base,location.href).href,storage:stored,protectPartyChooser:true,playerSettings:mainPlayerSettings,ballSettings:mainBallSettings,sceneSettings:mainSceneSettings,scriptBudget:mainScriptBudget},emit,media);
 }
 
 export function connectSimulation(worker,init,emit=()=>{},media){

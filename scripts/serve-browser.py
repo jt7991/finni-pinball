@@ -142,6 +142,7 @@ class Handler(SimpleHTTPRequestHandler):
                   '/app.js': ROOT / 'browser/app.js', '/leaderboard.js': ROOT / 'browser/leaderboard.js', '/views.js': ROOT / 'browser/views.js', '/style.css': ROOT / 'browser/style.css',
                   '/renderer.js': ROOT / 'browser/renderer.js',
                   '/framebuffer-copy.js': ROOT / 'browser/framebuffer-copy.js',
+                  '/party-chooser.js': ROOT / 'browser/party-chooser.js',
                   '/arcade.css': ROOT / 'browser/arcade.css',
                   '/arcade-background.svg': ROOT / 'browser/arcade-background.svg',
                   '/start-dmd.png': ROOT / 'browser/start-dmd.png',

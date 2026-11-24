@@ -21,6 +21,7 @@ import {FlipperAnimation} from './flipper-animation.js';
 import {TriggerAnimation,BumperAnimation} from './mechanism-animation.js';
 import {applyPlayerSettings,applyBallSettings,applySceneSettings} from './player-settings.js';
 import {ScriptProfiler} from './script-profiler.js';
+import {partyChooserScript} from '../browser/party-chooser.js';
 
 export async function createFullGame(layout,specs,source,emit,media,options={}) {
   await RAPIER.init();
@@ -70,6 +71,7 @@ class FullGame extends Pinball {
     const flipperAnimations=this.flippers.map(flipper=>{const spec=this.nativeParts.get(this.colliderLabels.get(flipper.collider.handle).toLowerCase());return new FlipperAnimation(spec,()=>flipper.nativeAngle??Math.fround(Math.PI/2-flipper.angle),()=>this.rules.hit(spec.name,'Animate'));});
     this.frameMechanisms=[...flipperAnimations,...this.targetMotions.values(),...this.visualMotions.values(),...this.rules.sequences.values(),...this.rules.lamps.values()].sort((a,b)=>(a.spec.native_source_order??0)-(b.spec.native_source_order??0));
     this.rules.init();
+    if(options.protectPartyChooser)this.rules.execute(partyChooserScript);
     this.rules.execute('bFreePlay=True:BallsPerGame=3');
     applyPlayerSettings(this.rules,options.playerSettings);
     applySceneSettings(this.rules,options.sceneSettings);

@@ -1,6 +1,7 @@
 import {createLeaderboard} from './leaderboard.js';
 import {createViews,createDmd} from './views.js';
 import {prepareRenderer,configureRenderer,startTable} from './renderer.js';
+import {partyChooserScript} from './party-chooser.js';
 const actions = [
   ['left','Left flipper','ShiftLeft'],['right','Right flipper','ShiftRight'],
   ['launch','Launch','Enter'],['start','Start','Digit1'],
@@ -356,6 +357,7 @@ async function boot(){
         evaluate('Table1.BallFrontDecal=""');
         // Zero sensitivity disables penalties from both nudges and mechanical tilt.
         evaluate('Tilt=0:TiltSensitivity=0');
+        evaluate(partyChooserScript);
         // The native table now owns its decoded art/audio. Replay uses the
         // running player, so retaining the packed upload only wastes memory.
         engine.FS.unlink('/tables/finni.vpx');
