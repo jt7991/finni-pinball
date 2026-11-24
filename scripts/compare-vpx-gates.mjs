@@ -2,7 +2,9 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {createFullGame} from '../three/full-game.js';
 import {STEP} from '../three/physics.js';
-import {applyReferencePhysics,referenceRandom,placeReferenceBall,restoreReferenceBalls,readReferenceFixture,readReferenceAssets} from './reference-physics.mjs';
+import {applyReferencePhysics,referenceRandom,placeReferenceBall,restoreReferenceBalls,readReferenceFixture,readReferenceAssets,summarizeNativePlunger} from './reference-physics.mjs';
+import {replayReferenceScriptClocks} from './reference-script-clocks.mjs';
+import {replayReferenceAnimationFrames} from './reference-animation-frames.mjs';
 const fixture=readReferenceFixture(process.argv.slice(2).find(a=>!a.startsWith('--'))??'three/tests/fixtures/vpx-gates.json');
 assert.equal(fixture.probeKind,'gates');
 const {layout,objects,source}=readReferenceAssets(fixture);applyReferencePhysics(layout,objects,fixture);
@@ -23,10 +25,12 @@ for(const c of fixture.cases){
     const reset=(x,y,z,vx=0,vy=0)=>placeReferenceBall(g,r,{x,y,z,vx,vy});
     reset(c.x,c.y,c.z,c.vx,c.vy);
     r=restoreReferenceBalls(g,fixture,c,r);
+    const scriptClocks=replayReferenceScriptClocks(g,fixture,c);
+    const animationFrames=replayReferenceAnimationFrames(g,fixture,c);
     const gate=g.gates.find(s=>s.spec.name===c.gate);assert.ok(gate,c.gate);
     let elapsed=0;const samples=[];
     for(const [index,expected]of c.samples.entries()){
-      for(let ms=elapsed;ms<expected[0];ms++)g.step();elapsed=expected[0];
+      for(let ms=elapsed;ms<expected[0];ms++){g.step();animationFrames?.advance(ms+1);}elapsed=expected[0];
       if(index>=c.parkFromSample)reset(430,1500,25);
       // Original Ball references retain their final state after DestroyBall.
       // Continuous gate shots can drain before their last public observation.
@@ -37,7 +41,12 @@ for(const c of fixture.cases){
     const bodyFrames=g.nativeBodyAudit??[],bodies=bodyFrames.flatMap(frame=>frame.bodies),nativeBodySummary={frames:bodyFrames.length,bodies:bodies.length,missingReferences:bodies.filter(body=>body.missingReference).length,missingIDs:bodyFrames.reduce((n,frame)=>n+(frame.missingIDs?.length??0),0),unexpectedIDs:bodyFrames.reduce((n,frame)=>n+(frame.unexpectedIDs?.length??0),0),swapMismatches:bodyFrames.filter(frame=>Boolean(frame.swap)!==Boolean(frame.expectedSwap)).length};
     for(const key of ['positionError','velocityError','momentumError','orientationError'])nativeBodySummary[key]=Math.max(0,...bodies.map(body=>body[key]??0));
     const nativeScriptSummary=g.nativeScriptRandomAudit?{frames:g.nativeScriptRandomAudit.length,mismatches:g.nativeScriptRandomAudit.filter(row=>!row.agrees).length}:undefined;
+    const scriptClockInputs=scriptClocks?.finish(elapsed);
+    const animationClockInputs=animationFrames?.finish(elapsed);
     const report={name:c.name,maxAngleError:Math.max(...samples.map(s=>s.angleError)),maxPositionError:Math.max(...samples.map(s=>s.positionError)),maxVelocityError:Math.max(...samples.map(s=>s.velocityError)),scoreMismatches:samples.filter(s=>s.score!==s.expectedScore).length,countMismatches:samples.filter(s=>s.count!==s.expectedCount).length,physicsStats:g.physicsStats,samples,...(g.nativeRandomAudit?{nativeRandomAudit:g.nativeRandomAudit,nativeBodySummary,nativeScriptSummary}:{}),...(process.argv.includes('--body-audit')?{nativeBodyAudit:g.nativeBodyAudit}:{})};reports.push(report);
+    if(scriptClockInputs)report.scriptClockInputs=scriptClockInputs;
+    if(animationClockInputs)report.animationClockInputs=animationClockInputs;
+    if(g.nativePlungerAudit)report.nativePlungerSummary=summarizeNativePlunger(g.nativePlungerAudit);
     if(!process.argv.includes('--json'))console.log(JSON.stringify({...report,samples:undefined,nativeRandomAudit:undefined,nativeBodyAudit:undefined}));
   }finally{g.dispose();}
 }

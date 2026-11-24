@@ -23,6 +23,15 @@ const requestedBallIndex=process.argv.find(a=>a.startsWith('--ball-index='))?.sl
 if(ballIndex!==undefined)assert.ok(Number.isInteger(ballIndex)&&ballIndex>=0,'Measured native body index must be a nonnegative integer');
 const probeKind=process.argv.includes('--target-events')?'target-events':process.argv.includes('--material-events')?'material-events':process.argv.includes('--flipper-events')?'flipper-events':process.argv.includes('--slingshots')?'slingshots':process.argv.includes('--bumpers')?'bumpers':process.argv.includes('--autofire')?'autofire':process.argv.includes('--ball-pairs')?'ball-pairs':process.argv.includes('--triggers')?'triggers':process.argv.includes('--targets')?'targets':process.argv.includes('--gates')?'gates':process.argv.includes('--spinners')?'spinners':process.argv.includes('--plunger')?'plunger':process.argv.includes('--nudge')?'nudge':'contacts';
 const reference=await(await fetch(new URL('/reference-metadata.json',base))).json();
+const isolationControlsFile=process.argv.find(arg=>arg.startsWith('--isolation-controls='))?.slice(21);
+let isolationControls;
+if(isolationControlsFile){
+  assert.ok(['spinners','gates','triggers'].includes(probeKind));
+  assert.ok(!process.argv.some(arg=>arg.startsWith('--disable='))&&!process.argv.includes('--rotate-camera')&&!process.argv.includes('--isolate-floor'));
+  const bytes=await readFile(isolationControlsFile);isolationControls=JSON.parse(bytes);assert.equal(isolationControls.probeKind,probeKind);assert.equal(isolationControls.sourceSha256,reference.sourceSha256);assert.deepEqual(isolationControls.controlledOverrides,reference.controlledOverrides);
+  for(const [key,value]of Object.entries(isolationControls.runtimeOverrides)){if(/^(Left|Right)Flipper\.Scatter$/.test(key)){assert.equal(value,0);continue;}assert.match(key,/^[A-Za-z0-9_-]+\.(Collidable|Enabled)$/);assert.equal(value,false);}
+  reference.isolationControlSource={file:isolationControlsFile,sha256:createHash('sha256').update(bytes).digest('hex'),scope:'Only the explicit isolation property list and declared scenario inputs are reused. Historical samples, missing initial states, RNG and outcomes are never used as reference-engine inputs.'};
+}
 const gameLifecycle=process.argv.includes('--game-lifecycle'),packedFrames=process.argv.includes('--packed-frames');
 const observeMissions=process.argv.includes('--observe-mission-state');
 if(observeMissions){assert.ok(reference.runtimeMarkers);reference.runtimeMissionFrames=nativeMissionFrames(reference.runtimeMarkers.code,process.argv.includes('--observe-multiball-state'),process.argv.includes('--observe-nudge-state'),process.argv.includes('--observe-mission-details'),gameLifecycle);}
@@ -394,8 +403,10 @@ try{
     for(const s of specs){
       if(s.name==='playfield_mesh'||!Number.isInteger(s.native_source_order))continue;
       const property=['Wall','Ramp','Primitive','HitTarget','Bumper','Gate','Rubber'].includes(s.kind)?'Collidable':s.kind==='Trigger'?'Enabled':null;
+      if(isolationControls&&!Object.hasOwn(isolationControls.runtimeOverrides,`${s.name}.${property}`))continue;
       if(property){overrides.push({name:s.name,property});runtimeOverrides[`${s.name}.${property}`]=false;}
     }
+    if(isolationControls)assert.deepEqual(Object.keys(runtimeOverrides).sort(),Object.keys(isolationControls.runtimeOverrides).sort(),'Every historical isolation control names an original native object');
     await script('Dim RefElement');
     for(let i=0;i<overrides.length;i+=20){
       const batch=overrides.slice(i,i+20),lookup=o=>`Set RefElement=GetElementByName("${o.name.replaceAll('"','""')}")`;
@@ -406,6 +417,7 @@ try{
       const flags=(await marker(label)).split(':').map(parseFloat);assert.equal(flags.length,batch.length);assert.ok(flags.every(n=>n===0),'native mechanism isolation setters took effect');
     }
     reference.isolation='Other authored solid geometry and switches disabled; cabinet bounds and the playfield retained. From parkFromSample onward, reset the measured ball to a remote flat spot immediately before each observation so the plate coasts without further strikes.';
+    if(isolationControls)reference.isolation='Only the historical isolationControls runtimeOverrides are applied. Additional authored rubber/sling contacts retain their source defaults. Selected mechanism setters and any parkFromSample inputs remain explicit in each scenario.';
     const settingsKey=probeKind==='gates'?'nativeGateProperties':'nativeSpinnerProperties';if(!['triggers','ball-pairs','bumpers','slingshots','flipper-events','material-events','target-events'].includes(probeKind))reference[settingsKey]={};
     for(const name of ['triggers','ball-pairs','bumpers','slingshots','flipper-events','material-events','target-events'].includes(probeKind)?[]:probeKind==='gates'?['Gate001','Gate002','Gate3','Gate4']:['Spinner001','Spinner002']){
       const properties=['Height','Length','Rotation','Damping',...(probeKind==='gates'?['OpenAngle','CloseAngle']:['AngleMin','AngleMax']),'Elasticity'];
@@ -441,6 +453,7 @@ try{
   }
   const results=[];
   for(const scenario of cases.filter(s=>!selected||s.name===selected)){
+    if(isolationControls){const historical=isolationControls.cases.find(row=>row.name===scenario.name);assert.ok(historical,'Historical scenario exists');for(const key of ['x','y','z','vx','vy','vz','sampleCount','parkFromSample','gate','spinner','trigger','direction','speed','open','closeDelay'])assert.equal(scenario[key],historical[key],'Original declared input '+key);}
     if(recordRng)await evaluate('window.nativeRandomRecords.length=0;window.nativeAnimationRecords.length=0;window.nativeMissionRecords.length=0;window.nativeShotRecords.length=0;window.nativeScriptClocks.length=0;window.nativeInputRecords.length=0;window.nativeFlipperContacts.length=0;window.nativePulseRecords.length=0');
     if(recordTrails)await script('RefTrailOn=True');
     if(!gameLifecycle)await script(`SolLFlipper 0:SolRFlipper 0:${reset(430,1400,0,0)}`);await new Promise(r=>setTimeout(r,400));

@@ -2,7 +2,9 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {createFullGame} from '../three/full-game.js';
 import {STEP} from '../three/physics.js';
-import {applyReferencePhysics,referenceRandom,placeReferenceBall,restoreReferenceBalls,readReferenceFixture,readReferenceAssets} from './reference-physics.mjs';
+import {applyReferencePhysics,referenceRandom,placeReferenceBall,restoreReferenceBalls,readReferenceFixture,readReferenceAssets,summarizeNativePlunger} from './reference-physics.mjs';
+import {replayReferenceScriptClocks} from './reference-script-clocks.mjs';
+import {replayReferenceAnimationFrames} from './reference-animation-frames.mjs';
 const fixture=readReferenceFixture(process.argv.slice(2).find(a=>!a.startsWith('--'))??'three/tests/fixtures/vpx-spinners.json');
 assert.equal(fixture.probeKind,'spinners');
 const {layout,objects,source}=readReferenceAssets(fixture);applyReferencePhysics(layout,objects,fixture);
@@ -21,17 +23,24 @@ for(const c of fixture.cases){
     const reset=(x,y,z,vx=0,vy=0)=>placeReferenceBall(g,r,{x,y,z,vx,vy});
     reset(c.x,c.y,c.z,c.vx,c.vy);
     r=restoreReferenceBalls(g,fixture,c,r);
+    const scriptClocks=replayReferenceScriptClocks(g,fixture,c);
+    const animationFrames=replayReferenceAnimationFrames(g,fixture,c);
     const spinner=g.spinners.find(s=>s.spec.name===c.spinner);assert.ok(spinner,c.spinner);
     let elapsed=0;const samples=[];
     for(const [index,expected]of c.samples.entries()){
-      for(let ms=elapsed;ms<expected[0];ms++)g.step();elapsed=expected[0];
+      for(let ms=elapsed;ms<expected[0];ms++){g.step();animationFrames?.advance(ms+1);}elapsed=expected[0];
       if(index>=c.parkFromSample)reset(430,1500,25);
       const p=r.body.translation(),v=r.body.linvel(),angle=spinner.currentAngle,score=g.rules.value('Score(CurrentPlayer)'),count=g.rules.value('LeftSpinnerCount(CurrentPlayer)');
       samples.push({ms:elapsed,expectedAngle:expected[12],angle,angleError:Math.abs(((angle-expected[12]+540)%360)-180),expectedScore:expected[13],score,expectedCount:expected[14],count,positionError:Math.hypot(p.x*100-expected[1],2115-p.y*100-expected[2],p.z*100-expected[3]),velocityError:Math.hypot(v.x-expected[4],-v.y-expected[5],v.z-expected[6])});
     }
-    const bodies=(g.nativeBodyAudit??[]).flatMap(frame=>frame.bodies),nativeBodySummary={frames:g.nativeBodyAudit?.length??0,bodies:bodies.length};
+    const bodyFrames=g.nativeBodyAudit??[],bodies=bodyFrames.flatMap(frame=>frame.bodies),nativeBodySummary={frames:bodyFrames.length,bodies:bodies.length,missingReferences:bodies.filter(body=>body.missingReference).length,missingIDs:bodyFrames.reduce((n,frame)=>n+(frame.missingIDs?.length??0),0),unexpectedIDs:bodyFrames.reduce((n,frame)=>n+(frame.unexpectedIDs?.length??0),0),swapMismatches:bodyFrames.filter(frame=>Boolean(frame.swap)!==Boolean(frame.expectedSwap)).length};
     for(const key of ['positionError','velocityError','momentumError','orientationError'])nativeBodySummary[key]=Math.max(0,...bodies.map(body=>body[key]??0));
+    const scriptClockInputs=scriptClocks?.finish(elapsed);
+    const animationClockInputs=animationFrames?.finish(elapsed);
     const report={name:c.name,maxAngleError:Math.max(...samples.map(s=>s.angleError)),maxPositionError:Math.max(...samples.map(s=>s.positionError)),maxVelocityError:Math.max(...samples.map(s=>s.velocityError)),scoreMismatches:samples.filter(s=>s.score!==s.expectedScore).length,countMismatches:samples.filter(s=>s.count!==s.expectedCount).length,spins:spinner.spins,physicsStats:g.physicsStats,samples,...(g.nativeRandomAudit?{nativeRandomAudit:g.nativeRandomAudit,nativeBodySummary}:{}),...(g.nativeScriptRandomAudit?{nativeScriptRandomAudit:g.nativeScriptRandomAudit}:{}),...(process.argv.includes('--body-audit')?{nativeBodyAudit:g.nativeBodyAudit}:{})};reports.push(report);
+    if(scriptClockInputs)report.scriptClockInputs=scriptClockInputs;
+    if(animationClockInputs)report.animationClockInputs=animationClockInputs;
+    if(g.nativePlungerAudit)report.nativePlungerSummary=summarizeNativePlunger(g.nativePlungerAudit);
     if(!process.argv.includes('--json'))console.log(JSON.stringify({...report,samples:undefined,nativeRandomAudit:undefined,nativeScriptRandomAudit:undefined,nativeBodyAudit:undefined}));
   }finally{g.dispose();}
 }

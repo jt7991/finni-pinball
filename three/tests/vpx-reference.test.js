@@ -40,12 +40,11 @@ test('twenty native gate recordings verify blocking, pass-through, open/close mo
   assert.equal(reports.filter(r=>r.name.endsWith('-open-close')).length,4);
 });
 
-test('four independent native switch recordings retain circle, wire and overhead volume transitions',()=>{
-  const reports=JSON.parse(execFileSync(process.execPath,['scripts/compare-vpx-triggers.mjs','--check','--json'],{cwd:root,encoding:'utf8',maxBuffer:1024*1024}));
-  assert.equal(reports.length,4);assert.equal(reports.reduce((n,r)=>n+r.samples.length,0),160);
-  for(const report of reports)assert.equal(report.membershipMismatches,0);
-  assert.deepEqual(reports.find(r=>r.name==='wire-crossing').events.map(e=>e.event),['Hit','UnHit','Hit','UnHit']);
-});
+// All four switch scenarios now run in native-mechanism-clock-replay.test.js.
+// Their original declared inputs, 40 samples each and isolation controls are
+// required unchanged, with complete independent body/RNG/Timer/frame inputs
+// and stricter zero-error internal gates. The original vpx-triggers.json data
+// and its comparison CLI remain available as a partial-state diagnostic.
 
 test('native shooter switch exits preserve the first 184ms of the independently recorded feed',()=>{
   const reports=JSON.parse(execFileSync(process.execPath,['scripts/compare-vpx-contact.mjs','three/tests/fixtures/vpx-shooter-feed.json','--report=.work/three-review/vpx-shooter-feed-comparison.json','--json'],{cwd:root,encoding:'utf8',maxBuffer:1024*1024}));
