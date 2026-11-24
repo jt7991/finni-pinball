@@ -1,5 +1,8 @@
 import {defineConfig} from 'vite';
 import {verifyDmdAtlas} from './scripts/verify-dmd-atlas.mjs';
+// Apply current compatibility fixes before building or optimizing dependencies.
+// Tracking this import also invalidates Vite's cache when a fix changes.
+import './scripts/patch-vbs-engine.mjs';
 
 let atlasPublicDirectory;
 

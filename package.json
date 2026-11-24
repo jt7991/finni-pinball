@@ -8,6 +8,7 @@
     "build": "vite build",
     "play": "node scripts/serve-three.mjs --build",
     "start": "node scripts/serve-three.mjs",
+    "pretest": "node scripts/patch-vbs-engine.mjs",
     "test": "node --test three/tests/*.test.js",
     "preview": "vite preview --host 127.0.0.1"
   },
