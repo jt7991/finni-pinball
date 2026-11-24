@@ -13,6 +13,11 @@ import {createVpmTimer} from './vpm-timer.js';
 
 export const KEY={left:42,right:54,launch:28,start:2,action:57,nudgeLeft:44,nudgeForward:45,nudgeRight:53};
 const empty=()=>{};
+// Native COM return types for properties read by the authored rules. A
+// numerically integral float is still VT_R4; aliases must retain that type.
+const singleProperties={Flipper:new Set(['currentangle','startangle','endangle','strength','elasticity','eostorque','eostorqueangle']),Bumper:new Set(['threshold']),Kicker:new Set(['x','y']),Primitive:new Set(['rotx','roty','rotz']),Flasher:new Set(['rotz']),Light:new Set(['state'])};
+const longProperties={Light:new Set(['blinkinterval']),LightSequencer:new Set(['updateinterval']),Timer:new Set(['interval'])};
+const booleanProperties={HitTarget:new Set(['isdropped']),Flasher:new Set(['visible']),Gate:new Set(['open']),Timer:new Set(['enabled'])};
 const liveProperties={Gate:new Set(['currentangle','collidable','open','hitthreshold']),HitTarget:new Set(['isdropped','currentanimoffset','hitthreshold']),Trigger:new Set(['currentanimoffset']),Bumper:new Set(['threshold','force','scatter','hashitevent','collidable','currentringoffset','rotx','roty','enableskirtanimation','ringspeed','ringdropoffset']),Wall:new Set(['disabled','slingshotthreshold','hitthreshold']),Primitive:new Set(['hitthreshold'])};
 // Lamp getters depend on these existing animation fields. Observe them directly
 // so unchanged lamps need no repeated proxy reads during worker publication.
@@ -88,16 +93,22 @@ export function createRules(source,specs,host={}) {
       getballs:()=>host.balls?.()??[],
     };
     const snapshotInfo={revision:0,lamp,lampRevision:0,lampState:[],live:liveProperties[spec.kind],keys:new WeakMap()};
-    // Native Light.State is VT_R4, including integral states and aliases.
-    // The original dispatch converts failed State inputs to zero. Keep all
-    // other properties and method calls on the existing host conversion path.
-    const lampDispatch=lamp?{
-      getproperty(name){const key=String(name).toLowerCase(),value=proxy[key];if(key==='state')return {type:'Single',value:Math.fround(value)};const variant=jsToVb(value);if(typeof value==='function')variant.value.thisArg=proxy;return variant;},
-      setproperty(name,variant){const key=String(name).toLowerCase();if(key==='state'){let value=0;try{value=engine._getContext().functionRegistry.call('CSng',[variant]).value;}catch{}proxy[key]=value;}else proxy[key]=vbToJs(variant);},
+    const singles=singleProperties[spec.kind],longs=longProperties[spec.kind],booleans=booleanProperties[spec.kind];
+    const dispatch=singles||longs||booleans?{
+      getproperty(name){
+        const key=String(name).toLowerCase(),value=proxy[key];
+        if(singles?.has(key))return {type:'Single',value:Math.fround(value)};
+        if(longs?.has(key))return {type:'Long',value:Number(value)};
+        // HitTarget::get_IsDropped deliberately returns a BOOL payload of
+        // +1 rather than -1. Preserve it through VB aliases and operators.
+        if(booleans?.has(key))return {type:'Boolean',value:!!value,...(spec.kind==='HitTarget'&&key==='isdropped'&&value?{nativeBoolean:1}:{})};
+        const variant=jsToVb(value);if(typeof value==='function')variant.value.thisArg=proxy;return variant;
+      },
+      setproperty(name,variant){const key=String(name).toLowerCase();if(singles?.has(key)){let value=0;try{value=engine._getContext().functionRegistry.call('CSng',[variant]).value;}catch{}proxy[key]=value;}else proxy[key]=vbToJs(variant);},
       hasmethod:()=>false,
     }:null;
     const proxy=new Proxy(state,{
-      get(target,key){if(typeof key==='symbol')return target[key];const k=key.toLowerCase();if(lampDispatch&&Object.hasOwn(lampDispatch,k))return lampDispatch[k];if(lamp){const value=lamp.get(k);if(value!==undefined)return value;}if(spec.kind==='Plunger'&&k==='position')return host.plungerPosition?.()??0;if(liveProperties[spec.kind]?.has(k)){const value=host.mechanismValue?.(name,k);if(value!==undefined)return value;}return k in actions?actions[k]:target[k]??0;},
+      get(target,key){if(typeof key==='symbol')return target[key];const k=key.toLowerCase();if(dispatch&&Object.hasOwn(dispatch,k))return dispatch[k];if(lamp){const value=lamp.get(k);if(value!==undefined)return value;}if(spec.kind==='Plunger'&&k==='position')return host.plungerPosition?.()??0;if(liveProperties[spec.kind]?.has(k)){const value=host.mechanismValue?.(name,k);if(value!==undefined)return value;}return k in actions?actions[k]:target[k]??0;},
       set(target,key,v){const k=String(key).toLowerCase();if(lamp?.set(k,v))return true;const previous=target[k];target[k]=lamp&&['color','colorfull'].includes(k)?nativeColor(v):v;
         if(spec.kind==='Flasher'){
           if(k==='color')target[k]=nativeColor(v);

@@ -37,4 +37,18 @@ if(!source.includes(absMarker)){
   if(source.split(old).length!==2||!source.includes('function E(e) {'))throw Error('Upstream Abs or date conversion changed; refusing an unreviewed patch');
   source=source.replace(old,replacement);
 }
+// HitTarget exposes a deliberate, noncanonical VT_BOOL +1. Normal JS Boolean
+// truth is retained, while its native signed payload survives numeric/bitwise
+// operations, aliases and CBool. Ordinary True/False values are unchanged.
+const booleanMarker='/* finni: native Boolean payload */';
+if(!source.includes(booleanMarker)){
+  const changes=[
+    ['if (e.type === "Boolean") return e.value ? -1 : 0;',`if (e.type === "Boolean") return ${booleanMarker} e.nativeBoolean ?? (e.value ? -1 : 0);`],
+    ['kind: "Boolean",\n\t\t\tvalue: e.value ? -1 : 0','kind: "Boolean",\n\t\t\tvalue: e.nativeBoolean ?? (e.value ? -1 : 0)'],
+    ['type: "Boolean",\n\t\t\tvalue: t !== 0','type: "Boolean",\n\t\t\tvalue: t !== 0,\n\t\t\t...(t !== 0 && t !== -1 ? {nativeBoolean:t} : {})'],
+    ['CBool: (e) => ({\n\t\ttype: "Boolean",\n\t\tvalue: Hn(e)\n\t}),','CBool: (e) => e.type === "Boolean" ? e : ({\n\t\ttype: "Boolean",\n\t\tvalue: Hn(e)\n\t}),'],
+    ['e.type === "Boolean" ? e.value ? BigInt(-1) : BigInt(0)','e.type === "Boolean" ? BigInt(L(e))'],
+  ];
+  for(const[old,replacement]of changes){if(source.split(old).length!==2)throw Error('Upstream Boolean conversion changed; refusing an unreviewed patch');source=source.replace(old,replacement);}
+}
 if(source!==original)fs.writeFileSync(path,source);

@@ -100,7 +100,10 @@ test('live-catch elasticity lasts ten milliseconds rather than ten physics frame
   // Process every physical millisecond. An overdue timer delivered after a
   // clock jump is a separate native case and does not replay missed callbacks.
   for(let ms=0;ms<4;ms++)r.tick(.001);assert.equal(r.objects.get('leftflipper').elasticity,0);
-  for(let ms=0;ms<8;ms++)r.tick(.001);assert.equal(r.objects.get('leftflipper').elasticity,.6);
+  // The independent native property capture returns this VT_R4 value,
+  // rather than the former test's double-precision .6 assumption.
+  for(let ms=0;ms<8;ms++)r.tick(.001);assert.equal(r.objects.get('leftflipper').elasticity,Math.fround(.6));
+  assert.equal(r.value('VarType(LeftFlipper.Elasticity)'),4);
   assert.equal(r.value('LLiveCatchTimer'),10);
 });
 
