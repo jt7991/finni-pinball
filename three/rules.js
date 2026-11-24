@@ -19,7 +19,7 @@ const liveProperties={Gate:new Set(['currentangle','collidable','open','hitthres
 // semantics. No Visual Pinball, COM, native scripting host or global integration.
 export function createRules(source,specs,host={}) {
   const engine=new VbsEngine({hostIntegration:false,maxExecutionTime:2000});
-  const scriptRandom=createScriptRandom();registerScriptRandom(engine,scriptRandom);registerNativeTimer(engine);
+  const scriptRandom=createScriptRandom({clock:host.scriptRandomClock});registerScriptRandom(engine,scriptRandom);registerNativeTimer(engine,undefined,host.scriptTimerSeconds);
   const objects=new Map(),timers=new Map(),delays=[],sequences=new Map(),lamps=new Map(),generatedEvents=new Map(),snapshotObjects=new WeakMap();
   const sequenceRandom=host.random??runtimeNativeRandom();
   const methods=new Set([...source.matchAll(/^\s*(?:Sub|Function)[ \t]+(\w+)/gmi)].map(m=>m[1].toLowerCase()));

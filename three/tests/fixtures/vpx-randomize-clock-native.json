@@ -1,0 +1,16 @@
+{
+  "engineSHA256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+  "functionIndex": 18195,
+  "sha256": "4265a23e45c59614df69c185f35e0ed0498284567f8986767a7d533796639045",
+  "base64": "AwJ/AXwBfiMAQRBrIgQkAAJAAnwgAkEBRgRAIARBADsBACAEIAFBAEEFEJKMASICQQBIDQIgBCsDCAwBCyMAQRBrIgEkAEEAIAEQj5IBGiABKAIIIQIgASgCACEFIAFBEGokACAFQegHbCACQcCEPW1quET8qfHSTWJQP6ILIQYgACgCECgCHCICIAItAEwgBr0iB0IgiKdB//8DcSAHQjCIp3NBCHRyNgJMQYWAiIB4QQAgAxshAgsgBEEQaiQAIAIL",
+  "imports": {
+    "variantChangeType": 18066,
+    "clockGettime": 18703
+  },
+  "timer": {
+    "functionIndex": 18219,
+    "sha256": "897063c619a33bc0e076c6d3219c4bf1645dd56b4b9222a2066b366eea83caf5",
+    "base64": "AQJ/IwBBEGsiACQAIAAQ+IsBIAMEQCAALwEOIQEgAC8BDCECIAAvAQohBCAALwEIIQUgA0EEOwEAIAMgAbhEAAAAAABAj0CjIAIgBEE8bCAFQZAcbGpquKC2OAIICyAAQRBqJABBAAs="
+  },
+  "scope": "Original Global_Randomize compiled body. The omitted-argument branch reads CLOCK_REALTIME seconds and nanoseconds, forms epoch milliseconds as a DWORD, then scales by 0.001. In isolated conformance tests only its two call indices are relocated; live native instructions and clocks are never replaced. The original Global_Timer callback body independently pins the read-only external-clock observer."
+}

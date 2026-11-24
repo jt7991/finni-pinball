@@ -6,7 +6,7 @@ import {describeGame,snapshotGame,snapshotSubmissionBall} from './game-snapshot.
 export function createSimulationHost(send,{allowDebug=false,now=()=>performance.now(),wallNow=()=>Date.now(),scriptClock}={}){
   let game,paused=true,disposed=false,fatal=false,timer,queued=false,anchorWall=0,anchorTick=0,tick=0,lastPublish=0;
   const epochMilliseconds=wallNow();let lastPhysicsMilliseconds=epochMilliseconds;
-  let nextFrame=0,retainedFrame;
+  let nextFrame=0,retainedFrame,randomizeClockIndex=0,timerClockIndex=0;
   const names=new Set(),queries=new Set(['bChooseBattle']),effects=[],objectStates=new Map();
   const stats={ticks:0,physicsMs:0,maxChunkMs:0,lagMs:0,snapshotMs:0,snapshots:0,snapshotObjectFields:0};
   const channel=new MessageChannel();
@@ -65,9 +65,15 @@ export function createSimulationHost(send,{allowDebug=false,now=()=>performance.
       const load=async(name,json=true)=>{const response=await fetch(new URL(name,message.base));if(!response.ok)throw Error(`${name} could not be loaded.`);return json?response.json():response.text();};
       const [layout,specs,source]=await Promise.all([load('layout.json'),load('objects.json'),load('rules.vbs',false)]);assets={layout,specs,source};
     }
+    const randomizeClocks=message.observedRandomizeClocks;
+    if(randomizeClocks!==undefined&&(!allowDebug||!Array.isArray(randomizeClocks)||!randomizeClocks.length||randomizeClocks.some(value=>!Number.isSafeInteger(value)||value<0)))throw Error('Observed script clocks require valid debug-only clock inputs');
+    const scriptRandomClock=randomizeClocks===undefined?undefined:()=>{if(randomizeClockIndex>=randomizeClocks.length)throw Error('Missing observed Randomize clock');return randomizeClocks[randomizeClockIndex++];};
+    const timerClocks=message.observedTimerSeconds;
+    if(timerClocks!==undefined&&(!allowDebug||!Array.isArray(timerClocks)||timerClocks.some(value=>!Number.isFinite(value)||value<0||value>86400||Math.fround(value)!==value)))throw Error('Observed Timer requires valid debug-only clock inputs');
+    const scriptTimerSeconds=timerClocks===undefined?undefined:()=>{if(timerClockIndex>=timerClocks.length)throw Error('Missing observed Timer clock');return timerClocks[timerClockIndex++];};
     game=await createFullGame(assets.layout,assets.specs,assets.source,event=>effects.push({type:'event',event}),{
       play:(name,settings)=>effects.push({type:'play',name,settings}),stop:name=>effects.push({type:'stop',name}),
-    },{storage,frameAnimations:true,playerSettings:message.playerSettings,ballSettings:message.ballSettings,sceneSettings:message.sceneSettings,scriptBudget:message.scriptBudget,scriptClock});
+    },{storage,frameAnimations:true,playerSettings:message.playerSettings,ballSettings:message.ballSettings,sceneSettings:message.sceneSettings,scriptBudget:message.scriptBudget,scriptClock,scriptRandomClock,scriptTimerSeconds});
     // Native startup prepares its renderer after Table1_Init and before
     // starting physics. That frame clears initialization's script cost.
     if(game.scriptProfiler)game.prepareFrame();
@@ -89,7 +95,7 @@ export function createSimulationHost(send,{allowDebug=false,now=()=>performance.
       game.nativeBall(record.body).body.setTranslation(command.position,true);record.body.setLinvel(command.velocity,true);record.body.setAngvel({x:0,y:0,z:0},true);return;
     }
     if(command.action==='inspect')return {
-      time:game.time,random:game.random.getState?.(),scriptRandom:game.rules.scriptRandom.getState(),
+      time:game.time,random:game.random.getState?.(),scriptRandom:game.rules.scriptRandom.getState(),...randomizeClockIndex?{randomizeClockSamples:randomizeClockIndex,timerClockSamples:timerClockIndex}:{},
       bodies:game.physicalRecords.map(rec=>{const native=game.nativeBall(rec.body);native.syncAngular();return {held:rec.held,position:{...native.sync()},velocity:{...rec.body.linvel()},momentum:{...native.angularMomentum},orientation:Array.from(native.orientation.matrix)};}),
     };
     throw Error('Unknown simulation inspection command');

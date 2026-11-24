@@ -86,6 +86,9 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--audio-mix' in sys.argv:runner='test-native-audio-mix-browser.mjs'
         timeout=150
         if '--production-lifecycle' in sys.argv:timeout=260
+        if '--native-frame-history' in sys.argv:
+            frame_count=next((int(arg.split('=',1)[1]) for arg in sys.argv if arg.startswith('--frames=')),6)
+            timeout=max(timeout,60+frame_count*4)
         if '--native-contact' in sys.argv and '--packed-frames' in sys.argv:
             record_ms=next((int(arg.split('=',1)[1]) for arg in sys.argv if arg.startswith('--record-through-ms=')),0)
             timeout=max(timeout,record_ms/1000+90)

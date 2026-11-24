@@ -50,6 +50,8 @@ class FullGame extends Pinball {
     };
     this.rules=createRules(source,specs,{
       scriptProfiler:this.scriptProfiler,
+      scriptRandomClock:options.scriptRandomClock,
+      scriptTimerSeconds:options.scriptTimerSeconds,
       createBall:name=>this.spawn(name),destroyBall:(name,ball)=>this.remove(name,ball),
       kick:(name,ball,angle,speed,inclination)=>this.kick(name,ball,angle,speed,inclination),
       flipper:(side,down)=>{this.held[side]=down;},plunger:down=>{this.held.launch=down;if(down)this.plunger.pull();else this.launch();},

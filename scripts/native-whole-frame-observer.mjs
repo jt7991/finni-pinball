@@ -3,7 +3,7 @@
 export function installNativeWholeFrameObserver(options={}){
  const data=window.nativeWholeFrame={armed:!!options.fromInitialization,done:false,images:{},draws:[],clears:[],errors:[],priorErrors:[]},io=window.nativePostprocess.io;
  if(options.fromInitialization){
-  if(!Number.isInteger(options.frames)||options.frames<2||options.frames>16)throw Error('Consecutive capture requires 2..16 frames');
+  if(!Number.isInteger(options.frames)||options.frames<2||options.frames>64)throw Error('Consecutive capture requires 2..64 frames');
   data.frames=[];
  }
  if(options.tracePixel)data.tracePixel=options.tracePixel;

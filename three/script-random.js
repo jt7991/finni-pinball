@@ -4,7 +4,7 @@
 // See public/licenses/Wine-Script-Random-NOTICE.txt.
 
 // Each script context owns this stream; it never draws physics randomness.
-export function createScriptRandom({clock=()=>performance.now()}={}){
+export function createScriptRandom({clock=()=>Date.now()}={}){
   const bits=new DataView(new ArrayBuffer(8));let state=0x50000;
   const next=value=>(Math.imul(value,0x43fd43fd)+0xc39ec3)&0xffffff;
   return {
@@ -15,8 +15,9 @@ export function createScriptRandom({clock=()=>performance.now()}={}){
       return state/16777216;
     },
     randomize(argument){
-      // Native GetTickCount is an integer DWORD in milliseconds. Randomize
-      // preserves the low byte of the previous state, even for an equal seed.
+      // The pinned WASM GetTickCount uses gettimeofday's epoch milliseconds,
+      // narrowed to a DWORD. It does not use the page's performance origin.
+      // Randomize preserves the previous state's low byte, even for equal seeds.
       bits.setFloat64(0,argument===undefined?(Math.trunc(clock())>>>0)*.001:argument,true);
       let seed=bits.getUint32(4,true);seed^=seed>>>16;
       state=((seed&0xffff)<<8)|(state&0xff);
