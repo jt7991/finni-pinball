@@ -2,7 +2,7 @@
 // external pose inputs, not natural player qualification or body corrections.
 import {nativeSurfaceHeight} from '../three/native-ramp.js';
 export function missionCompletionScenario(objects,mission=1){
- if(![1,2,3,4].includes(mission))throw Error('Completion coverage currently supports missions 1 through 4');
+ if(![1,2,3,4,5].includes(mission))throw Error('Completion coverage currently supports missions 1 through 5');
  const target=objects.find(s=>s.name==='Target001'),angle=target.rot_z*Math.PI/180,normal={x:-Math.sin(angle),y:Math.cos(angle)},front=Math.max(...target.collision_mesh.vertices.map(v=>v[1]))*target.size.y;
  const trigger=(name,side='below')=>{const s=objects.find(s=>s.name===name),surface=objects.find(p=>p.name===s.surface),left=side==='left',above=side==='above',x=left?Math.min(...s.drag_points.map(p=>p.x))-25.01:s.center.x,y=left?s.center.y:above?Math.min(...s.drag_points.map(p=>p.y))-25.01:Math.max(...s.drag_points.map(p=>p.y))+25.01;return{x,y,z:25+(surface?nativeSurfaceHeight(surface,x,y):0),vx:left?8:0,vy:left?0:above?8:-8,vz:0};};
  const approach=(name,dx,dy)=>{const s=objects.find(p=>p.name===name),surface=objects.find(p=>p.name===s.surface),distance=s.radius+25.01,x=s.center.x+dx*distance,y=s.center.y+dy*distance;return{x,y,z:25+(surface?nativeSurfaceHeight(surface,x,y):0),vx:-dx*8,vy:-dy*8,vz:0};};
@@ -12,24 +12,25 @@ export function missionCompletionScenario(objects,mission=1){
  return{mission,shotInterval:800,shots:{
   scoop:{x:293.68433,y:530,z:25,vx:0,vy:-8,vz:0},
   target:{x:target.position.x+normal.x*(front+25.01),y:target.position.y+normal.y*(front+25.01),z:25,vx:-normal.x*8,vy:-normal.y*8,vz:0},
-  loop:trigger('Trigger010'),ramp:[2,4].includes(mission)?approach('Trigger012',-Math.SQRT1_2,-Math.SQRT1_2):trigger('Trigger012'),rightRamp:trigger('Trigger013'),rightLoop:trigger('Trigger009'),
+  loop:trigger('Trigger010'),ramp:mission===2||mission>=4?approach('Trigger012',-Math.SQRT1_2,-Math.SQRT1_2):trigger('Trigger012'),rightRamp:trigger('Trigger013'),rightLoop:trigger('Trigger009'),
   wolverine:trigger('Trigger014','left'),cross:approach(cross.name,-1,0),
   ...Object.fromEntries(['Bumper1','Bumper2','Bumper3'].map(name=>[name,bumper(name)])),
-  ...(mission===4?{colossus:trigger('Trigger011','above'),outerLoop:trigger('Trigger005'),...Object.fromEntries(['Target001','Target002','Target003','Target004'].map(name=>[name,targetApproach(name)]))}:{}),
- },routes:{wolverine:['Trigger014'],ramp:['Trigger012'],cross:['Trigger015']},clearance:{wolverine:clearance('Trigger014'),ramp:clearance('Trigger012'),cross:clearance(cross.name),...(mission===4?{loop:clearance('Trigger010'),colossus:clearance('Trigger011'),outerLoop:clearance('Trigger005')}: {})
+  ...(mission>=4?{colossus:trigger('Trigger011','above'),outerLoop:trigger('Trigger005'),...Object.fromEntries(['Target001','Target002','Target003','Target004'].map(name=>[name,targetApproach(name)]))}:{}),
+ },routes:{wolverine:['Trigger014'],ramp:['Trigger012'],cross:['Trigger015']},clearance:{wolverine:clearance('Trigger014'),ramp:clearance('Trigger012'),cross:clearance(cross.name),...(mission>=4?{loop:clearance('Trigger010'),colossus:clearance('Trigger011'),outerLoop:clearance('Trigger005')}: {})
  },fields:{active:'Battle(CurrentPlayer,0)',choosing:'Abs(CLng(bChooseBattle))',selected:'Battlenr',choices:'BattlesToChoose',won:'BattlesWon(CurrentPlayer)',score:'Score(CurrentPlayer)',endJackpot:'Abs(CLng(bEndBattleJackpot))',inHole:'BallsInHole',inLane:'Abs(CLng(bBallInPlungerLane))',playing:'Abs(CLng(bGameInPlay))',attack:'AttackPower',wolverine:'WolverineValue',jackpot:'Jackpot(CurrentPlayer)',
  ...Object.fromEntries(Array.from({length:7},(_,i)=>['life'+(i+1),`LifeLeft(CurrentPlayer,${i+1})`])),
  ...Object.fromEntries(Array.from({length:7},(_,i)=>['mission'+(i+1),`Battle(CurrentPlayer,${i+1})`])),
  ...Object.fromEntries(Array.from({length:6},(_,i)=>['shot'+(i+1),`BattleLights(${i+1})`])),
  scriptRandom:'CLng(Rnd(0)*16777216)',
- ...([3,4].includes(mission)?{bumperHits:'BumperHits(CurrentPlayer)',balloonState:'li001.State'}:{}),
- ...(mission===4?{ready:'Abs(CLng(bBattleReady))',player:'CurrentPlayer',ball:'Balls',...Object.fromEntries(Array.from({length:4},(_,i)=>['dead'+(i+1),`Dead(CurrentPlayer,${i+1})`]))}:{}),
- },scope:'Original initialization and physical launch, declared scoop/target/lane approaches, original chooser keys, full remaining counter and physical jackpot scoop. No direct hit/completion handler calls, progress/qualification setters, timer changes or RNG overrides. Ball placement inputs are explicit; this is not natural player completion. Rnd(0) observes script state without advancing it.'+(mission===4?' Missions 1, 2 and 3 are completed first; physical DEAD target-bank hits qualify each subsequent chooser and unlock mission 4 through original rules.':'')};
+ ...(mission>=3?{bumperHits:'BumperHits(CurrentPlayer)',balloonState:'li001.State'}:{}),
+ ...(mission>=4?{ready:'Abs(CLng(bBattleReady))',player:'CurrentPlayer',ball:'Balls',...Object.fromEntries(Array.from({length:4},(_,i)=>['dead'+(i+1),`Dead(CurrentPlayer,${i+1})`]))}:{}),
+ ...(mission>=5?{megaJackpot:'MegaJackpot(CurrentPlayer)',megaCount:'MegaSuperJCount',megaSuperValue:'MegaSuperJValue'}:{}),
+ },scope:'Original initialization and physical launch, declared scoop/target/lane approaches, original chooser keys, full remaining counter and physical jackpot scoop. No direct hit/completion handler calls, progress/qualification setters, timer changes or RNG overrides. Ball placement inputs are explicit; this is not natural player completion. Rnd(0) observes script state without advancing it.'+(mission>=4?' Missions '+Array.from({length:mission-1},(_,i)=>i+1).join(', ')+' are completed first; physical DEAD target-bank hits qualify each subsequent chooser and earn its unlock through original rules.':'')};
 }
 
 export function installMissionCompletionController(scenario){
  const data=window.nativeMissionCompletionController={scenario,stage:'lane',actions:[],errors:[],completed:false};
- const missions=scenario.mission===4?[1,2,3,4]:[scenario.mission];let missionIndex=0,mission=missions[0];
+ const missions=scenario.mission>=4?Array.from({length:scenario.mission},(_,i)=>i+1):[scenario.mission];let missionIndex=0,mission=missions[0];
  if(missions.length>1)data.completions=[];
  let pullAt=0,confirmedAt=0,lastShot=-Infinity,lastQuery=-Infinity,winScore,pendingShot,arrowIndex=0;const usedArrows=new Set();
  const execute=(kind,script)=>{const row={kind,script,ms:nativeStartup.read().ms,frameIndex:nativeStartup.frameIndex()};data.actions.push(row);finni.evaluate(script);return row;};
@@ -76,7 +77,7 @@ export function installMissionCompletionController(scenario){
     if(state.active!==mission||ms-confirmedAt<3200)return;
     if(mission===3){
      if(ms-lastShot>=scenario.shotInterval)place(['Bumper1','Bumper2','Bumper3'][arrowIndex++%3]);
-    }else if(mission===2||mission===4){
+    }else if(mission===2||mission>=4){
      if(pendingShot){
       if(life>=pendingShot.life)return;
       const body=nativeStartup.read().balls.find(ball=>ball.id===pendingShot.ballID),bounds=scenario.clearance[pendingShot.name];
@@ -84,7 +85,7 @@ export function installMissionCompletionController(scenario){
       (data.physicalExits??=[]).push({shot:pendingShot.name,ballID:pendingShot.ballID,ms,frameIndex:nativeStartup.frameIndex(),position:body?.position,life});pendingShot=undefined;
      }
      if(ms-lastShot<scenario.shotInterval)return;
-     const arrows=mission===4?{1:'loop',2:'ramp',3:'colossus',4:'wolverine',5:'cross',6:'outerLoop'}:{2:'ramp',4:'wolverine',5:'cross'},available=Object.keys(arrows).filter(n=>state['shot'+n]===2);if(!available.length)return;
+     const arrows=mission>=4?{1:'loop',2:'ramp',3:'colossus',4:'wolverine',5:'cross',6:'outerLoop'}:{2:'ramp',4:'wolverine',5:'cross'},available=Object.keys(arrows).filter(n=>state['shot'+n]===2);if(!available.length)return;
      const next=available[arrowIndex++%available.length],name=arrows[next];if(place(name))pendingShot={name,life,ballID:data.actions.at(-1).ballID};
     }else if(ms-lastShot>=scenario.shotInterval){
      if(life>6)place('target');
