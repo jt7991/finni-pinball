@@ -5,16 +5,16 @@ import {nativeSoundRate} from './native-sound.js';
 import {createNativeSoundMixer} from './native-sound-mix.js';
 import {loadDmdAtlasDisplayBitmap,DMD_ATLAS_FILE} from './dmd-atlas.js';
 import {createAudioBufferCache} from './audio-buffer-cache.js';
+import {createEffectDecoder} from './audio-pcm.js';
 
 export function createAudio(manifest,base) {
-  let context,unlocked=false,muted=false,primed=false,stopEpoch=0,musicSource,musicMixer;
+  let context,decodeEffect,unlocked=false,muted=false,primed=false,stopEpoch=0,musicSource,musicMixer;
   const musicElement=new Audio();
   const playing=new Map(),music=new Map(),stops=new Map();
   const buffers=createAudioBufferCache(async name=>{
-    const response=await fetch(`${base}audio/${manifest[name].file}`);
-    if(!response.ok)throw Error(`Audio ${name} unavailable`);
-    const bytes=await response.arrayBuffer();context??=new AudioContext();
-    return context.decodeAudioData(bytes);
+    const load=async file=>{const response=await fetch(`${base}audio/${file}`);if(!response.ok)throw Error(`Audio ${name} unavailable`);return response.arrayBuffer();};
+    const bytes=await load(manifest[name].file);context??=new AudioContext();decodeEffect??=createEffectDecoder(context);
+    return decodeEffect(bytes,manifest[name],()=>load(manifest[name].fallbackFile));
   });
   // Decode during loading without resuming audio or reserving a sound player.
   // A failed preparation remains retryable through the normal playback path.

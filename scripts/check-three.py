@@ -105,6 +105,7 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--production-audio-recovery' in sys.argv:runner='test-audio-recovery-production.mjs'
         if '--production-audio-startup' in sys.argv:runner='test-audio-startup-production.mjs'
         if '--audio-preparation' in sys.argv:runner='test-audio-preparation-browser.mjs'
+        if '--audio-decoding' in sys.argv:runner='probe-audio-decoding.mjs'
         if '--native-audio-mix' in sys.argv:runner='probe-native-audio-mix.mjs'
         if '--audio-mix' in sys.argv:runner='test-native-audio-mix-browser.mjs'
         timeout=150

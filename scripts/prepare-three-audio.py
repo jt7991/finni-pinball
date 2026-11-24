@@ -12,7 +12,7 @@ from three_sound_settings import table_sound_settings
 ROOT=Path(__file__).resolve().parents[1]
 parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--source-dir',type=Path,default=ROOT/'.work/finni-live-extracted',help='Extracted table directory containing sounds and sounds.json.')
-parser.add_argument('--metadata-only',action='store_true',help='Update metadata for existing AAC files without re-encoding them.')
+parser.add_argument('--metadata-only',action='store_true',help='Update metadata for existing encoded files without changing their format.')
 parser.add_argument('--ffmpeg',type=Path,help='Explicit encoder executable.')
 parser.add_argument('--settings-vpx',type=Path,default=ROOT/'runtime/Finni-Big-Day.vpx',help='Native table matching the extracted sound data and mixer settings.')
 args=parser.parse_args()
@@ -24,6 +24,7 @@ if not encoder and not args.metadata_only:raise SystemExit('ffmpeg is required t
 files={p.stem.lower():p for p in SOURCE.iterdir() if p.is_file()}
 entries=json.loads((SOURCE.parent/'sounds.json').read_text())
 settings=table_sound_settings(args.settings_vpx)
+existing_manifest=json.loads((OUT.parent/'audio.json').read_text()) if (OUT.parent/'audio.json').exists() else {}
 
 def sample_rate(path):
     if path.suffix.lower()!='.wav':return None
@@ -46,7 +47,16 @@ def encode(entry):
     if source is None:raise RuntimeError('Missing installed sound '+name)
     source_hash=hashlib.sha256(source.read_bytes()).hexdigest()
     if settings[name]['sourceSHA256']!=source_hash:raise RuntimeError('Sound settings do not match extracted data: '+name)
-    filename=entry.get('reuse_file') or hashlib.sha256(name.encode()+b'\0'+source_hash.encode()).hexdigest()[:16]+'.m4a'
+    if args.metadata_only and name in existing_manifest:
+        previous=existing_manifest[name]
+        if previous.get('sourceSHA256')!=source_hash:raise RuntimeError('Existing audio has a different source: '+name)
+        for key in ('file','fallbackFile'):
+            if key in previous and not (OUT/previous[key]).is_file():raise RuntimeError('Missing existing audio '+previous[key])
+        return name,{**previous,**settings[name]}
+    reused=entry.get('reuse_file')
+    # A source refresh may refer to the current lossless assets. This legacy
+    # AAC exporter must never mislabel a reused FLAC as its own codec output.
+    filename=(reused if reused and reused.endswith('.m4a') else None) or hashlib.sha256(name.encode()+b'\0'+source_hash.encode()).hexdigest()[:16]+'.m4a'
     target=OUT/filename
     if not target.exists():
         if args.metadata_only:raise RuntimeError('Missing previously encoded audio '+str(target))

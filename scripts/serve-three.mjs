@@ -15,7 +15,7 @@ if(values.build){const {build}=await import('vite');await build({root:path.join(
 await stat(path.join(directory,'index.html'));
 const staticAudit=values['static-audit-log']?openSync(values['static-audit-log'],'wx'):undefined;
 const compressed=new Map();
-const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.vbs':'text/plain','.glsl':'text/plain','.wasm':'application/wasm','.glb':'model/gltf-binary','.webp':'image/webp','.png':'image/png','.ico':'image/x-icon','.txt':'text/plain','.m4a':'audio/mp4','.ttf':'font/ttf'};
+const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.vbs':'text/plain','.glsl':'text/plain','.wasm':'application/wasm','.glb':'model/gltf-binary','.webp':'image/webp','.png':'image/png','.ico':'image/x-icon','.txt':'text/plain','.m4a':'audio/mp4','.flac':'audio/flac','.wav':'audio/wav','.ttf':'font/ttf'};
 const api={'/api/leaderboard':'/api/finni/leaderboard','/api/runs':'/api/finni/runs','/api/scores':'/api/finni/scores'};
 const voice=new Map(['/voice','/voice.html','/voice.css','/voice.js','/voice-audio.js','/voice-lines.json','/voice-cast.json','/voice-pitch-worker.js','/vendor/voice-pitch.js','/favicon.ico','/favicon.png'].map(route=>[route,path.join(root,'browser',route==='/voice'?'voice.html':route.slice(1))]));
 voice.set('/chewy.ttf',path.join(root,'assets/fonts/chewy/Chewy-Regular.ttf'));
@@ -60,7 +60,7 @@ const server=http.createServer(async(req,res)=>{
     if(condition&&(condition.trim()==='*'||condition.split(',').some(value=>value.trim().replace(/^W\//,'')===etag.slice(2)))){
       res.writeHead(304,headers);res.end();return;
     }
-    if(/gzip/.test(req.headers['accept-encoding']||'')&&['.js','.css','.json','.vbs','.glsl','.glb','.wasm','.html','.bin','.ttf','.svg'].includes(ext)&&info.size<32n*1024n*1024n){
+    if(/gzip/.test(req.headers['accept-encoding']||'')&&['.js','.css','.json','.vbs','.glsl','.glb','.wasm','.html','.bin','.ttf','.svg','.wav'].includes(ext)&&info.size<32n*1024n*1024n){
       const previous=compressed.get(file);let data=previous?.etag===etag?previous.data:null;
       if(!data){data=gzipSync(await readFile(file));compressed.set(file,{data,etag});}
       res.writeHead(200,{...headers,'Content-Encoding':'gzip','Content-Length':data.length});res.end(req.method==='HEAD'?undefined:data);
