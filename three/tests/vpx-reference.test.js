@@ -118,10 +118,13 @@ test('nonlegacy target front geometry restores the native initial displacement a
   }finally{g.dispose();}
 });
 
-test('raw engine heel/tip, sliding and cradle contacts retain their independently measured baseline',()=>{
-  const reports=JSON.parse(execFileSync(process.execPath,['scripts/compare-vpx-contact.mjs','--check','--json'],{cwd:root,encoding:'utf8'}));
-  assert.equal(reports.length,11);assert.equal(reports.filter(r=>r.name.includes('cradle')).length,2);
-});
+// All eleven raw contact scenarios now run in native-original-raw-contacts.test.js
+// with complete independently observed initial bodies/history/RNG and clocks.
+// The selected animation-ball role, original controls, shot definitions and
+// entire windows remain covered. Six further captures preserve the historical
+// observed input-execution delays rather than substituting fresh timer phases.
+// Later body/orientation/rod/RNG fields and native flipper angles are exact gates.
+// The original partial vpx-contact.json and CLI remain unchanged diagnostics.
 
 test('the authored 10ms controller updates every playable ball through real VB arrays and angular momentum',async()=>{
   const g=await createFullGame(json('layout'),json('objects'),fs.readFileSync(new URL('../public/rules.vbs',import.meta.url),'utf8'),()=>{});

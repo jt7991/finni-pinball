@@ -1,5 +1,11 @@
 # VPX physics reference
 
+The latest complete-state checkpoint passes all 373 Node tests, without skips
+or cancellations. Earlier partial-state measurements remain unchanged as
+diagnostics; their full scenario sets now have complete independent regressions
+as described below. These checks do not establish every gameplay path or
+physical-phone performance. No running preview is refreshed during user testing.
+
 Current spinner regressions use `native-spinner-original-controls.test.js`:
 ten complete independent recordings retain the historical controls, shot
 inputs, mechanism properties and all 1,560 public samples. All 101,900 body
@@ -24,6 +30,17 @@ observations, both RNG streams, rod fields and 215 prepared-frame target/score
 states match exactly. The original partial `vpx-geometry.json` and
 `vpx-camera-animation.json` remain unchanged diagnostics. The full suite at this
 checkpoint passes 356/357, retaining the historical raw-contact failure.
+
+`native-original-raw-contacts.test.js` covers all eleven historical raw-contact
+definitions and six additional cases at their original observed input-execution
+delays. The native `vpmtimer` cases remain separate from these explicit clock
+controls. Every original shot definition, selected animation-ball role, control
+and observation window is retained. All 16,104 body observations, both RNG
+streams, rod fields, native flipper angles and 241 prepared-frame target/score
+states match exactly. The original raw fixture's three-body selector count does
+not observe the body set at reset; the new captures independently record all
+four live bodies at that time. The unchanged partial `vpx-contact.json` remains
+a diagnostic, superseded in the suite by these seventeen complete-state cases.
 
 The collision response and target geometry in the Three.js experiment derive
 from Visual Pinball contributors' GPLv3-or-later sources at commit

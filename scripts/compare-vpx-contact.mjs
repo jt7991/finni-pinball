@@ -20,8 +20,10 @@ for(const scenario of fixture.cases){
     g.start();for(let ms=0;ms<warmupMilliseconds;ms++)g.step();g.launch();let r=g.records[0];
     if(fixture.startingProgress){const {battlesWon}=fixture.startingProgress;assert.ok(Number.isInteger(battlesWon)&&battlesWon>=0&&battlesWon<=7);g.rules.execute(`BattlesWon(CurrentPlayer)=${battlesWon}`);}
     if(fixture.nativeRuleState?.measuredBallRole==='animation'){
-      // The old raw recordings selected an animation ball before the playable
-      // ball existed. Preserve that role and physical ball count in the replay.
+      // Legacy partial captures only observed the body count at selection,
+      // before the delayed playable ball existed. Retain their historical
+      // approximation for diagnostics; complete captures restore the actual
+      // independently observed live set at reset below.
       if(!scenario.initialBallStates)for(const playable of [...g.records])g.remove('BallRelease',playable.proxy);
       r=g.toyRecords[fixture.nativeRuleState.measuredBallIndex];assert.ok(r,'recorded native animation ball index');
     }
