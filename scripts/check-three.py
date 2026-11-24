@@ -99,6 +99,8 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--profile-postprocess' in sys.argv:runner='test-graphics-profile-postprocess-browser.mjs'
         if '--player-backdrop' in sys.argv:runner='test-native-backdrop-browser.mjs'
         if '--audio-players' in sys.argv:runner='test-audio-players-browser.mjs'
+        if '--audio-cache' in sys.argv:runner='test-audio-cache-browser.mjs'
+        if '--production-audio-recovery' in sys.argv:runner='test-audio-recovery-production.mjs'
         if '--native-audio-mix' in sys.argv:runner='probe-native-audio-mix.mjs'
         if '--audio-mix' in sys.argv:runner='test-native-audio-mix-browser.mjs'
         timeout=150

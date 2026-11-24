@@ -4,11 +4,17 @@
 import {nativeSoundRate} from './native-sound.js';
 import {createNativeSoundMixer} from './native-sound-mix.js';
 import {loadDmdAtlasDisplayBitmap,DMD_ATLAS_FILE} from './dmd-atlas.js';
+import {createAudioBufferCache} from './audio-buffer-cache.js';
 
 export function createAudio(manifest,base) {
   let context,muted=false,primed=false,stopEpoch=0,musicSource,musicMixer;
   const musicElement=new Audio();
-  const cache=new Map(),decodedBytes=new Map(),playing=new Map(),music=new Map(),stops=new Map();
+  const playing=new Map(),music=new Map(),stops=new Map();
+  const buffers=createAudioBufferCache(async name=>{
+    const response=await fetch(`${base}audio/${manifest[name].file}`);
+    if(!response.ok)throw Error(`Audio ${name} unavailable`);
+    return context.decodeAudioData(await response.arrayBuffer());
+  });
   async function unlock(){
     context??=new AudioContext();const resumed=context.resume();
     // Reuse one gesture-unlocked media element for streamed music on iOS.
@@ -22,19 +28,6 @@ export function createAudio(manifest,base) {
       musicElement.play().then(()=>{if(musicElement.src===url)musicElement.pause();URL.revokeObjectURL(url);}).catch(()=>URL.revokeObjectURL(url));
     }
     await resumed;
-  }
-  async function buffer(name){
-    if(!cache.has(name))cache.set(name,(async()=>{
-      const response=await fetch(`${base}audio/${manifest[name].file}`);
-      if(!response.ok)throw Error(`Audio ${name} unavailable`);
-      const data=await context.decodeAudioData(await response.arrayBuffer());
-      // Bound the retained effect/voice buffers; music streams separately.
-      decodedBytes.set(name,data.length*data.numberOfChannels*4);
-      let bytes=[...decodedBytes.values()].reduce((a,b)=>a+b,0);
-      for(const [key,size]of decodedBytes){if(bytes<=16*1024*1024)break;if(key!==name){cache.delete(key);decodedBytes.delete(key);bytes-=size;}}
-      return data;
-    })());
-    return cache.get(name);
   }
   function stopPlayer(player){
     player.active=false;
@@ -83,11 +76,11 @@ export function createAudio(manifest,base) {
       player=players.find(candidate=>useExisting||!candidate.active);
       if(!player){player={active:false};players.push(player);}
       player.settings={loop,volume,pan,rate,pitch,pitchFactor};player.remaining=Math.max(0,Math.trunc(loop)-1);
-      if(player.active){updatePlayer(player,name);await player.pending;return;}
+      if(player.active){buffers.touch(name);updatePlayer(player,name);await player.pending;return;}
       player.active=true;
       const requested=context.currentTime,epoch=stopEpoch,stopped=stops.get(name)??0;
       const selected=player,loading=(async()=>{
-       const data=await buffer(name);
+       const data=await buffers.get(name);
       // Native stop applies to requests already issued, even if this web
       // buffer is still fetching/decoding. Later requests remain playable.
        if(!selected.active||muted||epoch!==stopEpoch||stopped!==(stops.get(name)??0)||context.currentTime-requested>2&&selected.settings.loop>=0){selected.active=false;return;}
