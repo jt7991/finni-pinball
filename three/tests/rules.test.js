@@ -97,8 +97,10 @@ test('lowercase native sound calls work throughout initials entry and commit',()
 test('live-catch elasticity lasts ten milliseconds rather than ten physics frames',()=>{
   const r=setup();
   r.execute('LeftFlipper.StartAngle=120:LeftFlipper.EndAngle=68:LeftFlipper.CurrentAngle=68:LeftFlipperOn=1:LLiveCatchTimer=0');
-  r.tick(.004);assert.equal(r.objects.get('leftflipper').elasticity,0);
-  r.tick(.008);assert.equal(r.objects.get('leftflipper').elasticity,.6);
+  // Process every physical millisecond. An overdue timer delivered after a
+  // clock jump is a separate native case and does not replay missed callbacks.
+  for(let ms=0;ms<4;ms++)r.tick(.001);assert.equal(r.objects.get('leftflipper').elasticity,0);
+  for(let ms=0;ms<8;ms++)r.tick(.001);assert.equal(r.objects.get('leftflipper').elasticity,.6);
   assert.equal(r.value('LLiveCatchTimer'),10);
 });
 

@@ -75,7 +75,8 @@ export function createSimulationHost(send,{allowDebug=false,now=()=>performance.
     if(command.action==='advance'){
       if(!paused)throw Error('Pause before advancing the simulation');
       if(!Number.isSafeInteger(command.ticks)||command.ticks<0||command.ticks>100000)throw Error('Invalid tick count');
-      for(let i=0;i<command.ticks;i++){lastPhysicsMilliseconds=wallNow();game.step();tick++;stats.ticks++;}return;
+      if(command.dispatchTimers!==undefined&&(!Array.isArray(command.dispatchTimers)||command.dispatchTimers.length!==command.ticks||command.dispatchTimers.some(value=>typeof value!=='boolean')))throw Error('Invalid observed timer delivery inputs');
+      for(let i=0;i<command.ticks;i++){lastPhysicsMilliseconds=wallNow();game.step({dispatchTimers:command.dispatchTimers?.[i]??true});tick++;stats.ticks++;}return;
     }
     if(command.action==='value')return game.rules.value(command.expression);
     if(command.action==='run')return game.rules.run(command.name,...(command.args??[]));

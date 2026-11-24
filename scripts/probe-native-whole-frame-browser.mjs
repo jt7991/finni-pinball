@@ -9,6 +9,11 @@ import {createHash} from 'node:crypto';
 import {installNativePostprocessObserver} from './native-postprocess-observer.mjs';
 import {installNativeWholeFrameObserver} from './native-whole-frame-observer.mjs';
 import {installNativeBallPresentationObserver} from './native-ball-presentation-observer.mjs';
+import {installNativeStartupObserver} from './native-startup-observer.mjs';
+import {installNativeSceneClockObserver} from './native-scene-clock-observer.mjs';
+import {nativeFrameClockLayout} from './native-frame-clock-layout.mjs';
+import {installNativeTimerDispatchObserver} from './native-timer-dispatch-observer.mjs';
+import {nativeTimerDispatchLayout} from './native-timer-dispatch-layout.mjs';
 const [debug,base,output]=process.argv.slice(2),name=process.argv.find(value=>value.startsWith('--capture-name='))?.slice(15)??'control';
 assert.match(name,/^[a-z0-9-]+$/);const directory=path.join(output,'native-whole-frame-'+name);assert.ok(!fs.existsSync(path.join(directory,'capture.json')),'Preserve existing captures; select a new name');fs.mkdirSync(directory,{recursive:true});
 const lit=process.argv.includes('--lit');
@@ -17,10 +22,12 @@ const alignmentReference=process.argv.includes('--uniform-alignment-reference');
 const classicVariant=process.argv.find(value=>value.startsWith('--classic-variant='))?.slice(18);if(classicVariant){assert.equal(classicVariant,'fade-color');assert.ok(lit&&allInserts);}
 const mechanismPoses=process.argv.includes('--observe-mechanism-poses');
 const launchedScene=process.argv.includes('--launched-scene');if(launchedScene)assert.ok(lit&&!allInserts&&!classicVariant&&mechanismPoses,'Launched scene retains authored light state and independently observed mechanisms');
+const naturalStartup=process.argv.includes('--natural-startup');if(naturalStartup)assert.ok(lit&&nativePrepass&&mechanismPoses&&!launchedScene&&!allInserts&&!classicVariant&&!alignmentReference,'Natural startup preserves original authored scene and render mode');
 const requestedQuality=process.argv.includes('--detailed')?'detailed':null;
 const tracePixel=process.argv.find(value=>value.startsWith('--trace-pixel='))?.slice(14).split(',').map(Number);if(tracePixel)assert.ok(tracePixel.length===2&&tracePixel.every(Number.isInteger));
 const ballFields=['X','Y','Z','Radius','Color','Visible','ReflectionEnabled','ForceReflection','BulbIntensityScale','PlayfieldReflectionScale','FrontDecal'];
 const imageModeLight=process.argv.find(value=>value.startsWith('--classic-image-mode='))?.slice(21);if(imageModeLight)assert.ok(lit&&allInserts);
+if(naturalStartup)assert.equal(imageModeLight,undefined,'Natural startup cannot override authored light image mode');
 const cameraPreset=process.argv.find(value=>value.startsWith('--camera-preset='))?.slice(16);if(cameraPreset)assert.ok(['classic','balanced','topdown','playfield'].includes(cameraPreset));
 assert.ok(!allInserts||lit,'All-insert control requires --lit');
 const objects=JSON.parse(fs.readFileSync('three/public/objects.json')).objects,layout=JSON.parse(fs.readFileSync('three/public/layout.json')),items=[...new Map([...layout.items,...objects].filter(item=>item.name).map(item=>[item.name.toLowerCase(),item])).values()];
@@ -34,12 +41,19 @@ const evaluate=async expression=>{const result=await call('Runtime.evaluate',{ex
 const wait=async expression=>{for(let i=0;i<1200;i++){if(await evaluate(expression))return;await new Promise(resolve=>setTimeout(resolve,50));}throw Error('Timed out '+expression);};
 const native=statement=>evaluate('finni.evaluate('+JSON.stringify(statement)+')');
 let freezeObservation;
+let startupScene;
 try{
  await call('Page.enable');await call('Runtime.enable');await call('Emulation.setFocusEmulationEnabled',{enabled:true});await call('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:2,mobile:true});
  if(requestedQuality)await call('Page.addScriptToEvaluateOnNewDocument',{source:`if(location.protocol==='http:'||location.protocol==='https:')localStorage.setItem('finni-graphics-v1',${JSON.stringify(requestedQuality)});`});
- await call('Page.addScriptToEvaluateOnNewDocument',{source:'('+installNativePostprocessObserver.toString()+')({highPrecisionDepth:true});('+installNativeBallPresentationObserver.toString()+')();('+installNativeWholeFrameObserver.toString()+')();'+(alignmentReference?'('+installNativeUniformAlignmentReference.toString()+')();':'')+(process.argv.includes('--observe-uniform-pointers')?'('+installNativeUniformPointerObserver.toString()+')();':'')+(mechanismPoses?'('+installNativeMechanismPoseObserver.toString()+')('+nativePlungerMemoryObserver.toString()+');':'')});
+ await call('Page.addScriptToEvaluateOnNewDocument',{source:(naturalStartup?'('+installNativeStartupObserver.toString()+')(2000);('+installNativeSceneClockObserver.toString()+')();('+installNativeTimerDispatchObserver.toString()+')();':'')+'('+installNativePostprocessObserver.toString()+')({highPrecisionDepth:true});('+installNativeBallPresentationObserver.toString()+')();('+installNativeWholeFrameObserver.toString()+')();'+(alignmentReference?'('+installNativeUniformAlignmentReference.toString()+')();':'')+(process.argv.includes('--observe-uniform-pointers')?'('+installNativeUniformPointerObserver.toString()+')();':'')+(mechanismPoses?'('+installNativeMechanismPoseObserver.toString()+')('+nativePlungerMemoryObserver.toString()+');':'')});
  await call('Page.navigate',{url:base});await wait('!!window.finni&&!document.getElementById("play").disabled');await evaluate('document.getElementById("play").click()');await wait('document.body.classList.contains("ball-in-plunger")');
  if(cameraPreset)await evaluate('(()=>{const select=document.getElementById("camera-view");select.value='+JSON.stringify(cameraPreset)+';select.dispatchEvent(new Event("change",{bubbles:true}));})()');
+ if(naturalStartup){
+  await wait('nativeStartup.done');await call('Emulation.setFocusEmulationEnabled',{enabled:false});
+  await evaluate('document.getElementById("controls-panel").showPopover();document.querySelector("#controls-panel button").focus();window.dispatchEvent(new Event("blur"))');
+  const before=await evaluate('nativeStartup.read()');await evaluate('(async()=>{for(let i=0;i<4;i++)await new Promise(requestAnimationFrame)})()');const after=await evaluate('nativeStartup.read()');assert.equal(before.ms,after.ms,'Normal native focus loss pauses startup before scene readback');
+  await evaluate('nativeSceneClock.armed=false;nativeTimerDispatch.armed=false');startupScene=await evaluate('(()=>{const {read,...startup}=nativeStartup;return {startup,clock:nativeSceneClock,timers:nativeTimerDispatch}})()');startupScene.freeze={before,after};assert.deepEqual(startupScene.clock.errors,[]);assert.deepEqual(startupScene.startup.errors,[]);assert.deepEqual(startupScene.timers.errors,[]);
+ }
  if(launchedScene){
   for(const code of ['ShiftLeft','ShiftRight','Enter'])await call('Input.dispatchKeyEvent',{type:'keyDown',code,key:code==='Enter'?'Enter':'Shift'});
   await new Promise(resolve=>setTimeout(resolve,600));await call('Input.dispatchKeyEvent',{type:'keyUp',code:'Enter',key:'Enter'});await new Promise(resolve=>setTimeout(resolve,250));
@@ -48,11 +62,11 @@ try{
   await call('Emulation.setFocusEmulationEnabled',{enabled:false});
  }
  const select=item=>'Set WholeSetupObj=GetElementByName("'+item+'")';
- const setup=['Dim WholeSetupObj',...(!nativePrepass?['DisableStaticPrerendering=True']:[]),...items.filter(item=>item.kind==='Timer').flatMap(item=>[select(item.name),'WholeSetupObj.Enabled=False']),...items.filter(item=>item.kind==='LightSequencer').flatMap(item=>[select(item.name),'WholeSetupObj.StopPlay']),...items.filter(item=>!launchedScene&&item.kind==='Light'&&(!classicNames.includes(item.name)||allInserts)).flatMap(item=>[select(item.name),'WholeSetupObj.State=1']),...(!lit?classicNames:[]).flatMap(item=>[select(item),'WholeSetupObj.Visible=False'])];
+ const setup=naturalStartup?[]:['Dim WholeSetupObj',...(!nativePrepass?['DisableStaticPrerendering=True']:[]),...items.filter(item=>item.kind==='Timer').flatMap(item=>[select(item.name),'WholeSetupObj.Enabled=False']),...items.filter(item=>item.kind==='LightSequencer').flatMap(item=>[select(item.name),'WholeSetupObj.StopPlay']),...items.filter(item=>!launchedScene&&item.kind==='Light'&&(!classicNames.includes(item.name)||allInserts)).flatMap(item=>[select(item.name),'WholeSetupObj.State=1']),...(!lit?classicNames:[]).flatMap(item=>[select(item),'WholeSetupObj.Visible=False'])];
  if(classicVariant)setup.push(...classicNames.flatMap(name=>[select(name),'WholeSetupObj.Color=&H2D8711','WholeSetupObj.ColorFull=&HF1A842','WholeSetupObj.IntensityScale=0.37']));
  if(imageModeLight)setup.push(select(imageModeLight),'WholeSetupObj.ImageMode=True');
- await native(setup.join(':'));await evaluate('(async()=>{for(let i=0;i<40;i++)await new Promise(requestAnimationFrame);})()');await call('Emulation.setFocusEmulationEnabled',{enabled:false});await evaluate('(async()=>{for(let i=0;i<3;i++)await new Promise(requestAnimationFrame);nativeBallPresentation.install();})()');
- if(launchedScene){
+ if(setup.length)await native(setup.join(':'));await evaluate('(async()=>{for(let i=0;i<40;i++)await new Promise(requestAnimationFrame);})()');await call('Emulation.setFocusEmulationEnabled',{enabled:false});await evaluate('(async()=>{for(let i=0;i<3;i++)await new Promise(requestAnimationFrame);nativeBallPresentation.install();})()');
+ if(launchedScene||naturalStartup){
   await native('Debug.Print "WHOLE_FREEZE_TIME_A|" & GameTime');await evaluate('(async()=>{for(let i=0;i<4;i++)await new Promise(requestAnimationFrame);})()');await native('Debug.Print "WHOLE_FREEZE_TIME_B|" & GameTime');
   const log=await evaluate('document.getElementById("log").textContent'),a=Number(log.match(/WHOLE_FREEZE_TIME_A\|(\d+)/)?.[1]),b=Number(log.match(/WHOLE_FREEZE_TIME_B\|(\d+)/)?.[1]);assert.ok(Number.isFinite(a)&&Number.isFinite(b));assert.equal(a,b,'Native scene must actually pause before property readback');freezeObservation={firstGameTime:a,secondGameTime:b,animationFrames:4,scope:'Read-only native GameTime observations bracketing four rendered frames after the declared blur input.'};
  }
@@ -72,7 +86,7 @@ try{
  await native('Debug.Print "WHOLE_STATIC_DISABLED|" & CStr(DisableStaticPrerendering)');
  const actualStaticDisabled=(await evaluate('document.getElementById("log").textContent')).match(/WHOLE_STATIC_DISABLED\|(True|False)/)?.[1];assert.ok(actualStaticDisabled,'Observe the actual source render mode');
  fs.writeFileSync(path.join(directory,'state-readback.json'),JSON.stringify({requested,stateLog}));
- for(const item of items.filter(item=>item.kind==='Timer'))assert.ok(stateLog.includes('WHOLE_PROP|'+item.name+'|Enabled|False'),'source timer stopped: '+item.name);
+ if(!naturalStartup)for(const item of items.filter(item=>item.kind==='Timer'))assert.ok(stateLog.includes('WHOLE_PROP|'+item.name+'|Enabled|False'),'source timer stopped: '+item.name);
  if(!lit)for(const item of classicNames)assert.ok(stateLog.includes('WHOLE_PROP|'+item+'|Visible|False'),'source classic control applied: '+item);
  assert.equal([...stateLog.matchAll(/WHOLE_(?:PROP|MISSING)\|/g)].length,requested.length,'every requested native property is observed or explicitly missing');
  if(tracePixel)await evaluate('nativeWholeFrame.tracePixel='+JSON.stringify(tracePixel));
@@ -90,6 +104,7 @@ try{
  capture.control.cameraPreset=await evaluate('document.getElementById("camera-view").value');if(cameraPreset)assert.equal(capture.control.cameraPreset,cameraPreset);
  if(lit)capture.control.scope='Controlled native frame with classic inserts '+(allInserts?'explicitly set on.':'at authored visibility/state.')+' Non-classic bulbs set on, timers/sequences stopped, then physics defocused. '+(nativePrepass?'Original native static prerender mode retained.':'Static prerender explicitly disabled for the render-all control.')+' Native uniforms, draw commands, body state and clocks execute unchanged.';
  if(launchedScene)capture.control.scope='Native scene after ordinary UI launch with both flippers held. Physics then defocused, timers and sequencers stopped; observed authored light state, physical ball poses and live mechanisms are frozen shared inputs. No reference uniform alignment bridge.';
+ if(naturalStartup){assert.equal(imageModeLight,undefined);assert.deepEqual(setup,[]);assert.equal(freezeObservation.firstGameTime,startupScene.freeze.after.ms);capture.startupScene={...startupScene,clockABI:nativeFrameClockLayout(wasm),timerABI:nativeTimerDispatchLayout(wasm)};capture.control.sceneControl={startup:true,lightStates:'authored',timers:'unchanged',sequences:'unchanged',scope:'Ordinary native initialization and UI Start, followed by declared Controls/focus-loss pause. No scene/body/random restoration or authored property overrides.'};capture.control.scope='Normal native startup GPU frame after ordinary Start and declared focus-loss pause. Authored lamps, timers, sequences, mechanisms, geometry, original engine bytes and clock results remain unchanged. Read-only original initialization and animation clocks accompany this frame. Typed pass-through virtual callback observation records actual timer delivery; observer overhead remains part of the observed execution timings. Current output images and native scene state are expectations only for model-generated comparison.';}
  if(classicVariant)capture.control.scope+=' Explicit insert color and 0.37 intensity-scale variant.';
  for(const [key,image]of Object.entries(capture.frame.images)){const bytes=Buffer.from(image.bytes,'base64'),file=key+'.bin';fs.writeFileSync(path.join(directory,file),bytes);image.file=file;image.sha256=createHash('sha256').update(bytes).digest('hex');delete image.bytes;}
  if(process.argv.includes('--observe-uniform-pointers')){const pointers=await evaluate('nativeUniformPointers');assert.deepEqual(pointers.errors,[]);assert.ok(pointers.rows.length);pointers.engineSHA256=capture.engineSHA256;pointers.scope=alignmentReference?'Original CPU/import and incoming Emscripten bytes observed before the explicit alignment bridge; uploaded bytes observed afterward.':'Read-only original import pointers, original CPU bytes and unchanged WebGL uploads in this captured frame.';fs.writeFileSync(path.join(directory,'uniform-pointers.json'),JSON.stringify(pointers));console.log(JSON.stringify({uniformPointerRows:pointers.rows.length,basicRows:pointers.rows.filter(row=>row.basic).length,alignments:[...new Set(pointers.rows.map(row=>row.pointerAlignment))]}));}
@@ -99,4 +114,4 @@ try{
  fs.writeFileSync(path.join(directory,'capture.json'),JSON.stringify(capture));await call('Page.captureScreenshot',{format:'png'}).then(result=>fs.writeFileSync(path.join(directory,'native.png'),Buffer.from(result.data,'base64')));
  console.log(JSON.stringify({directory,engine:capture.engineSHA256,canvas:capture.canvas,draws:capture.frame.draws.length,images:Object.fromEntries(Object.entries(capture.frame.images).map(([key,image])=>[key,{width:image.width,height:image.height,arrayType:image.arrayType}])),frameIndex:capture.frame.frameIndex,requested:requested.length,properties:[...stateLog.matchAll(/WHOLE_PROP\|/g)].length,missing:[...stateLog.matchAll(/WHOLE_MISSING\|/g)].length,ballRows:[...stateLog.matchAll(/WHOLE_BALL\|/g)].length,ballCallbacks:capture.balls.records.length,errors:[...errors,...capture.frame.errors,...capture.balls.errors]}));
  assert.deepEqual(errors,[]);assert.deepEqual(capture.frame.errors,[]);assert.deepEqual(capture.balls.errors,[]);assert.ok(capture.frame.images.hdr);assert.ok(capture.frame.images.depth);assert.ok(capture.frame.images.final);assert.ok(capture.balls.records.every(record=>record.clocks.length===0),'physics is defocused, so no ball extrapolation occurs');
-}finally{socket.close();}
+}catch(error){let observation;try{observation=await evaluate('({timers:window.nativeTimerDispatch,clock:window.nativeSceneClock,log:document.getElementById("log")?.textContent?.slice(-2000)})');}catch{}fs.writeFileSync(path.join(directory,'failure.json'),JSON.stringify({error:String(error),observation,errors}));throw error;}finally{socket.close();}

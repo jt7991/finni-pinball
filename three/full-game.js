@@ -320,11 +320,11 @@ class FullGame extends Pinball {
     if(elapsed>0)this.updateAnimations(Math.fround(elapsed));
   }
 
-  step(){
+  step({dispatchTimers=true}={}){
     // Native PhysicsEngine processes its first physical interval at GameTime0.
     // Subsequent intervals advance the clock before running authored timers.
-    if(this.physicsStarted){this.time+=STEP;this.rules.tick(STEP);}
-    else{this.physicsStarted=true;this.rules.tick(0);}
+    if(this.physicsStarted){this.time+=STEP;this.rules.tick(STEP,dispatchTimers);}
+    else{this.physicsStarted=true;this.rules.tick(0,dispatchTimers);}
     if(!this.frameAnimations)this.updateAnimations(STEP*1000,false);
     const nudge=this.cabinetNudge.step(this.nativePositionUnits?this.nativeIncline:this.incline);
     this.tiltBob.step(this.cabinetNudge.acceleration);

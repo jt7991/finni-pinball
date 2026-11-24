@@ -227,15 +227,20 @@ export function createRules(source,specs,host={}) {
     for(const {collection,index}of groups)if(collection.fire_events)run(`${collection.name}_${kind}`,index);
     if(!groups.some(({collection})=>collection.stop_single_events))return run(`${name}_${kind}`);
   }
-  function tick(dt){
+  function tick(dt,dispatchTimers=true){
     time+=dt;
     for(const delay of [...delays])if(delay.at<=time+1e-9){delays.splice(delays.indexOf(delay),1);execute(delay.statement);}
-    // Preserve every authored tick, including the 1ms flipper/live-catch timer.
-    for(const [key,t]of [...timers])while(t.at<=time+1e-9&&timers.get(key)===t){
+    // An independently observed delivery gate is used by native diagnostics.
+    // Ordinary production physics dispatches on every processed1ms interval.
+    if(!dispatchTimers)return;
+    for(const [key,t]of [...timers])if(t.at<=time+1e-9&&timers.get(key)===t){
+      const next=t.at;run(t.handler);
       const milliseconds=Number(t.property==='enabled'?t.object.interval:t.object.timerinterval);
       // Timer aliases are bound to their authored object when assets are
-      // prepared. No host-object registration is needed on the hot 1ms path.
-      t.at+=Math.max(.001,milliseconds/1000);run(t.handler);
+      // prepared. HitTimer::Update fires an overdue callback once, then moves
+      // its unchanged deadline beyond the current clock; missed calls do not
+      // run in a burst. Callback interval/enable changes retain their deadline.
+      if(t.at===next&&timers.get(key)===t)while(t.at<=time+1e-9)t.at+=Math.max(.001,milliseconds/1000);
     }
   }
   return {engine,objects,run,execute,value,tick,hit,schedule,scriptRandom,sequences,lamps,

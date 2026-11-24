@@ -9,11 +9,14 @@ const compareCache=process.argv.includes('--compare-cache');
 const requireExact=process.argv.includes('--require-exact');
 const nativePrepass=process.argv.includes('--native-prepass');
 const nativeUniformABI=process.argv.includes('--native-uniform-abi');
+const modelStartup=process.argv.includes('--model-startup');
+const observedTimerDelivery=process.argv.includes('--observed-timer-delivery');if(observedTimerDelivery)assert.ok(modelStartup);
 const tracePixel=process.argv.find(value=>value.startsWith('--trace-pixel='))?.slice(14).split(',').map(Number);
 const traceReflection=process.argv.includes('--trace-reflection');
 if(tracePixel)assert.ok(tracePixel.length===2&&tracePixel.every(Number.isInteger));
 assert.match(captureName,/^[a-z0-9-]+$/);assert.match(reportName,/^[a-z0-9-]+$/);
 const directory=path.join(output,'native-whole-frame-'+captureName),fixture=JSON.parse(fs.readFileSync(path.join(directory,'input.json'))),assetsURL='/three/@fs/'+path.resolve(directory).replaceAll('\\','/')+'/',cacheEnabled=process.argv.includes('--cache');
+if(modelStartup){assert.equal(fixture.sceneControl?.startup,true);assert.ok(fixture.startupScene?.clock.animationFrames.length);assert.deepEqual(fixture.startupScene.clock.errors,[]);assert.equal(fixture.renderMode.uniformAlignmentReference,false);if(observedTimerDelivery){assert.ok(fixture.startupScene.timers.events.length);assert.deepEqual(fixture.startupScene.timers.errors,[]);}}
 assert.equal(!!fixture.renderMode?.uniformAlignmentReference,process.argv.includes('--uniform-alignment-reference'),'Reference compatibility mode must be selected explicitly; never label a corrected WebGL reference as unchanged');
 if(requireExact){
  for(const name of ['initialReflection','previousHDR','priorAO','hdr','reflection','bloom','depth','final'])assert.ok(fixture.images[name],'Exact common-input comparison requires native '+name);
@@ -27,12 +30,35 @@ const evaluate=async expression=>{const result=await call('Runtime.evaluate',{ex
 try{
  await call('Page.enable');await call('Runtime.enable');await call('Emulation.setFocusEmulationEnabled',{enabled:true});await call('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:2,mobile:true});await call('Page.addScriptToEvaluateOnNewDocument',{source:(process.argv.includes('--detailed')?"if(location.protocol==='http:'||location.protocol==='https:')localStorage.setItem('finni-three-quality','detailed');":'')+'('+installNativePostprocessObserver.toString()+')({highPrecisionDepth:true});'});await call('Page.navigate',{url:base});
  for(let i=0;i<600;i++){if(await evaluate('!!window.finniThree'))break;await new Promise(resolve=>setTimeout(resolve,50));}
- await evaluate('document.getElementById("play").click()');
- for(let i=0;i<600;i++){if(await evaluate('finniThree.game.inLane'))break;if(i===599)throw Error('Port did not reach the native ball-in-plunger control state');await new Promise(resolve=>setTimeout(resolve,50));}
+ if(!modelStartup){await evaluate('document.getElementById("play").click()');
+ for(let i=0;i<600;i++){if(await evaluate('finniThree.game.inLane'))break;if(i===599)throw Error('Port did not reach the native ball-in-plunger control state');await new Promise(resolve=>setTimeout(resolve,50));}}
  const result=await evaluate(`(async()=>{
-  const {game,view}=finniThree;document.getElementById('controls-panel').showPopover();game.setPaused(true);await game.flush();
+  'use strict';
+  let game,view,modelInputs,stateDescriptors;const fixture=${JSON.stringify(fixture)};
+  if(${modelStartup}){
+   const {createRuntimeGame}=await import('/three/game-runtime.js'),{createView}=await import('/three/scene.js');
+   game=await createRuntimeGame('/three/',()=>{},{play(){},stop(){}});
+   for(const [name]of game.rules.objects)game.rules.objects.get(name);await Promise.resolve();await game.flush();
+   if(game.time!==0||game.state==='playing')throw Error('Fresh production worker must start at ordinary initialization');
+   game.start();await game.flush();let ticks=0;const nativeTimerTimes=new Set(${observedTimerDelivery}?(fixture.startupScene.timers.events.filter(row=>row.interval>=0).map(row=>row.ms)):[]);
+   const advance=async due=>{if(due<ticks)throw Error('Native frame clocks are not monotonic');const count=due-ticks,dispatchTimers=${observedTimerDelivery}?Array.from({length:count},(_,i)=>nativeTimerTimes.has(ticks+i)):undefined;await game.debug({action:'advance',ticks:count,...dispatchTimers?{dispatchTimers}:{}});ticks=due;};
+   for(const frame of fixture.startupScene.clock.animationFrames){await advance(frame.ms+1);await game.prepareFrame();}
+   const finalTicks=fixture.startupScene.freeze.after.ms+1;await advance(finalTicks);await game.flush();
+   const actual=game.renderBalls,expected=fixture.balls,bodyErrors=[];if(actual.length!==expected.length)throw Error('Model/native body count mismatch');
+   actual.forEach((ball,i)=>{const ref=expected[i];for(const field of ['position','velocity'])for(const axis of ['x','y','z'])if(ball[field][axis]!==ref[field][axis])bodyErrors.push({ball:i,field,axis,actual:ball[field][axis],expected:ref[field][axis]});ball.orientation.forEach((value,j)=>{if(value!==ref.orientation[j])bodyErrors.push({ball:i,field:'orientation',index:j,actual:value,expected:ref.orientation[j]});});});
+   if(bodyErrors.length)throw Error('Model-generated startup bodies differ: '+JSON.stringify(bodyErrors.slice(0,8)));
+   const inspection=await game.debug({action:'inspect'}),expectedRandom=fixture.startupScene.freeze.after.random;if(inspection.random.some((word,i)=>word!==expectedRandom[i]))throw Error('Model-generated startup random progression differs');
+   modelInputs={ticks,animationFrames:fixture.startupScene.clock.animationFrames.length,time:game.time,bodyErrors,random:inspection.random,expectedRandom,copiedNativeProperties:0,copiedNativeBodies:0,observedTimerDelivery:${observedTimerDelivery},positiveTimerDeliveryClocks:nativeTimerTimes.size};
+   const canvas=document.createElement('canvas');canvas.id='model-startup-canvas';canvas.style.cssText='position:fixed;left:-10000px;top:0;width:'+fixture.canvas.width/devicePixelRatio+'px;height:'+fixture.canvas.height/devicePixelRatio+'px';document.body.append(canvas);view=await createView(canvas,game,{quality:'detailed'});await game.flush();
+   // The prepared worker state is read-only for this draw. A fixture-property
+   // or body substitution would throw, rather than silently making it pass.
+   for(const object of game.rules.objects.values())Object.freeze(object);
+   for(const ball of game.renderBalls){Object.freeze(ball.position);Object.freeze(ball.velocity);Object.freeze(ball);}Object.freeze(game.renderBalls);
+   stateDescriptors=new Map(['renderBalls','cabinetOffset','plungerPosition'].map(key=>[key,Object.getOwnPropertyDescriptor(game,key)]));for(const key of stateDescriptors.keys())Object.defineProperty(game,key,{writable:false});
+   modelInputs.writeGuards={objects:game.rules.objects.size,balls:game.renderBalls.length};
+  }else{({game,view}=finniThree);document.getElementById('controls-panel').showPopover();game.setPaused(true);await game.flush();}
   if(${JSON.stringify(fixture.sceneControl?.flippers==='raised')}){game.input('left',true);game.input('right',true);await game.debug({action:'advance',ticks:200});await game.flush();}
-  const source=await(await fetch('/three/scene.js')).text(),THREE=await import(source.match(/import \\* as THREE from "([^"]+)"/)[1]),{applyNativeCamera}=await import('/three/camera-render.js'),fixture=${JSON.stringify(fixture)},base=${JSON.stringify(assetsURL)},renderer=view.renderer,gl=renderer.getContext(),images={},owned=[];
+  const source=await(await fetch('/three/scene.js')).text(),THREE=await import(source.match(/import \\* as THREE from "([^"]+)"/)[1]),{applyNativeCamera}=await import('/three/camera-render.js'),base=${JSON.stringify(assetsURL)},renderer=view.renderer,gl=renderer.getContext(),images={},owned=[];
   for(const [name,image]of Object.entries(fixture.images)){const response=await fetch(base+image.file);if(!response.ok)throw Error('Frame image unavailable '+name);images[name]=new (image.arrayType==='Float32Array'?Float32Array:Uint8Array)(await response.arrayBuffer());}
   const w=fixture.canvas.width,h=fixture.canvas.height;renderer.setPixelRatio(1);renderer.setSize(w,h,false);view.resizeTargets();applyNativeCamera(view.camera,view.cameraBounds,w/h,fixture.cameraPreset??'balanced');view.setCacheEnabled(${JSON.stringify(cacheEnabled)});view.setStaticPrerenderEnabled(${JSON.stringify(nativePrepass)});view.lightFrame.setHistoryEnabled(false);
   if(${nativeUniformABI}&&fixture.renderMode.uniformAlignmentReference)throw Error('Raw native upload mode conflicts with an aligned reference');
@@ -42,18 +68,18 @@ try{
   const seedHalf=(name,target)=>{const ref=fixture.images[name];if(!ref)return;renderer.initRenderTarget(target);renderer.copyTextureToTexture(texture(Uint16Array.from(images[name],THREE.DataUtils.toHalfFloat),ref.width,ref.height,THREE.HalfFloatType),target.texture);};
   seedHalf('previousHDR',view.lightFrame.previous);seedHalf('priorTransmissionFiltered',view.nativeTransmission.targets[1]);seedHalf('initialReflection',view.reflectionPass.target);seedHalf('priorReflectionTransmission',view.nativeTransmission.targets[0]);
   const ao=fixture.images.priorAO;if(ao){const red=Uint8Array.from({length:w*h},(_,i)=>images.priorAO[i*4]);renderer.initRenderTarget(view.lightFrame.postprocess.aoTargets[1]);renderer.copyTextureToTexture(texture(red,w,h,THREE.UnsignedByteType,THREE.RedFormat),view.lightFrame.postprocess.aoTargets[1].texture);}
-  const savedPlungerPosition=game.plungerPosition;if(fixture.plungerPosition!==undefined)game.plungerPosition=fixture.plungerPosition;
+  const savedPlungerPosition=game.plungerPosition;if(!${modelStartup}&&fixture.plungerPosition!==undefined)game.plungerPosition=fixture.plungerPosition;
   const mechanismInputs={mode:game.state,flippers:game.flippers.map(flipper=>({name:flipper.spec.name,angle:flipper.angle,nativeDegrees:Math.fround(Math.fround(Math.PI/2-flipper.angle)*Math.fround(180/Math.PI)),observedDegrees:fixture.states[flipper.spec.name.toLowerCase()]?.CurrentAngle})),plungerPosition:game.plungerPosition,spinners:game.spinners,gates:game.gates,visualMotions:[...game.visualMotions],targets:[...game.targetMotions]};
   const missingObjects=[],saved=[],keyFor=key=>({GetInPlayIntensity:'inplayintensity',GetInPlayStateBool:'inplayon'}[key]??key.toLowerCase());
-  for(const [name,state]of Object.entries(fixture.states)){
+  if(!${modelStartup})for(const [name,state]of Object.entries(fixture.states)){
    const object=game.rules.objects.get(name);if(!object){missingObjects.push(name);continue;}const restore={};
    for(const [key,value]of Object.entries(state)){const target=keyFor(key);restore[target]=object[target];object[target]=value;}
    if(Object.hasOwn(state,'GetInPlayIntensity')){restore.sequenceactive=object.sequenceactive;object.sequenceactive=false;}
    saved.push([object,restore]);
   }
-  for(const [name,motion]of game.targetMotions){const state=fixture.states[name];if(state){saved.push([motion,{offset:motion.offset,revision:motion.revision}]);motion.offset=motion.drop&&state.IsDropped?-52:0;motion.revision++;}}
-  for(const [name,pose]of Object.entries(fixture.mechanismPoses??{})){const motion=game.visualMotions.get(name);if(!motion)throw Error('Observed source mechanism is missing: '+name);saved.push([motion,Object.fromEntries(Object.keys(pose).map(key=>[key,motion[key]]))]);Object.assign(motion,pose);}
-  const oldBalls=game.renderBalls,oldSubmission=game.submission,oldCabinet=game.cabinetOffset;game.renderBalls=fixture.balls;game.submission=undefined;game.cabinetOffset={x:0,y:0};
+  if(!${modelStartup})for(const [name,motion]of game.targetMotions){const state=fixture.states[name];if(state){saved.push([motion,{offset:motion.offset,revision:motion.revision}]);motion.offset=motion.drop&&state.IsDropped?-52:0;motion.revision++;}}
+  if(!${modelStartup})for(const [name,pose]of Object.entries(fixture.mechanismPoses??{})){const motion=game.visualMotions.get(name);if(!motion)throw Error('Observed source mechanism is missing: '+name);saved.push([motion,Object.fromEntries(Object.keys(pose).map(key=>[key,motion[key]]))]);Object.assign(motion,pose);}
+  const oldBalls=game.renderBalls,oldSubmission=game.submission,oldCabinet=game.cabinetOffset;if(!${modelStartup}){game.renderBalls=fixture.balls;game.submission=undefined;game.cabinetOffset={x:0,y:0};}
   const final=new THREE.WebGLRenderTarget(w,h,{type:THREE.UnsignedByteType,depthBuffer:false}),post=view.lightFrame.postprocess,update=post.update,render=post.render;post.update=()=>update.call(post,fixture.frameIndex);post.render=()=>render.call(post,final);
   const compare=(actual,expected,channels=4,rgb=true)=>{
    const result={samples:0,different:0,alphaSamples:0,alphaDifferent:0,maxAbsolute:0,sumAbsolute:0,examples:[]};
@@ -83,14 +109,17 @@ try{
     cacheComparison={hdr:bits(hdrPixels,readHalf(view.lightFrame.target)),reflection:bits(reflectionPixels,readHalf(view.reflectionPass.target)),bloom:bits(bloomPixels,readHalf(view.nativeTransmission.targets[0])),final:bits(ldr,secondLDR)};
    }
    const color=document.createElement('canvas');color.width=w;color.height=h;const rgba=new Uint8ClampedArray(ldr.length);for(let y=0;y<h;y++)rgba.set(ldr.subarray(y*w*4,(y+1)*w*4),(h-1-y)*w*4);color.getContext('2d').putImageData(new ImageData(rgba,w,h),0,0);
-   return{cacheEnabled:${JSON.stringify(cacheEnabled)},mechanismInputs,background,cacheComparison,traces,staticPixels,hdr,reflection,bloom,final:compare(ldr,images.final),depth:depthResult,missingObjects,unsupportedSourceInputs:fixture.missing,glError:gl.getError(),gameError:game.error?.message??null,portPNG:color.toDataURL('image/png').split(',')[1],scope:'Real full scene at native resolution after ordinary Start and ball-in-plunger condition, with observed properties, ball states and actual temporal history as shared test inputs. Current-frame HDR/reflection/bloom/depth/final images are comparisons only. Classic inserts explicitly hidden in both scenes. Background equality is asserted; remaining full-frame differences are reported, not accepted as parity.'};
-  }finally{renderer.renderBufferDirect=renderDirect;view.nativeStatic.build=buildStatic;post.update=update;post.render=render;game.plungerPosition=savedPlungerPosition;game.renderBalls=oldBalls;game.submission=oldSubmission;game.cabinetOffset=oldCabinet;for(const [object,state]of saved)Object.assign(object,state);for(const value of owned)value.dispose();final.dispose();view.lightFrame.setHistoryEnabled(true);}
+   return{cacheEnabled:${JSON.stringify(cacheEnabled)},modelInputs,mechanismInputs,background,cacheComparison,traces,staticPixels,hdr,reflection,bloom,final:compare(ldr,images.final),depth:depthResult,missingObjects,unsupportedSourceInputs:fixture.missing,glError:gl.getError(),gameError:game.error?.message??null,portPNG:color.toDataURL('image/png').split(',')[1],scope:'Real full scene at native resolution. Current-frame HDR/reflection/bloom/depth/final images are comparisons only. Input scope is declared by the diagnostic mode.'};
+  }finally{renderer.renderBufferDirect=renderDirect;view.nativeStatic.build=buildStatic;post.update=update;post.render=render;if(!${modelStartup}){game.plungerPosition=savedPlungerPosition;game.renderBalls=oldBalls;game.submission=oldSubmission;game.cabinetOffset=oldCabinet;}for(const [object,state]of saved)Object.assign(object,state);for(const value of owned)value.dispose();final.dispose();view.lightFrame.setHistoryEnabled(true);if(stateDescriptors)for(const [key,descriptor]of stateDescriptors)Object.defineProperty(game,key,descriptor);if(${modelStartup})await game.dispose();}
  })()`);
  result.scope=fixture.control+' Real full scene after ordinary Start/ball-in-plunger, with native properties, body poses and temporal images as shared inputs. Current-frame output images are comparisons only. Background/cache gates remain mandatory; all color/alpha/depth equality is additionally asserted with --require-exact. This does not establish uninterrupted gameplay parity.';
+ if(modelStartup)result.scope=fixture.control+' Fresh production worker initialization, ordinary Start and only observed animation/physical clock advances generate every scene property, body and mechanism. No native properties, poses, random state or plunger state copied into the model. Prior GPU temporal images and FrameIndex remain explicit common inputs. This frozen normal-start frame does not establish uninterrupted rendering/history parity.';
+ if(observedTimerDelivery)result.scope+=' Actual native positive-timer delivery clocks are also explicit external diagnostic inputs; every physical interval is processed. This isolates the rendered/model state from the native script-budget policy, which is not reconstructed by this test.';
  fs.writeFileSync(path.join(directory,'port-'+reportName+'.png'),Buffer.from(result.portPNG,'base64'));delete result.portPNG;result.requireExact=requireExact;fs.writeFileSync(path.join(directory,'comparison-'+reportName+'.json'),JSON.stringify({result,errors},null,2));console.log(JSON.stringify({result,errors}));assert.deepEqual(errors,[]);assert.equal(result.glError,0);assert.equal(result.gameError,null);assert.deepEqual(result.background.actual,result.background.expected,'observed native background RGBA');if(compareCache)for(const [name,comparison]of Object.entries(result.cacheComparison)){assert.equal(comparison.different,0,name+' cache RGB');assert.equal(comparison.alphaDifferent,0,name+' cache alpha');}if(requireExact)for(const name of ['hdr','reflection','bloom','depth','final'])assert.equal(result[name].different,0,'Full controlled native '+name);
  if(requireExact){
   assert.equal(result.mechanismInputs.mode,'playing');
   for(const flipper of result.mechanismInputs.flippers)assert.equal(Math.fround(flipper.observedDegrees),flipper.nativeDegrees,flipper.name+' given control angle');
   for(const name of ['hdr','reflection','bloom','final'])assert.equal(result[name].alphaDifferent,0,'Full controlled native '+name+' alpha');
  }
+ if(modelStartup){assert.equal(result.modelInputs.copiedNativeProperties,0);assert.equal(result.modelInputs.copiedNativeBodies,0);assert.deepEqual(result.modelInputs.bodyErrors,[]);assert.equal(result.modelInputs.ticks,fixture.startupScene.freeze.after.ms+1);}
 }finally{socket.close();}
