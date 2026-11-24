@@ -32,9 +32,14 @@ export function missionCompletionScenario(objects,mission=1){
  },scope:'Original initialization and physical launch, declared scoop/target/lane approaches, original chooser keys, full remaining counter and physical jackpot scoop. No direct hit/completion handler calls, progress/qualification setters, timer changes or RNG overrides. Ball placement inputs are explicit; this is not natural player completion. Rnd(0) observes script state without advancing it.'+(mission>=4?' Missions '+Array.from({length:mission-1},(_,i)=>i+1).join(', ')+' are completed first; physical DEAD target-bank hits qualify each subsequent chooser and earn its unlock through original rules.':'')};
 }
 
+export function partyFinaleScenario(objects){
+ const scenario=missionCompletionScenario(objects,6);
+ return{...scenario,finale:true,fields:{...scenario.fields,firstBattle:'Abs(CLng(bFirstBattle(CurrentPlayer)))',finaleEnabled:'Abs(CLng(MrSinisterTimer.Enabled))',finaleInterval:'MrSinisterTimer.Interval',dazzler:'dazzlerValue'},scope:scenario.scope+' After six actual wins and scoop jackpots, physically qualify the next chooser and select mission 7. Observe its original timer and round reset without supplying a seventh win, progress, timer or RNG result. This is finale entry/exit coverage, not a claim of mission-7 victory.'};
+}
+
 export function installMissionCompletionController(scenario){
  const data=window.nativeMissionCompletionController={scenario,stage:'lane',actions:[],errors:[],completed:false};
- const missions=scenario.mission>=4?Array.from({length:scenario.mission},(_,i)=>i+1):[scenario.mission];let missionIndex=0,mission=missions[0];
+ const missions=scenario.finale?[1,2,3,4,5,6,7]:scenario.mission>=4?Array.from({length:scenario.mission},(_,i)=>i+1):[scenario.mission];let missionIndex=0,mission=missions[0];
  if(missions.length>1)data.completions=[];
  let pullAt=0,confirmedAt=0,lastShot=-Infinity,lastQuery=-Infinity,winScore,pendingShot,pendingLoopExit,pendingPlungerExit,plungerPrimed=false,arrowIndex=0;const usedArrows=new Set();
  const execute=(kind,script)=>{const row={kind,script,ms:nativeStartup.read().ms,frameIndex:nativeStartup.frameIndex()};data.actions.push(row);finni.evaluate(script);return row;};
@@ -87,7 +92,16 @@ export function installMissionCompletionController(scenario){
    if(data.stage==='chooser'){
     if(!state.choosing)return;
     if(state.selected!==mission){key('RightFlipperKey',true);key('RightFlipperKey',false);return;}
-    key('LockBarKey',true);key('LockBarKey',false);confirmedAt=ms;data.stage='active';return;
+    key('LockBarKey',true);key('LockBarKey',false);confirmedAt=ms;
+    if(mission===7&&scenario.finale){
+     const entry=query();if(entry.active!==7||entry.won!==6||!entry.finaleEnabled)throw Error('Finale entry did not follow the six earned wins');
+     data.finale={enteredAt:nativePlayerInputs.at(-1).ruleState.ms,entry};data.stage='finale';
+    }else data.stage='active';return;
+   }
+   if(data.stage==='finale'){
+    if(state.active!==0||state.finaleEnabled)return;
+    if(![1,2,3,4,5,6,7].every(n=>state['life'+n]===10&&state['mission'+n]===0)||state.firstBattle!==0)throw Error('Finale exited without the authored new-round reset');
+    data.finale.exit=state;data.finale.exitedAt=nativePlayerInputs.at(-1).ruleState.ms;data.finale.outcome=state.won>data.finale.entry.won?'native-victory':'native-timer-expiry';data.completed=true;data.completedAt=ms;data.stage='finale-observed';return;
    }
    if(data.stage==='active'){
     const life=state['life'+mission];

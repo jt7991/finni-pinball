@@ -7,8 +7,18 @@ import {createFullGame} from '../full-game.js';
 import {NativeDynamicTree} from '../native-dynamic-tree.js';
 import {nativeMeshQuery} from '../native-mesh-contact.js';
 import {placeReferenceBall} from '../../scripts/reference-physics.mjs';
+import {nativeBallStorageOrder} from '../native-ball-collision.js';
 const root=new URL('../../',import.meta.url);
 const json=name=>JSON.parse(fs.readFileSync(new URL(`../public/${name}.json`,import.meta.url)));
+
+test('recycled body storage keeps its collision rank while the handle generation changes',async()=>{
+  await RAPIER.init();const world=new RAPIER.World({x:0,y:0,z:0});
+  try{
+    const first=world.createRigidBody(RAPIER.RigidBodyDesc.dynamic()),second=world.createRigidBody(RAPIER.RigidBodyDesc.dynamic()),rank=nativeBallStorageOrder(first.handle);
+    assert.ok(rank<nativeBallStorageOrder(second.handle));world.removeRigidBody(first);
+    const replacement=world.createRigidBody(RAPIER.RigidBodyDesc.dynamic());assert.notEqual(replacement.handle,first.handle,'A new lifetime has a distinct opaque handle');assert.equal(nativeBallStorageOrder(replacement.handle),rank,'Pointer-style collision rank follows reused storage');assert.ok(nativeBallStorageOrder(replacement.handle)<nativeBallStorageOrder(second.handle),'A later ball can precede an older live ball in storage order');
+  }finally{world.free();}
+});
 
 test('production ball collisions match native head-on, glancing, vertical and embedded recordings',()=>{
   const reports=JSON.parse(execFileSync(process.execPath,['scripts/compare-vpx-ball-pairs.mjs','--check','--json'],{cwd:root,encoding:'utf8'}));

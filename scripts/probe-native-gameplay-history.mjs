@@ -9,7 +9,7 @@ import{nativeFrameClockLayout}from './native-frame-clock-layout.mjs';
 import{installNativeCollisionGeometryObserver}from './native-collision-geometry-observer.mjs';
 import{installNativeFlipperMotionObserver}from './native-flipper-motion-observer.mjs';
 import{installNativeMoverMotionObserver}from './native-mover-motion-observer.mjs';
-import{missionCompletionScenario,installMissionCompletionController}from './native-mission-completion-controller.mjs';
+import{missionCompletionScenario,partyFinaleScenario,installMissionCompletionController}from './native-mission-completion-controller.mjs';
 import{partyChooserScript}from'../browser/party-chooser.js';
 
 function installGameplayFrames(through){
@@ -34,7 +34,8 @@ const [debug,base,output]=process.argv.slice(2),name=process.argv.find(arg=>arg.
 const cadence=Number(process.argv.find(arg=>arg.startsWith('--cadence-ms='))?.slice(13)??180),nudgeEvery=Number(process.argv.find(arg=>arg.startsWith('--nudge-every-ms='))?.slice(17)??0),replay=process.argv.includes('--replay');
 const actionEvery=Number(process.argv.find(arg=>arg.startsWith('--action-every-ms='))?.slice(18)??0);
 const completionText=process.argv.find(arg=>arg.startsWith('--complete-mission='))?.slice('--complete-mission='.length),legacyCompletion=process.argv.includes('--complete-mission1');assert.ok(!(legacyCompletion&&completionText!==undefined));
-const completeMission=legacyCompletion||completionText!==undefined,completionScenario=completeMission?missionCompletionScenario(JSON.parse(fs.readFileSync('three/public/objects.json')).objects,legacyCompletion?1:Number(completionText)):null;
+const reachFinale=process.argv.includes('--reach-party-finale');assert.ok(!(reachFinale&&(legacyCompletion||completionText!==undefined)),'Finale entry and full-counter requests are distinct');
+const completeMission=legacyCompletion||completionText!==undefined||reachFinale,completionObjects=completeMission?JSON.parse(fs.readFileSync('three/public/objects.json')).objects:null,completionScenario=reachFinale?partyFinaleScenario(completionObjects):completeMission?missionCompletionScenario(completionObjects,legacyCompletion?1:Number(completionText)):null;
 const guardPartyChooser=process.argv.includes('--guard-party-chooser');
 if(completeMission)assert.ok(!nudgeEvery&&!actionEvery&&!replay&&!process.argv.some(arg=>arg.startsWith('--cadence-ms=')),'Completion and ordinary gameplay controllers are separate input modes');
 assert.ok(actionEvery===0||Number.isInteger(actionEvery)&&actionEvery>=500&&actionEvery<=10000);
@@ -70,10 +71,10 @@ try{
  meta.reference=await(await fetch(new URL('/reference-metadata.json',base))).json();assert.equal(meta.reference.sourceSha256,meta.reference.controlledSha256);assert.deepEqual(meta.reference.controlledOverrides,{});meta.browserErrors=errors;
  meta.scope='Uninterrupted original initialization and full-table gameplay. Only ordinary UI keyboard events; all actual UI calls, script clocks, timer delivery and frame preparation recorded. Native bodies/RNG are expectations, never replay inputs. No image or native state restoration.';
  if(completeMission){meta.scope=completionScenario.scope;meta.completionControllerSourceSHA256=createHash('sha256').update(fs.readFileSync('scripts/native-mission-completion-controller.mjs')).digest('hex');}
- meta.controller=completeMission?{kind:'controlled-physical-mission-completion',mission:completionScenario.mission,...(completionScenario.mission>=4?{missionSequence:Array.from({length:completionScenario.mission},(_,i)=>i+1)}:{})}:{cadenceMilliseconds:cadence,nudgeEveryMilliseconds:nudgeEvery,actionEveryMilliseconds:actionEvery,replay};
+ meta.controller=reachFinale?{kind:'controlled-physical-final-party-entry',completedCounters:[1,2,3,4,5,6],missionSequence:[1,2,3,4,5,6,7]}:completeMission?{kind:'controlled-physical-mission-completion',mission:completionScenario.mission,...(completionScenario.mission>=4?{missionSequence:Array.from({length:completionScenario.mission},(_,i)=>i+1)}:{})}:{cadenceMilliseconds:cadence,nudgeEveryMilliseconds:nudgeEvery,actionEveryMilliseconds:actionEvery,replay};
  if(guardPartyChooser){meta.playerCorrections={partyChooserSHA256:createHash('sha256').update(partyChooserScript).digest('hex')};meta.scope+=' The shared player chooser correction is installed before the first chooser through the ordinary script channel and retained verbatim among the external inputs. No table bytes, native physics algorithm, clock result or random word is replaced.';}
  fs.writeFileSync(path.join(directory,'capture.json'),JSON.stringify(meta));assert.deepEqual(errors,[]);for(const key of ['errors'])assert.deepEqual(meta[key],[]);for(const key of ['clock','timers','startup','randomizeClocks'])assert.deepEqual(meta[key].errors,[]);
  for(const key of ['flipperMotion','collisionGeometry','moverMotion'])if(meta[key])assert.deepEqual(meta[key].errors,[]);
- if(completeMission){assert.deepEqual(meta.completionController.errors,[]);assert.equal(meta.completionController.completed,true,'Native full-counter mission and physical scoop jackpot complete within the recorded window');}
+ if(completeMission){assert.deepEqual(meta.completionController.errors,[]);assert.equal(meta.completionController.completed,true,reachFinale?'Native six-win progression, physical finale entry and original round reset observed':'Native full-counter mission and physical scoop jackpot complete within the recorded window');}
  assert.deepEqual(meta.frames.map(row=>row.frameIndex),Array.from({length:meta.frames.length},(_,i)=>i+1));assert.ok(meta.frames.at(-1).snapshot.ms>=through);console.log(JSON.stringify({directory,frames:meta.frames.length,boundaries:meta.startup.boundaries.length,milliseconds:meta.frames.at(-1).snapshot.ms,actions:meta.actions.length}));
 }catch(error){fs.writeFileSync(path.join(directory,'failure.json'),JSON.stringify({error:String(error),errors}));throw error;}finally{socket.close();}

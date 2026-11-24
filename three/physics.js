@@ -16,7 +16,7 @@ import {nativeRampSurface,nativeRampContacts,rampWallHeights} from './native-ram
 import {nativeRubberMesh} from './native-rubber.js';
 import {NativeTree} from './native-tree.js';
 import {NativeDynamicTree} from './native-dynamic-tree.js';
-import {nativeBallHit,collideNativeBalls} from './native-ball-collision.js';
+import {nativeBallHit,collideNativeBalls,nativeBallStorageOrder} from './native-ball-collision.js';
 import {collideNativeBumper} from './native-bumper.js';
 import {collideNativeSlingshot} from './native-slingshot.js';
 import {nativeHitDescriptor,collideNativeHitSurface} from './native-hit-event.js';
@@ -83,7 +83,7 @@ export class Pinball {
     this.events = new RAPIER.EventQueue(!this.nativeFlipperContacts);
     this.physicsStats={maxSubsteps:0,substepBudgetExceeded:0};
     this.ballSpin=new BallSpin();
-    this.nativePositionUnits=physics.native_position_units!==false;this.nativeBallStates=new WeakMap();this.nativeBallSequence=0;
+    this.nativePositionUnits=physics.native_position_units!==false;this.nativeBallStates=new WeakMap();
     this.tags = new Map();
     this.colliderLabels = new Map();
     this.contactMaterials=new Map();this.changedMaterials=new Set();this.queryBall=new RAPIER.Ball(RADIUS);
@@ -346,7 +346,7 @@ export class Pinball {
   }
 
   nativeBall(body){
-    let state=this.nativeBallStates.get(body);if(!state){state=new NativeBall(body);state.order=this.nativeBallSequence++;this.nativeBallStates.set(body,state);}return state;
+    let state=this.nativeBallStates.get(body);if(!state){state=new NativeBall(body);state.order=nativeBallStorageOrder(body.handle);this.nativeBallStates.set(body,state);}return state;
   }
 
   stepPhysics(records,preparedNudge){

@@ -3,6 +3,11 @@
 // 195f214dd4849b8ef6113fd377258b78d0dec3bf. See public/licenses/VPX-Physics-NOTICE.txt.
 import {f,add,sub,mul,dot,unit} from './native-vector.js';
 
+// Rapier 0.21 Coarena indexes the low word of its opaque f64 handle. The
+// generation distinguishes lifetimes; the slot supplies allocation order.
+const handleValue=new Float64Array(1),handleWords=new Uint32Array(handleValue.buffer);
+export function nativeBallStorageOrder(handle){handleValue[0]=handle;return handleWords[0];}
+
 export function nativeBallHit(query,other,radius,duration){
   const d=sub(other.p,query.p),dv=sub(other.v,query.v),squared=dot(d,d),distance=f(Math.sqrt(squared));
   const b=dot(dv,d),vn=f(b/distance);if(vn>f(.0001))return null;
@@ -24,8 +29,8 @@ export function nativeBallHit(query,other,radius,duration){
 }
 
 export function collideNativeBalls(ball,other,hit,locked,swapped,emit){
-  // Native pointer order selects one of the reciprocal events; creation order
-  // supplies the corresponding stable identity in this independent runtime.
+  // Native pointer order selects one reciprocal event. Use the current body
+  // storage slot, which can be reused, rather than a ball's creation age.
   if(!locked&&(swapped?ball.order>=other.order:ball.order<=other.order))return false;
   let a=ball.snapshot(),b=other.snapshot();const n={x:f(hit.normal.x),y:f(-hit.normal.y),z:f(hit.normal.z)},gap=f(hit.gap*100);
   let normalSpeed=dot(sub(a.v,b.v),n);
