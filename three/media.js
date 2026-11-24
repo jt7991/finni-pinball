@@ -7,16 +7,20 @@ import {loadDmdAtlasDisplayBitmap,DMD_ATLAS_FILE} from './dmd-atlas.js';
 import {createAudioBufferCache} from './audio-buffer-cache.js';
 
 export function createAudio(manifest,base) {
-  let context,muted=false,primed=false,stopEpoch=0,musicSource,musicMixer;
+  let context,unlocked=false,muted=false,primed=false,stopEpoch=0,musicSource,musicMixer;
   const musicElement=new Audio();
   const playing=new Map(),music=new Map(),stops=new Map();
   const buffers=createAudioBufferCache(async name=>{
     const response=await fetch(`${base}audio/${manifest[name].file}`);
     if(!response.ok)throw Error(`Audio ${name} unavailable`);
-    return context.decodeAudioData(await response.arrayBuffer());
+    const bytes=await response.arrayBuffer();context??=new AudioContext();
+    return context.decodeAudioData(bytes);
   });
+  // Decode during loading without resuming audio or reserving a sound player.
+  // A failed preparation remains retryable through the normal playback path.
+  const prepare=names=>Promise.allSettled(names.map(name=>String(name).toLowerCase()).filter(name=>manifest[name]&&!manifest[name].music).map(name=>buffers.get(name)));
   async function unlock(){
-    context??=new AudioContext();const resumed=context.resume();
+    context??=new AudioContext();unlocked=true;const resumed=context.resume();
     // Reuse one gesture-unlocked media element for streamed music on iOS.
     if(!primed){
       primed=true;const bytes=new Uint8Array(1644),view=new DataView(bytes.buffer);
@@ -57,7 +61,7 @@ export function createAudio(manifest,base) {
     source.start();
   }
   async function play(name,{loop=0,volume=1,pan=0,rate=1,pitch=0,pitchFactor=1,useExisting=false,restart=false}={}){
-    name=String(name).toLowerCase();if(muted||!context||!manifest[name])return;
+    name=String(name).toLowerCase();if(muted||!unlocked||!context||!manifest[name])return;
     let player;
     try{
       if(manifest[name].music){
@@ -89,7 +93,7 @@ export function createAudio(manifest,base) {
       player.pending=loading;await loading;player.pending=null;
     }catch(error){if(player)stopPlayer(player);console.warn(error.message);}
   }
-  return {unlock,play,stop,setMuted(value){muted=value;if(value)stop();},get muted(){return muted;}};
+  return {prepare,unlock,play,stop,setMuted(value){muted=value;if(value)stop();},get muted(){return muted;}};
 }
 
 export async function createDisplay(canvas,objects,base) {

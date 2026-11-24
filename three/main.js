@@ -162,7 +162,11 @@ async function boot(){
     const base=import.meta.env.BASE_URL;
     const load=async(name,json=true)=>{const response=await fetch(`${base}${name}`);if(!response.ok)throw Error(`${name} could not be loaded.`);return json?response.json():response.text();};
     const manifest=await load('audio.json');
-    audio=createAudio(manifest,base);game=await createRuntimeGame(base,event,audio);
+    audio=createAudio(manifest,base);
+    // Keep first-use fetch/decode off the flipper input path. Preparation runs
+    // alongside table loading and never gates Start or resumes the context.
+    void audio.prepare(['fx_flipperup','fx_flipperdown']);
+    game=await createRuntimeGame(base,event,audio);
     leaderboard=createLeaderboard(statement=>game.rules.execute(statement),release);
     $('load-status').textContent='Loading artwork and table model…';
     const quality=$('quality').value==='auto'?(matchMedia('(max-width:650px), (pointer:coarse) and (max-width:1024px)').matches?'performance':'detailed'):$('quality').value;
