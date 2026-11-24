@@ -1,6 +1,7 @@
-// Share the original encoded atlas while keeping the display's Image decoder
+// Share the lossless delivery atlas while keeping the display's Image decoder
 // and the native flasher's explicit ImageBitmap decode settings independent.
 const sources=new Map();
+export const DMD_ATLAS_FILE='dmd-atlas.webp';
 
 export function loadDmdAtlasBlob(url){
   const key=new URL(url,globalThis.document?.baseURI??import.meta.url).href;

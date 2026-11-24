@@ -70,7 +70,7 @@ try{
   }
  }
  assert.ok(rows.some(row=>row.target==='worker'&&row.transferredBytes>0),'Worker requests are included');
- const atlasTransfers=rows.filter(row=>new URL(row.url).pathname.endsWith('/dmd-atlas.png'));
+ const atlasTransfers=rows.filter(row=>/\/dmd-atlas\.(png|webp)$/.test(new URL(row.url).pathname));
  const report={scope:'Production startup to enabled Start and first WebGL draw. First load uses an empty browser profile; subsequent loads use the same normal browser cache after visiting about:blank. Optional server records are independently matched once by URL and observed request epoch; existing browser wire-status/ETag observations must agree. HTTP cache policy is recorded separately. Completed transfer sizes include headers; pending requests retain observed encoded body bytes separately. Not phone hardware or cellular speed. No game starts and no source clock/RNG/state is replaced.',base,load,httpCacheDisabled:cacheDisabled,serverAuditFile,coldStartupMilliseconds:Date.now()-started,viewport:{width:390,height:844,deviceScaleFactor:2,mobile:true},transferredBytes:rows.reduce((sum,row)=>sum+(row.transferredBytes??0),0),pendingBodyBytes:rows.filter(row=>row.pending).reduce((sum,row)=>sum+(row.receivedBodyBytes??0),0),atlasTransfers:atlasTransfers.length,rows,errors};
  reports.push(report);await writeFile(output+'/'+name,JSON.stringify(loadCount===1?report:{base,httpCacheDisabled:cacheDisabled,loads:reports,errors},null,2));console.log(JSON.stringify({load,coldStartupMilliseconds:report.coldStartupMilliseconds,transferredBytes:report.transferredBytes,validated:rows.filter(row=>row.wireStatus===304).length,largest:rows.slice(0,5)}));
  assert.ok(rows.every(row=>!row.failure&&(row.pending||row.status<400)),'Every completed startup request succeeds');
@@ -84,7 +84,8 @@ try{
    assert.equal(row.receivedBodyBytes??0,0,'Unchanged static bodies are not transferred again');
    if(row.serverValidation?.status===304)assert.equal(row.serverValidation.ifNoneMatch,row.serverValidation.etag,'Browser validates the existing asset version');
   }
-  for(const suffix of ['/three/','/layout.json','/objects.json','/rules.vbs','/native-table/table-meshes.delta.bin','/dmd-atlas.png']){
+  assert.ok(atlasTransfers.length>0,'Warm load includes the delivered DMD atlas');
+  for(const suffix of ['/three/','/layout.json','/objects.json','/rules.vbs','/native-table/table-meshes.delta.bin']){
    const rowsForAsset=rows.filter(row=>new URL(row.url).pathname.endsWith(suffix));assert.ok(rowsForAsset.length,'Warm load includes '+suffix);
    assert.ok(rowsForAsset.every(row=>(row.wireStatus??row.serverValidation?.status)===304||row.diskCache&&row.observedBytes===0),'Every '+suffix+' cache entry is validated or served from cache');
   }

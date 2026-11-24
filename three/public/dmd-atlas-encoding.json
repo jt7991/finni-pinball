@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "source": "dmd-atlas.png",
+  "sourceSHA256": "c52f2fa5be767faf3ee9022c058ff063b9db46f7f5efe993fe323dcd61c4dce3",
+  "sourceBytes": 1644473,
+  "file": "dmd-atlas.webp",
+  "encoding": "webp-lossless",
+  "sha256": "3fc976c9b1ae17ead441fa5fa0062ed64a4b0ce30f49dda9346be8de3b467fb1",
+  "bytes": 798902,
+  "width": 4096,
+  "height": 4672,
+  "rgbaSHA256": "16b9a1483adc65e4f731b89fa99f4f59e29b8079d9bd54942975a8ee111d7555"
+}

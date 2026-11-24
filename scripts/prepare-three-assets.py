@@ -9,6 +9,7 @@ import sys
 import argparse
 import re
 import math
+import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -194,4 +195,5 @@ script=re.sub(r'^Sub FlashForMs\(MyLight, TotalPeriod, BlinkPeriod, FinalState\)
 (OUT/'rules.vbs').write_text(script)
 shutil.copyfile(ROOT/'runtime/dmd-atlas.json',OUT/'dmd-atlas.json')
 shutil.copyfile(ROOT/'runtime/dmd-atlas.png',OUT/'dmd-atlas.png')
+subprocess.run([sys.executable,str(ROOT/'scripts/encode-dmd-atlas.py'),'--public',str(OUT),'--pillow-root',str(SOURCE_ROOT/'.tools/pydeps')],check=True)
 print('Prepared playfield and layout:', image.size, len(items), 'objects')
