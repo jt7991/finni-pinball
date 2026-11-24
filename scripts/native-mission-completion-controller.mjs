@@ -37,18 +37,23 @@ export function partyFinaleScenario(objects){
  return{...scenario,finale:true,fields:{...scenario.fields,firstBattle:'Abs(CLng(bFirstBattle(CurrentPlayer)))',finaleEnabled:'Abs(CLng(MrSinisterTimer.Enabled))',finaleInterval:'MrSinisterTimer.Interval',dazzler:'dazzlerValue'},scope:scenario.scope+' After six actual wins and scoop jackpots, physically qualify the next chooser and select mission 7. Observe its original timer and round reset without supplying a seventh win, progress, timer or RNG result. This is finale entry/exit coverage, not a claim of mission-7 victory.'};
 }
 
+export function partyFinaleVictoryScenario(objects){
+ const scenario=partyFinaleScenario(objects),fast=(name)=>{const shot=scenario.shots[name],speed=Math.hypot(shot.vx,shot.vy);return{...shot,vx:shot.vx/speed*128,vy:shot.vy/speed*128};};
+ return{...scenario,completeFinale:true,shots:{...scenario.shots,finaleLoop:fast('loop'),finaleWolverine:fast('wolverine'),finaleColossus:fast('colossus'),finaleOuterLoop:fast('outerLoop')},fields:{...scenario.fields,special:'li039.State'},scope:scenario.scope.replace('Observe its original timer and round reset without supplying a seventh win, progress, timer or RNG result. This is finale entry/exit coverage, not a claim of mission-7 victory.','Within the unchanged120ms timer, declare fast physical approaches to the currently lit shots. Observe the seventh win, original round reset, Special light and physical scoop jackpot without supplying progress, completion callbacks, timer values or RNG results. These explicit pose/velocity inputs are controlled collision coverage, not natural player completion.')};
+}
+
 export function installMissionCompletionController(scenario){
  const data=window.nativeMissionCompletionController={scenario,stage:'lane',actions:[],errors:[],completed:false};
  const missions=scenario.finale?[1,2,3,4,5,6,7]:scenario.mission>=4?Array.from({length:scenario.mission},(_,i)=>i+1):[scenario.mission];let missionIndex=0,mission=missions[0];
  if(missions.length>1)data.completions=[];
- let pullAt=0,confirmedAt=0,lastShot=-Infinity,lastQuery=-Infinity,winScore,pendingShot,pendingLoopExit,pendingPlungerExit,plungerPrimed=false,arrowIndex=0;const usedArrows=new Set();
+ let pullAt=0,confirmedAt=0,lastShot=-Infinity,lastQuery=-Infinity,winScore,pendingShot,pendingLoopExit,pendingPlungerExit,pendingFinaleShot,plungerPrimed=false,arrowIndex=0;const usedArrows=new Set();
  const execute=(kind,script)=>{const row={kind,script,ms:nativeStartup.read().ms,frameIndex:nativeStartup.frameIndex()};data.actions.push(row);finni.evaluate(script);return row;};
  execute('declarations','Dim RefCompletionBalls,RefCompletionBall');
  const query=()=>{
   const names=Object.keys(scenario.fields),expressions=Object.values(scenario.fields),script='Debug.Print "MISSION_COMPLETION|" & GameTime & "|" & '+[...expressions.map(e=>'CStr(CDbl('+e+'))'),...expressions.map(e=>'CStr(VarType('+e+'))')].join(' & "|" & ');
   execute('query',script);const lines=document.getElementById('log').textContent.split('\n'),line=lines.findLast(s=>s.includes('MISSION_COMPLETION|'));if(!line)throw Error('Missing native rule observation');
   data.lastQueryLine=line;const payload=/MISSION_COMPLETION\|([\d.eE+|\-]+)/.exec(line);if(!payload)throw Error('Invalid native rule marker');const numbers=payload[1].split('|').map(Number),ms=numbers.shift();if(numbers.length!==names.length*2||numbers.some(v=>!Number.isFinite(v)))throw Error('Invalid native rule observation: '+JSON.stringify({line,expected:names.length*2,numbers}));const values=numbers.slice(0,names.length),types=numbers.slice(names.length);
-  const input=nativePlayerInputs.at(-1);if(input.script!==script)throw Error('Rule observation input lost its identity');input.ruleState={names,expressions,values,types,ms};
+  const input=nativePlayerInputs.at(-1);if(input.script!==script)throw Error('Rule observation input lost its identity');if(ms!==input.ms)throw Error('Native mission-completion marker is stale');input.ruleState={names,expressions,values,types,ms};
   return Object.fromEntries(names.map((name,i)=>[name,values[i]]));
  };
  const key=(name,down)=>execute('key',`Table1_Key${down?'Down':'Up'} ${name}`);
@@ -57,6 +62,10 @@ export function installMissionCompletionController(scenario){
   const p=scenario.shots[name],properties={X:p.x,Y:p.y,Z:p.z,VelX:p.vx,VelY:p.vy,VelZ:p.vz,AngMomX:0,AngMomY:0,AngMomZ:0};
   execute('shot',`RefCompletionBalls=GetBalls():For Each RefCompletionBall In RefCompletionBalls:If RefCompletionBall.ID=${body.id} Then:${Object.entries(properties).map(([k,v])=>`RefCompletionBall.${k}=${v}`).join(':')}:End If:Next`);
   Object.assign(data.actions.at(-1),{shot:name,ballID:body.id,pose:p,...(missions.length>1?{mission}:{})});lastShot=nativeStartup.read().ms;return true;
+ };
+ const finaleShot=state=>{
+  const choices={1:['finaleLoop','loop'],3:['finaleColossus','colossus'],4:['finaleWolverine','wolverine'],6:['finaleOuterLoop','outerLoop']},arrow=Object.keys(choices).find(n=>state['shot'+n]===2);if(!arrow)throw Error('No lit finale shot');const[name,clearance]=choices[arrow];
+  if(place(name))pendingFinaleShot={name,clearance,life:state.life7,ballID:data.actions.at(-1).ballID,ms:lastShot};
  };
  const timer=setInterval(()=>{
   try{
@@ -68,7 +77,7 @@ export function installMissionCompletionController(scenario){
    }
    if(data.stage==='charging'){if(ms-pullAt>=600){key('PlungerKey',false);data.stage='exit';}return;}
    if(data.stage==='exit'){if(document.body.classList.contains('ball-in-plunger'))return;if(place('scoop'))data.stage='chooser';return;}
-   if(ms-lastQuery<100)return;lastQuery=ms;const state=query();data.last=state;
+   if(ms-lastQuery<(scenario.completeFinale&&data.stage==='finale'?1:100))return;lastQuery=ms;const state=query();data.last=state;
    if(data.stage==='qualify'){
     // Earlier approach teleports can leave the source launch-lane flag set.
     // Physically clear its switch before qualifying multiball, then let the
@@ -95,10 +104,24 @@ export function installMissionCompletionController(scenario){
     key('LockBarKey',true);key('LockBarKey',false);confirmedAt=ms;
     if(mission===7&&scenario.finale){
      const entry=query();if(entry.active!==7||entry.won!==6||!entry.finaleEnabled)throw Error('Finale entry did not follow the six earned wins');
-     data.finale={enteredAt:nativePlayerInputs.at(-1).ruleState.ms,entry};data.stage='finale';
+     data.finale={enteredAt:nativePlayerInputs.at(-1).ruleState.ms,entry};data.stage='finale';if(scenario.completeFinale)finaleShot(entry);
     }else data.stage='active';return;
    }
    if(data.stage==='finale'){
+    if(scenario.completeFinale){
+     if(state.won===7&&state.active===0){
+      if(state.finaleEnabled||state.firstBattle!==0||state.special!==2||![1,2,3,4,5,6,7].every(n=>state['life'+n]===10&&state['mission'+n]===0)||!state.endJackpot)throw Error('Seventh victory missed the authored reset or Special award');
+      Object.assign(data.finale,{win:state,wonAt:nativePlayerInputs.at(-1).ruleState.ms,outcome:'native-victory'});winScore=state.score;data.stage='jackpot';return;
+     }
+     if(state.active!==7||!state.finaleEnabled)throw Error('Native finale expired before the physical victory');
+     if(pendingFinaleShot){
+      if(state.life7>=pendingFinaleShot.life)return;
+      const body=nativeStartup.read().balls.find(b=>b.id===pendingFinaleShot.ballID),bounds=scenario.clearance[pendingFinaleShot.clearance];
+      if(body){const[x,y]=body.position;if(x>=bounds.minX&&x<=bounds.maxX&&y>=bounds.minY&&y<=bounds.maxY)return;}
+      (data.finale.physicalExits??=[]).push({...pendingFinaleShot,observedAt:ms,position:body?.position,life:state.life7});pendingFinaleShot=undefined;
+     }
+     if(ms>lastShot)finaleShot(state);return;
+    }
     if(state.active!==0||state.finaleEnabled)return;
     if(![1,2,3,4,5,6,7].every(n=>state['life'+n]===10&&state['mission'+n]===0)||state.firstBattle!==0)throw Error('Finale exited without the authored new-round reset');
     data.finale.exit=state;data.finale.exitedAt=nativePlayerInputs.at(-1).ruleState.ms;data.finale.outcome=state.won>data.finale.entry.won?'native-victory':'native-timer-expiry';data.completed=true;data.completedAt=ms;data.stage='finale-observed';return;
