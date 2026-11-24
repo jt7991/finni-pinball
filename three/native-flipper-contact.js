@@ -31,7 +31,10 @@ export function nativeFlipperHit(body,flipper,radius,duration){
     const rx=f(f(f(x+f(vx*t))-f(r*normalX))-cx),ry=f(f(f(y+f(vy*t))-f(r*normalY))-cy),dist=length(rx,ry),inv=f(1/dist);
     const angular=contactAngle>=max&&speed>0||contactAngle<=min&&speed<0?0:speed;
     const tx=f(-ry*inv),ty=f(rx*inv),sv=f(angular*dist);
-    const dvx=f(vx-f(tx*sv)),dvy=f(vy-f(ty*sv)),vn=f(f(dvx*normalX)+f(dvy*normalY)),contact=Math.abs(vn)<=f(.099)&&gap<=f(.05);
+    // VPX's tip test multiplies tangent by angular speed, then distance;
+    // its face test groups speed and distance. Keep their Float32 order.
+    const surfaceX=tip?f(f(tx*angular)*dist):f(tx*sv),surfaceY=tip?f(f(ty*angular)*dist):f(ty*sv);
+    const dvx=f(vx-surfaceX),dvy=f(vy-surfaceY),vn=f(f(dvx*normalX)+f(dvy*normalY)),contact=Math.abs(vn)<=f(.099)&&gap<=f(.05);
     if(tip?vn>=0:!contact&&vn>f(.0001))return null;
     const normal={x:normalX,y:-normalY,z:0};
     return {time:t*.01,contact,profile:{normal,gap:gap*.01,hitMomentBit:dist===0},normal,gap:gap*.01,vn};

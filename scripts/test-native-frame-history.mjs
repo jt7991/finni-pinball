@@ -18,7 +18,10 @@ for(const observed of [fixture.clock,fixture.timers,fixture.startup,fixture.rand
 assert.equal(authoredCamera.sourceTableSHA256,fixture.reference.sourceSha256);assert.deepEqual(fixture.frames.map(f=>f.frameIndex),Array.from({length:fixture.frames.length},(_,i)=>i+1));assert.equal(fs.existsSync(path.join(directory,'comparison-'+report+'.json')),false);
 if(observedPlayerInputs){assert.ok(fixture.playerInputs.length);assert.ok(fixture.playerSource['views.js']);}
 if(observedPreparedFrames)assert.deepEqual(fixture.clock.preparedFrames.slice(0,fixture.frames.length).map(frame=>frame.frameIndex),Array.from({length:fixture.frames.length},(_,i)=>i+1));
-if(observedFinishFrames){assert.equal(fixture.clock.frames.length,fixture.frames.length-2);for(const [i,row]of fixture.clock.frames.entries()){assert.deepEqual(row.tonemapFrames,[i+3],'Exactly one recorded scene frame per RAF');assert.ok(row.beforeMilliseconds<=fixture.frames[i+2].snapshot.ms&&row.afterMilliseconds>=fixture.frames[i+2].snapshot.ms);const elapsed=BigInt(row.afterPhysicsClock.current)-BigInt(row.afterPhysicsClock.start);assert.ok(elapsed>=0n&&elapsed%1000n===0n,'Observed finish cursor is an integral native physical boundary');}}
+// Metadata can include RAFs after the last requested image. Select only the
+// declared frame range, independently of any body or image differences.
+const finishFrames=observedFinishFrames?fixture.clock.frames.filter(row=>row.tonemapFrames?.[0]>=3&&row.tonemapFrames[0]<=fixture.frames.length):[];
+if(observedFinishFrames){assert.equal(finishFrames.length,fixture.frames.length-2);for(const [i,row]of finishFrames.entries()){assert.deepEqual(row.tonemapFrames,[i+3],'Exactly one recorded scene frame per RAF');assert.ok(row.beforeMilliseconds<=fixture.frames[i+2].snapshot.ms&&row.afterMilliseconds>=fixture.frames[i+2].snapshot.ms);const elapsed=BigInt(row.afterPhysicsClock.current)-BigInt(row.afterPhysicsClock.start);assert.ok(elapsed>=0n&&elapsed%1000n===0n,'Observed finish cursor is an integral native physical boundary');}}
 if(observedPresentation){assert.ok(fixture.presentation.records.length);assert.deepEqual(fixture.presentation.errors,[]);}
 const observedScriptClocks=process.argv.includes('--observed-script-clocks'),scriptClocks=observedScriptClocks?nativeScriptClockInputs(fixture.randomizeClocks,{lastFrame:fixture.frames.at(-1).frameIndex,lastMilliseconds:fixture.frames.at(-1).snapshot.ms}):{};
 const assetBase='/three/@fs/'+path.resolve(directory).replaceAll('\\','/')+'/';
@@ -30,6 +33,7 @@ try{
  await call('Page.enable');await call('Runtime.enable');await call('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:2,mobile:true});await call('Page.addScriptToEvaluateOnNewDocument',{source:'('+installNativePostprocessObserver.toString()+')({highPrecisionDepth:true});('+installPortPixelObserver.toString()+')();'});await call('Page.navigate',{url:base});
  for(let i=0;i<600;i++){if(await evaluate('!!window.finniThree'))break;await new Promise(resolve=>setTimeout(resolve,50));}
  const result=await evaluate(`(async()=>{
+  const finishFrames=${JSON.stringify(finishFrames)};
   const fixture=${JSON.stringify(fixture)},cameraFields=${JSON.stringify(authoredCamera.fields)},base=${JSON.stringify(assetBase)};
   finniThree.game.setPaused(true);await finniThree.game.flush();finniThree.view.render=()=>{};
   const {connectSimulation}=await import('/three/game-runtime.js'),{createView}=await import('/three/scene.js'),{nativeCameraPresets}=await import('/three/native-camera.js');
@@ -55,7 +59,7 @@ try{
    // Native UpdateGameLogic also runs after SubmitFrame, before FinishFrame
    // releases retired table parts. RAF's independently observed return clock
    // supplies that phase; no body or outcome selects the boundary.
-   if(${observedFinishFrames}&&index>=2&&index<fixture.frames.length-1){const clock=fixture.clock.frames[index-2].afterPhysicsClock,due=Number((BigInt(clock.current)-BigInt(clock.start))/1000n);if(due<ticks)throw Error('Native finish clock moved backward');if(due>ticks)worker.postMessage({type:'debug',action:'advance',ticks:due-ticks,dispatchTimers:dispatch(ticks,due-ticks)});ticks=due;}
+   if(${observedFinishFrames}&&index>=2&&index<fixture.frames.length-1){const clock=finishFrames[index-2].afterPhysicsClock,due=Number((BigInt(clock.current)-BigInt(clock.start))/1000n);if(due<ticks)throw Error('Native finish clock moved backward');if(due>ticks)worker.postMessage({type:'debug',action:'advance',ticks:due-ticks,dispatchTimers:dispatch(ticks,due-ticks)});ticks=due;}
    game.finishSubmissionFrame();if(${observedFinishFrames})await game.flush();
   };
   for(const [i,frame]of fixture.frames.entries()){
