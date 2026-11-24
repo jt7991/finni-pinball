@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Collection event dispatch follows Visual Pinball eventproxy.h / ieditable.cpp,
 // 195f214dd4849b8ef6113fd377258b78d0dec3bf. See licenses/VPX-Physics-NOTICE.txt.
-import {VbsEngine} from '@devscholar/vbs-engine-js';
+import {VbsEngine,jsToVb,vbToJs} from '@devscholar/vbs-engine-js';
 import {createImpulsePlunger} from './impulse-plunger.js';
 import {createScriptRandom,registerScriptRandom} from './script-random.js';
 import {LightSequence,SEQ} from './light-sequence.js';
@@ -88,8 +88,16 @@ export function createRules(source,specs,host={}) {
       getballs:()=>host.balls?.()??[],
     };
     const snapshotInfo={revision:0,lamp,lampRevision:0,lampState:[],live:liveProperties[spec.kind],keys:new WeakMap()};
+    // Native Light.State is VT_R4, including integral states and aliases.
+    // The original dispatch converts failed State inputs to zero. Keep all
+    // other properties and method calls on the existing host conversion path.
+    const lampDispatch=lamp?{
+      getproperty(name){const key=String(name).toLowerCase(),value=proxy[key];if(key==='state')return {type:'Single',value:Math.fround(value)};const variant=jsToVb(value);if(typeof value==='function')variant.value.thisArg=proxy;return variant;},
+      setproperty(name,variant){const key=String(name).toLowerCase();if(key==='state'){let value=0;try{value=engine._getContext().functionRegistry.call('CSng',[variant]).value;}catch{}proxy[key]=value;}else proxy[key]=vbToJs(variant);},
+      hasmethod:()=>false,
+    }:null;
     const proxy=new Proxy(state,{
-      get(target,key){if(typeof key==='symbol')return target[key];const k=key.toLowerCase();if(lamp){const value=lamp.get(k);if(value!==undefined)return value;}if(spec.kind==='Plunger'&&k==='position')return host.plungerPosition?.()??0;if(liveProperties[spec.kind]?.has(k)){const value=host.mechanismValue?.(name,k);if(value!==undefined)return value;}return k in actions?actions[k]:target[k]??0;},
+      get(target,key){if(typeof key==='symbol')return target[key];const k=key.toLowerCase();if(lampDispatch&&Object.hasOwn(lampDispatch,k))return lampDispatch[k];if(lamp){const value=lamp.get(k);if(value!==undefined)return value;}if(spec.kind==='Plunger'&&k==='position')return host.plungerPosition?.()??0;if(liveProperties[spec.kind]?.has(k)){const value=host.mechanismValue?.(name,k);if(value!==undefined)return value;}return k in actions?actions[k]:target[k]??0;},
       set(target,key,v){const k=String(key).toLowerCase();if(lamp?.set(k,v))return true;const previous=target[k];target[k]=lamp&&['color','colorfull'].includes(k)?nativeColor(v):v;
         if(spec.kind==='Flasher'){
           if(k==='color')target[k]=nativeColor(v);

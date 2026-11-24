@@ -1,0 +1,332 @@
+{
+  "scope": "Original native Light.State setter/getter, alias and arithmetic results. Only the declared input expressions are assigned, and the original property is restored.",
+  "engineSHA256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+  "declarations": "Dim RefLightSaved\nRefLightSaved=li001.State\nFunction RefLightExact(value)\n Dim scaled,shift,hi,lo\n scaled=CDbl(value):shift=0\n Do While scaled<>Fix(scaled)\n  scaled=scaled*2:shift=shift+1\n Loop\n hi=Fix(scaled/16777216):lo=scaled-hi*16777216\n RefLightExact=CStr(CLng(hi)) & \",\" & CStr(CLng(lo)) & \",\" & CStr(shift)\nEnd Function\nSub RefLightStateProbe(label,expression)\n On Error Resume Next\n Dim result,code,kind,aliasValue,aliasKind,arithmeticValue,arithmeticKind\n Err.Clear\n li001.State=Eval(expression)\n code=Err.Number\n Err.Clear\n result=li001.State\n kind=VarType(result)\n aliasValue=result\n aliasKind=VarType(aliasValue)\n arithmeticValue=li001.State+1\n arithmeticKind=VarType(arithmeticValue)\n Debug.Print \"LIGHT_STATE_NATIVE|\" & label & \"|\" & code & \"|\" & kind & \"|\" & RefLightExact(result) & \"|\" & aliasKind & \"|\" & arithmeticKind & \"|\" & RefLightExact(arithmeticValue)\n On Error GoTo 0\nEnd Sub",
+  "cases": [
+    {
+      "expression": "0",
+      "error": 0,
+      "type": 4,
+      "value": 0,
+      "valueWords": [
+        0,
+        0,
+        0
+      ],
+      "aliasType": 4,
+      "arithmeticType": 4,
+      "arithmeticValue": 1,
+      "arithmeticWords": [
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "expression": "1",
+      "error": 0,
+      "type": 4,
+      "value": 1,
+      "valueWords": [
+        0,
+        1,
+        0
+      ],
+      "aliasType": 4,
+      "arithmeticType": 4,
+      "arithmeticValue": 2,
+      "arithmeticWords": [
+        0,
+        2,
+        0
+      ]
+    },
+    {
+      "expression": "2",
+      "error": 0,
+      "type": 4,
+      "value": 2,
+      "valueWords": [
+        0,
+        2,
+        0
+      ],
+      "aliasType": 4,
+      "arithmeticType": 4,
+      "arithmeticValue": 3,
+      "arithmeticWords": [
+        0,
+        3,
+        0
+      ]
+    },
+    {
+      "expression": "0.1",
+      "error": 0,
+      "type": 4,
+      "value": 0.10000000149011612,
+      "valueWords": [
+        0,
+        13421773,
+        27
+      ],
+      "aliasType": 4,
+      "arithmeticType": 4,
+      "arithmeticValue": 1.100000023841858,
+      "arithmeticWords": [
+        0,
+        9227469,
+        23
+      ]
+    },
+    {
+      "expression": "1/3",
+      "error": 0,
+      "type": 4,
+      "value": 0.3333333432674408,
+      "valueWords": [
+        0,
+        11184811,
+        25
+      ],
+      "aliasType": 4,
+      "arithmeticType": 4,
+      "arithmeticValue": 1.3333333730697632,
+      "arithmeticWords": [
+        0,
+        11184811,
+        23
+      ]
+    },
+    {
+      "expression": "-1",
+      "error": 0,
+      "type": 4,
+      "value": 1,
+      "valueWords": [
+        0,
+        1,
+        0
+      ],
+      "aliasType": 4,
+      "arithmeticType": 4,
+      "arithmeticValue": 2,
+      "arithmeticWords": [
+        0,
+        2,
+        0
+      ]
+    },
+    {
+      "expression": "2.5",
+      "error": 0,
+      "type": 4,
+      "value": 1,
+      "valueWords": [
+        0,
+        1,
+        0
+      ],
+      "aliasType": 4,
+      "arithmeticType": 4,
+      "arithmeticValue": 2,
+      "arithmeticWords": [
+        0,
+        2,
+        0
+      ]
+    },
+    {
+      "expression": "32768",
+      "error": 0,
+      "type": 4,
+      "value": 1,
+      "valueWords": [
+        0,
+        1,
+        0
+      ],
+      "aliasType": 4,
+      "arithmeticType": 4,
+      "arithmeticValue": 2,
+      "arithmeticWords": [
+        0,
+        2,
+        0
+      ]
+    },
+    {
+      "expression": "True",
+      "error": 0,
+      "type": 4,
+      "value": 1,
+      "valueWords": [
+        0,
+        1,
+        0
+      ],
+      "aliasType": 4,
+      "arithmeticType": 4,
+      "arithmeticValue": 2,
+      "arithmeticWords": [
+        0,
+        2,
+        0
+      ]
+    },
+    {
+      "expression": "False",
+      "error": 0,
+      "type": 4,
+      "value": 0,
+      "valueWords": [
+        0,
+        0,
+        0
+      ],
+      "aliasType": 4,
+      "arithmeticType": 4,
+      "arithmeticValue": 1,
+      "arithmeticWords": [
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "expression": "Empty",
+      "error": 0,
+      "type": 4,
+      "value": 0,
+      "valueWords": [
+        0,
+        0,
+        0
+      ],
+      "aliasType": 4,
+      "arithmeticType": 4,
+      "arithmeticValue": 1,
+      "arithmeticWords": [
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "expression": "Null",
+      "error": 0,
+      "type": 4,
+      "value": 0,
+      "valueWords": [
+        0,
+        0,
+        0
+      ],
+      "aliasType": 4,
+      "arithmeticType": 4,
+      "arithmeticValue": 1,
+      "arithmeticWords": [
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "expression": "\"0.5\"",
+      "error": 0,
+      "type": 4,
+      "value": 0.5,
+      "valueWords": [
+        0,
+        1,
+        1
+      ],
+      "aliasType": 4,
+      "arithmeticType": 4,
+      "arithmeticValue": 1.5,
+      "arithmeticWords": [
+        0,
+        3,
+        1
+      ]
+    },
+    {
+      "expression": "\"bad\"",
+      "error": 0,
+      "type": 4,
+      "value": 0,
+      "valueWords": [
+        0,
+        0,
+        0
+      ],
+      "aliasType": 4,
+      "arithmeticType": 4,
+      "arithmeticValue": 1,
+      "arithmeticWords": [
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "expression": "1e30",
+      "error": 0,
+      "type": 4,
+      "value": 1,
+      "valueWords": [
+        0,
+        1,
+        0
+      ],
+      "aliasType": 4,
+      "arithmeticType": 4,
+      "arithmeticValue": 2,
+      "arithmeticWords": [
+        0,
+        2,
+        0
+      ]
+    },
+    {
+      "expression": "1e40",
+      "error": 0,
+      "type": 4,
+      "value": 0,
+      "valueWords": [
+        0,
+        0,
+        0
+      ],
+      "aliasType": 4,
+      "arithmeticType": 4,
+      "arithmeticValue": 1,
+      "arithmeticWords": [
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "expression": "CSng(0.123456789)",
+      "error": 0,
+      "type": 4,
+      "value": 0.12345679104328156,
+      "valueWords": [
+        0,
+        8285045,
+        26
+      ],
+      "aliasType": 4,
+      "arithmeticType": 4,
+      "arithmeticValue": 1.1234568357467651,
+      "arithmeticWords": [
+        0,
+        9424239,
+        23
+      ]
+    }
+  ],
+  "restored": true,
+  "errors": []
+}
