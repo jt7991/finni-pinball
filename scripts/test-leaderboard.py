@@ -69,9 +69,19 @@ class LeaderboardTests(unittest.TestCase):
     def test_bad_token_and_input_do_not_consume_run(self):
         run=self.run_record()
         self.assertEqual(self.submit({**run,'token':'wrong'})[0],403)
-        for initials,score in [('<X>',10),('ABCD',10),('ABC',-1),('ABC',1.5),('ABC',True),('ABC',1e15)]:
+        for initials,score in [('<X>',10),('ABCDEFGHIJKLM',10),('ABC',-1),('ABC',1.5),('ABC',True),('ABC',1e15)]:
             self.assertEqual(self.submit(run,initials,score)[0],400)
         self.assertEqual(self.submit(run)[0],201)
+
+    def test_long_player_name_keeps_only_best_score_in_rankings(self):
+        name='PLAYER123456'
+        for score in (1200,3400,2300):
+            self.assertEqual(self.submit(self.run_record(),name,score)[0],201)
+        status,board=self.request('/api/finni/leaderboard')
+        self.assertEqual(status,200)
+        self.assertEqual([row['score'] for row in board['items'] if row['initials']==name],[3400])
+        with closing(sqlite3.connect(self.data/'data.db')) as db:
+            self.assertEqual(db.execute('SELECT count(*) FROM scores WHERE initials=?',(name,)).fetchone()[0],3)
 
     def test_short_high_scoring_run_published_to_both_read_endpoints(self):
         run=self.run_record(age=0)

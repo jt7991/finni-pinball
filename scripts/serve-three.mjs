@@ -18,6 +18,8 @@ const api={'/api/leaderboard':'/api/finni/leaderboard','/api/runs':'/api/finni/r
 const voice=new Map(['/voice','/voice.html','/voice.css','/voice.js','/voice-audio.js','/voice-lines.json','/voice-cast.json','/voice-pitch-worker.js','/vendor/voice-pitch.js','/favicon.ico','/favicon.png'].map(route=>[route,path.join(root,'browser',route==='/voice'?'voice.html':route.slice(1))]));
 voice.set('/chewy.ttf',path.join(root,'assets/fonts/chewy/Chewy-Regular.ttf'));
 voice.set('/vendor/voice-pitch-LICENSES.txt',path.join(root,'browser/vendor/voice-pitch-LICENSES.txt'));
+for(const name of ['high-scores.html','high-scores.css','high-scores.js','fonts/PressStart2P-Regular.ttf','fonts/DMSans.ttf'])voice.set('/'+name,path.join(root,'browser',name));
+voice.set('/high-scores',path.join(root,'browser/high-scores.html'));
 const server=http.createServer(async(req,res)=>{
   try{
     const url=new URL(req.url,'http://localhost');

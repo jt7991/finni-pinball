@@ -151,10 +151,11 @@ class Handler(SimpleHTTPRequestHandler):
                   '/dmd-animations.json': ROOT / '.work/browser-assets/dmd-animations.json',
                   '/table.vpx': self.table_path,
                   '/chewy.ttf': ROOT / 'assets/fonts/chewy/Chewy-Regular.ttf'}
-        for name in ('voice.html', 'voice.css', 'voice.js', 'voice-audio.js', 'voice-pitch-worker.js', 'vendor/voice-pitch.js', 'vendor/voice-pitch-LICENSES.txt', 'voice-lines.json', 'voice-cast.json'):
+        for name in ('high-scores.html', 'high-scores.css', 'high-scores.js', 'voice.html', 'voice.css', 'voice.js', 'voice-audio.js', 'voice-pitch-worker.js', 'vendor/voice-pitch.js', 'vendor/voice-pitch-LICENSES.txt', 'voice-lines.json', 'voice-cast.json'):
             routes['/' + name] = ROOT / 'browser' / name
         for name in ('PressStart2P-Regular.ttf', 'DMSans.ttf'):
             routes['/fonts/' + name] = ROOT / 'browser/fonts' / name
+        routes['/high-scores'] = ROOT / 'browser/high-scores.html'
         routes['/voice'] = ROOT / 'browser/voice.html'
         for name in ('manifest.json', 'favicon.png', 'favicon.ico',
                      'icons/icon-192.png', 'icons/icon-512.png',

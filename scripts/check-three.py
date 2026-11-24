@@ -71,6 +71,7 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--native-tilt-bob' in sys.argv:runner='probe-native-tilt-bob.mjs'
         if '--production-tilt' in sys.argv:runner='test-tilt-production.mjs'
         if '--main-player' in sys.argv:runner='test-main-player-production.mjs'
+        if '--high-scores' in sys.argv:runner='test-high-scores-browser.mjs'
         if '--native-startup' in sys.argv:runner='probe-native-startup.mjs'
         if '--graphics-profile' in sys.argv:runner='probe-graphics-profile-browser.mjs'
         if '--profile-postprocess' in sys.argv:runner='test-graphics-profile-postprocess-browser.mjs'

@@ -54,3 +54,5 @@ body.engine-error:not(.playing) .preview-cell{display:none}body.engine-error:not
 }
 @media(orientation:landscape) and (max-height:500px){body:not(.playing) .start-content{top:68px;bottom:20px;height:auto;gap:8px 40px;grid-template-rows:minmax(0,1fr) 40px auto 48px}body:not(.playing) .start-dmd{height:40px;width:160px;grid-row:2}body:not(.playing) .start-content h2{font-size:22px;grid-row:1}body:not(.playing) .start-state{grid-row:3}body:not(.playing) #play{min-height:48px;grid-row:4}}
 @media(max-width:650px), (pointer:coarse) and (max-width:1024px){.toolbar{background:transparent}.toolbar #touch-help,.toolbar #fullscreen{background:var(--surface)}.panel{inset:auto 8px max(8px,env(safe-area-inset-bottom)) 8px;width:auto;max-width:none}.touch button[data-action=action]{background:#111a34ed}}
+
+#initials{font-size:16px;letter-spacing:.05em}.high-scores-link{color:var(--cyan);font-size:14px;text-align:center;padding:8px}
