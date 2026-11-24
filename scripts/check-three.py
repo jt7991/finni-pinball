@@ -53,6 +53,7 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--halo-render' in sys.argv:runner='test-native-halo-render-browser.mjs'
         if '--native-classic' in sys.argv:runner='test-native-classic-render-browser.mjs'
         if '--native-timer' in sys.argv:runner='probe-native-timer-browser.mjs'
+        if '--native-abs' in sys.argv:runner='probe-native-abs.mjs'
         if '--native-postprocess' in sys.argv:runner='probe-native-postprocess-browser.mjs'
         if '--postprocess-render' in sys.argv:runner='test-native-postprocess-browser.mjs'
         if '--native-nudge-render' in sys.argv:runner='probe-native-nudge-render-browser.mjs'
