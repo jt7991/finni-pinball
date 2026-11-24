@@ -9,6 +9,8 @@ import{installNativeWholeFrameObserver}from './native-whole-frame-observer.mjs';
 import{nativeFrameClockLayout}from './native-frame-clock-layout.mjs';
 import{installNativeBallPresentationObserver}from './native-ball-presentation-observer.mjs';
 import{installNativeRandomizeClockObserver}from './native-randomize-clock-observer.mjs';
+import{installNativeTextureAuditObserver}from './native-texture-audit-observer.mjs';
+import{nativeTextureCacheLayout}from './native-texture-cache-layout.mjs';
 const [debug,base,output]=process.argv.slice(2),name=process.argv.find(arg=>arg.startsWith('--capture-name='))?.slice(15)??'initial-history-r1';
 const frameCount=Number(process.argv.find(arg=>arg.startsWith('--frames='))?.slice(9)??6),launchControls=process.argv.includes('--launch-controls');assert.ok(Number.isInteger(frameCount)&&frameCount>=2&&frameCount<=64);if(launchControls)assert.ok(frameCount>=32);
 const tracePixel=process.argv.find(arg=>arg.startsWith('--trace-first-pixel='))?.slice(20).split(',').map(Number);if(tracePixel)assert.ok(tracePixel.length===2&&tracePixel.every(Number.isInteger));
@@ -22,9 +24,10 @@ const evaluate=async expression=>{const response=await call('Runtime.evaluate',{
 const wait=async expression=>{for(let i=0;i<1500;i++){if(await evaluate(expression))return;await new Promise(resolve=>setTimeout(resolve,30));}throw Error('Timed out '+expression);};
 try{
  await call('Page.enable');await call('Runtime.enable');await call('Emulation.setFocusEmulationEnabled',{enabled:true});await call('Emulation.setDeviceMetricsOverride',{width:230,height:480,deviceScaleFactor:1,mobile:true});
- const source="if(location.protocol==='http:'||location.protocol==='https:')localStorage.setItem('finni-graphics-v1','detailed');"+'('+installNativeRandomizeClockObserver.toString()+')();('+installNativeStartupObserver.toString()+')(10000);('+installNativeSceneClockObserver.toString()+')();('+installNativeTimerDispatchObserver.toString()+')();('+installNativeBallPresentationObserver.toString()+')();('+installNativePostprocessObserver.toString()+')({highPrecisionDepth:true});('+installNativeWholeFrameObserver.toString()+')('+JSON.stringify({fromInitialization:true,imagesOnly:true,frames:frameCount,...postprocessFrames?{postprocessFrames}:{},...geometryFrames?{geometryFrames}:{},...tracePixel?{tracePixel}:{}})+');';
+ const source="if(location.protocol==='http:'||location.protocol==='https:')localStorage.setItem('finni-graphics-v1','detailed');"+'('+installNativeRandomizeClockObserver.toString()+')();('+installNativeStartupObserver.toString()+')(10000);('+installNativeSceneClockObserver.toString()+')();('+installNativeTimerDispatchObserver.toString()+')();('+installNativeBallPresentationObserver.toString()+')();('+installNativePostprocessObserver.toString()+')({highPrecisionDepth:true});'+(process.argv.includes('--texture-audit')?'('+installNativeTextureAuditObserver.toString()+')();':'')+'('+installNativeWholeFrameObserver.toString()+')('+JSON.stringify({fromInitialization:true,imagesOnly:true,frames:frameCount,captureFlasherGeometry:process.argv.includes('--flasher-geometry'),...postprocessFrames?{postprocessFrames}:{},...geometryFrames?{geometryFrames}:{},...tracePixel?{tracePixel}:{}})+');';
  await call('Page.addScriptToEvaluateOnNewDocument',{source});await call('Page.navigate',{url:base});await wait('!!window.finni&&!document.getElementById("play").disabled');
  await evaluate(`(()=>{nativeBallPresentation.install();nativeRandomizeClocks.install();nativeBallPresentation.maxRecords=1024;nativeBallPresentation.armed=true;window.nativePlayerInputs=[];const engine=finni.engine,raw=engine.ccall;engine.ccall=function(...args){if(args[0]==='vpinball_wasm_eval_script')nativePlayerInputs.push({frameIndex:nativeStartup.frameIndex(),ms:nativeStartup.read()?.ms,script:args[3][0]});return raw.apply(this,args);};})()`);
+ if(process.argv.includes('--texture-audit')){const layout=nativeTextureCacheLayout(Buffer.from(await(await fetch(new URL('/engine/vpinball.wasm',base))).arrayBuffer()));await evaluate('nativeTextureAudit.layout='+JSON.stringify(layout)+';nativeTextureAudit.getterFunctions=nativeTextureAudit.layout.indices');}
  await evaluate('document.getElementById("play").click()');
  const actions=[];
  if(launchControls){
@@ -35,7 +38,8 @@ try{
   await new Promise(resolve=>setTimeout(resolve,300));await key('ShiftLeft',false);await key('ShiftRight',false);
  }
  await wait('nativeWholeFrame.frames.length==='+frameCount+'||nativeWholeFrame.errors.length>0');
- const meta=await evaluate('({frames:nativeWholeFrame.frames.map(({images,...frame})=>({...frame,images:Object.fromEntries(Object.entries(images).map(([name,{bytes,...image}])=>[name,image]))})),clock:nativeSceneClock,timers:nativeTimerDispatch,startup:nativeStartup,randomizeClocks:nativeRandomizeClocks,playerInputs:nativePlayerInputs,presentation:{records:nativeBallPresentation.records,errors:nativeBallPresentation.errors,layout:nativeBallPresentation.layout},errors:nativeWholeFrame.errors})');
+ if(process.argv.includes('--texture-audit')){await evaluate('Promise.all(nativeTextureAudit.pending)');await evaluate('nativeTextureAudit.textureObjects=nativeTextureAudit.inspectTextureHashes()');}
+ const meta=await evaluate('({textureAudit:window.nativeTextureAudit?{layout:nativeTextureAudit.layout,uploads:nativeTextureAudit.uploads,textureObjects:nativeTextureAudit.textureObjects,bindings:nativeTextureAudit.bindings}:undefined,frames:nativeWholeFrame.frames.map(({images,...frame})=>({...frame,images:Object.fromEntries(Object.entries(images).map(([name,{bytes,...image}])=>[name,image]))})),clock:nativeSceneClock,timers:nativeTimerDispatch,startup:nativeStartup,randomizeClocks:nativeRandomizeClocks,playerInputs:nativePlayerInputs,presentation:{records:nativeBallPresentation.records,errors:nativeBallPresentation.errors,layout:nativeBallPresentation.layout},errors:nativeWholeFrame.errors})');
  assert.deepEqual(meta.errors,[]);assert.equal(meta.frames.length,frameCount);
  for(let i=0;i<meta.frames.length;i++){
   const frame=meta.frames[i];assert.deepEqual(frame.errors,[]);

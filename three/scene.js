@@ -25,7 +25,7 @@ import {nativeGraphicsProfile} from './graphics-profile.js';
 import {createPlayerBackdropCopy} from './player-backdrop.js';
 
 export async function createView(canvas,game,{quality='performance',ballPresentationClock}={}){
- const renderer=new THREE.WebGLRenderer({canvas,antialias:false,alpha:false,powerPreference:'high-performance'});renderer.setClearColor(0,0);renderer.outputColorSpace=THREE.SRGBColorSpace;
+ const renderer=new THREE.WebGLRenderer({canvas,antialias:false,alpha:true,powerPreference:'high-performance'});renderer.setClearColor(0,0);renderer.outputColorSpace=THREE.SRGBColorSpace;
  const playerBackdropCopy=createPlayerBackdropCopy(renderer.getContext());let backdropEnabled=true;
  renderer.setTransparentSort(compareNativeTransparent);
  const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(),base=import.meta.env.BASE_URL;
@@ -34,7 +34,7 @@ export async function createView(canvas,game,{quality='performance',ballPresenta
   fetch(base+'camera-bounds.json').then(response=>{if(!response.ok)throw Error('Native camera bounds unavailable');return response.json();}),
   loadNativePrimitiveVisuals(base+'native-table/','native-table.json',{textureProfile:quality,baseColorOnly:true}),loadNativeMechanismAnimation(base),loadNativeTransmission(base+'native-transmission/'),
   loadNativePrimitiveVisuals(base+'native-ball/','native-ball.json'),
-  loadNativeFlasherVisuals(base+'native-flashers/'),
+  loadNativeFlasherVisuals(base+'native-flashers/',undefined,{textureCacheURL:base+'native-flashers/texture-cache.json'}),
   loadNativeHalos(base+'native-halos/'),
   loadNativeClassic(base+'native-classic/'),
   loadNativePostprocess(base+'native-postprocess/'),
@@ -56,7 +56,8 @@ export async function createView(canvas,game,{quality='performance',ballPresenta
  const flipperVisuals=createFlipperVisuals(game,scene,lighting,flipperAssets,{program:tableAssets.programs['2'],renderer}),classicLights=createNativeClassic(renderer,scene,classicAssets,lighting,nativeTable,name=>game.rules.objects.get(name.toLowerCase())),bulbHalos=createNativeHalos(scene,haloAssets,name=>game.rules.objects.get(name.toLowerCase())),lightFrame=createLightFrame(renderer,postprocessAssets,nativeTransmission.targets);
  const ballClock=ballPresentationClock??createBallPresentationClock(()=>({paused:game.presentationPaused??(game.simulationPaused!==false),clock:game.submission?.presentationClock??game.presentationClock}));
  const nativeBalls=createNativeBallVisuals(renderer,scene,ballAssets,lighting,{previousFrame:lightFrame.previous.texture,submissionClock:ballClock,submissionBodyFor:ball=>{if(!game.submission)return ball;const body=game.submission.bodies.get(ball.id);if(!body)throw Error('Prepared ball is missing from submission');return body;},stateFor:name=>game.rules.objects.get(name.toLowerCase())});
- const nativeFlashers=createNativeFlasherVisuals(renderer,scene,flasherAssets,{stateFor:name=>game.rules.objects.get(name.toLowerCase())});
+ if(flasherAssets.textureCache.sourceTableSHA256!==tableAssets.metadata.sourceTableSHA256)throw Error('Flasher texture cache belongs to a different source table');
+ const nativeFlashers=createNativeFlasherVisuals(renderer,scene,flasherAssets,{stateFor:name=>game.rules.objects.get(name.toLowerCase()),textureAliases:flasherAssets.textureCache.aliases});
  const nativeBulbEmission=createNativeBulbEmission(scene,nativeTable,transmissionAssets.programs.bulb,name=>game.rules.objects.get(name.toLowerCase()));
  const ballStates=()=>((game.renderBalls??[]).map(ball=>{const c=ball.color>>>0,f=Math.fround;return{...ball,color:[f((c&255)*f(1/255)),f((c&65280)*f(1/65280)),f((c&16711680)*f(1/16711680)),1],reflectionEnabled:ball.reflectionenabled,forceReflection:ball.forcereflection,bulbScale:ball.bulbintensityscale,reflectionStrength:ball.playfieldreflectionscale};}));
  let cameraMode='balanced',cacheEnabled=true,staticEnabled=true,staticMainDirty=true,staticReflectionDirty=true,staticCamera,shakeUntil=0,shakeStrength=0,graphicsProfile;

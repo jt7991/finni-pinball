@@ -5,10 +5,12 @@ import {loadNativePrimitiveVisuals,createNativeBaseTexture} from './native-basic
 import {nativeFlasherVertices} from './native-flasher-mesh.js';
 import {nativeFlasherState,nativeFlasherMVP,nativeFlasherOutside} from './native-flasher-state.js';
 import {nativeTransparentOrder} from './native-render-order.js';
-export async function loadNativeFlasherVisuals(base,atlasURL=new URL('../dmd-atlas.png',new URL(base,location.href)).href){
- const [assets,response]=await Promise.all([loadNativePrimitiveVisuals(base,'native-flashers.json'),fetch(atlasURL)]);if(!response.ok)throw Error('Native flasher sprite atlas unavailable');assets.atlasBitmap=await createImageBitmap(await response.blob(),{imageOrientation:'none',premultiplyAlpha:'none',colorSpaceConversion:'none'});return assets;
+export async function loadNativeFlasherVisuals(base,atlasURL=new URL('../dmd-atlas.png',new URL(base,location.href)).href,{textureCacheURL}={}){
+ const [assets,response]=await Promise.all([loadNativePrimitiveVisuals(base,'native-flashers.json'),fetch(atlasURL)]);if(!response.ok)throw Error('Native flasher sprite atlas unavailable');assets.atlasBitmap=await createImageBitmap(await response.blob(),{imageOrientation:'none',premultiplyAlpha:'none',colorSpaceConversion:'none'});
+ if(textureCacheURL){const response=await fetch(textureCacheURL);if(!response.ok)throw Error('Source texture cache unavailable');assets.textureCache=await response.json();await Promise.all(Object.entries(assets.textureCache.images).map(async([name,spec])=>{const key='source-cache-'+name,response=await fetch(new URL(spec.levels[0].file,new URL(textureCacheURL,location.href)));if(!response.ok)throw Error('Source cached image unavailable: '+name);assets.metadata.textures[key]=spec;assets.metadata.images[name]={texture:key,alphaTest:Math.fround(1/255)};assets.pixels[key]=await createImageBitmap(await response.blob(),{imageOrientation:'none',premultiplyAlpha:'none',colorSpaceConversion:'none'});}));}
+ return assets;
 }
-export function createNativeFlasherVisuals(renderer,scene,assets,{stateFor=()=>null,cull=true}={}){
+export function createNativeFlasherVisuals(renderer,scene,assets,{stateFor=()=>null,cull=true,textureAliases={}}={}){
  const root=new THREE.Group(),parts=[],textures=new Map(),atlasTextures=new Map();root.name='NativeFlashers';scene.add(root);let atlasTexture;
  function textureFor(image,sampler){
   if(!image)return null;const key=JSON.stringify([image,sampler]);if(textures.has(key))return textures.get(key);
@@ -20,7 +22,7 @@ export function createNativeFlasherVisuals(renderer,scene,assets,{stateFor=()=>n
   textures.set(key,texture);return texture;
  }
  const dummy=new THREE.DataTexture(new Uint8Array(4),1,1,THREE.RGBAFormat);dummy.needsUpdate=true;
- const imageFor=name=>assets.metadata.images[String(name??'').toLowerCase()];
+ const imageFor=name=>{const key=String(name??'').toLowerCase();return assets.metadata.images[textureAliases[key]??key];};
  for(const record of [...assets.metadata.parts].sort((a,b)=>a.spec.native_source_order-b.spec.native_source_order)){
   const spec=record.spec,vertices=new THREE.InterleavedBuffer(nativeFlasherVertices(spec),8).setUsage(THREE.DynamicDrawUsage),geometry=new THREE.BufferGeometry(),position=new THREE.InterleavedBufferAttribute(vertices,3,0);geometry.setAttribute('position',position);geometry.setAttribute('vPosition',position);geometry.setAttribute('vNormal',new THREE.InterleavedBufferAttribute(vertices,3,3));geometry.setAttribute('tc',new THREE.InterleavedBufferAttribute(vertices,2,6));geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(assets.geometry,record.indexByteOffset,record.indices),1));
   const program=assets.programs[record.program],uniforms={matWorldViewProj:{value:new Float32Array(16)},layer:{value:0},staticColor_Alpha:{value:new Float32Array(4)},alphaTestValueAB_filterMode_addBlend:{value:new Float32Array(4)},amount_blend_modulate_vs_add_flasherMode:{value:new Float32Array(3)},lightCenter_doShadow:{value:new Float32Array(4)},balls:{value:new Float32Array(32)},tex_flasher_A:{value:dummy},tex_flasher_B:{value:dummy}},material=new THREE.RawShaderMaterial({glslVersion:THREE.GLSL3,vertexShader:program.vertex,fragmentShader:program.fragment,uniforms,side:THREE.DoubleSide,transparent:true,depthWrite:false,depthFunc:THREE.LessEqualDepth,blending:THREE.CustomBlending,blendSrc:THREE.SrcAlphaFactor}),mesh=new THREE.Mesh(geometry,material);mesh.name=spec.name;mesh.frustumCulled=false;root.add(mesh);parts.push({spec,record,mesh,material,vertices,state:stateFor(spec.name),lastPose:null,poseRevision:0,cameras:new WeakMap()});

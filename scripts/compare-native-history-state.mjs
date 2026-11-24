@@ -5,9 +5,9 @@ import path from 'node:path';import {fileURLToPath} from 'node:url';
 import assert from 'node:assert/strict';
 import {createFullGame} from '../three/full-game.js';
 import {nativeScriptClockInputs} from './native-script-clock-inputs.mjs';
-export async function compareNativeHistoryState(fixture,{write=()=>{}}={}){
+export async function compareNativeHistoryState(fixture,{write=()=>{},observeObjects=[]}={}){
 const load=name=>JSON.parse(fs.readFileSync(new URL('../three/public/'+name,import.meta.url)));
-const clocks=fixture.randomizeClocks?.timerRecords?nativeScriptClockInputs(fixture.randomizeClocks):null;let randomizeIndex=0,timerIndex=0;
+const clocks=fixture.randomizeClocks?.timerRecords?nativeScriptClockInputs(fixture.randomizeClocks,{lastFrame:fixture.frames.at(-1).frameIndex,lastMilliseconds:fixture.frames.at(-1).snapshot.ms}):null;let randomizeIndex=0,timerIndex=0;
 const scriptRandomClock=clocks?()=>{assert.ok(randomizeIndex<clocks.observedRandomizeClocks.length);return clocks.observedRandomizeClocks[randomizeIndex++];}:undefined,scriptTimerSeconds=clocks?()=>{assert.ok(timerIndex<clocks.observedTimerSeconds.length);return clocks.observedTimerSeconds[timerIndex++];}:undefined;
 const game=await createFullGame(load('layout.json'),load('objects.json'),fs.readFileSync(new URL('../three/public/rules.vbs',import.meta.url),'utf8'),()=>{},undefined,{frameAnimations:true,scriptBudget:{videoSyncMode:2},scriptRandomClock,scriptTimerSeconds});
 const timers=new Set(fixture.timers.events.filter(row=>row.interval>=0).map(row=>row.ms));
@@ -27,7 +27,7 @@ function compare(row,phase){
   for(const key of ['position','velocity','momentum','orientation'])for(let j=0;j<actual[i][key].length;j++)if(actual[i][key][j]!==row.balls[i][key][j])differences.push({ball:i,key,component:j,actual:actual[i][key][j],expected:row.balls[i][key][j]});
  }
  const random=game.random.getState();if(random.some((word,i)=>word!==row.random[i]))differences.push({key:'random',actual:random,expected:row.random});
- if(phase!=='interval'||differences.length)write({frame:row.frameIndex,phase,ticks,ms:row.ms,differences});
+ if(phase!=='interval'||differences.length)write({frame:row.frameIndex,phase,ticks,ms:row.ms,differences,objects:observeObjects.map(name=>{const object=game.rules.objects.get(name.toLowerCase());return {name,visible:object.visible,uservalue:object.uservalue,timerenabled:object.timerenabled,timerinterval:object.timerinterval,next:game.rules.timers.get(name.toLowerCase()+':timer')?.at};})});
  return differences.length===0;
 }
 try{
@@ -46,4 +46,4 @@ try{
  return {framesChecked,intervalsChecked,ticks,randomizeClockSamples:randomizeIndex,timerClockSamples:timerIndex};
 }finally{game.dispose();}
 }
-if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){const result=await compareNativeHistoryState(JSON.parse(fs.readFileSync(process.argv[2])),{write:row=>console.log(JSON.stringify(row))});console.log(JSON.stringify({result}));}
+if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){const result=await compareNativeHistoryState(JSON.parse(fs.readFileSync(process.argv[2])),{write:row=>console.log(JSON.stringify(row)),observeObjects:process.argv.filter(arg=>arg.startsWith('--observe=')).map(arg=>arg.slice(10))});console.log(JSON.stringify({result}));}
