@@ -18,7 +18,7 @@ export class NativeHistoryPageWriter{
 }
 export class NativeHistoryPagedArray{
  constructor(descriptor,directory){this.descriptor=descriptor;this.directory=directory;this.length=descriptor.count;let count=0;for(const page of descriptor.pages){assert.equal(page.from,count,'Pages must be contiguous');assert.ok(page.count>0);assert.match(page.file,/^pages\/[a-zA-Z0-9-]+\.json\.gz$/);count+=page.count;}assert.equal(count,this.length,'Page count must cover every row');}
- readPage(page){const bytes=fs.readFileSync(path.join(this.directory,page.file));assert.equal(bytes.length,page.compressedBytes);assert.equal(sha(bytes),page.compressedSHA256,'Compressed native page changed');const packet=JSON.parse(gunzipSync(bytes));assert.equal(packet.sourceBytes,page.sourceBytes);assert.equal(packet.sourceSHA256,page.sourceSHA256);const rows=unpackNativeHistoryState(packet);assert.equal(rows.length,page.count);return rows;}
+ readPage(page){const bytes=typeof this.directory==='function'?this.directory(page.file):fs.readFileSync(path.join(this.directory,page.file));assert.equal(bytes.length,page.compressedBytes);assert.equal(sha(bytes),page.compressedSHA256,'Compressed native page changed');const packet=JSON.parse(gunzipSync(bytes));assert.equal(packet.sourceBytes,page.sourceBytes);assert.equal(packet.sourceSHA256,page.sourceSHA256);const rows=unpackNativeHistoryState(packet);assert.equal(rows.length,page.count);return rows;}
  *[Symbol.iterator](){for(const page of this.descriptor.pages)yield*this.readPage(page);}
  *entries(){let i=0;for(const row of this)yield[i++,row];}
  at(index){index=index<0?this.length+index:index;if(index<0||index>=this.length)return;const page=this.descriptor.pages.find(p=>index>=p.from&&index<p.from+p.count);return this.readPage(page)[index-page.from];}
@@ -35,6 +35,18 @@ export function hashNativeHistoryJSON(value){
   else emit(JSON.stringify(v));
  };walk(value);return{logicalJSONBytes,logicalJSONSHA256:hash.digest('hex')};
 }
+function hydrateNativeHistoryBundle(bundle){
+ assert.equal(bundle.format,'native-history-bundle-v1');const files=bundle.manifest.arrays.flatMap(a=>a.pages.map(p=>p.file));assert.equal(new Set(files).size,files.length,'Each bundled page is unique');assert.deepEqual(Object.keys(bundle.pages).sort(),files.sort(),'Bundle contains every page and no additional files');
+ return hydrateNativeHistoryPages(bundle.manifest,file=>Buffer.from(bundle.pages[file],'base64'));
+}
+function verifyNativeHistory(result,manifest){const digest=hashNativeHistoryJSON(result);assert.equal(digest.logicalJSONBytes,manifest.logicalJSONBytes);assert.equal(digest.logicalJSONSHA256,manifest.logicalJSONSHA256,'Complete logical native capture changed');}
+// Keep compressed pages in one fixture without ever constructing the logical
+// JSON string, which can exceed V8's string-size limit. Nothing is extracted.
+export function writeNativeHistoryBundle(manifestFile,file){
+ const manifest=JSON.parse(fs.readFileSync(manifestFile));assert.equal(manifest.format,'native-history-paged-v1');const pages={};for(const a of manifest.arrays)for(const p of a.pages){assert.match(p.file,/^pages\/[a-zA-Z0-9-]+\.json\.gz$/);assert.ok(!Object.hasOwn(pages,p.file));pages[p.file]=fs.readFileSync(path.join(path.dirname(manifestFile),p.file)).toString('base64');}
+ const bundle={format:'native-history-bundle-v1',manifest,pages};verifyNativeHistory(hydrateNativeHistoryBundle(bundle),manifest);const bytes=gzipSync(JSON.stringify(bundle));fs.writeFileSync(file,bytes,{flag:'wx'});return{file,bytes:bytes.length,sha256:sha(bytes),sourceBytes:manifest.logicalJSONBytes,sourceSHA256:manifest.logicalJSONSHA256,pages:Object.keys(pages).length};
+}
 export function readNativeHistoryCapture(file,{verify=true}={}){
- const manifest=JSON.parse(fs.readFileSync(file));if(manifest.format!=='native-history-paged-v1')return manifest;const result=hydrateNativeHistoryPages(manifest,path.dirname(file));if(verify){const digest=hashNativeHistoryJSON(result);assert.equal(digest.logicalJSONBytes,manifest.logicalJSONBytes);assert.equal(digest.logicalJSONSHA256,manifest.logicalJSONSHA256,'Complete logical native capture changed');}return result;
+ const bytes=fs.readFileSync(file),document=JSON.parse(bytes[0]===31&&bytes[1]===139?gunzipSync(bytes):bytes);if(document.format==='native-history-state-xor-v1')return unpackNativeHistoryState(document);
+ const bundled=document.format==='native-history-bundle-v1',manifest=bundled?document.manifest:document;if(manifest.format!=='native-history-paged-v1')return manifest;const result=bundled?hydrateNativeHistoryBundle(document):hydrateNativeHistoryPages(manifest,path.dirname(file));if(verify)verifyNativeHistory(result,manifest);return result;
 }

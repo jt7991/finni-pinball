@@ -194,7 +194,9 @@ export function createRules(source,specs,host={}) {
     LoadEM:empty,DOF:empty,SoundFXDOF:name=>name,SoundFX:name=>name,
     PlaySound:(name,loop=0,volume=1,pan=0,randomPitch=0,pitch=0,useExisting=false,restart=false,frontRearFade=0)=>host.sound?.(name,{loop,volume,pan,randomPitch,pitch,useExisting,restart,frontRearFade}),StopSound:name=>host.stopSound?.(name),
     PlayMusic:name=>host.sound?.(name,{music:true}),EndMusic:()=>host.stopSound?.(),
-    LoadValue:(table,key)=>host.load?.(key)??'',SaveValue:(table,key,v)=>host.save?.(key,v),
+    // Both native storage backends expose VT_BSTR, including saved numbers.
+    // Existing JSON data remains readable; convert with VB's text semantics.
+    LoadValue:(table,key)=>{const value=host.load?.(key);return value==null?'':engine._getContext().functionRegistry.call('CStr',[jsToVb(value)]).value;},SaveValue:(table,key,v)=>host.save?.(key,v),
     RGB:(r,g,b)=>Math.round(r)+Math.round(g)*256+Math.round(b)*65536,
     RGBf:(r,g,b)=>Math.round(r*255)+Math.round(g*255)*256+Math.round(b*255)*65536,
     Nudge:(angle,strength)=>host.nudge?.(angle,strength),

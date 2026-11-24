@@ -54,6 +54,8 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--native-classic' in sys.argv:runner='test-native-classic-render-browser.mjs'
         if '--native-timer' in sys.argv:runner='probe-native-timer-browser.mjs'
         if '--native-abs' in sys.argv:runner='probe-native-abs.mjs'
+        if '--native-storage' in sys.argv:runner='probe-native-storage.mjs'
+        if '--production-storage' in sys.argv:runner='test-storage-production.mjs'
         if '--native-light-state' in sys.argv:runner='probe-native-light-state.mjs'
         if '--native-object-dispatch' in sys.argv:runner='probe-native-object-dispatch.mjs'
         if '--native-chooser-spam' in sys.argv:runner='probe-native-chooser-spam.mjs'

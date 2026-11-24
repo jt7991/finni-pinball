@@ -42,9 +42,14 @@ export function partyFinaleVictoryScenario(objects){
  return{...scenario,completeFinale:true,shots:{...scenario.shots,finaleLoop:fast('loop'),finaleWolverine:fast('wolverine'),finaleColossus:fast('colossus'),finaleOuterLoop:fast('outerLoop')},fields:{...scenario.fields,special:'li039.State'},scope:scenario.scope.replace('Observe its original timer and round reset without supplying a seventh win, progress, timer or RNG result. This is finale entry/exit coverage, not a claim of mission-7 victory.','Within the unchanged120ms timer, declare fast physical approaches to the currently lit shots. Observe the seventh win, original round reset, Special light and physical scoop jackpot without supplying progress, completion callbacks, timer values or RNG results. These explicit pose/velocity inputs are controlled collision coverage, not natural player completion.')};
 }
 
+export function partyNextRoundScenario(objects){
+ const scenario=partyFinaleVictoryScenario(objects);
+ return{...scenario,continueRound:true,fields:{...scenario.fields,credits:'Credits'},scope:scenario.scope+' After the seventh win, physically collect Special at the Colossus loop, collect the scoop jackpot, qualify a fresh chooser and complete mission1 again at the authored reduced attack power. Observe credits, counters and the eighth win without supplying their values.'};
+}
+
 export function installMissionCompletionController(scenario){
  const data=window.nativeMissionCompletionController={scenario,stage:'lane',actions:[],errors:[],completed:false};
- const missions=scenario.finale?[1,2,3,4,5,6,7]:scenario.mission>=4?Array.from({length:scenario.mission},(_,i)=>i+1):[scenario.mission];let missionIndex=0,mission=missions[0];
+ const missions=scenario.continueRound?[1,2,3,4,5,6,7,1]:scenario.finale?[1,2,3,4,5,6,7]:scenario.mission>=4?Array.from({length:scenario.mission},(_,i)=>i+1):[scenario.mission];let missionIndex=0,mission=missions[0];
  if(missions.length>1)data.completions=[];
  let pullAt=0,confirmedAt=0,lastShot=-Infinity,lastQuery=-Infinity,winScore,pendingShot,pendingLoopExit,pendingPlungerExit,pendingFinaleShot,plungerPrimed=false,arrowIndex=0;const usedArrows=new Set();
  const execute=(kind,script)=>{const row={kind,script,ms:nativeStartup.read().ms,frameIndex:nativeStartup.frameIndex()};data.actions.push(row);finni.evaluate(script);return row;};
@@ -105,13 +110,16 @@ export function installMissionCompletionController(scenario){
     if(mission===7&&scenario.finale){
      const entry=query();if(entry.active!==7||entry.won!==6||!entry.finaleEnabled)throw Error('Finale entry did not follow the six earned wins');
      data.finale={enteredAt:nativePlayerInputs.at(-1).ruleState.ms,entry};data.stage='finale';if(scenario.completeFinale)finaleShot(entry);
-    }else data.stage='active';return;
+    }else{
+     data.stage='active';if(scenario.continueRound&&missionIndex===7){const entry=query();if(entry.attack!==1||entry.firstBattle!==0||entry.life1!==10||entry.won!==7)throw Error('New round did not retain the authored harder mission');data.hardRound={enteredAt:nativePlayerInputs.at(-1).ruleState.ms,entry};}
+    }return;
    }
    if(data.stage==='finale'){
     if(scenario.completeFinale){
      if(state.won===7&&state.active===0){
       if(state.finaleEnabled||state.firstBattle!==0||state.special!==2||![1,2,3,4,5,6,7].every(n=>state['life'+n]===10&&state['mission'+n]===0)||!state.endJackpot)throw Error('Seventh victory missed the authored reset or Special award');
-      Object.assign(data.finale,{win:state,wonAt:nativePlayerInputs.at(-1).ruleState.ms,outcome:'native-victory'});winScore=state.score;data.stage='jackpot';return;
+      Object.assign(data.finale,{win:state,wonAt:nativePlayerInputs.at(-1).ruleState.ms,outcome:'native-victory'});winScore=state.score;
+      if(scenario.continueRound){data.specialAward={before:state,creditsBefore:state.credits};data.stage='special';}else data.stage='jackpot';return;
      }
      if(state.active!==7||!state.finaleEnabled)throw Error('Native finale expired before the physical victory');
      if(pendingFinaleShot){
@@ -126,14 +134,23 @@ export function installMissionCompletionController(scenario){
     if(![1,2,3,4,5,6,7].every(n=>state['life'+n]===10&&state['mission'+n]===0)||state.firstBattle!==0)throw Error('Finale exited without the authored new-round reset');
     data.finale.exit=state;data.finale.exitedAt=nativePlayerInputs.at(-1).ruleState.ms;data.finale.outcome=state.won>data.finale.entry.won?'native-victory':'native-timer-expiry';data.completed=true;data.completedAt=ms;data.stage='finale-observed';return;
    }
+   if(data.stage==='special'){
+    if(state.special===0&&state.credits===data.specialAward.creditsBefore+1){Object.assign(data.specialAward,{after:state,collectedAt:nativePlayerInputs.at(-1).ruleState.ms});data.stage='jackpot';return;}
+    if(state.credits>data.specialAward.creditsBefore+1)throw Error('Special awarded duplicate credits');
+    if(ms-lastShot<scenario.shotInterval&&data.specialAward.approach)return;
+    const body=nativeStartup.read().balls.findLast(b=>b.id>=3&&!b.locked),bounds=scenario.clearance.colossus;if(!body)return;const[x,y]=body.position;if(x>=bounds.minX&&x<=bounds.maxX&&y>=bounds.minY&&y<=bounds.maxY)return;
+    if(place('colossus',body.id))data.specialAward.approach={ms,ballID:body.id,from:body.position};return;
+   }
    if(data.stage==='active'){
     const life=state['life'+mission];
-    if(state.won===missionIndex+1&&state['mission'+mission]===1&&life<=0&&state.active===0&&state.endJackpot){winScore=state.score;data.stage='jackpot';return;}
+    if(state.won===missionIndex+1&&state['mission'+mission]===1&&life<=0&&state.active===0&&state.endJackpot){if(scenario.continueRound&&missionIndex===7)Object.assign(data.hardRound,{win:state,wonAt:nativePlayerInputs.at(-1).ruleState.ms});winScore=state.score;data.stage='jackpot';return;}
     if(state.active!==mission||ms-confirmedAt<3200)return;
+    const harder=!!scenario.continueRound&&missionIndex===7;
+    if(harder&&life>6){if(ms-lastShot>=scenario.shotInterval)place('target');return;}
     if(mission===6&&(state.queued>0||state.inLane))return;
     if(mission===3){
      if(ms-lastShot>=scenario.shotInterval)place(['Bumper1','Bumper2','Bumper3'][arrowIndex++%3]);
-    }else if(mission===2||mission>=4){
+    }else if(mission===2||mission>=4||harder){
      if(pendingLoopExit){
       const body=nativeStartup.read().balls.find(ball=>ball.id===pendingLoopExit.ballID),bounds=scenario.clearance.loop;
       if(!body)throw Error('Loop-exit ball drained before its declared approach');
@@ -149,11 +166,11 @@ export function installMissionCompletionController(scenario){
       (data.physicalExits??=[]).push({shot:pendingShot.name,ballID:pendingShot.ballID,ms,frameIndex:nativeStartup.frameIndex(),position:body?.position,life});pendingShot=undefined;
      }
      if(ms-lastShot<scenario.shotInterval)return;
-     const arrows=mission>=4?{1:'loop',2:'ramp',3:'colossus',4:'wolverine',5:'cross',6:'outerLoop'}:{2:'ramp',4:'wolverine',5:'cross'},available=Object.keys(arrows).filter(n=>state['shot'+n]===2);if(!available.length)return;
+     const arrows=mission>=4||harder?{1:'loop',2:'ramp',3:'colossus',4:'wolverine',5:'cross',6:'outerLoop'}:{2:'ramp',4:'wolverine',5:'cross'},available=Object.keys(arrows).filter(n=>state['shot'+n]===2);if(!available.length)return;
      const next=available[arrowIndex++%available.length],name=arrows[next];
      // A teleport does not clear VPX volume membership. Supply a downward
      // physical exit before the next upward left-loop entry instead.
-     if(mission>=4&&name==='loop'){if(place('loopExit'))pendingLoopExit={ballID:data.actions.at(-1).ballID,ms};}
+     if((mission>=4||harder)&&name==='loop'){if(place('loopExit'))pendingLoopExit={ballID:data.actions.at(-1).ballID,ms};}
      else if(place(name))pendingShot={name,life,ballID:data.actions.at(-1).ballID};
     }else if(ms-lastShot>=scenario.shotInterval){
      if(life>6)place('target');

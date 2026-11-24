@@ -1,0 +1,79 @@
+{
+  "engineSHA256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+  "sourceSHA256": "3ae17f498f745efa19076ca33e08f96f66d766367fc984e37aacf50774a35e14",
+  "declarations": "Sub RefStorageProbe(label,expression)\n Dim result,source\n If expression<>\"\" Then\n  source=Eval(expression)\n  SaveValue \"FinniStorageConformance\",label,source\n End If\n result=LoadValue(\"FinniStorageConformance\",label)\n Debug.Print \"STORAGE_NATIVE|\" & label & \"|\" & VarType(result) & \"|\" & Len(CStr(result)) & \"|\" & CStr(result) & \"|\" & CStr(result<>\"\")\nEnd Sub",
+  "cases": [
+    {
+      "label": "missing",
+      "expression": "",
+      "type": 8,
+      "value": "",
+      "nonEmpty": false
+    },
+    {
+      "label": "zero",
+      "expression": "CInt(0)",
+      "type": 8,
+      "value": "0",
+      "nonEmpty": true
+    },
+    {
+      "label": "double-zero",
+      "expression": "CDbl(0)",
+      "type": 8,
+      "value": "0",
+      "nonEmpty": true
+    },
+    {
+      "label": "credit",
+      "expression": "CInt(1)",
+      "type": 8,
+      "value": "1",
+      "nonEmpty": true
+    },
+    {
+      "label": "games",
+      "expression": "CLng(27)",
+      "type": 8,
+      "value": "27",
+      "nonEmpty": true
+    },
+    {
+      "label": "high-score",
+      "expression": "CDbl(1234567)",
+      "type": 8,
+      "value": "1234567",
+      "nonEmpty": true
+    },
+    {
+      "label": "decimal",
+      "expression": "CDbl(12345.6)",
+      "type": 8,
+      "value": "12345.6",
+      "nonEmpty": true
+    },
+    {
+      "label": "name",
+      "expression": "\"AAA\"",
+      "type": 8,
+      "value": "AAA",
+      "nonEmpty": true
+    },
+    {
+      "label": "numeric-name",
+      "expression": "\"123\"",
+      "type": 8,
+      "value": "123",
+      "nonEmpty": true
+    },
+    {
+      "label": "empty-name",
+      "expression": "\"\"",
+      "type": 8,
+      "value": "",
+      "nonEmpty": false
+    }
+  ],
+  "errors": [],
+  "scope": "Original compiled SaveValue/LoadValue dispatch using a separate FinniStorageConformance namespace inside this fresh browser VM. Actual return types, text and authored empty-string comparisons observed. No storage function implementation, conversion, rule progress or expected result is injected."
+}
