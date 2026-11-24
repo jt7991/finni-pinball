@@ -96,24 +96,12 @@ test('a settled target/wire pocket responds to the native nudge without an inven
   assert.equal(reports[0].physicsStats.substepBudgetExceeded,0);
 });
 
-test('native cabinet and primitive impacts match independent controlled geometry recordings',()=>{
-  const reports=JSON.parse(execFileSync(process.execPath,['scripts/compare-vpx-contact.mjs','three/tests/fixtures/vpx-geometry.json','--json'],{cwd:root,encoding:'utf8',maxBuffer:2*1024*1024}));
-  const limits={'cabinet-top':[.01,.001],'cabinet-glass':[.01,.001],'camera-drop':[.03,.002],'upper-post-drop':[.1,.03]};
-  for(const r of reports){
-    if(limits[r.name]){assert.ok(r.maxPositionError<limits[r.name][0],r.name+' position');assert.ok(r.maxVelocityError<limits[r.name][1],r.name+' speed');}
-    assert.equal(r.physicsStats.substepBudgetExceeded,0);
-  }
-  // The deeply embedded native return pocket oscillates vertically. It must
-  // stay behind the source post rather than follow the old invented guide.
-  const pocket=reports.find(r=>r.name==='return-pocket').samples.at(-1);
-  assert.ok(Math.hypot(pocket.actual[1]-pocket.expected[1],pocket.actual[2]-pocket.expected[2])<3);
-  assert.ok(pocket.actual[3]>26&&pocket.actual[3]<41);
-});
-
-test('scripted primitive rotation changes appearance while retaining the native baked collider',()=>{
-  const reports=JSON.parse(execFileSync(process.execPath,['scripts/compare-vpx-contact.mjs','three/tests/fixtures/vpx-camera-animation.json','--json'],{cwd:root,encoding:'utf8'}));
-  assert.ok(reports[0].maxPositionError<.03);assert.ok(reports[0].maxVelocityError<.002);
-});
+// Complete cabinet/primitive and rotated-camera contacts now run in
+// native-original-geometry-contacts.test.js. Original controls and shot inputs,
+// the entire recorded durations and at least every original sample count are
+// retained. All body/orientation/rod/RNG fields are exact gates, including the
+// full return-pocket oscillation path and the rotated camera's baked collider.
+// The original partial geometry/camera fixtures remain unchanged diagnostics.
 
 test('nonlegacy target front geometry restores the native initial displacement and wire-entry path',async()=>{
   const fixture=JSON.parse(fs.readFileSync(new URL('fixtures/vpx-wire-entry.json',import.meta.url)));

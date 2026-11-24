@@ -16,6 +16,15 @@ All 154,972 body observations, both random streams, observed rod fields and
 recorded frame outputs match exactly; four forced-open/close cycles must finish
 closed. The partial `vpx-gates.json` is retained as an unchanged diagnostic.
 
+`native-original-geometry-contacts.test.js` retains all six historical geometry
+shots and the rotated-camera shot with complete independently observed initial
+state and external clock inputs. Controls, shot inputs and measured playable-ball
+role are unchanged; every original time window is covered. All 14,372 body
+observations, both RNG streams, rod fields and 215 prepared-frame target/score
+states match exactly. The original partial `vpx-geometry.json` and
+`vpx-camera-animation.json` remain unchanged diagnostics. The full suite at this
+checkpoint passes 356/357, retaining the historical raw-contact failure.
+
 The collision response and target geometry in the Three.js experiment derive
 from Visual Pinball contributors' GPLv3-or-later sources at commit
 `195f214dd4849b8ef6113fd377258b78d0dec3bf`, the revision pinned by
