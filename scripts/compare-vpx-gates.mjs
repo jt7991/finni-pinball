@@ -28,7 +28,10 @@ for(const c of fixture.cases){
     for(const [index,expected]of c.samples.entries()){
       for(let ms=elapsed;ms<expected[0];ms++)g.step();elapsed=expected[0];
       if(index>=c.parkFromSample)reset(430,1500,25);
-      const p=r.body.translation(),v=r.body.linvel(),angle=gate.currentAngle,score=g.rules.value('Score(CurrentPlayer)'),count=g.rules.value('LeftSpinnerCount(CurrentPlayer)');
+      // Original Ball references retain their final state after DestroyBall.
+      // Continuous gate shots can drain before their last public observation.
+      const measuredBody=r.detachedNative?.body??r.body;
+      const p=measuredBody.translation(),v=measuredBody.linvel(),angle=gate.currentAngle,score=g.rules.value('Score(CurrentPlayer)'),count=g.rules.value('LeftSpinnerCount(CurrentPlayer)');
       samples.push({ms:elapsed,expectedAngle:expected[12],angle,angleError:Math.abs(((angle-expected[12]+540)%360)-180),expectedScore:expected[13],score,expectedCount:expected[14],count,positionError:Math.hypot(p.x*100-expected[1],2115-p.y*100-expected[2],p.z*100-expected[3]),velocityError:Math.hypot(v.x-expected[4],-v.y-expected[5],v.z-expected[6]),...(process.argv.includes('--state-audit')?{position:[p.x*100,2115-p.y*100,p.z*100],velocity:[v.x,-v.y,v.z],expectedPosition:expected.slice(1,4),expectedVelocity:expected.slice(4,7)}:{})});
     }
     const bodyFrames=g.nativeBodyAudit??[],bodies=bodyFrames.flatMap(frame=>frame.bodies),nativeBodySummary={frames:bodyFrames.length,bodies:bodies.length,missingReferences:bodies.filter(body=>body.missingReference).length,missingIDs:bodyFrames.reduce((n,frame)=>n+(frame.missingIDs?.length??0),0),unexpectedIDs:bodyFrames.reduce((n,frame)=>n+(frame.unexpectedIDs?.length??0),0),swapMismatches:bodyFrames.filter(frame=>Boolean(frame.swap)!==Boolean(frame.expectedSwap)).length};
