@@ -16,7 +16,8 @@ test('full native mission 1 counter, physical collision callbacks and scoop jack
  for(const o of observations)for(let mission=2;mission<=7;mission++)assert.equal(o.state['life'+mission],10,'Other counters retain their authored starting values');
  const won=observations.find(o=>o.state.won===1);assert.ok(won);assert.equal(won.state.active,0);assert.equal(won.state.mission1,1);assert.equal(won.state.life1,0);assert.equal(won.state.endJackpot,1);
  const last=observations.at(-1).state;for(const [key,value]of Object.entries({won:1,mission1:1,life1:0,active:0,endJackpot:0,score:3076000,jackpot:3000000,inHole:1}))assert.equal(last[key],value,key);
- // Bodies, identities, orientation, both random streams, movers, clocks and
- // all 3,003 native Variant observations remain exact. No later body restore.
+ // Bodies, identities, orientation, physics RNG, movers and all 3,003 native
+ // Variant observations remain exact. Script RNG consumes recorded external
+ // clock inputs; this capture does not directly observe its state word.
  assert.deepEqual(await compareNativeHistoryState(fixture),{framesChecked:1283,intervalsChecked:22012,ticks:22012,randomizeClockSamples:2,timerClockSamples:8,ruleObservationsChecked:91,ruleVariantFieldsChecked:3003,moverStatesChecked:147468,moverFieldsChecked:1130588});
 });
