@@ -12,7 +12,7 @@ const scriptRandomClock=clocks?()=>{assert.ok(randomizeIndex<clocks.observedRand
 const game=await createFullGame(load('layout.json'),load('objects.json'),fs.readFileSync(new URL('../three/public/rules.vbs',import.meta.url),'utf8'),()=>{},undefined,{frameAnimations:true,scriptBudget:{videoSyncMode:2},scriptRandomClock,scriptTimerSeconds});
 if(contactAudit){const hit=game.rules.hit.bind(game.rules);game.rules.hit=(name,kind,ball,...parameters)=>{if(kind==='Collide'&&/^(Left|Right)Flipper$/i.test(name))contactAudit.push({ms:Math.round(game.time*1000),name,speed:parameters[0]});return hit(name,kind,ball,...parameters);};}
 const timers=new Set(fixture.timers.events.filter(row=>row.interval>=0).map(row=>row.ms));
-let ticks=0,inputIndex=0,intervalsChecked=0,framesChecked=0,ruleObservationsChecked=0,ruleVariantFieldsChecked=0;
+let ticks=0,inputIndex=0,intervalsChecked=0,framesChecked=0,ruleObservationsChecked=0,ruleVariantFieldsChecked=0,scriptRandomStatesChecked=0;
 let moverStatesChecked=0,moverFieldsChecked=0;
 const pendingAnimationBoundaries=new Map();
 const cursor=clock=>Number((BigInt(clock.current)-BigInt(clock.start))/1000n);
@@ -47,6 +47,12 @@ function compare(row,phase){
 function compareRuleState(input){
  const {names,expressions,values,types}=input.ruleState;
  assert.equal(names.length,expressions.length);assert.equal(values.length,expressions.length);
+ const randomIndex=names.indexOf('scriptRandom'),randomBefore=game.rules.scriptRandom.getState();
+ if(randomIndex>=0){
+  assert.equal(expressions[randomIndex],'CLng(Rnd(0)*16777216)','The script-state observation is read-only');
+  assert.equal(randomBefore,values[randomIndex],'Native script random word at '+input.ms+'ms');
+  scriptRandomStatesChecked++;
+ }
  // The native marker prints CStr(CDbl(expression)), including Empty -> 0.
  // Evaluate that same numeric conversion; raw JavaScript coercion is different.
  assert.deepEqual(expressions.map(expression=>Number(game.rules.value(`CDbl(${expression})`))),values,'Native authored rule fields '+names.join(',')+' at '+input.ms+'ms');
@@ -56,6 +62,7 @@ function compareRuleState(input){
   assert.deepEqual(expressions.map(expression=>Number(game.rules.value(`VarType(${expression})`))),types,'Native rule Variant types at '+input.ms+'ms');
   ruleVariantFieldsChecked+=expressions.length;
  }
+ if(randomIndex>=0)assert.equal(game.rules.scriptRandom.getState(),randomBefore,'Read-only script random observation does not advance the stream');
 }
 try{
  game.prepareFrame();
@@ -72,7 +79,7 @@ try{
  }
  if(clocks){assert.equal(randomizeIndex,clocks.observedRandomizeClocks.length);assert.equal(timerIndex,clocks.observedTimerSeconds.length);}
  assert.equal(pendingAnimationBoundaries.size,0,'Every native physical boundary is checked');
- return {framesChecked,intervalsChecked,ticks,randomizeClockSamples:randomizeIndex,timerClockSamples:timerIndex,...(ruleObservationsChecked?{ruleObservationsChecked}:{}),...(ruleVariantFieldsChecked?{ruleVariantFieldsChecked}:{}),...(moverStatesChecked?{moverStatesChecked,moverFieldsChecked}:{})};
+ return {framesChecked,intervalsChecked,ticks,randomizeClockSamples:randomizeIndex,timerClockSamples:timerIndex,...(ruleObservationsChecked?{ruleObservationsChecked}:{}),...(ruleVariantFieldsChecked?{ruleVariantFieldsChecked}:{}),...(scriptRandomStatesChecked?{scriptRandomStatesChecked}:{}),...(moverStatesChecked?{moverStatesChecked,moverFieldsChecked}:{})};
 }finally{game.dispose();}
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){const result=await compareNativeHistoryState(JSON.parse(fs.readFileSync(process.argv[2])),{write:row=>console.log(JSON.stringify(row)),observeObjects:process.argv.filter(arg=>arg.startsWith('--observe=')).map(arg=>arg.slice(10))});console.log(JSON.stringify({result}));}
