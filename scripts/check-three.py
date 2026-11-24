@@ -57,6 +57,7 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--native-whole-frame' in sys.argv:runner='probe-native-whole-frame-browser.mjs'
         if '--whole-frame-render' in sys.argv:runner='test-native-whole-frame-browser.mjs'
         if '--native-frame-history' in sys.argv:runner='probe-native-frame-history.mjs'
+        if '--native-gameplay-history' in sys.argv:runner='probe-native-gameplay-history.mjs'
         if '--frame-history-render' in sys.argv:runner='test-native-frame-history.mjs'
         if '--postprocess-history' in sys.argv:runner='test-native-postprocess-history.mjs'
         if '--flipper-assembly' in sys.argv:runner='test-native-flipper-assembly-browser.mjs'
@@ -85,6 +86,7 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--native-audio-mix' in sys.argv:runner='probe-native-audio-mix.mjs'
         if '--audio-mix' in sys.argv:runner='test-native-audio-mix-browser.mjs'
         timeout=150
+        if '--native-gameplay-history' in sys.argv:timeout=240
         if '--production-lifecycle' in sys.argv:timeout=260
         if '--native-frame-history' in sys.argv:
             frame_count=next((int(arg.split('=',1)[1]) for arg in sys.argv if arg.startswith('--frames=')),6)

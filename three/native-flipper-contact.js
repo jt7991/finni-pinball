@@ -2,6 +2,7 @@
 // Visual Pinball contributors' hitflipper.cpp, revision
 // 195f214dd4849b8ef6113fd377258b78d0dec3bf. See licenses/VPX-Physics-NOTICE.txt.
 import {f,add,sub,mul,div,dot,cross,length as magnitude,unit,clamp,nativeNormal,nativeGravity,elasticityAtSpeed} from './native-vector.js';
+import {flipperSin,flipperCos} from './flipper-float-math.js';
 const length=(x,y)=>f(Math.sqrt(f(f(x*x)+f(y*y))));
 export function nativeFlipperHit(body,flipper,radius,duration){
   const p=body.translation(),v=body.linvel(),x=f(p.x*100),y=f(2115-p.y*100),z=f(p.z*100),vx=f(v.x),vy=f(-v.y),vz=f(v.z),r=f(radius*100),dt=f(duration*100);
@@ -11,7 +12,7 @@ export function nativeFlipperHit(body,flipper,radius,duration){
     const tip=face===null,ffnx=face?-nx:nx,px=tip?0:f(base*ffnx),py=tip?-len:f(base*ny);
     let t=0,t0,t1,d0,d1,previous,gap,dx,dy,normalX,normalY,contactAngle,distance,k;
     for(k=1;k<=20;k++){
-      contactAngle=Math.max(min,Math.min(max,f(angle+f(speed*t))));const sn=f(Math.sin(contactAngle)),cs=f(Math.cos(contactAngle));
+      contactAngle=Math.max(min,Math.min(max,f(angle+f(speed*t))));const sn=flipperSin(contactAngle),cs=flipperCos(contactAngle);
       normalX=f(f(ffnx*cs)-f(ny*sn));normalY=f(f(ny*cs)+f(ffnx*sn));
       const qx=f(f(f(px*cs)-f(py*sn))+cx),qy=f(f(f(py*cs)+f(px*sn))+cy);
       dx=f(f(x+f(vx*t))-qx);dy=f(f(y+f(vy*t))-qy);

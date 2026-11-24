@@ -1,6 +1,6 @@
 // Observe the original RAF callback and its first native draw. Callbacks,
 // timestamps, draw arguments and return values are passed through unchanged.
-export function installNativeSceneClockObserver(){
+export function installNativeSceneClockObserver({maxFrames=1000}={}){
  const data=window.nativeSceneClock={frames:[],animationFrames:[],preparedFrames:[],armed:true,errors:[],layout:{playerGlobal:9191328,currentMilliseconds:40,lastAnimationMilliseconds:44,source:'Player::m_time_msec followed by uint32_t m_last_frame_time_msec; Player::PrepareFrame assigns the latter immediately before UpdateAnimation.'}},memories=[];let active,lastAnimation=0,lastFrameIndex=0;
  const remember=values=>{for(const value of values)if(value instanceof WebAssembly.Memory&&!memories.includes(value))memories.push(value);};
  const observe=()=>{
@@ -39,7 +39,7 @@ export function installNativeSceneClockObserver(){
   const parent=active,row=active={timestamp,draws:0,beforeMilliseconds:read()?.ms};
   try{return callback.call(this,timestamp);}finally{
    row.afterMilliseconds=read()?.ms;active=parent;
-   if(row.draws){if(data.frames.length<1000)data.frames.push(row);else data.errors.push('Frame capture overflow');}
+   if(row.draws){if(data.frames.length<maxFrames)data.frames.push(row);else data.errors.push('Frame capture overflow');}
   }
  });};
 }
