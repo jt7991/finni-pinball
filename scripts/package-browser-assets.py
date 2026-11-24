@@ -1,6 +1,7 @@
-"""Package the built table and its installed DMD sprites for browser/Docker use."""
+"""Package the built table, DMD sprites and soundtrack for browser/Docker use."""
 import argparse
 import json
+import runpy
 from pathlib import Path
 import shutil
 import subprocess
@@ -8,6 +9,21 @@ import sys
 
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT/'.tools/pydeps'))
+
+
+def package_music(extracted, output):
+    config = json.loads((ROOT / 'design/music-trial.json').read_text(encoding='utf-8'))
+    sounds = json.loads((extracted / 'sounds.json').read_text(encoding='utf-8'))
+    paths = {sound['name'].lower(): sound['path'] for sound in sounds}
+    ffmpeg = runpy.run_path(str(ROOT / 'scripts/apply-music-trial.py'))['FF']
+    output.mkdir(parents=True, exist_ok=True)
+    for track in config['tracks']:
+        name = track['ids'][0]
+        source = extracted / 'sounds' / paths[name]
+        # MP3 playback and seeking work on older Safari versions as well.
+        subprocess.run([ffmpeg, '-hide_banner', '-loglevel', 'error', '-y',
+                        '-i', str(source), '-map', '0:a:0', '-c:a', 'libmp3lame',
+                        '-b:a', '128k', str(output / f'{name}.mp3')], check=True)
 
 
 def package(output, copy_table=True):
@@ -50,7 +66,9 @@ def package(output, copy_table=True):
     atlas.crop((0,0,atlas_width,y+row)).save(output/'dmd-atlas.png',optimize=True)
     (output/'dmd-atlas.json').write_text(json.dumps(metadata),encoding='utf-8')
     shutil.copy2(ROOT/'assets/finni/dmd/animations.json',output/'dmd-animations.json')
-    if copy_table:shutil.copy2(table,output/'Finni-Big-Day.vpx')
+    if copy_table:
+        package_music(images.parent, output / 'music')
+        shutil.copy2(table,output/'Finni-Big-Day.vpx')
     return output
 
 

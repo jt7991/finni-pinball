@@ -1,6 +1,7 @@
 import {createLeaderboard} from './leaderboard.js';
 import {createViews,createDmd} from './views.js';
 import {prepareRenderer,configureRenderer,startTable} from './renderer.js';
+import {createMusic} from './music.js';
 const actions = [
   ['left','Left flipper','ShiftLeft'],['right','Right flipper','ShiftRight'],
   ['launch','Launch','Enter'],['start','Start','Digit1'],
@@ -220,6 +221,8 @@ const logs=[];
 const leaderboard=createLeaderboard(evaluate,release);
 const views=createViews(evaluate,()=>connected,release);
 const dmd=createDmd();
+const music=createMusic(error=>log(`Soundtrack: ${error}`));
+let tableSupportsBrowserMusic=false;
 // Dialogs and popovers restore focus to toolbar buttons. Return it to the
 // playfield so the next Start key reaches the game rather than a focused tool.
 function focusGame(){if(connected&&!$('initials-dialog').open&&!document.querySelector('.panel:popover-open'))$('canvas').focus({preventScroll:true});}
@@ -278,6 +281,9 @@ $('touch-help').onclick=()=>{
 };
 $('dismiss-touch-guide').onclick=()=>{document.body.classList.remove('show-touch-guide');$('touch-guide').hidden=true;$('touch-help').setAttribute('aria-pressed','false');focusGame();};
 function log(line){
+  if(String(line).includes('FINNI_MUSIC_READY')){tableSupportsBrowserMusic=true;return;}
+  const soundtrack=String(line).match(/FINNI_MUSIC\|(mu_[a-z0-9]+)?\|(\d+(?:\.\d+)?)/);
+  if(soundtrack){music.select(soundtrack[1]??'',Number(soundtrack[2]));return;}
   const display=String(line).match(/FINNI_DMD\|([^']*)/);
   if(display){dmd.draw(display[1]);return;}
   const match=String(line).match(/FINNI_STATE\|([^']*)/);
@@ -303,6 +309,7 @@ function describeEngineError(error,depth=0){
   return [message||name,code&&`(${code})`].filter(Boolean).join(' ');
 }
 function fail(error){
+  music.select('');
   document.body.classList.add('engine-error');
   const detail=describeEngineError(error)||'The game stopped without an error message.';
   log(`${enginePhase}: ${detail}`);
@@ -329,16 +336,18 @@ async function boot(){
     const probe=document.createElement('canvas').getContext('webgl2');
     if(!probe)throw Error('WebGL 2 is required. Enable graphics acceleration or try a current browser.');
     probe.getExtension('WEBGL_lose_context')?.loseContext();
-    const [factory, response]=await Promise.all([import('/engine/vpinball.js'),fetch('/table.vpx?v=full-music')]);
+    const [factory, response]=await Promise.all([import('/engine/vpinball.js'),fetch('/table.vpx?v=soundtrack-resume')]);
     if(!response.ok)throw Error('The Finni VPX table is missing. Build it first (see README).');
     let table=await response.arrayBuffer();enginePhase='Preparing engine';$('progress').value=55;$('loading').textContent='Preparing the VPX engine…';
     engine=await factory.default({canvas:$('canvas'),preRun:[module=>configureRenderer(module,{mobile:phoneLayout.matches,quality:graphics})],locateFile:path=>`/engine/${path}`,print:log,printErr:log,onAbort:fail,setStatus:text=>{if(text)$('loading').textContent=text;}});
     prepareRenderer(engine);
     // MEMFS can own the download buffer; avoid a second ~166 MB copy on phones.
     engine.FS.mkdirTree('/tables');engine.FS.writeFile('/tables/finni.vpx',new Uint8Array(table),{canOwn:true});table=null;
+    music.preload();
     $('progress').value=100;$('progress').hidden=true;$('loading').textContent='Table loaded.';$('play').disabled=false;$('play').textContent='Start game';$('status').textContent='Ready to play';
     $('play').onclick=async()=>{
       if($('play').disabled)return;
+      const browserMusic=music.unlock();
       enginePhase='Starting table';showStartingGame();
       try{
         await paintBeforeStarting();
@@ -348,6 +357,7 @@ async function boot(){
         void setFullscreen(true);
         const result=startTable(engine,'/tables/finni.vpx');
         if(result!==1)throw Error(`VPX could not start this table (code ${result}). See the engine log.`);
+        if(browserMusic&&tableSupportsBrowserMusic)evaluate('FinniUseBrowserMusic');
         // Legacy tables can import their own trail preference over the global
         // setting. Keep one sharp ball even when the packed table requests it.
         evaluate('Table1.BallTrail=0');

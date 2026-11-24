@@ -141,6 +141,7 @@ class Handler(SimpleHTTPRequestHandler):
         routes = {'/': ROOT / 'browser/index.html',
                   '/app.js': ROOT / 'browser/app.js', '/leaderboard.js': ROOT / 'browser/leaderboard.js', '/views.js': ROOT / 'browser/views.js', '/style.css': ROOT / 'browser/style.css',
                   '/renderer.js': ROOT / 'browser/renderer.js',
+                  '/music.js': ROOT / 'browser/music.js',
                   '/framebuffer-copy.js': ROOT / 'browser/framebuffer-copy.js',
                   '/arcade.css': ROOT / 'browser/arcade.css',
                   '/arcade-background.svg': ROOT / 'browser/arcade-background.svg',
@@ -163,6 +164,10 @@ class Handler(SimpleHTTPRequestHandler):
             routes['/' + name] = ROOT / 'browser' / name
         for name in ('vpinball.js', 'vpinball.wasm', 'vpinball.data'):
             routes['/engine/' + name] = ENGINE / name
+        if path.startswith('/music/'):
+            name = path.removeprefix('/music/')
+            if name.startswith('mu_') and name.endswith('.mp3') and name[3:-4].isalnum():
+                return str(ROOT / 'runtime/music' / name)
         return str(routes.get(path, ROOT / '.work/nonexistent-browser-route'))
 
     def end_headers(self):
