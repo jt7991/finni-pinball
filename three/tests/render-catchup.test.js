@@ -14,6 +14,7 @@ test('render requests consume already-due physics before preparation and submiss
   const publications=messages.filter(message=>message.type==='snapshot').length;
   now=61.75;wall=10011;await host.receive({type:'submission',frame:prepared.frame,id:3});
   assert.ok(Math.abs(host.game.time-.010)<1e-12);assert.equal(response(3).presentationClock.lastPhysicsMilliseconds,10011);assert.equal(messages.filter(message=>message.type==='snapshot').length,publications,'later physical catch-up does not replace the retained prepared scene');assert.equal(scene.snapshot.time,.004);
+  await host.receive({type:'finishFrame',frame:prepared.frame});
   await host.receive({type:'frame',id:4});assert.equal(snapshot().stats.ticks,11,'unchanged wall time creates no extra tick');
   await host.receive({type:'pause',value:true});now=300;wall=10300;await host.receive({type:'frame',retainSubmission:true,id:5});await host.receive({type:'submission',frame:response(5).frame,id:6});assert.equal(snapshot().stats.ticks,11);assert.equal(response(6).presentationClock.lastPhysicsMilliseconds,10011,'paused submission retains the actual last step clock');
  }finally{await host.receive({type:'dispose'});}

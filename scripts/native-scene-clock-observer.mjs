@@ -24,6 +24,7 @@ export function installNativeSceneClockObserver({maxFrames=1000}={}){
   }
   const result=await original.apply(this,args);remember(Object.values((result.instance??result).exports??{}));return result;
  };}
+ data.noteTonemap=frameIndex=>{if(active)(active.tonemapFrames??=[]).push(frameIndex);};
  const read=()=>window.nativeStartup?.read();
  for(const Context of [WebGLRenderingContext,WebGL2RenderingContext])for(const name of ['drawElements','drawArrays']){
   const original=Context.prototype[name];Context.prototype[name]=function(...args){
@@ -38,7 +39,7 @@ export function installNativeSceneClockObserver({maxFrames=1000}={}){
   if(!data.armed)return callback.call(this,timestamp);
   const parent=active,row=active={timestamp,draws:0,beforeMilliseconds:read()?.ms};
   try{return callback.call(this,timestamp);}finally{
-   row.afterMilliseconds=read()?.ms;active=parent;
+   const after=read();row.afterMilliseconds=after?.ms;row.afterPhysicsClock=after?.physicsClock;active=parent;
    if(row.draws){if(data.frames.length<maxFrames)data.frames.push(row);else data.errors.push('Frame capture overflow');}
   }
  });};

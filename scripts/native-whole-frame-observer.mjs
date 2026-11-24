@@ -3,7 +3,8 @@
 export function installNativeWholeFrameObserver(options={}){
  const data=window.nativeWholeFrame={armed:!!options.fromInitialization,done:false,images:{},draws:[],clears:[],errors:[],priorErrors:[]},io=window.nativePostprocess.io;
  if(options.fromInitialization){
-  if(!Number.isInteger(options.frames)||options.frames<2||options.frames>128)throw Error('Consecutive capture requires 2..128 frames');
+  const imageStart=options.imageFromFrame??1;
+  if(!Number.isInteger(options.frames)||options.frames<2||options.frames>4096||!Number.isInteger(imageStart)||imageStart<1||imageStart>options.frames||options.frames-imageStart+1>128)throw Error('Capture requires at most 4096 consecutive frames and 128 image frames');
   data.frames=[];
  }
  if(options.tracePixel)data.tracePixel=options.tracePixel;
@@ -22,7 +23,8 @@ export function installNativeWholeFrameObserver(options={}){
   const unit=uniform(gl,program,name);if(unit===null)return null;
   const active=gl.getParameter(gl.ACTIVE_TEXTURE);try{gl.activeTexture(gl.TEXTURE0+unit);return io.textureId(gl.getParameter(gl.TEXTURE_BINDING_2D));}finally{gl.activeTexture(active);}
  };
- const image=(gl,key,id,depth=false)=>{if(id===null||data.images[key])return;data.images[key]=depth?io.readDepth(gl,id):io.readColor(gl,id);};
+ const capturesImages=()=>!options.imageFromFrame||window.nativeStartup.frameIndex()>=options.imageFromFrame;
+ const image=(gl,key,id,depth=false)=>{if(!capturesImages()||id===null||data.images[key])return;data.images[key]=depth?io.readDepth(gl,id):io.readColor(gl,id);};
  const pixel=gl=>{const previous=gl.getParameter(gl.READ_FRAMEBUFFER_BINDING),values=new Float32Array(4);try{gl.bindFramebuffer(gl.READ_FRAMEBUFFER,gl.getParameter(gl.DRAW_FRAMEBUFFER_BINDING));gl.readPixels(...data.tracePixel,1,1,gl.RGBA,gl.FLOAT,values);return Array.from(values);}finally{gl.bindFramebuffer(gl.READ_FRAMEBUFFER,previous);}};
  const base64=values=>{const bytes=new Uint8Array(values.buffer,values.byteOffset,values.byteLength);let result='';for(let i=0;i<bytes.length;i+=0x8000)result+=String.fromCharCode(...bytes.subarray(i,i+0x8000));return btoa(result);};
  const geometry=(gl,args)=>{const [,count,type,offset]=args,stride=gl.getVertexAttrib(0,gl.VERTEX_ATTRIB_ARRAY_STRIDE),pointer=gl.getVertexAttribOffset(0,gl.VERTEX_ATTRIB_ARRAY_POINTER),buffer=gl.getVertexAttrib(0,gl.VERTEX_ATTRIB_ARRAY_BUFFER_BINDING),previous=gl.getParameter(gl.ARRAY_BUFFER_BINDING);if(stride!==32||![gl.UNSIGNED_SHORT,gl.UNSIGNED_INT].includes(type))throw Error('Unexpected observed light geometry ABI');const indices=type===gl.UNSIGNED_SHORT?new Uint16Array(count):new Uint32Array(count);gl.getBufferSubData(gl.ELEMENT_ARRAY_BUFFER,offset,indices);let min=Infinity,max=-Infinity;for(const index of indices){min=Math.min(min,index);max=Math.max(max,index);}const vertices=new Float32Array((max-min+1)*8);try{gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.getBufferSubData(gl.ARRAY_BUFFER,pointer+min*stride,vertices);}finally{gl.bindBuffer(gl.ARRAY_BUFFER,previous);}return{vertices:vertices.length/8,indices:count,vertexBytes:base64(vertices),indexBytes:base64(Uint32Array.from(indices,index=>index-min))};};
@@ -35,6 +37,7 @@ export function installNativeWholeFrameObserver(options={}){
    const program=gl.getParameter(gl.CURRENT_PROGRAM);let info=options.imagesOnly?historyPrograms.get(program):undefined;
    if(!info){const shaders=io.shadersFor(program),fragment=shaders?.find(shader=>shader.type===gl.FRAGMENT_SHADER)?.source;info={name:location(gl,program,'AO_scale_timeblur')!==null?'ambient_occlusion':fragment?.match(/\/\/ps_main_([^\s(]+)\(/)?.[1]??'geometry',ball:options.imagesOnly&&gl.getUniformBlockIndex(program,'ballMatrixBlock')!==gl.INVALID_INDEX};if(options.imagesOnly)historyPrograms.set(program,info);}
    const {name}=info;
+   if(!capturesImages()&&!name.startsWith('fb_rhtonemap'))return;
    const warmColor=options.captureFlasherGeometry&&!capturedWarmFlasher&&name==='noLight'?uniform(gl,program,'staticColor_Alpha'):null;
    const captureWarm=warmColor?.[3]===3.75&&warmColor[0]===.9215686917304993;
    const geometryFrame=options.geometryFrames?.includes(window.nativeStartup.frameIndex())||captureWarm;
@@ -105,7 +108,7 @@ export function installNativeWholeFrameObserver(options={}){
   };
  }
  for(const method of ['drawElements','drawElementsInstanced','drawRangeElements','drawArrays','drawArraysInstanced']){
-  const raw=p[method];p[method]=function(...args){const row=before(this,method,args),result=raw.apply(this,args);if(row&&postImages[row.name]&&options.postprocessFrames?.includes(window.nativeStartup.frameIndex())){busy=true;try{image(this,postImages[row.name],row.target);}catch(error){data.errors.push(error.message);}finally{busy=false;}}if(row?.pixelBefore){busy=true;try{row.pixelAfter=pixel(this);}catch(error){data.errors.push(error.message);}finally{busy=false;}}if(row?.finalTone){busy=true;try{data.images.final=io.readColor(this,row.target);data.done=true;data.armed=false;if(options.fromInitialization){
+  const raw=p[method];p[method]=function(...args){const row=before(this,method,args),result=raw.apply(this,args);if(row&&postImages[row.name]&&options.postprocessFrames?.includes(window.nativeStartup.frameIndex())){busy=true;try{image(this,postImages[row.name],row.target);}catch(error){data.errors.push(error.message);}finally{busy=false;}}if(row?.pixelBefore){busy=true;try{row.pixelAfter=pixel(this);}catch(error){data.errors.push(error.message);}finally{busy=false;}}if(row?.finalTone){busy=true;try{window.nativeSceneClock?.noteTonemap?.(data.frameIndex);if(capturesImages())data.images.final=io.readColor(this,row.target);data.done=true;data.armed=false;if(options.fromInitialization){
    data.frames.push({images:data.images,draws:data.draws,clears:data.clears,errors:data.errors,priorErrors:data.priorErrors,frameIndex:data.frameIndex,tone:data.tone,playing:document.body.classList.contains('playing'),snapshot:window.nativeStartup.read(),canvas:{width:this.drawingBufferWidth,height:this.drawingBufferHeight,attributes:this.getContextAttributes()}});
    if(options.freezeObserversAfterCapture&&data.frames.length===options.frames){window.nativeStartup.done=true;window.nativeSceneClock.armed=false;window.nativeTimerDispatch.armed=false;window.nativeBallPresentation.armed=false;}
   }}catch(error){data.errors.push(error.message);}finally{busy=false;}}return result;};

@@ -34,7 +34,7 @@ class FullGame extends Pinball {
     this.cabinetNudge=new CabinetNudge();
     this.tiltBob=new TiltBob(down=>this.rules.run(down?'Table1_KeyDown':'Table1_KeyUp',this.rules.value('MechanicalTilt')));
     this.placeholder=this.ball;this.ballCollider.setEnabled(false);
-    this.records=[];this.toyRecords=[];this.physicalRecords=[];this.byCollider=new Map();this.captures=new Map();this.mechanisms=new Map(this.nativeMeshes.map(m=>[this.colliderLabels.get(m.collider.handle)?.toLowerCase(),m.collider]));
+    this.records=[];this.toyRecords=[];this.physicalRecords=[];this.renderRecords=[];this.byCollider=new Map();this.captures=new Map();this.mechanisms=new Map(this.nativeMeshes.map(m=>[this.colliderLabels.get(m.collider.handle)?.toLowerCase(),m.collider]));
     this.targetFronts=new Map();this.targetMotions=new Map();this.targetEventBall=null;
     this.frameAnimations=!!options.frameAnimations;this.lastAnimationTime=0;
     this.scriptProfiler=options.scriptBudget?new ScriptProfiler({...options.scriptBudget,...options.scriptClock?{clock:options.scriptClock}:{}}):undefined;
@@ -247,7 +247,7 @@ class FullGame extends Pinball {
       setProperty:{value:(name,variant)=>{const key=String(name).toLowerCase();rec.proxy[key]=singleProperty(key)?Math.fround(variant.value):variant.value;}},
     });
     if(rec.held)body.setBodyType(RAPIER.RigidBodyType.KinematicPositionBased,true);
-    (isToy?this.toyRecords:this.records).push(rec);this.physicalRecords.push(rec);this.byCollider.set(collider.handle,rec);this.captures.set(key,rec);this.pendingCreate=rec;if(!isToy)this.ball=body;
+    (isToy?this.toyRecords:this.records).push(rec);this.physicalRecords.push(rec);this.renderRecords.push(rec);this.byCollider.set(collider.handle,rec);this.captures.set(key,rec);this.pendingCreate=rec;if(!isToy)this.ball=body;
     const kicker=this.kickers.find(k=>k.key===key);if(kicker){kicker.members.set(this.nativeBall(body).body,1);kicker.captured=rec;}
     return rec.proxy;
   }
@@ -264,6 +264,10 @@ class FullGame extends Pinball {
     for(const [key,value]of this.captures)if(value===rec)this.captures.delete(key);
     this.world.removeRigidBody(rec.body);this.ball=this.records[0]?.body??this.placeholder;
   }
+
+  // Player::DestroyBall releases physics immediately. FinishFrame removes
+  // the table part only after the current draw commands have used it.
+  finishFrame(){this.renderRecords=this.renderRecords.filter(record=>!record.removed);}
 
   kick(name,_ball,angle,speed,inclination=0) {
     const key=name.toLowerCase(),rec=this.captures.get(key);if(this.pendingCreate===rec)this.pendingCreate=null;

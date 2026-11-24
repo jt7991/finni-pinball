@@ -78,7 +78,7 @@ export function createNativePrimitiveVisuals(renderer,scene,assets,lighting,{sta
    }
    part.matrices.set(cached.matrices);
    if(record.transform==='identity'){
-    part.mesh.visible=state?.[record.visibilityField]??record.defaultVisible;
+    part.mesh.visible=!!(state?.[record.visibilityField]??record.defaultVisible);
     if(spec.kind==='Bumper'||spec.kind==='Gate')part.mesh.visible=!!part.mesh.visible&&!!(state?.visible??spec.is_visible??true)&&(record.role!=='bracket'||!!(state?.showbracket??spec.show_bracket));
    }else{
     part.mesh.visible=!!(state?.visible??spec.is_visible)&&(!state?.sequenceactive||!!state.sequencestate);

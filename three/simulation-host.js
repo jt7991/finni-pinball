@@ -6,7 +6,7 @@ import {describeGame,snapshotGame,snapshotSubmissionBall} from './game-snapshot.
 export function createSimulationHost(send,{allowDebug=false,now=()=>performance.now(),wallNow=()=>Date.now(),scriptClock}={}){
   let game,paused=true,disposed=false,fatal=false,timer,queued=false,anchorWall=0,anchorTick=0,tick=0,lastPublish=0;
   const epochMilliseconds=wallNow();let lastPhysicsMilliseconds=epochMilliseconds;
-  let nextFrame=0,retainedFrame,randomizeClockIndex=0,timerClockIndex=0;
+  let nextFrame=0,retainedFrame,submittedFrame,randomizeClockIndex=0,timerClockIndex=0;
   const names=new Set(),queries=new Set(['bChooseBattle']),effects=[],objectStates=new Map();
   const stats={ticks:0,physicsMs:0,maxChunkMs:0,lagMs:0,snapshotMs:0,snapshots:0,snapshotObjectFields:0};
   const channel=new MessageChannel();
@@ -116,7 +116,7 @@ export function createSimulationHost(send,{allowDebug=false,now=()=>performance.
             game.prepareFrame();game.sync();
             if(message.retainSubmission){
               if(retainedFrame)throw Error('A prepared frame is already awaiting submission');
-              retainedFrame={id:++nextFrame,records:game.physicalRecords.slice()};
+              retainedFrame={id:++nextFrame,records:game.renderRecords.slice()};
               result={frame:retainedFrame.id};
             }
             break;
@@ -124,8 +124,11 @@ export function createSimulationHost(send,{allowDebug=false,now=()=>performance.
             if(!retainedFrame||retainedFrame.id!==message.frame)throw Error('Prepared frame is unavailable');
             catchUpForRender();
             result={frame:retainedFrame.id,balls:retainedFrame.records.map(record=>snapshotSubmissionBall(game,record)),paused,presentationClock:{epochMilliseconds,lastPhysicsMilliseconds}};
-            retainedFrame=undefined;bodyReadOnly=true;
+            submittedFrame=retainedFrame.id;retainedFrame=undefined;bodyReadOnly=true;
             break;
+          case 'finishFrame':
+            if(submittedFrame!==message.frame)throw Error('Submitted frame is unavailable');
+            catchUpForRender();game.finishFrame();submittedFrame=undefined;bodyReadOnly=true;break;
           case 'execute':game.rules.execute(message.statement);break;
           case 'subscribe':for(const name of message.names??[])names.add(name);for(const query of message.queries??[])queries.add(query);break;
           case 'debug':result=debug(message);break;

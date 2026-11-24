@@ -45,7 +45,7 @@ export function snapshotGame(game,names,queries,previousObjects){
   const bodyState=body=>({id:body.handle,p:{...body.translation()},rotation:game.nativeDisplacements?game.nativeBall(body).orientation.rotation():{...body.rotation()}});
   snapshot.ball=bodyState(game.ball);
   snapshot.records=game.records.map(rec=>({...bodyState(rec.body),previous:rec.previous?{...rec.previous}:undefined,held:rec.held,inLane:rec.inLane}));
-  snapshot.renderBalls=game.physicalRecords.map(rec=>{const native=game.nativeBall(rec.body),v=rec.body.linvel(),f=Math.fround;return{id:rec.body.handle,position:{...native.sync()},velocity:{x:f(v.x),y:f(-v.y),z:f(v.z)},orientation:native.orientation.matrix.slice(),radius:rec.proxy.radius,locked:!!rec.held&&rec.held!=='lane',...rec.render};});
+  snapshot.renderBalls=game.renderRecords.map(rec=>{const native=game.nativeBall(rec.body);return{...snapshotSubmissionBall(game,rec),orientation:native.orientation.matrix.slice(),...rec.render};});
   snapshot.flippers=game.flippers.map(f=>f.angle);
   snapshot.spinners=game.spinners.map(s=>s.angle);snapshot.gates=game.gates.map(g=>g.angle);
   snapshot.targets=[...game.targetMotions].map(([name,t])=>[name,t.offset,t.revision]);

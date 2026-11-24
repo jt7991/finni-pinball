@@ -5,6 +5,7 @@ import {nativeBallSubmission} from './ball-presentation.js';
 import {NativeMatrixStream,createNativeBaseTexture} from './native-basic-render.js';
 import {nativeShaderArray,nativeShaderFloat} from './native-shader-state.js';
 import {nativeBallMatrices,nativeBallOrientation,nativeBallRotationScale,nativeBallLightState} from './native-ball-render-state.js';
+export const nativeBallVisible=(ball,reflection)=>!!ball&&ball.visible!==false&&(!reflection||ball.reflectionEnabled!==false&&(ball.forceReflection||!ball.locked&&ball.position.z<=ball.radius+3&&ball.position.z>=ball.radius-.1));
 export function createNativeBallVisuals(renderer,scene,assets,lighting,{previousFrame,stateFor=()=>null,submissionClock,submissionBodyFor=ball=>ball}={}){
  if(!previousFrame)throw Error('Native balls require a previous-frame reflection texture');
  const record=assets.metadata.parts[0],vertices=new THREE.InterleavedBuffer(new Float32Array(assets.geometry,record.vertexByteOffset,record.vertices*8),8),geometry=new THREE.BufferGeometry(),position=new THREE.InterleavedBufferAttribute(vertices,3,0);geometry.setAttribute('position',position);geometry.setAttribute('vPosition',position);geometry.setAttribute('vNormal',new THREE.InterleavedBufferAttribute(vertices,3,3));geometry.setAttribute('tex0',new THREE.InterleavedBufferAttribute(vertices,2,6));geometry.setIndex(new THREE.BufferAttribute(new Uint32Array(assets.geometry,record.indexByteOffset,record.indices),1));
@@ -22,7 +23,7 @@ export function createNativeBallVisuals(renderer,scene,assets,lighting,{previous
   if(ArrayBuffer.isView(u.value)&&target.value!==u.value)target.value.set(u.value);
   else if(u.value?.isTexture)target.value=u.value;
  }};
- const visible=(ball,reflection)=>!!ball&&ball.visible!==false&&(!reflection||ball.reflectionEnabled!==false&&(ball.forceReflection||!ball.locked&&ball.position.z<=ball.radius+3&&ball.position.z>=ball.radius-.1));
+
  function submit(ball,reflection=false){const body=submissionBodyFor(ball),rotScale=nativeBallRotationScale(ball.orientation,ball.radius),input=submissionClock({ballId:ball.id,reflection,body,rotScale});return{input,body,result:nativeBallSubmission(rotScale,body,input)};}
  function add(){
   const uniforms={};for(const [name,value]of Object.entries(assets.metadata.globals))uniforms[name]={value:Float32Array.from(value)};
@@ -36,13 +37,13 @@ export function createNativeBallVisuals(renderer,scene,assets,lighting,{previous
   if(!submissionClock)return;frameSubmissions=new Map(balls.map(ball=>[ball,[]]));
   // RenderFrame::Execute runs every begin-of-frame callback before any GPU
   // pass. Preserve separate reflected/main commands and their clock reads.
-  for(const reflection of (reflections?[true,false]:[false]))for(const ball of balls)if(visible(ball,reflection))frameSubmissions.get(ball)[Number(reflection)]=submit(ball,reflection);
+  for(const reflection of (reflections?[true,false]:[false]))for(const ball of balls)if(nativeBallVisible(ball,reflection))frameSubmissions.get(ball)[Number(reflection)]=submit(ball,reflection);
  },
  endSubmission(){frameSubmissions=undefined;},
  update(camera,balls,{width,height}={}){
   const native=camera.userData.nativeCamera;if(!native)throw Error('Native balls require the authored camera');const size=renderer.getDrawingBufferSize(new THREE.Vector2());width??=size.x;height??=size.y;while(parts.length<balls.length)add();const matrices=nativeBallMatrices(native),projection=nativeShaderArray(native.projection);
   for(let i=0;i<parts.length;i++){
-   const part=parts[i],ball=balls[i];part.mesh.visible=visible(ball,native.reflection);if(!ball)continue;part.ball=ball;part.preparedSubmission=frameSubmissions?.get(ball)?.[Number(!!native.reflection)];part.rotScale=nativeBallRotationScale(ball.orientation,ball.radius);
+   const part=parts[i],ball=balls[i];part.mesh.visible=nativeBallVisible(ball,native.reflection);if(!ball)continue;part.ball=ball;part.preparedSubmission=frameSubmissions?.get(ball)?.[Number(!!native.reflection)];part.rotScale=nativeBallRotationScale(ball.orientation,ball.radius);
    part.uniforms.tex_ball_decal.value=decalFor(ball.frontdecal);
    const {uniforms}=part,lights=nativeBallLightState(assets.metadata,lighting.metadata,ball.position,stateFor,ball.bulbScale),position=ball.locked?{...ball.position,z:Math.fround(ball.position.z-ball.radius)}:ball.position;part.matrices.set(matrices);uniforms.matProj.value.set(projection);uniforms.orientation.value.set(nativeBallOrientation(position,ball.orientation,ball.radius));uniforms.w_h_disableLighting.value.set(nativeShaderArray([1.5/width,1.5/height,Number(!!assets.metadata.renderSettings?.disableLighting),0]));uniforms.ballLightPos.value.set(lights.positions);uniforms.ballLightEmission.value.set(lights.emissions);uniforms.Roughness_WrapL_Edge_Thickness.value.set(lights.roughness);uniforms.cBase_Alpha.value.set(ball.color??[1,1,1,1]);uniforms.invTableRes_reflection.value[2]=nativeShaderFloat(Math.max(0,Math.min(1,Math.fround(Math.fround(table.ball_playfield_reflection_strength)*Math.fround(ball.reflectionStrength??1)))));part.material.side=native.reflection&&!native.reverseCullingByRenderer?(part.baseSide===THREE.BackSide?THREE.FrontSide:THREE.BackSide):part.baseSide;
   }

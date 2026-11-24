@@ -91,6 +91,13 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--native-frame-history' in sys.argv:
             frame_count=next((int(arg.split('=',1)[1]) for arg in sys.argv if arg.startswith('--frames=')),6)
             timeout=max(timeout,60+frame_count*4)
+        if '--frame-history-render' in sys.argv:
+            capture_name=next((arg.split('=',1)[1] for arg in sys.argv if arg.startswith('--capture-name=')),'initial-history-r6')
+            capture_path=OUT/('native-frame-history-'+capture_name)/'capture.json'
+            if capture_path.is_file():
+                import json
+                frame_count=len(json.loads(capture_path.read_text(encoding='utf-8'))['frames'])
+                timeout=max(timeout,60+frame_count)
         if '--native-contact' in sys.argv and '--packed-frames' in sys.argv:
             record_ms=next((int(arg.split('=',1)[1]) for arg in sys.argv if arg.startswith('--record-through-ms=')),0)
             timeout=max(timeout,record_ms/1000+90)

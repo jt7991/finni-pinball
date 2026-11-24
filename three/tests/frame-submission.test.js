@@ -57,6 +57,7 @@ test('submission reads later physical bodies, retains removed kicker balls and e
     assert.equal(held.angmomz,31);
     assert.deepEqual(retained.position,heldPosition);
     assert.deepEqual({time:game.time,random:game.random.getState(),scriptRandom:game.rules.scriptRandom.getState(),positions:game.physicalRecords.map(record=>({...game.nativeBall(record.body).sync()}))},before);
+    await host.receive({type:'finishFrame',frame:prepared.frame});
     await host.receive({type:'frame',retainSubmission:true,id:13});
     const next=messages.find(message=>message.type==='response'&&message.id===13).result;
     await host.receive({type:'submission',frame:next.frame,id:14});

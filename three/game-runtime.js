@@ -97,7 +97,8 @@ export function connectSimulation(worker,init,emit=()=>{},media){
   game.prepareFrame=()=>request({type:'frame'});
   Object.defineProperty(game,'presentationPaused',{get:()=>paused});
   game.finishSubmissionFrame=()=>{
-    const held=frameHold;frameHold=undefined;game.submission=undefined;
+    const held=frameHold,completed=game.submission?.frame;frameHold=undefined;game.submission=undefined;
+    if(held&&completed!==undefined&&!closing&&!game.error)post({type:'finishFrame',frame:completed});
     if(held&&!game.error)for(const data of held.messages)receive(data);
   };
   game.prepareSubmissionFrame=async()=>{

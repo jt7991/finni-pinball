@@ -25,6 +25,9 @@ export function createRules(source,specs,host={}) {
   const methods=new Set([...source.matchAll(/^\s*(?:Sub|Function)[ \t]+(\w+)/gmi)].map(m=>m[1].toLowerCase()));
   const functions=new Set([...source.matchAll(/^\s*Function[ \t]+(\w+)/gmi)].map(m=>m[1].toLowerCase()));
   let time=0,activeBall=null;
+  // ScriptGlobalTable::get_GameTime exposes the player's millisecond clock
+  // as a signed COM LONG, independently of the wall-clock Timer function.
+  engine._getContext().functionRegistry.register('GameTime',()=>({type:'Long',value:Math.round(time*1000)|0}),{minArgs:0,maxArgs:0});
   const runCallback=(name,...args)=>{
     const generated=generatedEvents.get(name.toLowerCase());if(generated)return generated(...args);
     if(!methods.has(name.toLowerCase()))return;

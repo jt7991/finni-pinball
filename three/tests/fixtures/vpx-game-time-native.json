@@ -1,0 +1,56 @@
+{
+  "engineSHA256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+  "functionIndex": 1348,
+  "functionSHA256": "13b88e40075714570a7f3a7ac77c3a8ebfd7a2e584a1d6918bb1199497d71594",
+  "slot": 6840,
+  "playerGlobal": 9191328,
+  "millisecondsOffset": 40,
+  "variantType": 3,
+  "cases": [
+    {
+      "milliseconds": 0,
+      "value": 0
+    },
+    {
+      "milliseconds": 1,
+      "value": 1
+    },
+    {
+      "milliseconds": 2,
+      "value": 2
+    },
+    {
+      "milliseconds": 17,
+      "value": 17
+    },
+    {
+      "milliseconds": 3511,
+      "value": 3511
+    },
+    {
+      "milliseconds": 9996,
+      "value": 9996
+    },
+    {
+      "milliseconds": 65535,
+      "value": 65535
+    },
+    {
+      "milliseconds": 86400000,
+      "value": 86400000
+    },
+    {
+      "milliseconds": 2147483647,
+      "value": 2147483647
+    },
+    {
+      "milliseconds": 2147483648,
+      "value": -2147483648
+    },
+    {
+      "milliseconds": 4294967295,
+      "value": -1
+    }
+  ],
+  "scope": "Original unmodified compiled getter on explicit uint32 Player clock fields. COM IDL returns LONG. Ordinary gameplay captures separately verify the actual clock phase; these unit cases verify signed representation and millisecond units."
+}

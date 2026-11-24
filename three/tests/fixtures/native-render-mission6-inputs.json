@@ -1,0 +1,144 @@
+[
+  {
+    "afterMilliseconds": 2000,
+    "code": "Enter",
+    "down": true
+  },
+  {
+    "afterMilliseconds": 2600,
+    "code": "Enter",
+    "down": false
+  },
+  {
+    "afterMilliseconds": 3500,
+    "script": "BattlesWon(CurrentPlayer)=3:Dim RefRenderBalls,RefRenderBall:RefRenderBalls=GetBalls():Set RefRenderBall=RefRenderBalls(UBound(RefRenderBalls)):Debug.Print \"RENDER_SCENARIO|\" & GameTime & \"|\" & RefRenderBall.ID & \"|\" & bBallInPlungerLane:RefRenderBall.X=293.68433:RefRenderBall.Y=530:RefRenderBall.Z=25:RefRenderBall.VelX=0:RefRenderBall.VelY=-8:RefRenderBall.VelZ=0:RefRenderBall.AngMomX=0:RefRenderBall.AngMomY=0:RefRenderBall.AngMomZ=0"
+  },
+  {
+    "afterMilliseconds": 4000,
+    "code": "ShiftLeft",
+    "down": true
+  },
+  {
+    "afterMilliseconds": 4050,
+    "code": "ShiftLeft",
+    "down": false
+  },
+  {
+    "afterMilliseconds": 4500,
+    "code": "Space",
+    "down": true
+  },
+  {
+    "afterMilliseconds": 4550,
+    "code": "Space",
+    "down": false
+  },
+  {
+    "afterMilliseconds": 6000,
+    "script": "Debug.Print \"RENDER_MODE|\" & GameTime & \"|\" & Battle(CurrentPlayer,0) & \"|\" & bMultiBallMode & \"|\" & BallsOnPlayfield & \"|\" & mBalls2Eject"
+  },
+  {
+    "afterMilliseconds": 6500,
+    "code": "ShiftLeft",
+    "down": true
+  },
+  {
+    "afterMilliseconds": 6600,
+    "code": "ShiftLeft",
+    "down": false
+  },
+  {
+    "afterMilliseconds": 7000,
+    "code": "ShiftRight",
+    "down": true
+  },
+  {
+    "afterMilliseconds": 7100,
+    "code": "ShiftRight",
+    "down": false
+  },
+  {
+    "afterMilliseconds": 7500,
+    "code": "ShiftLeft",
+    "down": true
+  },
+  {
+    "afterMilliseconds": 7600,
+    "code": "ShiftLeft",
+    "down": false
+  },
+  {
+    "afterMilliseconds": 8000,
+    "code": "ShiftRight",
+    "down": true
+  },
+  {
+    "afterMilliseconds": 8100,
+    "code": "ShiftRight",
+    "down": false
+  },
+  {
+    "afterMilliseconds": 8500,
+    "code": "ShiftLeft",
+    "down": true
+  },
+  {
+    "afterMilliseconds": 8600,
+    "code": "ShiftLeft",
+    "down": false
+  },
+  {
+    "afterMilliseconds": 9000,
+    "code": "ShiftRight",
+    "down": true
+  },
+  {
+    "afterMilliseconds": 9000,
+    "script": "Debug.Print \"RENDER_MODE|\" & GameTime & \"|\" & Battle(CurrentPlayer,0) & \"|\" & bMultiBallMode & \"|\" & BallsOnPlayfield & \"|\" & mBalls2Eject"
+  },
+  {
+    "afterMilliseconds": 9100,
+    "code": "ShiftRight",
+    "down": false
+  },
+  {
+    "afterMilliseconds": 9500,
+    "code": "ShiftLeft",
+    "down": true
+  },
+  {
+    "afterMilliseconds": 9600,
+    "code": "ShiftLeft",
+    "down": false
+  },
+  {
+    "afterMilliseconds": 10000,
+    "code": "ShiftRight",
+    "down": true
+  },
+  {
+    "afterMilliseconds": 10100,
+    "code": "ShiftRight",
+    "down": false
+  },
+  {
+    "afterMilliseconds": 10500,
+    "code": "ShiftLeft",
+    "down": true
+  },
+  {
+    "afterMilliseconds": 10600,
+    "code": "ShiftLeft",
+    "down": false
+  },
+  {
+    "afterMilliseconds": 11000,
+    "code": "ShiftRight",
+    "down": true
+  },
+  {
+    "afterMilliseconds": 11100,
+    "code": "ShiftRight",
+    "down": false
+  }
+]
