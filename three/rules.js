@@ -14,6 +14,10 @@ import {createVpmTimer} from './vpm-timer.js';
 export const KEY={left:42,right:54,launch:28,start:2,action:57,nudgeLeft:44,nudgeForward:45,nudgeRight:53};
 const empty=()=>{};
 const liveProperties={Gate:new Set(['currentangle','collidable','open','hitthreshold']),HitTarget:new Set(['isdropped','currentanimoffset','hitthreshold']),Trigger:new Set(['currentanimoffset']),Bumper:new Set(['threshold','force','scatter','hashitevent','collidable','currentringoffset','rotx','roty','enableskirtanimation','ringspeed','ringdropoffset']),Wall:new Set(['disabled','slingshotthreshold','hitthreshold']),Primitive:new Set(['hitthreshold'])};
+// Lamp getters depend on these existing animation fields. Observe them directly
+// so unchanged lamps need no repeated proxy reads during worker publication.
+// This also catches frame/sequence updates that bypass an object setter.
+const lampSnapshotFields=['stored','inplay','locked','base','scale','interval','pattern','index','intensity','up','down'];
 
 // Isolated JavaScript VBScript execution preserves the authored rules and numeric
 // semantics. No Visual Pinball, COM, native scripting host or global integration.
@@ -83,7 +87,7 @@ export function createRules(source,specs,host={}) {
       option:(_name,_min,_max,_step,def)=>def,
       getballs:()=>host.balls?.()??[],
     };
-    const snapshotInfo={revision:0,lamp:!!lamp,live:liveProperties[spec.kind],keys:new WeakMap()};
+    const snapshotInfo={revision:0,lamp,lampRevision:0,lampState:[],live:liveProperties[spec.kind],keys:new WeakMap()};
     const proxy=new Proxy(state,{
       get(target,key){if(typeof key==='symbol')return target[key];const k=key.toLowerCase();if(lamp){const value=lamp.get(k);if(value!==undefined)return value;}if(spec.kind==='Plunger'&&k==='position')return host.plungerPosition?.()??0;if(liveProperties[spec.kind]?.has(k)){const value=host.mechanismValue?.(name,k);if(value!==undefined)return value;}return k in actions?actions[k]:target[k]??0;},
       set(target,key,v){const k=String(key).toLowerCase();if(lamp?.set(k,v))return true;const previous=target[k];target[k]=lamp&&['color','colorfull'].includes(k)?nativeColor(v):v;
@@ -250,11 +254,20 @@ export function createRules(source,specs,host={}) {
   }
   return {engine,objects,run,execute,value,tick,hit,schedule,scriptRandom,sequences,lamps,
     snapshotRevision(object,keys){
-      const info=snapshotObjects.get(object);if(!info||info.lamp)return;
+      const info=snapshotObjects.get(object);if(!info)return;
       let live=info.keys.get(keys);if(live===undefined){live=keys.some(key=>info.live?.has(key));info.keys.set(keys,live);}
-      // Native mechanism getters and animated lamps can change without an
-      // object setter. They must still be read on every publication.
-      return live?undefined:info.revision;
+      // Native mechanism getters still require a fresh read. Lamp animation
+      // state is observed on every publication independently of setter revision.
+      if(live)return;
+      if(info.lamp){
+        let changed=false;
+        for(let index=0;index<lampSnapshotFields.length;index++){
+          const value=info.lamp[lampSnapshotFields[index]];
+          if(!Object.is(value,info.lampState[index])){info.lampState[index]=value;changed=true;}
+        }
+        if(changed)info.lampRevision++;
+      }
+      return info.revision+info.lampRevision;
     },
     init(){run('Table1_Init');execute('bFreePlay=True:BallsPerGame=3:SongVolume=0.2');},
     key(action,down){run(down?'Table1_KeyDown':'Table1_KeyUp',KEY[action]);},

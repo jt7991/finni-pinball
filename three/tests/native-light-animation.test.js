@@ -25,3 +25,26 @@ test('VBScript controls native lamp clocks, intensity scale, integer colors and 
   r.execute('Lamp.Color=RGB(255,0,128):Lamp.IntensityScale=3');assert.equal(r.value('Lamp.Color'),0x8000ff);assert.equal(lamp.scale,3);
   r.execute('Lamp.Duration 1,50,0');r.tick(.05);lamp.update(50);assert.equal(r.value('Lamp.State'),1,'native duration expires strictly after the end clock');r.tick(.001);lamp.update(1);assert.equal(r.value('Lamp.State'),0);
 });
+
+test('lamp snapshot reuse never suppresses a change across every independently recorded native animation',()=>{
+ const keys=['state','sequenceactive','sequencestate','intensity','intensityscale','blinkinterval','blinkpattern','fadespeedup','fadespeeddown','inplayintensity','inplayon','visible','color'];let frames=0,reused=0;
+ for(const c of fixture.cases){
+  const rules=createRules('',{objects:[{...c.spec,kind:'Light',name:'Lamp'}],collections:[]}),lamp=rules.lamps.get('lamp'),object=rules.objects.get('lamp');
+  let now=0,previous,revision;
+  for(const frame of c.frames){
+   rules.tick((frame.time-now)/1000);now=frame.time;
+   for(const [op,...args]of frame.actions){
+    if(op==='state')lamp.setState(...args);else if(op==='lock'){lamp.setLocked(args[0]);if(args[0])lamp.setInPlay(args[1]);}
+    else if(op==='pattern')lamp.setPattern(...args);else if(op==='interval')lamp.setInterval(...args);else if(op==='intensity')lamp.setIntensity(...args);else if(op==='scale')lamp.setScale(...args);else if(op==='duration')lamp.setDuration(...args);else lamp[op]=Math.fround(args[0]);
+   }
+   lamp.update(frame.delta);frames++;
+   const current=Object.fromEntries(keys.map(key=>[key,object[key]])),next=rules.snapshotRevision(object,keys);
+   assert.equal(current.state,frame.expected.state);assert.equal(current.sequencestate,frame.expected.inplay);assert.equal(current.inplayintensity,frame.expected.intensity);assert.equal(current.inplayon,frame.expected.on);
+   assert.equal(rules.snapshotRevision(object,keys),next,'Reading unchanged animation state does not change the revision');
+   if(revision===next){assert.deepEqual(current,previous,'A reusable revision preserves every public field at '+c.spec.name+' '+now);reused++;}
+   previous=current;revision=next;
+  }
+  const before=rules.snapshotRevision(object,keys);object.visible=!object.visible;assert.ok(rules.snapshotRevision(object,keys)>before,'Object setters invalidate the same cache');
+ }
+ assert.equal(frames,20670);assert.ok(reused>1000,'Native stable animation phases exercise reuse');
+});

@@ -9,9 +9,15 @@ import tempfile
 import time
 import urllib.request
 import sys
+import re
 
 ROOT=Path(__file__).resolve().parents[1]
 OUT=ROOT/'.work/three-review'
+review_subdir=next((arg.split('=',1)[1] for arg in sys.argv if arg.startswith('--review-subdir=')),None)
+if review_subdir is not None:
+    if not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9.-]*',review_subdir):
+        raise ValueError('Review subdirectory must be a single named directory')
+    OUT=OUT/review_subdir
 OUT.mkdir(parents=True,exist_ok=True)
 with socket.socket() as sock:
     sock.bind(('127.0.0.1',0))
@@ -65,6 +71,8 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--trigger-animation' in sys.argv:runner='test-trigger-animation-browser.mjs'
         if '--static-render' in sys.argv:runner='test-native-static-render-browser.mjs'
         if '--production-worker-performance' in sys.argv:runner='benchmark-production-worker-browser.mjs'
+        if '--worker-throttle-coverage' in sys.argv:runner='probe-worker-throttle-browser.mjs'
+        if '--startup-resource-audit' in sys.argv:runner='audit-production-startup-browser.mjs'
         if '--native-colon-calls' in sys.argv:runner='probe-native-colon-calls.mjs'
         if '--native-flash-timers' in sys.argv:runner='probe-native-flash-timers.mjs'
         if '--native-vpm-timers' in sys.argv:runner='probe-native-vpm-timers.mjs'
