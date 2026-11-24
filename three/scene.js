@@ -2,7 +2,8 @@ import * as THREE from 'three';
 import {createLightFrame} from './bulb-render.js';
 import {loadNativeLighting} from './classic-render.js';
 import {createFlipperVisuals,loadFlipperVisuals} from './flipper-render.js';
-import {applyNativeCamera} from './camera-render.js';
+import {applyNativeCamera,setNativeCamera} from './camera-render.js';
+import {stageNativeCamera,nativeCameraAfterProbe} from './native-camera-stage.js';
 import {nativePrimitiveWorld} from './primitive-transform.js';
 import {nativeProbeArea} from './native-reflection.js';
 import {loadNativePrimitiveVisuals,createNativePrimitiveVisuals} from './native-basic-render.js';
@@ -23,7 +24,7 @@ import {loadNativeStatic,createNativeStaticRender} from './native-static-render.
 import {nativeGraphicsProfile} from './graphics-profile.js';
 import {createPlayerBackdropCopy} from './player-backdrop.js';
 
-export async function createView(canvas,game,{quality='performance'}={}){
+export async function createView(canvas,game,{quality='performance',ballPresentationClock}={}){
  const renderer=new THREE.WebGLRenderer({canvas,antialias:false,alpha:false,powerPreference:'high-performance'});renderer.setClearColor(0,0);renderer.outputColorSpace=THREE.SRGBColorSpace;
  const playerBackdropCopy=createPlayerBackdropCopy(renderer.getContext());let backdropEnabled=true;
  renderer.setTransparentSort(compareNativeTransparent);
@@ -53,7 +54,7 @@ export async function createView(canvas,game,{quality='performance'}={}){
  // can share their D16 depth. Keep that ordering when composing the cache.
  const nativeCache=createNativeOpaqueCache(renderer,nativeTable,{liveParts:[...nativeActors.parts,...nativeTable.parts.filter(part=>part.spec.name==='FinniBalloons')]});
  const flipperVisuals=createFlipperVisuals(game,scene,lighting,flipperAssets,{program:tableAssets.programs['2'],renderer}),classicLights=createNativeClassic(renderer,scene,classicAssets,lighting,nativeTable,name=>game.rules.objects.get(name.toLowerCase())),bulbHalos=createNativeHalos(scene,haloAssets,name=>game.rules.objects.get(name.toLowerCase())),lightFrame=createLightFrame(renderer,postprocessAssets,nativeTransmission.targets);
- const ballClock=createBallPresentationClock(()=>({paused:game.presentationPaused??(game.simulationPaused!==false),clock:game.submission?.presentationClock??game.presentationClock}));
+ const ballClock=ballPresentationClock??createBallPresentationClock(()=>({paused:game.presentationPaused??(game.simulationPaused!==false),clock:game.submission?.presentationClock??game.presentationClock}));
  const nativeBalls=createNativeBallVisuals(renderer,scene,ballAssets,lighting,{previousFrame:lightFrame.previous.texture,submissionClock:ballClock,submissionBodyFor:ball=>{if(!game.submission)return ball;const body=game.submission.bodies.get(ball.id);if(!body)throw Error('Prepared ball is missing from submission');return body;},stateFor:name=>game.rules.objects.get(name.toLowerCase())});
  const nativeFlashers=createNativeFlasherVisuals(renderer,scene,flasherAssets,{stateFor:name=>game.rules.objects.get(name.toLowerCase())});
  const nativeBulbEmission=createNativeBulbEmission(scene,nativeTable,transmissionAssets.programs.bulb,name=>game.rules.objects.get(name.toLowerCase()));
@@ -62,17 +63,27 @@ export async function createView(canvas,game,{quality='performance'}={}){
  function resizeTargets(){const size=renderer.getDrawingBufferSize(new THREE.Vector2());nativeTransmission.resize(size.x,size.y);lightFrame.resize();reflectionPass.resize(graphicsProfile?.reflections?size.x:1,graphicsProfile?.reflections?size.y:1);nativeCache.invalidate();staticMainDirty=staticReflectionDirty=true;}
  function resize(){const rect=canvas.getBoundingClientRect(),width=Math.floor(rect.width),height=Math.floor(rect.height);graphicsProfile=nativeGraphicsProfile(quality,width,devicePixelRatio);nativeTable.setReflectionsEnabled(graphicsProfile.reflections);nativeStatic.setReflectionsEnabled(graphicsProfile.reflections);lightFrame.postprocess.setProfile(graphicsProfile);if(!width||!height){if(!camera.userData.nativeCamera)applyNativeCamera(camera,cameraBounds,Math.max(1,canvas.width)/Math.max(1,canvas.height),cameraMode);resizeTargets();return;}renderer.setPixelRatio(graphicsProfile.density);renderer.setSize(width,height,false);resizeTargets();const size=renderer.getDrawingBufferSize(new THREE.Vector2());applyNativeCamera(camera,cameraBounds,size.x/size.y,cameraMode);}
  const observer=new ResizeObserver(resize);observer.observe(canvas);resize();nativeMechanisms.update();nativeTable.update(camera);nativeTransmission.update(camera);flipperVisuals.update(camera);nativeBalls.update(camera,ballStates());nativeFlashers.update(camera);nativeBulbEmission.update(camera);bulbHalos.update(camera,ballStates());classicLights.update(camera);await nativeTable.prepare(camera);await nativeTransmission.prepare();await nativeFlashers.prepare(camera);await bulbHalos.prepare(renderer,camera);await classicLights.prepare(camera);await lightFrame.prepare();const initialSize=renderer.getDrawingBufferSize(new THREE.Vector2());await nativeStatic.prepare(cameraBounds,initialSize.x,initialSize.y,cameraMode);await renderer.compileAsync(scene,camera);
+ let completedCamera,playerCameraFrames=0;
  function render(alpha,previous){
+  const requestedCamera=camera.userData.nativeCamera,probeVisible=nativeTable.parts.find(part=>part.record.probe)?.state?.visible!==false,frameCamera=stageNativeCamera(requestedCamera,completedCamera,graphicsProfile.reflections&&probeVisible?floorRecord.spec.native_source_order:Infinity);
+  if(frameCamera!==requestedCamera)setNativeCamera(camera,frameCamera);
   const balls=ballStates();nativeBalls.beginSubmission(balls,{reflections:graphicsProfile.reflections});
   try{
   nativeMechanisms.update();nativeTransmission.update(camera);
   if(staticEnabled&&staticCamera!==camera.userData.nativeCamera){staticMainDirty=staticReflectionDirty=true;staticCamera=camera.userData.nativeCamera;}
   if(staticEnabled&&staticMainDirty){nativeTable.update(camera);const size=renderer.getDrawingBufferSize(new THREE.Vector2());nativeStatic.build('main',cameraBounds,size.x,size.y,staticCamera.preset);staticMainDirty=false;}
   const hidden=[...classicLights.meshes,bulbHalos.mesh,nativeFlashers.root].map(mesh=>[mesh,mesh.visible]);for(const [mesh]of hidden)mesh.visible=false;
-  try{if(graphicsProfile.reflections)reflectionPass.render(camera,(view,target)=>{nativeTable.update(view,undefined,{skipParts:staticEnabled&&!staticReflectionDirty?nativeStatic.skipParts:undefined});flipperVisuals.update(view);nativeBalls.update(view,balls);nativeBulbEmission.update(view);if(staticEnabled){if(staticReflectionDirty){nativeStatic.build('reflection',cameraBounds,target.width,target.height,staticCamera.preset);staticReflectionDirty=false;}nativeStatic.renderDynamics(scene,view,target,'reflection',{copyFramebuffer:backdropEnabled?playerBackdropCopy:undefined});}else nativeCache.render(scene,view,target,{enabled:cacheEnabled,copyFramebuffer:backdropEnabled?playerBackdropCopy:undefined});},{area:nativeProbeArea(floorRecord.bounds,nativePrimitiveWorld(floorRecord.spec),camera.userData.nativeCamera)});}finally{for(const [mesh,value]of hidden)mesh.visible=value;}
+  try{if(graphicsProfile.reflections)reflectionPass.render(camera,(view,target)=>{nativeTable.update(view,undefined,{skipParts:staticEnabled&&!staticReflectionDirty?nativeStatic.skipParts:undefined});flipperVisuals.update(view);nativeBalls.update(view,balls);nativeBulbEmission.update(view);if(staticEnabled){if(staticReflectionDirty){nativeStatic.build('reflection',cameraBounds,target.width,target.height,staticCamera.preset);staticReflectionDirty=false;}nativeStatic.renderDynamics(scene,view,target,'reflection',{copyFramebuffer:backdropEnabled?playerBackdropCopy:undefined});}else nativeCache.render(scene,view,target,{enabled:cacheEnabled});},{area:nativeProbeArea(floorRecord.bounds,nativePrimitiveWorld(floorRecord.spec),nativeCameraAfterProbe(frameCamera))});}finally{for(const [mesh,value]of hidden)mesh.visible=value;}
   nativeTransmission.render();
   nativeTable.update(camera,undefined,{skipParts:staticEnabled?nativeStatic.skipParts:undefined});flipperVisuals.update(camera);nativeBalls.update(camera,balls);nativeFlashers.update(camera);nativeBulbEmission.update(camera);classicLights.update(camera);bulbHalos.update(camera,balls);lightFrame.render(scene,camera,target=>staticEnabled?nativeStatic.renderDynamics(scene,camera,target,'main',{copyFramebuffer:backdropEnabled?playerBackdropCopy:undefined}):nativeCache.render(scene,camera,target,{enabled:cacheEnabled,copyFramebuffer:backdropEnabled?playerBackdropCopy:undefined}),game.cabinetOffset);
-  }finally{nativeBalls.endSubmission();}
+  }finally{nativeBalls.endSubmission();completedCamera=requestedCamera;if(frameCamera!==requestedCamera)setNativeCamera(camera,requestedCamera);if(playerCameraFrames>0&&--playerCameraFrames===0){staticEnabled=true;staticMainDirty=staticReflectionDirty=true;}}
  }
- return{renderer,scene,camera,cameraBounds,nativeTable,nativeMechanisms,nativeCache,nativeStatic,nativeTransmission,nativeBalls,nativeFlashers,nativeBulbEmission,reflectionPass,nativeActors,classicLights,bulbHalos,flipperVisuals,lightFrame:{...lightFrame,resize:resizeTargets},get graphicsProfile(){return graphicsProfile;},render,resize,resizeTargets,setPlayerBackdropEnabled(value){backdropEnabled=!!value;},setStaticPrerenderEnabled(value){staticEnabled=!!value;staticMainDirty=staticReflectionDirty=true;},setCacheEnabled(value){cacheEnabled=!!value;nativeCache.invalidate();},shake(strength){shakeUntil=game.time+.8;shakeStrength=Number(strength)||1;},setCamera(value){cameraMode=value;resize();},setQuality(value){quality=value;resize();}};
+ function applyPlayerCamera(value){
+  cameraMode=value;resize();
+  // Main's browser/views.js invalidates the camera with two dynamic frames
+  // before restoring the static prepass. Count submitted view frames here,
+  // since the worker prepares them asynchronously between RAF callbacks.
+  staticEnabled=false;staticMainDirty=staticReflectionDirty=true;playerCameraFrames=2;
+ }
+ return{renderer,scene,camera,cameraBounds,nativeTable,nativeMechanisms,nativeCache,nativeStatic,nativeTransmission,nativeBalls,nativeFlashers,nativeBulbEmission,reflectionPass,nativeActors,classicLights,bulbHalos,flipperVisuals,lightFrame:{...lightFrame,resize:resizeTargets},get graphicsProfile(){return graphicsProfile;},render,resize,resizeTargets,setPlayerBackdropEnabled(value){backdropEnabled=!!value;},setStaticPrerenderEnabled(value){playerCameraFrames=0;staticEnabled=!!value;staticMainDirty=staticReflectionDirty=true;},setCacheEnabled(value){cacheEnabled=!!value;nativeCache.invalidate();},shake(strength){shakeUntil=game.time+.8;shakeStrength=Number(strength)||1;},setCamera(value){cameraMode=value;resize();},applyPlayerCamera,get playerCameraFrames(){return playerCameraFrames;},get staticPrerenderEnabled(){return staticEnabled;},setQuality(value){quality=value;resize();}};
 }

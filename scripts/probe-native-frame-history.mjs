@@ -7,7 +7,11 @@ import{installNativeTimerDispatchObserver}from './native-timer-dispatch-observer
 import{installNativePostprocessObserver}from './native-postprocess-observer.mjs';
 import{installNativeWholeFrameObserver}from './native-whole-frame-observer.mjs';
 import{nativeFrameClockLayout}from './native-frame-clock-layout.mjs';
+import{installNativeBallPresentationObserver}from './native-ball-presentation-observer.mjs';
 const [debug,base,output]=process.argv.slice(2),name=process.argv.find(arg=>arg.startsWith('--capture-name='))?.slice(15)??'initial-history-r1';
+const tracePixel=process.argv.find(arg=>arg.startsWith('--trace-first-pixel='))?.slice(20).split(',').map(Number);if(tracePixel)assert.ok(tracePixel.length===2&&tracePixel.every(Number.isInteger));
+const geometryFrames=process.argv.find(arg=>arg.startsWith('--geometry-frames='))?.slice(18).split(',').map(Number)??(tracePixel?[1]:undefined);if(geometryFrames)assert.ok(geometryFrames.every(frame=>Number.isInteger(frame)&&frame>=1&&frame<=6));
+const postprocessFrames=process.argv.find(arg=>arg.startsWith('--postprocess-frames='))?.slice(21).split(',').map(Number);if(postprocessFrames)assert.ok(postprocessFrames.every(frame=>Number.isInteger(frame)&&frame>=1&&frame<=6));
 assert.match(name,/^[a-z0-9-]+$/);const directory=path.join(output,'native-frame-history-'+name);assert.equal(fs.existsSync(directory),false,'Preserve previous captures');fs.mkdirSync(directory,{recursive:true});
 const tabs=await(await fetch(debug+'/json/list')).json(),socket=new WebSocket(tabs.find(tab=>tab.type==='page').webSocketDebuggerUrl);await new Promise(resolve=>socket.addEventListener('open',resolve,{once:true}));let sequence=0;const pending=new Map(),errors=[];
 socket.addEventListener('message',event=>{const data=JSON.parse(event.data);if(data.id){const item=pending.get(data.id);pending.delete(data.id);data.error?item.reject(Error(data.error.message)):item.resolve(data.result);}if(data.method==='Runtime.exceptionThrown')errors.push(data.params);});
@@ -16,9 +20,11 @@ const evaluate=async expression=>{const response=await call('Runtime.evaluate',{
 const wait=async expression=>{for(let i=0;i<1500;i++){if(await evaluate(expression))return;await new Promise(resolve=>setTimeout(resolve,30));}throw Error('Timed out '+expression);};
 try{
  await call('Page.enable');await call('Runtime.enable');await call('Emulation.setFocusEmulationEnabled',{enabled:true});await call('Emulation.setDeviceMetricsOverride',{width:230,height:480,deviceScaleFactor:1,mobile:true});
- const source="if(location.protocol==='http:'||location.protocol==='https:')localStorage.setItem('finni-graphics-v1','detailed');"+'('+installNativeStartupObserver.toString()+')(10000);('+installNativeSceneClockObserver.toString()+')();('+installNativeTimerDispatchObserver.toString()+')();('+installNativePostprocessObserver.toString()+')({highPrecisionDepth:true});('+installNativeWholeFrameObserver.toString()+')({fromInitialization:true,imagesOnly:true,frames:6});';
- await call('Page.addScriptToEvaluateOnNewDocument',{source});await call('Page.navigate',{url:base});await wait('!!window.finni&&!document.getElementById("play").disabled');await evaluate('document.getElementById("play").click()');await wait('nativeWholeFrame.frames.length===6||nativeWholeFrame.errors.length>0');
- const meta=await evaluate('({frames:nativeWholeFrame.frames.map(({images,...frame})=>({...frame,images:Object.fromEntries(Object.entries(images).map(([name,{bytes,...image}])=>[name,image]))})),clock:nativeSceneClock,timers:nativeTimerDispatch,errors:nativeWholeFrame.errors})');
+ const source="if(location.protocol==='http:'||location.protocol==='https:')localStorage.setItem('finni-graphics-v1','detailed');"+'('+installNativeStartupObserver.toString()+')(10000);('+installNativeSceneClockObserver.toString()+')();('+installNativeTimerDispatchObserver.toString()+')();('+installNativeBallPresentationObserver.toString()+')();('+installNativePostprocessObserver.toString()+')({highPrecisionDepth:true});('+installNativeWholeFrameObserver.toString()+')('+JSON.stringify({fromInitialization:true,imagesOnly:true,frames:6,...postprocessFrames?{postprocessFrames}:{},...geometryFrames?{geometryFrames}:{},...tracePixel?{tracePixel}:{}})+');';
+ await call('Page.addScriptToEvaluateOnNewDocument',{source});await call('Page.navigate',{url:base});await wait('!!window.finni&&!document.getElementById("play").disabled');
+ await evaluate(`(()=>{nativeBallPresentation.install();nativeBallPresentation.armed=true;window.nativePlayerInputs=[];const engine=finni.engine,raw=engine.ccall;engine.ccall=function(...args){if(args[0]==='vpinball_wasm_eval_script')nativePlayerInputs.push({frameIndex:nativeStartup.frameIndex(),ms:nativeStartup.read()?.ms,script:args[3][0]});return raw.apply(this,args);};})()`);
+ await evaluate('document.getElementById("play").click()');await wait('nativeWholeFrame.frames.length===6||nativeWholeFrame.errors.length>0');
+ const meta=await evaluate('({frames:nativeWholeFrame.frames.map(({images,...frame})=>({...frame,images:Object.fromEntries(Object.entries(images).map(([name,{bytes,...image}])=>[name,image]))})),clock:nativeSceneClock,timers:nativeTimerDispatch,playerInputs:nativePlayerInputs,presentation:{records:nativeBallPresentation.records,errors:nativeBallPresentation.errors,layout:nativeBallPresentation.layout},errors:nativeWholeFrame.errors})');
  assert.deepEqual(meta.errors,[]);assert.equal(meta.frames.length,6);
  for(let i=0;i<meta.frames.length;i++){
   const frame=meta.frames[i];assert.deepEqual(frame.errors,[]);
@@ -29,6 +35,7 @@ try{
  }
  const engine=Buffer.from(await(await fetch(new URL('/engine/vpinball.wasm',base))).arrayBuffer());meta.engineSHA256=createHash('sha256').update(engine).digest('hex');assert.equal(meta.engineSHA256,'c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8');
  meta.clockABI=nativeFrameClockLayout(engine);meta.reference=await(await fetch(new URL('/reference-metadata.json',base))).json();assert.equal(meta.reference.sourceSha256,meta.reference.controlledSha256);assert.deepEqual(meta.reference.controlledOverrides,{});meta.errors=errors;
+ meta.playerSource={};for(const file of ['app.js','views.js'])meta.playerSource[file]=createHash('sha256').update(Buffer.from(await(await fetch(new URL('/'+file,base))).arrayBuffer())).digest('hex');
  assert.deepEqual(meta.frames.map(frame=>frame.frameIndex),[1,2,3,4,5,6],'No initialization frames omitted');
  meta.scope='Six consecutive native tonemapped frames, beginning with original initialization. Ordinary UI Start only. Original WASM/table/clocks/state/draws unchanged; image readback overhead is part of the observed timing. Outputs and prior images are expectations, never model inputs.';
  fs.writeFileSync(path.join(directory,'capture.json'),JSON.stringify(meta));

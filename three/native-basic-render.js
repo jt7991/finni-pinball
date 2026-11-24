@@ -8,6 +8,7 @@ import {decodeNativeGeometry} from './native-geometry-codec.js';
 import {nativeMirrorNormalFactor} from './native-reflection.js';
 import {nativeTransparentOrder} from './native-render-order.js';
 import {nativeSamplersFor} from './native-samplers.js';
+import {nativeCameraForPart} from './native-camera-stage.js';
 
 const filters={9728:THREE.NearestFilter,9729:THREE.LinearFilter,9984:THREE.NearestMipmapNearestFilter,9985:THREE.LinearMipmapNearestFilter,9986:THREE.NearestMipmapLinearFilter,9987:THREE.LinearMipmapLinearFilter},wraps={10497:THREE.RepeatWrapping,33071:THREE.ClampToEdgeWrapping,33648:THREE.MirroredRepeatWrapping};
 const stripVersion=source=>source.replace(/^#version[^\n]*\n/,''),noAngles=[];
@@ -61,17 +62,17 @@ export function createNativePrimitiveVisuals(renderer,scene,assets,lighting,{sta
   for(const part of parts){const proxy=new THREE.Mesh(part.mesh.geometry,part.material);proxy.frustumCulled=false;compilationScene.add(proxy);}
   await renderer.compileAsync(compilationScene,camera);
  },update(camera,viewport=renderer.getDrawingBufferSize(new THREE.Vector2()),{skipParts}={}){
-  const native=camera.userData.nativeCamera;if(!native)throw Error('Native basic renderer needs the authored camera');let identityMatrices;
+  const cameraNative=camera.userData.nativeCamera;if(!cameraNative)throw Error('Native basic renderer needs the authored camera');const identities=new Map();
   const screen=new Float32Array([1/(viewport.width??viewport.x),1/(viewport.height??viewport.y),0,0]);
-  const projection=nativeShaderArray(native.projection);
-  for(const part of parts){if(skipParts?.has(part))continue;const {state,spec,record}=part;part.material.uniforms.w_h_height.value.set(screen);part.material.uniforms.matProj.value.set(projection);
+  const projection=nativeShaderArray(cameraNative.projection);
+  for(const part of parts){if(skipParts?.has(part))continue;const {state,spec,record}=part,native=nativeCameraForPart(cameraNative,spec);part.material.uniforms.w_h_height.value.set(screen);part.material.uniforms.matProj.value.set(projection);
    part.mesh.renderOrder=native.reflection?(record.reflectionDrawOrder??record.drawOrder):record.drawOrder;
    if(part.material.transparent){const height=spec.kind==='Wall'?spec.height_top:spec.kind==='Light'?Math.fround(Math.fround(spec.surface_height??0)+Math.fround(spec.height)):spec.position?.z??0,bias=spec.kind==='Wall'?0:spec.depth_bias??0,slot=spec.kind==='Wall'?({side:0,top:1,bottom:2}[record.role]??0):0;part.mesh.userData.nativeTransparentOrder=nativeTransparentOrder(height,bias,spec.native_source_order,slot,!!native.reflection);part.mesh.renderOrder=part.mesh.userData.nativeTransparentOrder[0];}
    const angles=record.transform==='identity'?noAngles:[state?.rotx??spec.rot_and_tra[0],state?.roty??spec.rot_and_tra[1],state?.rotz??spec.rot_and_tra[2]];
    let cached=part.cameras.get(native);
    if(!cached||angles.some((value,i)=>value!==cached.angles[i])){
-    if(record.transform==='identity')identityMatrices??=nativeModelMatrices(nativeIdentity(),native);
-    cached={angles,matrices:record.transform==='identity'?identityMatrices:nativePrimitiveMatrices(spec,state,native)};
+    if(record.transform==='identity'&&!identities.has(native))identities.set(native,nativeModelMatrices(nativeIdentity(),native));
+    cached={angles,matrices:record.transform==='identity'?identities.get(native):nativePrimitiveMatrices(spec,state,native)};
     if(record.probe&&!native.reflection)cached.mirror=nativeMirrorNormalFactor(record.transform==='identity'?nativeIdentity():nativePrimitiveWorld(spec,state),native,record.probe.plane,record.probe.strength);
     part.cameras.set(native,cached);
    }

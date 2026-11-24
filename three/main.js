@@ -111,7 +111,7 @@ $('play').onclick=()=>{release();audio?.unlock();$('play').disabled=true;$('play
 $('camera').value=read('camera','balanced');$('quality').value=read('quality','auto');
 if($('camera').value==='')$('camera').value='balanced';
 const cameraMode=()=>$('camera').value;
-for(const name of ['camera','quality'])$(name).onchange=()=>{save(name,$(name).value);if(name==='camera')view?.setCamera(cameraMode());};
+for(const name of ['camera','quality'])$(name).onchange=()=>{save(name,$(name).value);if(name==='camera')view?.applyPlayerCamera(cameraMode());};
 $('apply-graphics').onclick=async()=>{release();save('quality',$('quality').value);try{await game?.flush();}catch{}location.reload();};
 $('sound').onclick=async()=>{
   try{
@@ -167,7 +167,7 @@ async function boot(){
     display=await createDisplay($('dmd'),game.rules.objects,base);
     $('load-status').textContent='Loading artwork and table model…';
     const quality=$('quality').value==='auto'?(matchMedia('(max-width:650px), (pointer:coarse) and (max-width:1024px)').matches?'performance':'detailed'):$('quality').value;
-    view=await createView($('table'),game,{quality});view.setCamera(cameraMode());
+    view=await createView($('table'),game,{quality});view.applyPlayerCamera(cameraMode());
     const seconds=((performance.now()-startTime)/1000).toFixed(1);
     $('load-status').textContent=`Ready in ${seconds}s. Hold Launch, then release to shoot.`;
     $('play').disabled=false;$('play').textContent='Start game';$('progress').hidden=true;message('Ready to play');

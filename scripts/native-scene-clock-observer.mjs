@@ -1,13 +1,14 @@
 // Observe the original RAF callback and its first native draw. Callbacks,
 // timestamps, draw arguments and return values are passed through unchanged.
 export function installNativeSceneClockObserver(){
- const data=window.nativeSceneClock={frames:[],animationFrames:[],armed:true,errors:[],layout:{playerGlobal:9191328,currentMilliseconds:40,lastAnimationMilliseconds:44,source:'Player::m_time_msec followed by uint32_t m_last_frame_time_msec; Player::PrepareFrame assigns the latter immediately before UpdateAnimation.'}},memories=[];let active,lastAnimation=0;
+ const data=window.nativeSceneClock={frames:[],animationFrames:[],preparedFrames:[],armed:true,errors:[],layout:{playerGlobal:9191328,currentMilliseconds:40,lastAnimationMilliseconds:44,source:'Player::m_time_msec followed by uint32_t m_last_frame_time_msec; Player::PrepareFrame assigns the latter immediately before UpdateAnimation.'}},memories=[];let active,lastAnimation=0,lastFrameIndex=0;
  const remember=values=>{for(const value of values)if(value instanceof WebAssembly.Memory&&!memories.includes(value))memories.push(value);};
  const observe=()=>{
   if(!data.armed)return;
   const memory=memories.find(memory=>memory.buffer.byteLength>9191332);if(!memory)return;
   const view=new DataView(memory.buffer),player=view.getUint32(9191328,true);if(player<65536||player+333756>memory.buffer.byteLength)return;
   const now=view.getUint32(player+40,true),animation=view.getUint32(player+44,true);
+  const frameIndex=window.nativeStartup?.frameIndex();if(frameIndex>lastFrameIndex){const snapshot=window.nativeStartup.read();if(snapshot)data.preparedFrames.push({frameIndex,...snapshot});lastFrameIndex=frameIndex;}
   if(animation===lastAnimation)return;
   if(animation<lastAnimation||animation>now){data.errors.push('Native frame clock layout did not validate');data.armed=false;return;}
   const snapshot=window.nativeStartup?.read();if(!snapshot)return;

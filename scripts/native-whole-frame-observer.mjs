@@ -6,6 +6,7 @@ export function installNativeWholeFrameObserver(options={}){
   if(!Number.isInteger(options.frames)||options.frames<2||options.frames>16)throw Error('Consecutive capture requires 2..16 frames');
   data.frames=[];
  }
+ if(options.tracePixel)data.tracePixel=options.tracePixel;
  const nextFrame=()=>{
    if(options.fromInitialization&&!busy&&data.done&&!data.errors.length&&data.frames.length<options.frames){
     for(const key of ['frameIndex','tone','reflectedTransmissionObserved','reflectedTransmissionTexture'])delete data[key];
@@ -34,10 +35,11 @@ export function installNativeWholeFrameObserver(options={}){
    const program=gl.getParameter(gl.CURRENT_PROGRAM);let info=options.imagesOnly?historyPrograms.get(program):undefined;
    if(!info){const shaders=io.shadersFor(program),fragment=shaders?.find(shader=>shader.type===gl.FRAGMENT_SHADER)?.source;info={name:location(gl,program,'AO_scale_timeblur')!==null?'ambient_occlusion':fragment?.match(/\/\/ps_main_([^\s(]+)\(/)?.[1]??'geometry',ball:options.imagesOnly&&gl.getUniformBlockIndex(program,'ballMatrixBlock')!==gl.INVALID_INDEX};if(options.imagesOnly)historyPrograms.set(program,info);}
    const {name}=info;
+   const geometryFrame=options.geometryFrames?.includes(window.nativeStartup.frameIndex());
    // The history capture needs postprocess inputs/outputs, not thousands of
    // static-prepass matrix readbacks. The existing detailed capture retains
    // its complete draw/matrix observations when imagesOnly is absent.
-   if(options.imagesOnly&&name!=='ambient_occlusion'&&!['fb_blur_horiz19x19','fb_blur_vert19x19','fb_bloom','fb_blur_horiz39x39','fb_blur_vert39x39'].includes(name)&&!name.startsWith('fb_rhtonemap')){
+   if(options.imagesOnly&&!geometryFrame&&name!=='ambient_occlusion'&&!['fb_blur_horiz19x19','fb_blur_vert19x19','fb_bloom','fb_blur_horiz39x39','fb_blur_vert39x39'].includes(name)&&!name.startsWith('fb_rhtonemap')){
     if(!data.images.previousHDR&&info.ball){for(let error;(error=gl.getError())!==gl.NO_ERROR;)data.priorErrors.push(error);image(gl,'previousHDR',samplerId(gl,program,'tex_ball_playfield'));}
     return;
    }
@@ -50,7 +52,7 @@ export function installNativeWholeFrameObserver(options={}){
    if(row.pixelBefore||row.lightGeometry){row.uniforms={};for(let i=0;i<gl.getProgramParameter(program,gl.ACTIVE_UNIFORMS);i++){const active=gl.getActiveUniform(program,i),value=uniform(gl,program,active.name);if(value!==null)row.uniforms[active.name]=value;}row.blend={enabled:gl.isEnabled(gl.BLEND),src:gl.getParameter(gl.BLEND_SRC_RGB),dst:gl.getParameter(gl.BLEND_DST_RGB),srcAlpha:gl.getParameter(gl.BLEND_SRC_ALPHA),dstAlpha:gl.getParameter(gl.BLEND_DST_ALPHA),equation:gl.getParameter(gl.BLEND_EQUATION_RGB),equationAlpha:gl.getParameter(gl.BLEND_EQUATION_ALPHA),mask:Array.from(gl.getParameter(gl.COLOR_WRITEMASK))};}
    if(location(gl,program,'tex_light_color')!==null)row.classicUniforms=Object.fromEntries(['lightColor_intensity','lightColor2_falloff_power','lightCenter_maxRange'].map(name=>[name,uniform(gl,program,name)]));
    const basic=gl.getUniformBlockIndex(program,'basicMatrixBlock'),ball=gl.getUniformBlockIndex(program,'ballMatrixBlock'),block=basic!==gl.INVALID_INDEX?basic:ball;
-   if(block!==gl.INVALID_INDEX&&(!options.imagesOnly||!data.images.reflection||!data.images.previousHDR||!data.images.transmission)){
+   if(block!==gl.INVALID_INDEX&&(!options.imagesOnly||geometryFrame||!data.images.reflection||!data.images.previousHDR||!data.images.transmission)){
     const binding=gl.getActiveUniformBlockParameter(program,block,gl.UNIFORM_BLOCK_BINDING),buffer=gl.getIndexedParameter(gl.UNIFORM_BUFFER_BINDING,binding),previous=gl.getParameter(gl.UNIFORM_BUFFER_BINDING),size=gl.getActiveUniformBlockParameter(program,block,gl.UNIFORM_BLOCK_DATA_SIZE),values=new Float32Array(size/4);
     try{gl.bindBuffer(gl.UNIFORM_BUFFER,buffer);gl.getBufferSubData(gl.UNIFORM_BUFFER,gl.getIndexedParameter(gl.UNIFORM_BUFFER_START,binding),values);}finally{gl.bindBuffer(gl.UNIFORM_BUFFER,previous);}
     row.matrixKind=basic!==gl.INVALID_INDEX?'basic':'ball';row.matrices=Array.from(values);
@@ -82,11 +84,12 @@ export function installNativeWholeFrameObserver(options={}){
     data.frameIndex=Number(Array.from(document.getElementById('log').textContent.matchAll(/WHOLE_FRAME_INDEX\|(\d+)/g)).at(-1)[1]);}
     data.tone={name,w_h_height:uniform(gl,program,'w_h_height'),viewport,target};row.finalTone=true;
    }
-   if(!options.imagesOnly||name!=='geometry')data.draws.push(row);
+   if(!options.imagesOnly||geometryFrame||name!=='geometry')data.draws.push(row);
    return row;
   }catch(error){data.errors.push(error.message);data.done=true;}finally{busy=false;}
  };
  const p=WebGL2RenderingContext.prototype;
+ const postImages={fb_bloom:'bloomCut',fb_blur_horiz39x39:'bloomHorizontal',fb_blur_vert39x39:'bloomVertical'};
  const clear=p.clear;p.clear=function(mask){nextFrame();if(data.armed&&!data.done&&!busy)data.clears.push({target:targetId(this),mask,color:Array.from(this.getParameter(this.COLOR_CLEAR_VALUE)),depth:this.getParameter(this.DEPTH_CLEAR_VALUE),scissorEnabled:this.isEnabled(this.SCISSOR_TEST),scissor:Array.from(this.getParameter(this.SCISSOR_BOX))});return clear.call(this,mask);};
  for(const method of ['clearBufferfv','clearBufferiv','clearBufferuiv','clearBufferfi']){
   const original=p[method];p[method]=function(...args){
@@ -99,7 +102,7 @@ export function installNativeWholeFrameObserver(options={}){
   };
  }
  for(const method of ['drawElements','drawElementsInstanced','drawRangeElements','drawArrays','drawArraysInstanced']){
-  const raw=p[method];p[method]=function(...args){const row=before(this,method,args),result=raw.apply(this,args);if(row?.pixelBefore){busy=true;try{row.pixelAfter=pixel(this);}catch(error){data.errors.push(error.message);}finally{busy=false;}}if(row?.finalTone){busy=true;try{data.images.final=io.readColor(this,row.target);data.done=true;data.armed=false;if(options.fromInitialization){
+  const raw=p[method];p[method]=function(...args){const row=before(this,method,args),result=raw.apply(this,args);if(row&&postImages[row.name]&&options.postprocessFrames?.includes(window.nativeStartup.frameIndex())){busy=true;try{image(this,postImages[row.name],row.target);}catch(error){data.errors.push(error.message);}finally{busy=false;}}if(row?.pixelBefore){busy=true;try{row.pixelAfter=pixel(this);}catch(error){data.errors.push(error.message);}finally{busy=false;}}if(row?.finalTone){busy=true;try{data.images.final=io.readColor(this,row.target);data.done=true;data.armed=false;if(options.fromInitialization){
    data.frames.push({images:data.images,draws:data.draws,clears:data.clears,errors:data.errors,priorErrors:data.priorErrors,frameIndex:data.frameIndex,tone:data.tone,playing:document.body.classList.contains('playing'),snapshot:window.nativeStartup.read(),canvas:{width:this.drawingBufferWidth,height:this.drawingBufferHeight}});
   }}catch(error){data.errors.push(error.message);}finally{busy=false;}}return result;};
  }
