@@ -9,7 +9,7 @@ const tracePixel=process.argv.find(arg=>arg.startsWith('--trace-first-pixel='))?
 const observedPlayerInputs=process.argv.includes('--observed-player-inputs');
 const observedPreparedFrames=process.argv.includes('--observed-prepared-frames');if(observedPreparedFrames)assert.ok(observedPlayerInputs);
 const observedPresentation=process.argv.includes('--observed-presentation');if(observedPresentation)assert.ok(observedPreparedFrames);
-const traceFrame=Number(process.argv.find(arg=>arg.startsWith('--trace-frame='))?.slice(14)??1);assert.ok(Number.isInteger(traceFrame)&&traceFrame>=1&&traceFrame<=64);
+const traceFrame=Number(process.argv.find(arg=>arg.startsWith('--trace-frame='))?.slice(14)??1);assert.ok(Number.isInteger(traceFrame)&&traceFrame>=1&&traceFrame<=128);
 assert.match(name,/^[a-z0-9-]+$/);assert.match(report,/^[a-z0-9-]+$/);
 const directory=path.join(output,'native-frame-history-'+name),fixture=JSON.parse(fs.readFileSync(path.join(directory,'capture.json'))),authoredCamera=JSON.parse(fs.readFileSync(fs.existsSync(path.join(directory,'authored-camera.json'))?path.join(directory,'authored-camera.json'):output+'/native-authored-startup-camera.json'));
 assert.equal(authoredCamera.sourceTableSHA256,fixture.reference.sourceSha256);assert.deepEqual(fixture.frames.map(f=>f.frameIndex),Array.from({length:fixture.frames.length},(_,i)=>i+1));assert.equal(fs.existsSync(path.join(directory,'comparison-'+report+'.json')),false);

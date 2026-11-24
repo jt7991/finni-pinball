@@ -3,7 +3,7 @@
 export function installNativeWholeFrameObserver(options={}){
  const data=window.nativeWholeFrame={armed:!!options.fromInitialization,done:false,images:{},draws:[],clears:[],errors:[],priorErrors:[]},io=window.nativePostprocess.io;
  if(options.fromInitialization){
-  if(!Number.isInteger(options.frames)||options.frames<2||options.frames>64)throw Error('Consecutive capture requires 2..64 frames');
+  if(!Number.isInteger(options.frames)||options.frames<2||options.frames>128)throw Error('Consecutive capture requires 2..128 frames');
   data.frames=[];
  }
  if(options.tracePixel)data.tracePixel=options.tracePixel;
@@ -107,6 +107,7 @@ export function installNativeWholeFrameObserver(options={}){
  for(const method of ['drawElements','drawElementsInstanced','drawRangeElements','drawArrays','drawArraysInstanced']){
   const raw=p[method];p[method]=function(...args){const row=before(this,method,args),result=raw.apply(this,args);if(row&&postImages[row.name]&&options.postprocessFrames?.includes(window.nativeStartup.frameIndex())){busy=true;try{image(this,postImages[row.name],row.target);}catch(error){data.errors.push(error.message);}finally{busy=false;}}if(row?.pixelBefore){busy=true;try{row.pixelAfter=pixel(this);}catch(error){data.errors.push(error.message);}finally{busy=false;}}if(row?.finalTone){busy=true;try{data.images.final=io.readColor(this,row.target);data.done=true;data.armed=false;if(options.fromInitialization){
    data.frames.push({images:data.images,draws:data.draws,clears:data.clears,errors:data.errors,priorErrors:data.priorErrors,frameIndex:data.frameIndex,tone:data.tone,playing:document.body.classList.contains('playing'),snapshot:window.nativeStartup.read(),canvas:{width:this.drawingBufferWidth,height:this.drawingBufferHeight,attributes:this.getContextAttributes()}});
+   if(options.freezeObserversAfterCapture&&data.frames.length===options.frames){window.nativeStartup.done=true;window.nativeSceneClock.armed=false;window.nativeTimerDispatch.armed=false;window.nativeBallPresentation.armed=false;}
   }}catch(error){data.errors.push(error.message);}finally{busy=false;}}return result;};
  }
 }

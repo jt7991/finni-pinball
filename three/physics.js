@@ -511,11 +511,23 @@ export class Pinball {
       if(time===0&&this.nativePositionUnits)for(const r of records)if(!r.held){const native=state(r);native.syncAngular();native.orientation.advance(native.angularMomentum,native.inertia,0);}
       for(const f of this.flippers){
         pose(f);const low=Math.min(f.rest,f.raised),high=Math.max(f.rest,f.raised),omega=f.body.angvel().z;
-        const bound=event?.f===f&&!event.r?event.bound:f.angle>=high?high:f.angle<=low?low:null;
+        let bound;
+        if(f.nativeAngle!==undefined){
+          // UpdateDisplacements clamps and tests the native Float32 angle.
+          // Converted world endpoints differ by a few ULPs: when two stops
+          // nearly coincide, one flipper can already round onto its stop
+          // during the other's substep. Bounce then, before the remaining
+          // time moves it away; a world-angle comparison can miss that stop.
+          const nativeLow=Math.min(f.nativeRestAngle,f.nativeRaisedAngle),nativeHigh=Math.max(f.nativeRestAngle,f.nativeRaisedAngle);
+          const limit=f.nativeAngle>=nativeHigh?nativeHigh:f.nativeAngle<=nativeLow?nativeLow:null;
+          bound=limit===null?null:limit===f.nativeRestAngle?f.rest:f.raised;
+        }else bound=event?.f===f&&!event.r?event.bound:f.angle>=high?high:f.angle<=low?low:null;
         if(bound!==null){
-          f.angle=bound;f.body.setRotation(quaternion(f.angle-f.rest),true);
-          if(f.nativeAngle!==undefined)f.nativeAngle=bound===f.rest?f.nativeRestAngle:f.nativeRaisedAngle;
-          if(Math.abs(omega)>=.05&&(bound===high&&omega>0||bound===low&&omega<0)){if(f.nativeMotion)f.nativeMotion.bounce();else f.body.setAngvel({x:0,y:0,z:-.3*omega},true);}
+          if(f.nativeAngle!==undefined){f.nativeAngle=bound===f.rest?f.nativeRestAngle:f.nativeRaisedAngle;f.angle=Math.PI/2-f.nativeAngle;}
+          else f.angle=bound;
+          f.body.setRotation(quaternion(f.angle-f.rest),true);
+          const fast=f.nativeMotion?Math.abs(f.nativeMotion.speed)>=Math.fround(.0005):Math.abs(omega)>=.05;
+          if(fast&&(bound===high&&omega>0||bound===low&&omega<0)){if(f.nativeMotion)f.nativeMotion.bounce();else f.body.setAngvel({x:0,y:0,z:-.3*omega},true);}
         }
       }
       const resolved=ballEvents?[...ballEvents.values()].filter(e=>e.hit.time<=time):event?[event]:[];
