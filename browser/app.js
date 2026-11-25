@@ -331,15 +331,51 @@ function fail(error){
 $('canvas').addEventListener('webglcontextlost',e=>{
   e.preventDefault();fail(new Error('Graphics context lost. Reload to restart the game.'));
 });
+async function downloadTable(signal){
+  const response=await fetch('/table.vpx?v=soundtrack-resume',{signal});
+  if(!response.ok)throw Error('The Finni VPX table is missing. Build it first (see README).');
+
+  const progress=$('progress');
+  // For compressed responses, Content-Length measures the wire transfer while
+  // Fetch gives us decoded bytes. Show the amount loaded without a percentage.
+  const length=response.headers.has('Content-Encoding')?0:Number(response.headers.get('Content-Length'));
+  let bytes=0,reported=0;
+  const stream=response.body.pipeThrough(new TransformStream({
+    transform(chunk,controller){
+      bytes+=chunk.byteLength;
+      const loaded=Math.floor(bytes/1048576);
+      if(loaded!==reported){
+        reported=loaded;
+        if(length)progress.value=bytes/length*100;
+        $('loading').textContent=`Loading table data… ${loaded} MiB`;
+      }
+      controller.enqueue(chunk);
+    },
+  }));
+  const table=await new Response(stream).arrayBuffer();
+  enginePhase='Preparing engine';
+  progress.removeAttribute('value');
+  $('loading').textContent='Preparing the VPX engine…';
+  return table;
+}
 async function boot(){
+  const download=new AbortController();
   try{
     const probe=document.createElement('canvas').getContext('webgl2');
     if(!probe)throw Error('WebGL 2 is required. Enable graphics acceleration or try a current browser.');
     probe.getExtension('WEBGL_lose_context')?.loseContext();
-    const [factory, response]=await Promise.all([import('/engine/vpinball.js'),fetch('/table.vpx?v=soundtrack-resume')]);
-    if(!response.ok)throw Error('The Finni VPX table is missing. Build it first (see README).');
-    let table=await response.arrayBuffer();enginePhase='Preparing engine';$('progress').value=55;$('loading').textContent='Preparing the VPX engine…';
-    engine=await factory.default({canvas:$('canvas'),preRun:[module=>configureRenderer(module,{mobile:phoneLayout.matches,quality:graphics})],locateFile:path=>`/engine/${path}`,print:log,printErr:log,onAbort:fail,setStatus:text=>{if(text)$('loading').textContent=text;}});
+    let [readyEngine,table]=await Promise.all([
+      import('/engine/vpinball.js').then(factory=>factory.default({
+        canvas:$('canvas'),
+        preRun:[module=>configureRenderer(module,{mobile:phoneLayout.matches,quality:graphics})],
+        locateFile:path=>`/engine/${path}`,
+        print:log,
+        printErr:log,
+        onAbort:error=>{if(engine)fail(error);},
+      })),
+      downloadTable(download.signal),
+    ]);
+    engine=readyEngine;
     prepareRenderer(engine);
     // MEMFS can own the download buffer; avoid a second ~166 MB copy on phones.
     engine.FS.mkdirTree('/tables');engine.FS.writeFile('/tables/finni.vpx',new Uint8Array(table),{canOwn:true});table=null;
@@ -379,7 +415,7 @@ async function boot(){
     };
     // Exposes real table scripting for compatibility diagnostics and smoke checks.
     window.finni={evaluate,engine};
-  }catch(error){fail(error);}
+  }catch(error){download.abort();fail(error);}
 }
 render();paint();placeFlippers();boot();
 setInterval(()=>{if(connected&&!document.hidden)evaluate('Debug.Print "FINNI_STATE|" & Score(CurrentPlayer) & "|" & Balls & "|" & Credits & "|" & bGameInPlay & "|" & hsbModeActive & "|" & CurrentPlayer & "|" & PlayersPlayingGame & "|" & Score(1) & "|" & Score(2) & "|" & Score(3) & "|" & Score(4) & "|" & bBallInPlungerLane');},250);
