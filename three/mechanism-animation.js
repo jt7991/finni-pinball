@@ -2,6 +2,7 @@
 // Trigger::UpdateAnimation and Bumper::UpdateAnimation/UpdateSkirt,
 // Visual Pinball 195f214dd4849b8ef6113fd377258b78d0dec3bf.
 import {nativeFloatAtan} from './native-float-math.js';
+import {nativeAngleSin,nativeAngleCos} from './native-angle-math.js';
 const f=Math.fround;
 export class TriggerAnimation{
  constructor(spec,collider,emit){this.spec=spec;this.collider=collider;this.emit=emit;this.offset=0;this.hitPending=false;this.unhitPending=false;this.moving=false;this.down=false;}
@@ -26,7 +27,7 @@ export class BumperAnimation{
   this.rotx=this.roty=0;if(!active)return;
   let dy=Math.abs(f(this.hitPosition.y-f(this.spec.center.y)));if(dy===0)dy=f(.000001);
   const dx=Math.abs(f(this.hitPosition.x-f(this.spec.center.x))),angle=nativeFloatAtan(f(dx/dy));
-  this.rotx=f(f(Math.cos(angle))*5);this.roty=f(f(Math.sin(angle))*5);
+  this.rotx=f(nativeAngleCos(angle)*5);this.roty=f(nativeAngleSin(angle)*5);
   if(f(this.spec.center.y)<this.hitPosition.y)this.rotx=-this.rotx;if(f(this.spec.center.x)>this.hitPosition.x)this.roty=-this.roty;
  }
  update(milliseconds){

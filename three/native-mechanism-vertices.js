@@ -2,7 +2,8 @@
 // Spinner::UpdatePlate, Gate::Render, Bumper::UpdateSkirt, Visual Pinball
 // 195f214dd4849b8ef6113fd377258b78d0dec3bf.
 import {nativeChain,nativeRotate,nativeScale,nativeTranslate,nativeTransform} from './native-matrix.js';
-const f=Math.fround,rad=value=>f(f(value)*f(Math.PI/180));
+import {nativeAngleSin,nativeAngleCos} from './native-angle-math.js';
+const f=Math.fround,rad=value=>f(f(value)*f(Math.PI/180)),skirtRotate=(axis,angle)=>nativeRotate(axis,angle,nativeAngleSin,nativeAngleCos);
 function write(template,rotation,position,output,writeUV=true){
  for(let i=0;i<template.length;i+=8){output.set(position(i),i);for(let j=0;j<3;j++)output[i+3+j]=f(f(f(rotation[j]*template[i+3])+f(rotation[4+j]*template[i+4]))+f(rotation[8+j]*template[i+5]));if(writeUV){output[i+6]=template[i+6];output[i+7]=template[i+7];}}return output;
 }
@@ -15,6 +16,6 @@ export function nativeGateRenderVertices(spec,template,angle,surface=0,output=ne
  return write(template,rotation,i=>nativeTransform(world,template.subarray(i,i+3)),output,false);
 }
 export function nativeBumperSkirtVertices(spec,template,rotx,roty,surface=0,{initial=false,output=new Float32Array(template.length)}={}){
- const rotation=initial?nativeRotate('z',rad(spec.orientation)):nativeChain(nativeRotate('z',rad(spec.orientation)),nativeRotate('y',rad(roty)),nativeRotate('x',rad(rotx))),radius=f(spec.radius),height=f(spec.height_scale),z=f(f(surface)+5);
+ const rotation=initial?skirtRotate('z',rad(spec.orientation)):nativeChain(skirtRotate('z',rad(spec.orientation)),skirtRotate('y',rad(roty)),skirtRotate('x',rad(rotx))),radius=f(spec.radius),height=f(spec.height_scale),z=f(f(surface)+5);
  return write(template,rotation,i=>{const p=nativeTransform(rotation,template.subarray(i,i+3));return[f(f(p[0]*radius)+f(spec.center.x)),f(f(p[1]*radius)+f(spec.center.y)),f(f(p[2]*height)+z)];},output);
 }
