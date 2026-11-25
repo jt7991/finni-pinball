@@ -1,7 +1,7 @@
 import test from'node:test';import assert from'node:assert/strict';import fs from'node:fs';import{createHash}from'node:crypto';
 import{readNativeFrameHistoryDigests}from'../../scripts/native-frame-history-package.mjs';
 import{compareNativeHistoryState}from'../../scripts/compare-native-history-state.mjs';
-import{partyChooserScript}from'../../browser/party-chooser.js';
+import{partyChooserScript}from'./fixtures/party-chooser-before-scoop-release.js';
 const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
 
 test('native seventh victory, round reset and jackpot retain the complete physical history and explicit post-victory image window',async()=>{

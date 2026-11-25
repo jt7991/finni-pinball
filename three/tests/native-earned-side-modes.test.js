@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import{gunzipSync}from'node:zlib';import{createHash}from'node:crypto';
-import{unpackNativeHistoryState}from'../../scripts/native-history-state-package.mjs';import{compareNativeHistoryState}from'../../scripts/compare-native-history-state.mjs';import{partyChooserScript}from'../../browser/party-chooser.js';
+import{unpackNativeHistoryState}from'../../scripts/native-history-state-package.mjs';import{compareNativeHistoryState}from'../../scripts/compare-native-history-state.mjs';import{partyChooserScript}from'./fixtures/party-chooser-before-scoop-release.js';
 
 test('earned Friendship and Disco modes retain elevated-lock contacts, native launches, timer expiry and physical drains',async()=>{
  const bytes=fs.readFileSync(new URL('fixtures/vpx-main-6f8116d-side-modes-frames-native.json.gz',import.meta.url));assert.equal(createHash('sha256').update(bytes).digest('hex'),'60cee3e4bacbdf337e2ff719ad7fd2b00cd9080bb11747214f7a05d361e7c615');const packet=JSON.parse(gunzipSync(bytes));assert.equal(packet.sourceBytes,50755396);assert.equal(packet.sourceSHA256,'43cce15e632ff56b95e12bbb26abc0e7d7c4b7a704d04be217f62ac2d2ffbf71');

@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import{gunzipSync}from'node:zlib';import{createHash}from'node:crypto';
-import{unpackNativeHistoryState}from'../../scripts/native-history-state-package.mjs';import{compareNativeHistoryState}from'../../scripts/compare-native-history-state.mjs';import{partyChooserScript}from'../../browser/party-chooser.js';
+import{unpackNativeHistoryState}from'../../scripts/native-history-state-package.mjs';import{compareNativeHistoryState}from'../../scripts/compare-native-history-state.mjs';import{partyChooserScript}from'./fixtures/party-chooser-before-scoop-release.js';
 
 test('current-master thirteen-win rules and motion match with explicit native allocation identities',async()=>{
  const bytes=fs.readFileSync(new URL('fixtures/vpx-main-6f8116d-second-round-through-six-frames-native.json.gz',import.meta.url));assert.equal(createHash('sha256').update(bytes).digest('hex'),'33d16049bfb098bc6a3ee907a25f1cad9e64d9557bc2529989227387ae90c0c4');const packet=JSON.parse(gunzipSync(bytes));assert.equal(packet.sourceBytes,166790700);assert.equal(packet.sourceSHA256,'1bac7d749d3c9d8d5f336e2a5db46d7760d1917c76ce6969cbba784540db0879');

@@ -4,7 +4,13 @@ export const partyChooserScript = `Dim FinniChooserGeneration, FinniChooserShown
 FinniChooserGeneration=0:FinniChooserShown=0:FinniChooserLife=-1
 
 Sub StartChooseBattle
-    If Battle(CurrentPlayer, 0) <> 0 Then Exit Sub
+    If Battle(CurrentPlayer, 0) <> 0 Then
+        If BallsInHole > 0 Then
+            Flashforms li070, 1500, 50, 0
+            vpmtimer.addtimer 1500, "kickBallOut '"
+        End If
+        Exit Sub
+    End If
     If NOT bChooseBattle Then
         FinniChooserGeneration=FinniChooserGeneration+1
         FinniChooserShown=0:FinniChooserLife=-1

@@ -4,7 +4,7 @@ test('the shared correction retains all seven authored chooser images, messages 
  const selection=code=>code.match(/Select Case Battlenr[\s\S]*?End Select/i)[0].replaceAll('\r\n','\n');assert.equal(selection(partyChooserScript),selection(sub('UpdateDMDBattle')));
 });
 function chooser(){
- const harness=`Dim Battle(4,7),LifeLeft(4,7),CurrentPlayer,Battlenr,BattlesToChoose,BattlesWon(4),bChooseBattle,LastImage,Prompts,Starts,i
+ const harness=`Dim Battle(4,7),LifeLeft(4,7),CurrentPlayer,Battlenr,BattlesToChoose,BattlesWon(4),bChooseBattle,LastImage,Prompts,Starts,i,BallsInHole
  Const LeftFlipperKey=42,RightFlipperKey=54,PlungerKey=28,StartGameKey=2,LockBarKey=57,eNone=0
  Sub DMD(a,b,c,d,e,f,g,h,j)
   LastImage=c

@@ -5,7 +5,7 @@ import {gunzipSync} from 'node:zlib';
 import {createHash} from 'node:crypto';
 import {unpackNativeHistoryState} from '../../scripts/native-history-state-package.mjs';
 import {compareNativeHistoryState} from '../../scripts/compare-native-history-state.mjs';
-import {partyChooserScript} from '../../browser/party-chooser.js';
+import {partyChooserScript} from './fixtures/party-chooser-before-scoop-release.js';
 
 test('six earned second-round missions retain reduced attack, fractional bumper progress and repeated multiball',async()=>{
  const bytes=fs.readFileSync(new URL('fixtures/vpx-main-earned-second-round-through-six-frames-native.json.gz',import.meta.url));

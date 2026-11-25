@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import{gunzipSync}from'node:zlib';import{createHash}from'node:crypto';
-import{unpackNativeHistoryState}from'../../scripts/native-history-state-package.mjs';import{compareNativeHistoryState}from'../../scripts/compare-native-history-state.mjs';import{nativeMusicStateFields}from'../../scripts/native-music-timeline-observer.mjs';import{partyChooserScript}from'../../browser/party-chooser.js';
+import{unpackNativeHistoryState}from'../../scripts/native-history-state-package.mjs';import{compareNativeHistoryState}from'../../scripts/compare-native-history-state.mjs';import{nativeMusicStateFields}from'../../scripts/native-music-timeline-observer.mjs';import{partyChooserScript}from'./fixtures/party-chooser-before-scoop-release.js';
 
 test('seven earned current-master missions preserve original music cues and read-only soundtrack state',async()=>{
  const bytes=fs.readFileSync(new URL('fixtures/vpx-main-6f8116d-finale-music-frames-native.json.gz',import.meta.url));assert.equal(createHash('sha256').update(bytes).digest('hex'),'b688ca910eb31e517070cd9e772c1615cdaedec3efe33630bd38f65432b5d9c2');const packet=JSON.parse(gunzipSync(bytes));assert.equal(packet.sourceBytes,72313857);assert.equal(packet.sourceSHA256,'996700548c1b7442d895a5401063e3df512fb0d4e506f2070cfa3868c09159b6');

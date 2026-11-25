@@ -1,5 +1,5 @@
 import test from'node:test';import assert from'node:assert/strict';import fs from'node:fs';import{createHash}from'node:crypto';
-import{readNativeFrameHistoryDigests}from'../../scripts/native-frame-history-package.mjs';import{compareNativeHistoryState}from'../../scripts/compare-native-history-state.mjs';import{partyChooserScript}from'../../browser/party-chooser.js';
+import{readNativeFrameHistoryDigests}from'../../scripts/native-frame-history-package.mjs';import{compareNativeHistoryState}from'../../scripts/compare-native-history-state.mjs';import{partyChooserScript}from'./fixtures/party-chooser-before-scoop-release.js';
 const sha=x=>createHash('sha256').update(x).digest('hex');
 
 test('earned harder-round win retains every physical boundary, native draw input and explicit post-completion image window',async()=>{

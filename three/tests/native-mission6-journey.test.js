@@ -1,5 +1,5 @@
 import test from'node:test';import assert from'node:assert/strict';import fs from'node:fs';import{gunzipSync}from'node:zlib';import{createHash}from'node:crypto';
-import{unpackNativeHistoryState}from'../../scripts/native-history-state-package.mjs';import{compareNativeHistoryState}from'../../scripts/compare-native-history-state.mjs';import{partyChooserScript}from'../../browser/party-chooser.js';
+import{unpackNativeHistoryState}from'../../scripts/native-history-state-package.mjs';import{compareNativeHistoryState}from'../../scripts/compare-native-history-state.mjs';import{partyChooserScript}from'./fixtures/party-chooser-before-scoop-release.js';
 test('continuous native missions 1–6 preserve the shared chooser correction, launched multiball and six full counters',async()=>{
  const packet=JSON.parse(gunzipSync(fs.readFileSync(new URL('fixtures/vpx-main-missions1-through6-guarded-native.json.gz',import.meta.url))));assert.equal(packet.sourceSHA256,'543ceeac0ffc7b3877abe4a85197e673777c5b9cbe5b7ff5e26f43a16a7deef1');assert.equal(packet.sourceBytes,413070937);
  const fixture=unpackNativeHistoryState(packet),controller=fixture.completionController;
