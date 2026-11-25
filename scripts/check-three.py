@@ -109,6 +109,10 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--music-decoding' in sys.argv:runner='probe-music-decoding.mjs'
         if '--native-vorbis' in sys.argv:runner='probe-native-vorbis.mjs'
         if '--vorbis-worker' in sys.argv:runner='test-native-vorbis-browser.mjs'
+        if '--native-audio-resampler' in sys.argv:runner='probe-native-audio-resampler.mjs'
+        if '--native-audio-loop' in sys.argv:runner='probe-native-audio-loop.mjs'
+        if '--native-music' in sys.argv:runner='test-native-music-browser.mjs'
+        if '--production-music' in sys.argv:runner='test-music-production.mjs'
         if '--native-audio-mix' in sys.argv:runner='probe-native-audio-mix.mjs'
         if '--audio-mix' in sys.argv:runner='test-native-audio-mix-browser.mjs'
         timeout=150
@@ -130,6 +134,7 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--native-contact' in sys.argv and '--packed-frames' in sys.argv:
             record_ms=next((int(arg.split('=',1)[1]) for arg in sys.argv if arg.startswith('--record-through-ms=')),0)
             timeout=max(timeout,record_ms/1000+90)
+        if '--native-audio-loop' in sys.argv and '--loop-edge' in sys.argv:timeout=max(timeout,300)
         subprocess.run(['node',str(ROOT/'scripts'/runner),f'http://127.0.0.1:{port}',
                         sys.argv[1] if len(sys.argv)>1 else 'http://127.0.0.1:5173/three/',str(OUT),*sys.argv[2:]],check=True,timeout=timeout)
     finally:

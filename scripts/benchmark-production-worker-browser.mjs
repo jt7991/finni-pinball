@@ -13,7 +13,7 @@ let seq=0,workerSession;const pending=new Map(),errors=[],reports=[],inputTraces
 socket.addEventListener('message',async event=>{const data=JSON.parse(event.data);if(data.id){const task=pending.get(data.id);pending.delete(data.id);data.error?task.reject(Error(data.error.message)):task.resolve(data.result);}if(data.method==='Runtime.exceptionThrown')errors.push(data.params);
  if(data.method==='Target.attachedToTarget'){
   const session=data.params.sessionId;
-  try{if(data.params.targetInfo.type==='worker'){
+  try{if(data.params.targetInfo.type==='worker'&&data.params.targetInfo.url.includes('simulation-worker')){
    workerSession=session;
    const result=await call('Runtime.evaluate',{expression:`(()=>{
     const nativePost=globalThis.postMessage.bind(globalThis),s=globalThis.productionInputObservation={inputs:[],pending:[],requests:new Map(),frames:[],snapshot:null,anchor:null,pendingAnchor:null},clock=()=>performance.timeOrigin+performance.now();

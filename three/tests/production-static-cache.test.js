@@ -25,6 +25,13 @@ async function withServer(run,{audit=false}={}){
 const request=(base,file='',{method='GET',headers={}}={})=>new Promise((resolve,reject)=>{
  const req=http.request(new URL(file,base),{method,headers,agent:false},response=>{const chunks=[];response.on('data',chunk=>chunks.push(chunk));response.on('end',()=>resolve({status:response.statusCode,headers:response.headers,body:Buffer.concat(chunks)}));response.on('error',reject);});req.on('error',reject);req.end();
 });
+// Receiving Content-Length bytes can precede the server read stream's close.
+// Windows briefly forbids replacing/removing that still-open file. Wait only
+// for that OS lock; all response/body/validator assertions remain unchanged.
+async function afterFileRelease(operation){
+ const deadline=Date.now()+2000;
+ for(;;)try{return operation();}catch(error){if(process.platform!=='win32'||!['EPERM','EACCES','EBUSY'].includes(error.code)||Date.now()>=deadline)throw error;await new Promise(r=>setTimeout(r,10));}
+}
 
 test('production assets validate GET and HEAD without resending unchanged bodies',async()=>{
  await withServer(async({base,original,auditFile})=>{
@@ -56,10 +63,10 @@ test('gzip and identity responses stay fresh after same-size writes with preserv
 test('replaced, removed and unsupported static requests cannot reuse an obsolete validator',async()=>{
  await withServer(async({base,directory,file,original})=>{
   const first=await request(base,'geometry.bin');
-  const replacement=path.join(directory,'replacement.bin'),updated=Buffer.from(original.toString().replaceAll('geometry A','geometry C'));fs.writeFileSync(replacement,updated);fs.utimesSync(replacement,1700000000,1700000000);fs.renameSync(replacement,file);
+  const replacement=path.join(directory,'replacement.bin'),updated=Buffer.from(original.toString().replaceAll('geometry A','geometry C'));fs.writeFileSync(replacement,updated);fs.utimesSync(replacement,1700000000,1700000000);await afterFileRelease(()=>fs.renameSync(replacement,file));
   const fresh=await request(base,'geometry.bin',{headers:{'If-None-Match':first.headers.etag}});assert.equal(fresh.status,200);assert.notEqual(fresh.headers.etag,first.headers.etag);assert.deepEqual(fresh.body,updated);
   const post=await request(base,'geometry.bin',{method:'POST',headers:{'If-None-Match':'*'}});assert.equal(post.status,404);
-  fs.unlinkSync(file);const missing=await request(base,'geometry.bin',{headers:{'If-None-Match':'*'}});assert.equal(missing.status,404);
+  await afterFileRelease(()=>fs.unlinkSync(file));const missing=await request(base,'geometry.bin',{headers:{'If-None-Match':'*'}});assert.equal(missing.status,404);
   const absent=await request(base,'missing.bin',{headers:{'If-None-Match':first.headers.etag}});assert.equal(absent.status,404);
  });
 });

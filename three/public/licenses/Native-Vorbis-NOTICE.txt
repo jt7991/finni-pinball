@@ -1,4 +1,5 @@
-The independent native-audio/vorbis.wasm codec and native-vorbis.js adapter
+The independent native-audio/vorbis.wasm codec, native-vorbis.js adapter,
+native-audio-resampler.js and native-music-stream.js playback components
 derive from Visual Pinball's miniaudio/stb_vorbis integration at:
 https://github.com/vpinball/vpinball/tree/195f214dd4849b8ef6113fd377258b78d0dec3bf
 

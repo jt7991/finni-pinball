@@ -6,11 +6,12 @@ import {createNativeSoundMixer} from './native-sound-mix.js';
 import {loadDmdAtlasDisplayBitmap,DMD_ATLAS_FILE} from './dmd-atlas.js';
 import {createAudioBufferCache} from './audio-buffer-cache.js';
 import {createEffectDecoder} from './audio-pcm.js';
+import {createNativeMusicPlayer} from './native-music-player.js';
 
 export function createAudio(manifest,base) {
-  let context,decodeEffect,unlocked=false,muted=false,primed=false,stopEpoch=0,musicSource,musicMixer;
-  const musicElement=new Audio();
-  const playing=new Map(),music=new Map(),stops=new Map();
+  let context,decodeEffect,nativeMusic,unlocked=false,muted=false,prefetched=false,stopEpoch=0;
+  const playing=new Map(),stops=new Map(),songs=Object.values(manifest).filter(sound=>sound.music&&sound.nativeSource);
+  function musicPlayer(){context??=new AudioContext();if(!nativeMusic){nativeMusic=createNativeMusicPlayer(context,base);nativeMusic.setMuted(muted);}return nativeMusic;}
   const buffers=createAudioBufferCache(async name=>{
     const load=async file=>{const response=await fetch(`${base}audio/${file}`);if(!response.ok)throw Error(`Audio ${name} unavailable`);return response.arrayBuffer();};
     const bytes=await load(manifest[name].file);context??=new AudioContext();decodeEffect??=createEffectDecoder(context);
@@ -18,19 +19,13 @@ export function createAudio(manifest,base) {
   });
   // Decode during loading without resuming audio or reserving a sound player.
   // A failed preparation remains retryable through the normal playback path.
-  const prepare=names=>Promise.allSettled(names.map(name=>String(name).toLowerCase()).filter(name=>manifest[name]&&!manifest[name].music).map(name=>buffers.get(name)));
+  const prepare=names=>Promise.allSettled([
+    ...names.map(name=>String(name).toLowerCase()).filter(name=>manifest[name]&&!manifest[name].music).map(name=>buffers.get(name)),
+    ...(songs.length?[musicPlayer().prepare(),musicPlayer().prefetch(songs.filter(sound=>sound.nativeSource.nativeFrames===32000))]:[]),
+  ]);
   async function unlock(){
     context??=new AudioContext();unlocked=true;const resumed=context.resume();
-    // Reuse one gesture-unlocked media element for streamed music on iOS.
-    if(!primed){
-      primed=true;const bytes=new Uint8Array(1644),view=new DataView(bytes.buffer);
-      const text=(offset,value)=>{for(let i=0;i<value.length;i++)bytes[offset+i]=value.charCodeAt(i);};
-      text(0,'RIFF');view.setUint32(4,1636,true);text(8,'WAVE');text(12,'fmt ');view.setUint32(16,16,true);
-      view.setUint16(20,1,true);view.setUint16(22,1,true);view.setUint32(24,8000,true);view.setUint32(28,16000,true);
-      view.setUint16(32,2,true);view.setUint16(34,16,true);text(36,'data');view.setUint32(40,1600,true);
-      const url=URL.createObjectURL(new Blob([bytes],{type:'audio/wav'}));musicElement.src=url;musicElement.volume=0;
-      musicElement.play().then(()=>{if(musicElement.src===url)musicElement.pause();URL.revokeObjectURL(url);}).catch(()=>URL.revokeObjectURL(url));
-    }
+    if(songs.length&&!prefetched){prefetched=true;void musicPlayer().prefetch(songs).catch(()=>{prefetched=false;});}
     await resumed;
   }
   function stopPlayer(player){
@@ -39,9 +34,9 @@ export function createAudio(manifest,base) {
     player.mixer?.disconnect();
   }
   function stop(name){
-    if(name===undefined){stopEpoch++;for(const players of playing.values())for(const player of players)stopPlayer(player);playing.clear();for(const element of music.values()){element.pause();element.removeAttribute('src');element.load();}music.clear();musicMixer?.disconnect();musicSource?.disconnect();musicMixer=null;return;}
+    if(name===undefined){stopEpoch++;for(const players of playing.values())for(const player of players)stopPlayer(player);playing.clear();nativeMusic?.stop();return;}
     name=String(name).toLowerCase();stops.set(name,(stops.get(name)??0)+1);
-    const element=music.get(String(name).toLowerCase());if(element){element.pause();element.removeAttribute('src');element.load();music.delete(String(name).toLowerCase());musicMixer?.disconnect();musicSource?.disconnect();musicMixer=null;}
+    nativeMusic?.stop(name);
     for(const player of playing.get(name)??[])stopPlayer(player);playing.delete(name);
   }
   function updatePlayer(player,name){
@@ -61,16 +56,12 @@ export function createAudio(manifest,base) {
     source.start();
   }
   async function play(name,{loop=0,volume=1,pan=0,rate=1,pitch=0,pitchFactor=1,useExisting=false,restart=false}={}){
-    name=String(name).toLowerCase();if(muted||!unlocked||!context||!manifest[name])return;
+    name=String(name).toLowerCase();if(!unlocked||!context||!manifest[name]||muted&&!manifest[name].music)return;
     let player;
     try{
       if(manifest[name].music){
-        for(const old of [...music.keys()])stop(old);
-        musicSource??=context.createMediaElementSource(musicElement);
-        musicMixer?.disconnect();musicSource.disconnect();
-        musicMixer=createNativeSoundMixer(context,musicSource,manifest[name],Math.min(context.destination.maxChannelCount??2,2));musicMixer.set({volume,pan});
-        const element=musicElement;element.src=`${base}audio/${manifest[name].file}`;element.loop=loop<0;
-        element.volume=1;element.preload='none';music.set(name,element);await element.play();return;
+        if(!manifest[name].nativeSource)throw Error('Original music source metadata unavailable');
+        await musicPlayer().play(name,manifest[name],{loop,volume,pan});return;
       }
       // Native AudioPlayer selects the first player for useSame, or the first
       // idle one otherwise. Looping alone does not request reuse. Reserve the
@@ -93,7 +84,7 @@ export function createAudio(manifest,base) {
       player.pending=loading;await loading;player.pending=null;
     }catch(error){if(player)stopPlayer(player);console.warn(error.message);}
   }
-  return {prepare,unlock,play,stop,setMuted(value){muted=value;if(value)stop();},get muted(){return muted;}};
+  return {prepare,unlock,play,stop,setMuted(value){muted=value;nativeMusic?.setMuted(value);if(value){stopEpoch++;for(const players of playing.values())for(const player of players)stopPlayer(player);playing.clear();}},get muted(){return muted;}};
 }
 
 export async function createDisplay(canvas,objects,base) {

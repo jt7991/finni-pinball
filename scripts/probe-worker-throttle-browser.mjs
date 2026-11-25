@@ -21,7 +21,7 @@ socket.addEventListener('message',event=>{
  if(data.method==='Runtime.exceptionThrown')errors.push(data.params);
  if(data.method==='Target.attachedToTarget'){
   const {sessionId,targetInfo}=data.params;
-  if(targetInfo.type==='worker'){workerSession=sessionId;workerURL=targetInfo.url;}
+  if(targetInfo.type==='worker'&&targetInfo.url.includes('simulation-worker')){workerSession=sessionId;workerURL=targetInfo.url;}
  }
 });
 const evaluate=async(expression,sessionId)=>{

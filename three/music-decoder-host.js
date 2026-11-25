@@ -1,7 +1,8 @@
 // Ordered ownership around an independently loaded native codec. Decode
 // requests remain bounded; original EOF and seek operations define loops.
+import {createNativeMusicStream} from './native-music-stream.js';
 export function createMusicDecoderHost(send,{loadCodec,loadSource}){
- let epoch=0,owner,codec,codecPromise,disposed=false;
+ let epoch=0,owner,codec,codecPromise,disposed=false;const voices=new Map();
  function ensureCodec(){
   if(codec)return Promise.resolve(codec);
   if(!codecPromise){const request=Promise.resolve().then(loadCodec).then(value=>(codec=value));codecPromise=request;request.catch(()=>{if(codecPromise===request)codecPromise=null;});}
@@ -13,6 +14,7 @@ export function createMusicDecoderHost(send,{loadCodec,loadSource}){
   const{id,type,generation}=message;let started;
   try{
    if(disposed)throw Error('Music decoder disposed');
+   if(type==='prepare'){await ensureCodec();respond(id,{status:'prepared'});return;}
    if(type==='open'){
     if(!Number.isSafeInteger(generation)||generation<1)throw Error('Invalid music generation');
     const ticket=++epoch;clear();const pending={generation,ticket,abort:new AbortController(),opened:false};owner=pending;started=pending;
@@ -23,16 +25,22 @@ export function createMusicDecoderHost(send,{loadCodec,loadSource}){
     const format=loaded[0].open(new Uint8Array(loaded[1]));
     for(const field of ['channels','sampleRate','granuleFrames'])if(message.expected?.[field]!==undefined&&message.expected[field]!==format[field])throw Error('Music format differs from source: '+field);
     Object.assign(pending,{opened:true,format,loop:message.loop===true,sourceFrames:0,loops:0,nativeFrames:message.expected?.nativeFrames});
+    if(message.outputSampleRate!==undefined){pending.name=message.name;pending.stream=createNativeMusicStream(loaded[0],{...format,outputRate:message.outputSampleRate,quantum:message.quantum,loop:pending.loop,repeats:message.repeats,nativeFrames:pending.nativeFrames,state:voices.get(message.name)});}
     respond(id,{status:'opened',generation,format});return;
    }
    if(type==='close'){
     if(!owner||owner.generation!==generation){respond(id,{status:'stale'});return;}
+    if(owner.name&&message.state)voices.set(owner.name,message.state);
     ++epoch;clear();respond(id,{status:'closed',generation});return;
    }
    if(type==='read'){
     if(!owner||owner.generation!==generation){respond(id,{status:'stale'});return;}
     if(!owner.opened){respond(id,{status:'pending',generation});return;}
     const requested=message.frames;if(!Number.isSafeInteger(requested)||requested<1||requested>65536)throw Error('Invalid streamed music read size');
+    if(owner.stream){
+     if(requested!==(message.quantum??2048))throw Error('Music output reads must match the device quantum');
+     const block=owner.stream.read();respond(id,{status:'pcm',generation,channels:owner.format.channels,...block},[block.pcm.buffer,block.state.cache.buffer]);return;
+    }
     const current=owner,channels=current.format.channels,pcm=new Float32Array(requested*channels);let written=0,ended=false;
     while(written<requested){
      const block=codec.read(requested-written);
