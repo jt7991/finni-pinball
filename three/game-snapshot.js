@@ -13,10 +13,10 @@ export function snapshotSubmissionBall(game,record){
   const f=Math.fround;
   if(record.removed){
     const state=record.detachedNative?record.proxy:record.lastState;
-    return{id:record.body.handle,position:{x:f(state.x),y:f(state.y),z:f(state.z)},velocity:{x:f(state.velx),y:f(state.vely),z:f(state.velz)},radius:f(record.proxy.radius),locked:record.lastRenderLocked};
+    return{id:record.body.handle,scriptId:record.scriptID,position:{x:f(state.x),y:f(state.y),z:f(state.z)},velocity:{x:f(state.velx),y:f(state.vely),z:f(state.velz)},radius:f(record.proxy.radius),locked:record.lastRenderLocked};
   }
   const native=game.nativeBall(record.body),velocity=record.body.linvel();
-  return{id:record.body.handle,position:{...native.sync()},velocity:{x:f(velocity.x),y:f(-velocity.y),z:f(velocity.z)},radius:f(record.proxy.radius),locked:!!record.held&&record.held!=='lane'};
+  return{id:record.body.handle,scriptId:record.scriptID,position:{...native.sync()},velocity:{x:f(velocity.x),y:f(-velocity.y),z:f(velocity.z)},radius:f(record.proxy.radius),locked:!!record.held&&record.held!=='lane'};
 }
 function objectState(object,keys=fields){
   const state={};

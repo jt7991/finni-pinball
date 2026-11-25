@@ -24,7 +24,7 @@ export function createNativeBallVisuals(renderer,scene,assets,lighting,{previous
   else if(u.value?.isTexture)target.value=u.value;
  }};
 
- function submit(ball,reflection=false){const body=submissionBodyFor(ball),rotScale=nativeBallRotationScale(ball.orientation,ball.radius),input=submissionClock({ballId:ball.id,reflection,body,rotScale});return{input,body,result:nativeBallSubmission(rotScale,body,input)};}
+ function submit(ball,reflection=false){const body=submissionBodyFor(ball),rotScale=nativeBallRotationScale(ball.orientation,ball.radius),input=submissionClock({ballId:ball.id,scriptId:ball.scriptId,reflection,body,rotScale});return{input,body,result:nativeBallSubmission(rotScale,body,input)};}
  function add(){
   const uniforms={};for(const [name,value]of Object.entries(assets.metadata.globals))uniforms[name]={value:Float32Array.from(value)};
   for(const [name,texture]of Object.entries(textures))uniforms[name]={value:texture};Object.assign(uniforms,{tex_ball_playfield:{value:previousFrame},orientation:{value:new Float32Array(16)},matProj:{value:new Float32Array(16)},layer:{value:0},ballLightPos:{value:new Float32Array(40)},ballLightEmission:{value:new Float32Array(40)},cBase_Alpha:{value:new Float32Array([1,1,1,1])},Roughness_WrapL_Edge_Thickness:{value:new Float32Array(4)},invTableRes_reflection:{value:nativeShaderArray([1/table.width,1/table.height,Math.max(0,Math.min(1,table.ball_playfield_reflection_strength)),0])},w_h_disableLighting:{value:new Float32Array(4)}});

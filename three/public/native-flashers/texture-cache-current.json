@@ -1,0 +1,34 @@
+{
+  "engineSHA256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+  "sourceTableSHA256": "6160e43c1a74f6dc70fd9852433c3373fe11b3e55d4f3a3fedc435265591b5c5",
+  "aliases": {},
+  "images": {
+    "spotflash": {
+      "width": 512,
+      "height": 512,
+      "format": 35907,
+      "pixelFormat": 6408,
+      "pixelType": 5121,
+      "encoding": "webp-source",
+      "generatedMipmaps": true,
+      "levels": [
+        {
+          "file": "cache-spotflash.webp",
+          "bytes": 3412,
+          "sha256": "db597b4d61d7e49d02c913fae04f9e83c4dfc8e0806fbfb644014330e06d68cf",
+          "sourceBytes": 1048576,
+          "sourceSHA256": "52662009f02edc4736baf5244fa8432ee3dca58a0de2a69f1a68717629304f9a"
+        }
+      ]
+    }
+  },
+  "provenance": {
+    "captureSHA256": "8ed02bc24427c1d8c803926bf0e92a68aeb3ce1436af3df1899bb4e7cd4e9734",
+    "textureCacheKey": "2199069223200",
+    "members": [
+      "Spotflash"
+    ],
+    "selectedSourceImage": "spotflash",
+    "scope": "The pinned full-table texture manager caches by GetLiveHash. The independently observed key group contains 1 image object(s); the first actual upload uses embedded spotflash pixels. This file retains that source-specific resource binding, using the original embedded encoded image, without a rendered reference image, body, rules or clock override."
+  }
+}

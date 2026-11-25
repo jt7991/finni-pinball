@@ -48,6 +48,8 @@ test('submission reads later physical bodies, retains removed kicker balls and e
     assert.deepEqual(latest.velocity,{x:Math.fround(velocity.x),y:Math.fround(-velocity.y),z:Math.fround(velocity.z)});
     assert.notDeepEqual(latest.position,scheduled.renderBalls.find(ball=>ball.id===free.id).position);
     const retired=submission.balls.find(ball=>ball.id===held.id);
+    assert.equal(retired.scriptId,heldRecord.scriptID,'native Ball.ID survives retirement independently of the Rapier storage handle');
+    assert.equal(latest.scriptId,freeRecord.scriptID);
     assert.deepEqual(retired.position,heldPosition,'removed Rapier body preserves native position bits');
     assert.deepEqual(retired.velocity,{x:Math.fround(heldVelocity.x),y:Math.fround(-heldVelocity.y),z:Math.fround(heldVelocity.z)});
     assert.equal(retired.locked,true,'retain the source locked flag before kicker membership is released');
@@ -63,6 +65,7 @@ test('submission reads later physical bodies, retains removed kicker balls and e
     await host.receive({type:'submission',frame:next.frame,id:14});
     const nextBalls=messages.find(message=>message.type==='response'&&message.id===14).result.balls;
     assert.ok(nextBalls.some(ball=>ball.id===born.id));
+    assert.equal(nextBalls.find(ball=>ball.id===born.id).scriptId,heldRecord.scriptID+1,'a replacement ball keeps its new native creation identity');
     assert.ok(!nextBalls.some(ball=>ball.id===held.id));
   }finally{await host.receive({type:'dispose'});}
 });

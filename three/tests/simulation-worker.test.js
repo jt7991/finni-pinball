@@ -42,7 +42,7 @@ test('real worker preserves every body, native RNG, authored rules, DMD, audio a
     for(const name of digits)remote.rules.objects.get(name);await remote.flush();
     const compare=async()=>{
       assert.deepEqual(await remote.debug({action:'inspect'}),inspect(local));
-      assert.deepEqual(remote.renderBalls,local.physicalRecords.map(rec=>{const native=local.nativeBall(rec.body),v=rec.body.linvel(),f=Math.fround;return{id:rec.body.handle,position:{...native.sync()},velocity:{x:f(v.x),y:f(-v.y),z:f(v.z)},orientation:native.orientation.matrix.slice(),radius:25,locked:!!rec.held&&rec.held!=='lane',...rec.render};}),'all source ball positions, velocities, original orientation bits and visual properties cross the worker');
+      assert.deepEqual(remote.renderBalls,local.physicalRecords.map(rec=>{const native=local.nativeBall(rec.body),v=rec.body.linvel(),f=Math.fround;return{id:rec.body.handle,scriptId:rec.scriptID,position:{...native.sync()},velocity:{x:f(v.x),y:f(-v.y),z:f(v.z)},orientation:native.orientation.matrix.slice(),radius:25,locked:!!rec.held&&rec.held!=='lane',...rec.render};}),'all source ball positions, velocities, original orientation bits and visual properties cross the worker');
       assert.ok(Number.isInteger(remote.presentationClock.epochMilliseconds));assert.ok(remote.presentationClock.lastPhysicsMilliseconds>=remote.presentationClock.epochMilliseconds);
       assert.equal(remote.plungerPosition,local.plunger.pos,'native plunger position crosses the worker boundary');
       assert.deepEqual(remote.cabinetOffset,local.cabinetNudge.nativeOffset,'native metre displacement crosses the worker boundary');

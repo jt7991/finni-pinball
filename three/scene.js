@@ -23,18 +23,20 @@ import {nativeColor} from './light-animation.js';
 import {loadNativeStatic,createNativeStaticRender} from './native-static-render.js';
 import {nativeGraphicsProfile} from './graphics-profile.js';
 import {createPlayerBackdropCopy} from './player-backdrop.js';
+import {nativeTextureCacheFile} from './native-texture-cache.js';
 
-export async function createView(canvas,game,{quality='performance',ballPresentationClock}={}){
+export async function createView(canvas,game,{quality='performance',ballPresentationClock,sourceTableSHA256}={}){
  const renderer=new THREE.WebGLRenderer({canvas,antialias:false,alpha:true,powerPreference:'high-performance'});renderer.setClearColor(0,0);renderer.outputColorSpace=THREE.SRGBColorSpace;
  const playerBackdropCopy=createPlayerBackdropCopy(renderer.getContext());let backdropEnabled=true;
  renderer.setTransparentSort(compareNativeTransparent);
  const scene=new THREE.Scene(),camera=new THREE.PerspectiveCamera(),base=import.meta.env.BASE_URL;
+ const sourceTable=sourceTableSHA256?Promise.resolve(sourceTableSHA256):fetch(base+'source-table.json').then(response=>{if(!response.ok)throw Error('Native source table metadata unavailable');return response.json();}).then(source=>source.sourceTableSHA256);
  const [lighting,flipperAssets,cameraBounds,tableAssets,animationAssets,transmissionAssets,ballAssets,flasherAssets,haloAssets,classicAssets,postprocessAssets,staticAssets]=await Promise.all([
   loadNativeLighting(base),loadFlipperVisuals(base,renderer.capabilities.getMaxAnisotropy()),
   fetch(base+'camera-bounds.json').then(response=>{if(!response.ok)throw Error('Native camera bounds unavailable');return response.json();}),
   loadNativePrimitiveVisuals(base+'native-table/','native-table.json',{textureProfile:quality,baseColorOnly:true}),loadNativeMechanismAnimation(base),loadNativeTransmission(base+'native-transmission/'),
   loadNativePrimitiveVisuals(base+'native-ball/','native-ball.json'),
-  loadNativeFlasherVisuals(base+'native-flashers/',undefined,{textureCacheURL:base+'native-flashers/texture-cache.json'}),
+  sourceTable.then(source=>loadNativeFlasherVisuals(base+'native-flashers/',undefined,{textureCacheURL:base+'native-flashers/'+nativeTextureCacheFile(source)})),
   loadNativeHalos(base+'native-halos/'),
   loadNativeClassic(base+'native-classic/'),
   loadNativePostprocess(base+'native-postprocess/'),
@@ -56,7 +58,7 @@ export async function createView(canvas,game,{quality='performance',ballPresenta
  const flipperVisuals=createFlipperVisuals(game,scene,lighting,flipperAssets,{program:tableAssets.programs['2'],renderer}),classicLights=createNativeClassic(renderer,scene,classicAssets,lighting,nativeTable,name=>game.rules.objects.get(name.toLowerCase())),bulbHalos=createNativeHalos(scene,haloAssets,name=>game.rules.objects.get(name.toLowerCase())),lightFrame=createLightFrame(renderer,postprocessAssets,nativeTransmission.targets);
  const ballClock=ballPresentationClock??createBallPresentationClock(()=>({paused:game.presentationPaused??(game.simulationPaused!==false),clock:game.submission?.presentationClock??game.presentationClock}));
  const nativeBalls=createNativeBallVisuals(renderer,scene,ballAssets,lighting,{previousFrame:lightFrame.previous.texture,submissionClock:ballClock,submissionBodyFor:ball=>{if(!game.submission)return ball;const body=game.submission.bodies.get(ball.id);if(!body)throw Error('Prepared ball is missing from submission');return body;},stateFor:name=>game.rules.objects.get(name.toLowerCase())});
- if(flasherAssets.textureCache.sourceTableSHA256!==tableAssets.metadata.sourceTableSHA256)throw Error('Flasher texture cache belongs to a different source table');
+ if(flasherAssets.textureCache.sourceTableSHA256!==await sourceTable)throw Error('Flasher texture cache belongs to a different source table');
  const nativeFlashers=createNativeFlasherVisuals(renderer,scene,flasherAssets,{stateFor:name=>game.rules.objects.get(name.toLowerCase()),textureAliases:flasherAssets.textureCache.aliases});
  const nativeBulbEmission=createNativeBulbEmission(scene,nativeTable,transmissionAssets.programs.bulb,name=>game.rules.objects.get(name.toLowerCase()));
  const ballStates=()=>((game.renderBalls??[]).map(ball=>{const c=ball.color>>>0,f=Math.fround;return{...ball,color:[f((c&255)*f(1/255)),f((c&65280)*f(1/65280)),f((c&16711680)*f(1/16711680)),1],reflectionEnabled:ball.reflectionenabled,forceReflection:ball.forcereflection,bulbScale:ball.bulbintensityscale,reflectionStrength:ball.playfieldreflectionscale};}));

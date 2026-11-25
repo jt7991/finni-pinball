@@ -12,7 +12,7 @@ socket.addEventListener('message',event=>{
   if(data.method==='Runtime.exceptionThrown')errors.push(data.params);
 });
 const call=(method,params={})=>new Promise((resolve,reject)=>{const id=++serial;pending.set(id,{resolve,reject});socket.send(JSON.stringify({id,method,params}));});
-const evaluate=async expression=>{const r=await call('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true});if(r.exceptionDetails)throw Error(JSON.stringify(r.exceptionDetails));return r.result.value;};
+const evaluate=async expression=>{const r=await call('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true,userGesture:true});if(r.exceptionDetails)throw Error(JSON.stringify(r.exceptionDetails));return r.result.value;};
 const wait=async expression=>{for(let i=0;i<400;i++){if(await evaluate(expression))return;await new Promise(resolve=>setTimeout(resolve,50));}throw Error('Timed out '+expression);};
 const key=(code,type)=>call('Input.dispatchKeyEvent',{type,code,key:code==='ShiftLeft'?'Shift':'x',windowsVirtualKeyCode:code==='ShiftLeft'?16:88,nativeVirtualKeyCode:code==='ShiftLeft'?16:88});
 try{
