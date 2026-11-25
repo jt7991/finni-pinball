@@ -42,11 +42,12 @@ const advance=due=>{assert.ok(due>=ticks,'Physical cursor moved backward');while
  else{intervalsChecked++;if(!compare(boundary,'interval'))throw Error('First differing native physical boundary at '+ticks);}
 }}};
 function compare(row,phase){
- const actual=game.physicalRecords.map(record=>{const ball=game.nativeBall(record.body),state=ball.snapshot();return {id:record.scriptID,position:Object.values(state.p),velocity:Object.values(state.v),momentum:Object.values(state.m),orientation:[...ball.orientation.matrix]};});
+ const actual=game.physicalRecords.map(record=>{const ball=game.nativeBall(record.body),state=ball.snapshot();return {id:record.scriptID,position:Object.values(state.p),velocity:Object.values(state.v),momentum:Object.values(state.m),orientation:[...ball.orientation.matrix],locked:!!record.held&&record.held!=='lane'};});
  const differences=[];
  for(let i=0;i<Math.max(actual.length,row.balls.length);i++){
   if(!actual[i]||!row.balls[i]){differences.push({ball:i,actual:actual[i],expected:row.balls[i]});continue;}
   if(actual[i].id!==row.balls[i].id)differences.push({ball:i,key:'id',actual:actual[i].id,expected:row.balls[i].id});
+  if(Object.hasOwn(row.balls[i],'locked')&&actual[i].locked!==row.balls[i].locked)differences.push({ball:i,key:'locked',actual:actual[i].locked,expected:row.balls[i].locked});
   for(const key of ['position','velocity','momentum','orientation'])for(let j=0;j<actual[i][key].length;j++)if(actual[i][key][j]!==row.balls[i][key][j])differences.push({ball:i,key,component:j,actual:actual[i][key][j],expected:row.balls[i][key][j]});
  }
  const random=game.random.getState();if(random.some((word,i)=>word!==row.random[i]))differences.push({key:'random',actual:random,expected:row.random});

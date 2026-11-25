@@ -42,14 +42,15 @@ export function partyFinaleVictoryScenario(objects){
  return{...scenario,completeFinale:true,shots:{...scenario.shots,finaleLoop:fast('loop'),finaleWolverine:fast('wolverine'),finaleColossus:fast('colossus'),finaleOuterLoop:fast('outerLoop')},fields:{...scenario.fields,special:'li039.State'},scope:scenario.scope.replace('Observe its original timer and round reset without supplying a seventh win, progress, timer or RNG result. This is finale entry/exit coverage, not a claim of mission-7 victory.','Within the unchanged120ms timer, declare fast physical approaches to the currently lit shots. Observe the seventh win, original round reset, Special light and physical scoop jackpot without supplying progress, completion callbacks, timer values or RNG results. These explicit pose/velocity inputs are controlled collision coverage, not natural player completion.')};
 }
 
-export function partyNextRoundScenario(objects){
+export function partyNextRoundScenario(objects,throughMission=1){
+ if(!Number.isInteger(throughMission)||throughMission<1||throughMission>6)throw Error('Next-round counter coverage supports missions 1 through 6');
  const scenario=partyFinaleVictoryScenario(objects);
- return{...scenario,continueRound:true,fields:{...scenario.fields,credits:'Credits'},scope:scenario.scope+' After the seventh win, physically collect Special at the Colossus loop, collect the scoop jackpot, qualify a fresh chooser and complete mission1 again at the authored reduced attack power. Observe credits, counters and the eighth win without supplying their values.'};
+ return{...scenario,continueRound:true,...(throughMission>1?{nextRoundThrough:throughMission}:{}),fields:{...scenario.fields,credits:'Credits'},scope:scenario.scope+' After the seventh win, physically collect Special at the Colossus loop, collect the scoop jackpot, qualify a fresh chooser and complete '+(throughMission===1?'mission1':'missions 1 through '+throughMission)+' again at the authored reduced attack power. Observe credits, counters and the '+(7+throughMission)+' earned wins without supplying their values.'};
 }
 
 export function installMissionCompletionController(scenario){
  const data=window.nativeMissionCompletionController={scenario,stage:'lane',actions:[],errors:[],completed:false};
- const missions=scenario.continueRound?[1,2,3,4,5,6,7,1]:scenario.finale?[1,2,3,4,5,6,7]:scenario.mission>=4?Array.from({length:scenario.mission},(_,i)=>i+1):[scenario.mission];let missionIndex=0,mission=missions[0];
+ const missions=scenario.continueRound?Array.from({length:7+(scenario.nextRoundThrough??1)},(_,i)=>i%7+1):scenario.finale?[1,2,3,4,5,6,7]:scenario.mission>=4?Array.from({length:scenario.mission},(_,i)=>i+1):[scenario.mission];let missionIndex=0,mission=missions[0];
  if(missions.length>1)data.completions=[];
  let pullAt=0,confirmedAt=0,lastShot=-Infinity,lastQuery=-Infinity,winScore,pendingShot,pendingLoopExit,pendingPlungerExit,pendingFinaleShot,plungerPrimed=false,arrowIndex=0;const usedArrows=new Set();
  const execute=(kind,script)=>{const row={kind,script,ms:nativeStartup.read().ms,frameIndex:nativeStartup.frameIndex()};data.actions.push(row);finni.evaluate(script);return row;};
@@ -111,7 +112,7 @@ export function installMissionCompletionController(scenario){
      const entry=query();if(entry.active!==7||entry.won!==6||!entry.finaleEnabled)throw Error('Finale entry did not follow the six earned wins');
      data.finale={enteredAt:nativePlayerInputs.at(-1).ruleState.ms,entry};data.stage='finale';if(scenario.completeFinale)finaleShot(entry);
     }else{
-     data.stage='active';if(scenario.continueRound&&missionIndex===7){const entry=query();if(entry.attack!==1||entry.firstBattle!==0||entry.life1!==10||entry.won!==7)throw Error('New round did not retain the authored harder mission');data.hardRound={enteredAt:nativePlayerInputs.at(-1).ruleState.ms,entry};}
+     data.stage='active';if(scenario.continueRound&&missionIndex>=7){const entry=query();if(entry.attack!==1||entry.firstBattle!==0||entry['life'+mission]!==10||entry.won!==missionIndex)throw Error('New round did not retain the authored harder mission');const observation={mission,enteredAt:nativePlayerInputs.at(-1).ruleState.ms,entry};if(missionIndex===7)data.hardRound={enteredAt:observation.enteredAt,entry};if(scenario.nextRoundThrough)(data.harderMissions??=[]).push(observation);}
     }return;
    }
    if(data.stage==='finale'){
@@ -143,10 +144,10 @@ export function installMissionCompletionController(scenario){
    }
    if(data.stage==='active'){
     const life=state['life'+mission];
-    if(state.won===missionIndex+1&&state['mission'+mission]===1&&life<=0&&state.active===0&&state.endJackpot){if(scenario.continueRound&&missionIndex===7)Object.assign(data.hardRound,{win:state,wonAt:nativePlayerInputs.at(-1).ruleState.ms});winScore=state.score;data.stage='jackpot';return;}
+    if(state.won===missionIndex+1&&state['mission'+mission]===1&&life<=0&&state.active===0&&state.endJackpot){if(scenario.continueRound&&missionIndex===7)Object.assign(data.hardRound,{win:state,wonAt:nativePlayerInputs.at(-1).ruleState.ms});if(scenario.nextRoundThrough&&missionIndex>=7)Object.assign(data.harderMissions.at(-1),{win:state,wonAt:nativePlayerInputs.at(-1).ruleState.ms});winScore=state.score;data.stage='jackpot';return;}
     if(state.active!==mission||ms-confirmedAt<3200)return;
-    const harder=!!scenario.continueRound&&missionIndex===7;
-    if(harder&&life>6){if(ms-lastShot>=scenario.shotInterval)place('target');return;}
+    const harder=!!scenario.continueRound&&missionIndex>=7;
+    if(harder&&mission===1&&life>6){if(ms-lastShot>=scenario.shotInterval)place('target');return;}
     if(mission===6&&(state.queued>0||state.inLane))return;
     if(mission===3){
      if(ms-lastShot>=scenario.shotInterval)place(['Bumper1','Bumper2','Bumper3'][arrowIndex++%3]);
@@ -181,7 +182,7 @@ export function installMissionCompletionController(scenario){
    if(data.stage==='jackpot'){
     if(state.endJackpot===0&&state.score>=winScore+3000000){
      if(data.completions)data.completions.push({mission,ms,score:state.score,won:state.won,choices:state.choices});
-     if(++missionIndex<missions.length){mission=missions[missionIndex];pendingShot=undefined;pendingLoopExit=undefined;usedArrows.clear();arrowIndex=0;data.stage='qualify';}
+     if(++missionIndex<missions.length){mission=missions[missionIndex];pendingShot=undefined;pendingLoopExit=undefined;usedArrows.clear();arrowIndex=0;if(scenario.nextRoundThrough&&mission===6)plungerPrimed=false;data.stage='qualify';}
      else{data.completed=true;data.stage='complete';data.completedAt=ms;}
      return;
     }
