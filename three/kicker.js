@@ -9,10 +9,10 @@ const f=Math.fround;
 // Every kicker in the authored table uses legacy mode. Its hit circle has the
 // same capsule and volume tests as Trigger, with a smaller capture radius.
 export class Kicker extends Trigger {
-  constructor(spec,height,capture,emit){
+  constructor(spec,height,capture,emit,{nativeDisplacements=false}={}){
     if(!spec.legacy_mode)throw Error('Nonlegacy kicker bevel geometry is required');
     super({...spec,shape:'star',radius:f(f(spec.radius)*f(spec.fall_through?.75:.6))},height,emit);
-    this.spec=spec;this.capture=capture;this.captured=null;this.key=spec.name.toLowerCase();
+    this.spec=spec;this.capture=capture;this.captured=null;this.key=spec.name.toLowerCase();this.nativeDisplacements=nativeDisplacements;
   }
   circle(shape,p,v,r,dt,member,body){
     const capsule=p.z>shape.box.high,target=capsule?f(shape.r*f(2.6)):shape.r;
@@ -41,7 +41,11 @@ export class Kicker extends Trigger {
       body.setLinvel({x:0,y:0,z:0},true);body.setAngvel({x:0,y:0,z:0},true);
       const shape=this.shapes[0],z=this.spec.fall_through?f(shape.box.low-rSize(record)-5):f(shape.box.low+rSize(record));
       body.setTranslation({x:shape.c.x*.01,y:(2115-shape.c.y)*.01,z:z*.01},true);
-      if(record.held&&!record.removed)record.body.setBodyType(RAPIER.RigidBodyType.KinematicPositionBased,true);
+      // Native locking suppresses integration, but contacts already collected
+      // for this pass may still change velocity after capture. Rapier rejects
+      // those writes on position-based kinematic bodies. The complete native
+      // integrator already skips held balls; retain writable body storage.
+      if(record.held&&!record.removed&&!this.nativeDisplacements)record.body.setBodyType(RAPIER.RigidBodyType.KinematicPositionBased,true);
     }else this.captured=null;
   }
   release(record){if(this.captured===record)this.captured=null;}

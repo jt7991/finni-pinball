@@ -156,7 +156,7 @@ class FullGame extends Pinball {
       collider=this.world.createCollider(RAPIER.ColliderDesc.cylinder(.25,(spec.radius??30)*.01)
         .setTranslation(p.x,p.y,z+.25).setRotation({x:Math.SQRT1_2,y:0,z:0,w:Math.SQRT1_2}).setSensor(true));
       collider.setEnabled(spec.is_enabled);
-      if(this.nativeTreeEnabled){const kicker=new Kicker(spec,z,rec=>this.captures.set(key,rec),(event,rec)=>this.rules?.hit(name,event,rec.proxy));kicker.collider=collider;this.kickers.push(kicker);}
+      if(this.nativeTreeEnabled){const kicker=new Kicker(spec,z,rec=>this.captures.set(key,rec),(event,rec)=>this.rules?.hit(name,event,rec.proxy),{nativeDisplacements:this.nativeDisplacements});kicker.collider=collider;this.kickers.push(kicker);}
     }
     if(collider){
       if(spec.kind==='HitTarget')this.targetMotions.set(key,new TargetMotion(spec,collider,()=>Math.round(this.time*1000),(event,ball)=>{
@@ -249,7 +249,7 @@ class FullGame extends Pinball {
       getProperty:{value:name=>{const key=String(name).toLowerCase(),value=key==='id'?rec.scriptID:rec.proxy[key];return {type:singleProperty(key)?'Single':typeof value==='boolean'?'Boolean':typeof value==='string'?'String':Number.isInteger(value)?'Long':'Double',value:singleProperty(key)?Math.fround(value):value};}},
       setProperty:{value:(name,variant)=>{const key=String(name).toLowerCase();rec.proxy[key]=singleProperty(key)?Math.fround(variant.value):variant.value;}},
     });
-    if(rec.held)body.setBodyType(RAPIER.RigidBodyType.KinematicPositionBased,true);
+    if(rec.held&&!this.nativeDisplacements)body.setBodyType(RAPIER.RigidBodyType.KinematicPositionBased,true);
     (isToy?this.toyRecords:this.records).push(rec);this.physicalRecords.push(rec);this.renderRecords.push(rec);this.byCollider.set(collider.handle,rec);this.captures.set(key,rec);this.pendingCreate=rec;if(!isToy)this.ball=body;
     const kicker=this.kickers.find(k=>k.key===key);if(kicker){kicker.members.set(this.nativeBall(body).body,1);kicker.captured=rec;}
     return rec.proxy;
