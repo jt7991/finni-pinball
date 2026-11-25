@@ -294,10 +294,11 @@ class FullGame extends Pinball {
   }
   input(action,down){if(action==='launch'&&down===this.held.launch)return;this.rules.key(action,down);this.sync();}
   release(){
-    this.charge=0;this.held.launch=false;
-    this.plunger.cancel();
-    if(this.rules){if(this.held.left)this.rules.key('left',false);if(this.held.right)this.rules.key('right',false);}
-    this.held.left=false;this.held.right=false;
+    // Main releases its applied keys; it never cancels the mechanism itself.
+    // In particular, launch key-up must run the authored Plunger.Fire handler,
+    // and releasing unrelated controls must preserve a rod already in flight.
+    if(this.rules)for(const action of ['left','right','launch'])if(this.held[action])this.rules.key(action,false);
+    this.charge=0;this.held.left=false;this.held.right=false;this.held.launch=false;
   }
   launch(){
     this.plunger.fire();this.charge=0;

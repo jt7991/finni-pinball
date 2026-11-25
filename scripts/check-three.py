@@ -81,6 +81,7 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--postprocess-history' in sys.argv:runner='test-native-postprocess-history.mjs'
         if '--bloom-frame-component' in sys.argv:runner='test-native-bloom-frame-browser.mjs'
         if '--bloom-coordinates' in sys.argv:runner='probe-bloom-coordinates.mjs'
+        if '--native-control-release' in sys.argv:runner='probe-native-control-release.mjs'
         if '--flipper-assembly' in sys.argv:runner='test-native-flipper-assembly-browser.mjs'
         if '--native-static-prepass' in sys.argv:runner='probe-native-static-prepass-browser.mjs'
         if '--trigger-animation' in sys.argv:runner='test-trigger-animation-browser.mjs'

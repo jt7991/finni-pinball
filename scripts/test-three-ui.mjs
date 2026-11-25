@@ -68,6 +68,22 @@ try{
       await wait('!testWorker.latest.held.left');
     }
     await evaluate(`document.getElementById('canvas').focus()`);
+    await call('Input.dispatchKeyEvent',{type:'keyDown',code:'ShiftLeft',key:'Shift'});
+    await wait('testWorker.latest.held.left');
+    await call('Emulation.setDeviceMetricsOverride',{width:width+1,height,deviceScaleFactor:2,mobile:name!=='desktop'});
+    await wait(`innerWidth===${width+1}`);
+    await evaluate('(async()=>{await new Promise(requestAnimationFrame);await new Promise(requestAnimationFrame);})()');
+    assert.equal(await evaluate(`document.querySelector('[data-input=left]').classList.contains('pressed')`),false,'viewport resize releases held input like main');
+    await wait('!testWorker.latest.held.left');
+    await call('Input.dispatchKeyEvent',{type:'keyDown',code:'ShiftLeft',key:'Shift',autoRepeat:true});
+    await wait('testWorker.latest.held.left');
+    const resumedInputs=await evaluate('testWorker.inputs.length');
+    await call('Input.dispatchKeyEvent',{type:'keyDown',code:'ShiftLeft',key:'Shift',autoRepeat:true});
+    assert.equal(await evaluate('testWorker.inputs.length'),resumedInputs,'main accepts the first held-key repeat after release but suppresses duplicates');
+    await call('Input.dispatchKeyEvent',{type:'keyUp',code:'ShiftLeft',key:'Shift'});
+    await call('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:2,mobile:name!=='desktop'});
+    await wait(`innerWidth===${width}`);
+    await evaluate('(async()=>{await new Promise(requestAnimationFrame);await new Promise(requestAnimationFrame);})()');
     if(name==='phone'||name==='small-phone'){
       const left=await center('#flip-zones [data-input=left]'),right=await center('#flip-zones [data-input=right]');
       await evaluate(`window.controlPointers={};document.addEventListener('pointerdown',e=>{const b=e.target.closest('[data-input]');if(b)controlPointers[b.dataset.input]=e.pointerId;},true)`);
@@ -138,6 +154,14 @@ try{
     if(name!=='desktop')await evaluate('document.getElementById("touch-help").click();document.querySelector("#touch-guide [popovertarget=controls-panel]").click()');
     else await evaluate('document.getElementById("settings").click()');
     await wait('document.getElementById("controls-panel").matches(":popover-open")');
+    await evaluate(`document.querySelector('#bindings button').click()`);
+    await call('Input.dispatchKeyEvent',{type:'keyDown',code:'KeyQ',key:'q',autoRepeat:true});
+    assert.equal(await evaluate(`document.querySelector('#bindings button').textContent`),'Press a key','remapping ignores a held key repeat like main');
+    await call('Input.dispatchKeyEvent',{type:'keyUp',code:'KeyQ',key:'q'});
+    await call('Input.dispatchKeyEvent',{type:'keyDown',code:'KeyQ',key:'q'});
+    await call('Input.dispatchKeyEvent',{type:'keyUp',code:'KeyQ',key:'q'});
+    assert.equal(await evaluate(`document.querySelector('#bindings button').textContent`),'KeyQ','fresh key-down sets the requested binding');
+    await evaluate(`document.getElementById('reset').click()`);
     await evaluate('document.getElementById("controls-panel").hidePopover()');
     if(name!=='desktop')await evaluate('document.getElementById("dismiss-touch-guide").click()');
     await writeFile(`${output}/main-ui-${name}.png`,Buffer.from((await call('Page.captureScreenshot',{format:'png'})).data,'base64'));

@@ -74,16 +74,19 @@ test('native bonus, game over and replay complete across three physical drains',
     g.start();ticks(g,1.7);assert.equal(g.state,'playing');assert.equal(g.ballNumber,1);assert.equal(g.records.length,1);
   }finally{g.dispose();}
 });
-test('weak manual shots roll back dynamically and cancelled pulls never fire',async()=>{
+test('weak manual shots roll back dynamically and UI release fires the authored plunger',async()=>{
   const g=await createFullGame(json('layout'),json('objects'),source,()=>{});
   try{
     g.start();ticks(g,1.7);const r=g.records[0];
     g.input('launch',true);ticks(g,.19);g.input('launch',false);ticks(g,1.2);
     assert.ok(r.inLane,'weak shot returns to the shooter switch');assert.ok(Math.abs(r.body.linvel().y)<.1);
     assert.equal(r.held,null,'returning ball remains dynamic');
-    g.input('launch',true);ticks(g,.55);g.release();ticks(g,.5);
-    assert.ok(r.inLane,'focus cancellation keeps the ball in lane');assert.ok(Math.abs(r.body.linvel().y)<.1);
-    assert.equal(g.charge,0);assert.ok(Math.abs(g.plunger.position-25*g.plunger.rest)<.001);
+    g.input('launch',true);ticks(g,.55);g.release();
+    // Main releases the applied PlungerKey. Original native UI observations
+    // confirm Fire's200-tick stroke; cancellation-to-park was a port invention.
+    assert.equal(g.plunger.fireTimer,200);assert.ok(g.plunger.fireSpeed<0);ticks(g,.5);
+    assert.equal(r.inLane,false,'the authored key-up launches the charged ball');
+    assert.equal(g.charge,0);assert.equal(g.held.launch,false);assert.equal(g.plunger.fireTimer,0);
   }finally{g.dispose();}
 });
 test('authored flipper trick timers deliver symmetric shots on a controlled flat playfield',async()=>{

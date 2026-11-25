@@ -15,7 +15,7 @@ function musicLog(line){
   const soundtrack=String(line).match(/FINNI_MUSIC\|(mu_[a-z0-9]+)?\|(\d+(?:\.\d+)?)/);
   if(soundtrack){musicTrack=soundtrack[1]??'';musicVolume=Number(soundtrack[2]);syncMusic();}
 }
-const sources=new Map(),swipes=new Map(),pointers=new Map(),buttons=[...document.querySelectorAll('[data-input]')];
+const sources=new Map(),swipes=new Map(),pointers=new Map(),physical=new Set(),buttons=[...document.querySelectorAll('[data-input]')];
 const selectedPlayers=()=>Number($('player-count')?.value??1);
 const defaultKeys={ShiftLeft:'left',ShiftRight:'right',Enter:'launch',Digit1:'start',Space:'action',KeyZ:'nudgeLeft',KeyX:'nudgeForward',Slash:'nudgeRight'},keys={...defaultKeys};
 const read=(key,fallback)=>{try{return localStorage.getItem(`finni-three-${key}`)||fallback;}catch{return fallback;}};
@@ -32,7 +32,7 @@ function bindings(){
   for(const [action,label]of Object.entries(actionNames)){
     const row=document.createElement('div'),text=document.createElement('span'),button=document.createElement('button');
     row.className='binding';text.textContent=label;button.type='button';button.textContent=Object.keys(keys).find(k=>keys[k]===action)||'Unbound';
-    button.onclick=()=>{rebinding=action;button.textContent='Press a key';};row.append(text,button);$('bindings').append(row);
+    button.onclick=()=>{release();rebinding=action;button.textContent='Press a key';};row.append(text,button);$('bindings').append(row);
   }
   for(const button of buttons){const hint=button.querySelector('kbd');if(hint)hint.textContent=(Object.keys(keys).find(k=>keys[k]===button.dataset.input)||'').replace(/^Key|^Digit/,'').replace('ShiftLeft','L Shift').replace('ShiftRight','R Shift');}
 }
@@ -72,7 +72,7 @@ function input(action,down,source){
   paint();
 }
 function paint(){for(const b of buttons){const held=[...sources.values()].includes(b.dataset.input);b.classList.toggle('pressed',held);b.classList.toggle('held',held);}}
-function release(){sources.clear();swipes.clear();pointers.clear();game?.release();paint();}
+function release(){sources.clear();swipes.clear();pointers.clear();physical.clear();game?.release();paint();}
 function finishPointer(event,cancelled=false){
   swipes.delete(event.pointerId);
   const action=pointers.get(event.pointerId);if(!action)return;
@@ -108,6 +108,7 @@ for(const button of buttons){
 window.addEventListener('keydown',e=>{
   if(rebinding){
     e.preventDefault();
+    if(e.repeat)return;
     if(e.code==='Escape'){rebinding=null;bindings();return;}
     if(e.ctrlKey||e.altKey||e.metaKey||/^F\d+$|^Browser|^PrintScreen$/.test(e.code)||['Tab','MetaLeft','MetaRight','ControlLeft','ControlRight','AltLeft','AltRight'].includes(e.code)){$('binding-status').textContent='Choose a key without a browser shortcut.';return;}
     if(keys[e.code]&&keys[e.code]!==rebinding){$('binding-status').textContent='That key is already in use.';return;}
@@ -115,14 +116,15 @@ window.addEventListener('keydown',e=>{
     save('bindings',JSON.stringify(Object.fromEntries(Object.entries(keys).map(([code,action])=>[action,code]))));$('binding-status').textContent='Binding saved.';bindings();return;
   }
   if(e.target.closest?.('button,input,select,summary')||$('controls-panel').open||$('initials-dialog').open||e.ctrlKey||e.metaKey||e.altKey)return;
-  if(keys[e.code]&&!e.repeat){e.preventDefault();input(keys[e.code],true,`key:${e.code}`);}
+  if(keys[e.code]){e.preventDefault();if(physical.has(e.code))return;physical.add(e.code);input(keys[e.code],true,`key:${e.code}`);}
 });
-window.addEventListener('keyup',e=>{if(keys[e.code]){e.preventDefault();input(keys[e.code],false,`key:${e.code}`);}});
+window.addEventListener('keyup',e=>{if(!physical.delete(e.code))return;if(keys[e.code]){e.preventDefault();input(keys[e.code],false,`key:${e.code}`);}});
 function pause(value){value=!!value||!game||game.state==='ready';paused=value;if(view)game?.setPaused(value);}
 window.addEventListener('blur',()=>{release();pause(true);});
 window.addEventListener('focus',()=>pause($('controls-panel').open||document.hidden));
 document.addEventListener('visibilitychange',()=>{release();pause(document.hidden||$('controls-panel').open);});
 window.addEventListener('orientationchange',release);
+window.addEventListener('resize',release);
 $('settings').onclick=()=>{release();pause(true);};
 $('controls-panel').addEventListener('close',()=>{pause(document.hidden);$('table').focus({preventScroll:true});});
 $('controls-panel').addEventListener('toggle',()=>{release();pause($('controls-panel').open||document.hidden);});
