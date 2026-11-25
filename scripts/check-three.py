@@ -113,6 +113,8 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--native-audio-resampler' in sys.argv:runner='probe-native-audio-resampler.mjs'
         if '--native-audio-loop' in sys.argv:runner='probe-native-audio-loop.mjs'
         if '--native-effect-updates' in sys.argv:runner='probe-native-effect-updates.mjs'
+        if '--native-cold-audio' in sys.argv or '--production-cold-audio' in sys.argv:runner='probe-cold-audio-browser.mjs'
+        if '--cold-audio-output' in sys.argv:runner='test-cold-audio-browser.mjs'
         if '--native-music' in sys.argv:runner='test-native-music-browser.mjs'
         if '--native-audio-player' in sys.argv:runner='test-native-audio-player-browser.mjs'
         if '--production-music' in sys.argv:runner='test-music-production.mjs'

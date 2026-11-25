@@ -47,11 +47,11 @@ function event(e){
   }
 }
 function input(action,down,source){
-  if(!game||paused)return;
   if(action==='start'){
     if(down&&!$('overlay').hidden&&!$('play').disabled&&!$('initials-dialog').open)$('play').click();
     return;
   }
+  if(!game||paused)return;
   if($('latch').checked&&(action==='left'||action==='right')){
     if(down){const key=`latched:${action}`,held=sources.has(key);if(held)sources.delete(key);else sources.set(key,action);game.input(action,!held);paint();}
     return;
@@ -98,7 +98,7 @@ window.addEventListener('keydown',e=>{
   if(keys[e.code]&&!e.repeat){e.preventDefault();input(keys[e.code],true,`key:${e.code}`);}
 });
 window.addEventListener('keyup',e=>{if(keys[e.code]){e.preventDefault();input(keys[e.code],false,`key:${e.code}`);}});
-function pause(value){paused=value;if(view)game?.setPaused(value);}
+function pause(value){value=!!value||!game||game.state==='ready';paused=value;if(view)game?.setPaused(value);}
 window.addEventListener('blur',()=>{release();pause(true);});
 window.addEventListener('focus',()=>pause($('controls-panel').open||document.hidden));
 document.addEventListener('visibilitychange',()=>{release();pause(document.hidden||$('controls-panel').open);});
@@ -107,13 +107,14 @@ $('settings').onclick=()=>{release();pause(true);};
 $('controls-panel').addEventListener('close',()=>{pause(document.hidden);$('table').focus({preventScroll:true});});
 $('controls-panel').addEventListener('toggle',()=>{release();pause($('controls-panel').open||document.hidden);});
 $('initials-dialog').addEventListener('close',()=>$('table').focus({preventScroll:true}));
-$('play').onclick=()=>{release();audio?.unlock();$('play').disabled=true;$('play').textContent='Starting game…';game?.start(selectedPlayers());};
+$('play').onclick=()=>{release();audio?.start();$('play').disabled=true;$('play').textContent='Starting game…';game?.start(selectedPlayers());};
 $('camera').value=read('camera','balanced');$('quality').value=read('quality','auto');
 if($('camera').value==='')$('camera').value='balanced';
 const cameraMode=()=>$('camera').value;
 for(const name of ['camera','quality'])$(name).onchange=()=>{save(name,$(name).value);if(name==='camera')view?.applyPlayerCamera(cameraMode());};
 $('apply-graphics').onclick=async()=>{release();save('quality',$('quality').value);try{await game?.flush();}catch{}location.reload();};
 $('sound').onclick=async()=>{
+  if(!audio)return;
   try{
     await audio?.unlock();audio?.setMuted(!audio.muted);
     $('sound').textContent=audio.muted?'Sound off':'Sound on';$('sound').setAttribute('aria-pressed',String(!audio.muted));
@@ -162,7 +163,7 @@ async function boot(){
     const base=import.meta.env.BASE_URL;
     const load=async(name,json=true)=>{const response=await fetch(`${base}${name}`);if(!response.ok)throw Error(`${name} could not be loaded.`);return json?response.json():response.text();};
     const manifest=await load('audio.json');
-    audio=createAudio(manifest,base);
+    audio=createAudio(manifest,base,{deferInitialization:true});
     // Keep first-use fetch/decode off the flipper input path. Preparation runs
     // alongside table loading and never gates Start or resumes the context.
     void audio.prepare(['fx_flipperup','fx_flipperdown']);
@@ -170,7 +171,7 @@ async function boot(){
     leaderboard=createLeaderboard(statement=>game.rules.execute(statement),release);
     $('load-status').textContent='Loading artwork and table model…';
     const quality=$('quality').value==='auto'?(matchMedia('(max-width:650px), (pointer:coarse) and (max-width:1024px)').matches?'performance':'detailed'):$('quality').value;
-    [display,view]=await Promise.all([createDisplay($('dmd'),game.rules.objects,base),createView($('table'),game,{quality})]);view.applyPlayerCamera(cameraMode());
+    [display,view]=await Promise.all([createDisplay($('dmd'),game.rules.objects,base),createView($('table'),game,{quality}),audio.whenInitialized(),audio.prepare(['fx_gion','fx_gioff'])]);view.applyPlayerCamera(cameraMode());
     const seconds=((performance.now()-startTime)/1000).toFixed(1);
     $('load-status').textContent=`Ready in ${seconds}s. Hold Launch, then release to shoot.`;
     $('play').disabled=false;$('play').textContent='Start game';$('progress').hidden=true;message('Ready to play');

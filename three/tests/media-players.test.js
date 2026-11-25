@@ -24,8 +24,8 @@ test('restart during decoding cancels every older pending voice',()=>withAudio(a
  const first=audio.play('effect'),second=audio.play('effect');await decoding.promise;const replacement=audio.play('effect',{restart:true,pitch:11025});decoded.resolve(buffer());await Promise.all([first,second,replacement]);await tick(2);assert.equal((await stats()).players,1);
 },{deferred:true}));
 
-test('a failed shared decode is handled for every pending request',()=>withAudio(async({audio,nodes,decoded,decoding,errors})=>{
- const first=audio.play('effect',{useExisting:true});await decoding.promise;const second=audio.play('effect',{useExisting:true});decoded.reject(Error('Decoder failed'));const results=await Promise.allSettled([first,second]);assert.ok(results.every(r=>r.status==='fulfilled'));assert.equal(nodes.length,0);assert.ok(errors.every(e=>e==='Decoder failed'));
+test('a failed shared decode is handled for every pending request',()=>withAudio(async({audio,nodes,stats,decoded,decoding,errors})=>{
+ const first=audio.play('effect',{useExisting:true});await decoding.promise;const second=audio.play('effect',{useExisting:true});decoded.reject(Error('Decoder failed'));const results=await Promise.allSettled([first,second]);assert.ok(results.every(r=>r.status==='fulfilled'));assert.equal(nodes.length,1);assert.equal((await stats()).players,0);assert.ok(errors.every(e=>e==='Decoder failed'));
 },{deferred:true}));
 
 for(const [loop,count]of [[0,1],[1,1],[3,3]])test('native loop count '+loop+' completes '+count+' iterations in one retained player',()=>withAudio(async({audio,tick,stats,ended})=>{

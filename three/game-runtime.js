@@ -73,11 +73,13 @@ export function connectSimulation(worker,init,emit=()=>{},media){
         game.visualMotions=new Map(visualMotions);
       }else if(data.type==='snapshot'){
         apply(data.snapshot);game.runtimeStats=data.stats;game.simulationPaused=data.paused;game.presentationClock=data.presentationClock;
+        const initialAudio=!initialized&&typeof media?.initialize==='function';
+        if(initialAudio)media.initialize(data.effects);
         // Publish the resulting score and state before delivering lifecycle events.
         for(const effect of data.effects){
           if(effect.type==='event')emit(effect.event);
-          else if(effect.type==='play')media?.play(effect.name,effect.settings);
-          else if(effect.type==='stop')media?.stop(effect.name);
+          else if(effect.type==='play'&&!initialAudio)media?.play(effect.name,effect.settings);
+          else if(effect.type==='stop'&&!initialAudio)media?.stop(effect.name);
           else if(effect.type==='storage')try{localStorage.setItem(`finni-three-rule-${effect.key}`,JSON.stringify(effect.value));}catch{}
         }
         if(!initialized){initialized=true;resolveReady(game);}

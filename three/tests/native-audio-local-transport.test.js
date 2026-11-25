@@ -13,12 +13,16 @@ test('queued device callbacks consume every native mixed block without asynchron
   const loadBuffer=async name=>{const bytes=fs.readFileSync(new URL('../public/audio/'+manifest[name].fallbackFile,import.meta.url));return decodePCM16Wave(context,bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength));};
   const player=createNativeAudioPlayer(context,'http://localhost/three/',Object.fromEntries(capture.layers.map(l=>[l.name,manifest[l.name]])),{loadBuffer,onError:e=>errors.push(e.message)});
   try{
+   // The original mix recordings issue PlaySound after eight silent device
+   // callbacks. Prime the running output rather than comparing a fresh device
+   // to that pre-existing native buffer.
+   await player.activate();output.onaudioprocess({outputBuffer:{getChannelData:()=>new Float32Array(2048)}});
    await Promise.all(capture.layers.map(layer=>player.play(layer.name,{...layer,loop:layer.loopCount})));
    // Deliberately run the complete callback burst without a single promise or
    // timer yield. A worker round trip cannot supply any of these next blocks.
    for(let b=0;b<capture.frames.length;b++){
     const channels=[new Float32Array(2048),new Float32Array(2048)];output.onaudioprocess({outputBuffer:{getChannelData:c=>channels[c]}});
-    for(let c=0;c<2;c++)assert.deepEqual(channels[c],Float32Array.from(capture.frames[b].pcm[c]),capture.mixCase+' callback '+b+' channel '+c);
+    for(let c=0;c<2;c++)for(let i=0;i<2048;i++)assert.equal(channels[c][i],capture.frames[b].pcm[c][i],capture.mixCase+' callback '+b+' channel '+c+' sample '+i);
    }
    assert.deepEqual(errors,[]);assert.equal((await player.stats()).players,capture.layers.length);
   }finally{player.dispose();}

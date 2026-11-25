@@ -13,7 +13,7 @@ try{
    const loadBuffer=name=>{const entry=manifest[name];if(!buffers.has(entry.file))buffers.set(entry.file,(async()=>{const get=async file=>{const r=await fetch('/three/audio/'+file);if(!r.ok)throw Error('Original effect unavailable');return r.arrayBuffer();};return decode(await get(entry.file),entry,()=>get(entry.fallbackFile));})());return buffers.get(entry.file);},player=${publicMedia}?createAudio(manifest,'/three/',{onError:error=>errors.push(error.message)}):createNativeAudioPlayer(context,'/three/',manifest,{loadBuffer,onError:error=>errors.push(error.message)});
    try{
     const preparation=await player.prepare(test.layers.map(l=>l.name)),before={state:context.state,outputs,stats:${publicMedia}?null:await player.stats()};
-    if(${publicMedia})await player.unlock();else await context.resume();await Promise.all(test.layers.map(l=>player.play(l.name,{...l,loop:l.loopCount})));await wait(()=>captures.length>=32);player.stop();
+    if(${publicMedia})await player.unlock();else{await context.resume();await player.activate();}await wait(()=>captures.length>=8);captures.length=0;await Promise.all(test.layers.map(l=>player.play(l.name,{...l,loop:l.loopCount})));await wait(()=>captures.length>=32);player.stop();
     reports.push({name:test.name,preparation:preparation.map(p=>p.status),before,outputs,captures,stats:${publicMedia}?null:await player.stats(),errors});
    }finally{player.dispose();await context.close();window.AudioContext=OriginalContext;}
   }

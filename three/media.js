@@ -7,7 +7,8 @@ import {createEffectDecoder} from './audio-pcm.js';
 import {createNativeAudioPlayer} from './native-audio-player.js';
 
 export function createAudio(manifest,base,options={}) {
-  let context,decodeEffect,player,unlocked=false,muted=false;
+  let context,decodeEffect,player,unlocked=false,starting=false,muted=false,disposed=false,initialEvents=[],initialReady=Promise.resolve(),initialPlayback,stopEpoch=0;
+  const stopped=new Map();
   const sources=new Map();
   for(const[name,entry]of Object.entries(manifest))if(!entry.music&&!sources.has(entry.file??name))sources.set(entry.file??name,{name,entry});
   const buffers=createAudioBufferCache(async key=>{
@@ -20,13 +21,29 @@ export function createAudio(manifest,base,options={}) {
     if(!player){player=createNativeAudioPlayer(context,base,manifest,{...options,loadBuffer:name=>buffers.get(manifest[name].file??name)});player.setMuted(muted);}
     return player;
   }
+  async function unlock(start=false){
+    if(disposed)return;starting||=start;context??=new AudioContext();const resumed=context.resume();
+    // Early controls may satisfy browser activation while the table is still
+    // loading. Its initialization sounds belong to the actual Start action.
+    if(options.deferInitialization&&!starting){await resumed;return;}
+    unlocked=true;const active=nativePlayer();
+    if(!initialPlayback)initialPlayback=(async()=>{await initialReady;for(const event of initialEvents){if(disposed)break;if(event.type==='stop')active.stop(event.name);else if(event.epoch===stopEpoch&&event.stopped===(stopped.get(event.name)??0))await active.play(event.name,event.settings);}initialEvents=[];if(!disposed)await active.activate();})();
+    active.prefetchMusic();await Promise.all([resumed,initialPlayback]);
+  }
   return {
     prepare:names=>nativePlayer().prepare(names),
-    async unlock(){context??=new AudioContext();unlocked=true;const resumed=context.resume();nativePlayer().prefetchMusic();await resumed;},
-    async play(name,settings={}){name=String(name).toLowerCase();if(!unlocked||!manifest[name])return;await nativePlayer().play(name,settings);},
-    stop(name){player?.stop(name);},
+    initialize(events){
+      if(unlocked||initialPlayback)throw Error('Audio initialization must precede unlock');
+      initialEvents=events.filter(e=>e.type==='play'||e.type==='stop').map(e=>({...e,name:e.name===undefined?undefined:String(e.name).toLowerCase(),settings:{...e.settings},epoch:stopEpoch,stopped:stopped.get(String(e.name).toLowerCase())??0}));
+      const names=initialEvents.filter(e=>e.type==='play'&&manifest[e.name]).map(e=>e.name);
+      initialReady=Promise.all([nativePlayer().prepare(names.filter(n=>!manifest[n].music)),nativePlayer().prepareMusic(names.filter(n=>manifest[n].music))]);return initialReady;
+    },
+    whenInitialized:()=>initialReady,
+    unlock:()=>unlock(),start:()=>unlock(true),
+    async play(name,settings={}){name=String(name).toLowerCase();if(!unlocked||disposed||!manifest[name])return;const epoch=stopEpoch,version=stopped.get(name)??0;await initialPlayback;if(!disposed&&epoch===stopEpoch&&version===(stopped.get(name)??0))await nativePlayer().play(name,settings);},
+    stop(name){if(name===undefined)stopEpoch++;else{name=String(name).toLowerCase();stopped.set(name,(stopped.get(name)??0)+1);}player?.stop(name);},
     setMuted(value){muted=!!value;player?.setMuted(muted);},get muted(){return muted;},
-    dispose(){player?.dispose();},
+    dispose(){disposed=true;stopEpoch++;initialEvents=[];player?.dispose();},
   };
 }
 

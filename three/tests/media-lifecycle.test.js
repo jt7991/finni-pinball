@@ -1,7 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';import {withAudio} from './helpers/audio-public-host.js';
 
 for(const action of ['named stop','stop all'])test('a pending decoded sound cannot survive '+action,()=>withAudio(async({audio,nodes,tick,stats,decoded,decoding,buffer})=>{
- const pending=audio.play('effect');await decoding.promise;if(action==='named stop')audio.stop('EFFECT');else audio.stop();decoded.resolve(buffer());await pending;assert.equal(nodes.length,0,'A request stopped while decoding must not connect an output');
+ const pending=audio.play('effect');await decoding.promise;if(action==='named stop')audio.stop('EFFECT');else audio.stop();decoded.resolve(buffer());await pending;assert.equal(nodes.length,1,'Unlock creates the device before sound requests, as SDL does');assert.equal((await stats()).players,0,'A canceled decode must not create a voice');
  await audio.play('effect');await tick(2);assert.equal((await stats()).active,1,'A later request remains playable');
 },{deferred:true}));
 

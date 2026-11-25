@@ -32,9 +32,12 @@ export function createNativeAudioPlayer(context,base,manifest,{loadBuffer,onErro
   finally{if(generation===outputGeneration)inFlight=false;}
  }
  function output(){
-  if(node)return;node=context.createScriptProcessor(2048,0,2);
+  if(node)return;node=context.createScriptProcessor(2048,0,2);let first=true;
   node.onaudioprocess=event=>{
-   const block=nextBlock;nextBlock=undefined;
+   let block=nextBlock;nextBlock=undefined;
+   // SDL fills the first device callback from already queued startup sounds,
+   // then retains the following block. There is no initial silent quantum.
+   if(first&&worker?.renderSync)try{block=worker.renderSync();}catch(error){onError(error);}first=false;
    for(let c=0;c<2;c++){const destination=event.outputBuffer.getChannelData(c);if(block)for(let i=0;i<2048;i++)destination[i]=block.pcm[i*2+c];else destination.fill(0);}
    if(worker?.renderSync){try{nextBlock=worker.renderSync();}catch(error){onError(error);}}else void pump();
   };
@@ -65,5 +68,6 @@ export function createNativeAudioPlayer(context,base,manifest,{loadBuffer,onErro
   const initial=songs.filter(name=>manifest[name].nativeSource.nativeFrames===32000).map(async name=>{await ready();return request({type:'prepare-music',name});});return Promise.allSettled([...effects,...initial]);
  }
  function prefetchMusic(){if(!songs.length||prefetching)return;prefetching=ready().then(()=>request({type:'prefetch-music',names:songs}));prefetching.catch(()=>{prefetching=undefined;});}
- return{play,stop,prepare,prefetchMusic,setMuted(value){muted=!!value;if(worker&&!disposed)void request({type:'mute',value:muted}).catch(error=>{if(!disposed)onError(error);});},async stats(){await ready();return request({type:'stats'});},dispose(){disposed=true;epoch++;musicTicket++;detach();worker?.terminate();worker=undefined;for(const task of pending.values()){clearTimeout(task.timer);task.reject(Error('Native audio disposed'));}pending.clear();}};
+ const prepareMusic=names=>Promise.allSettled(names.map(async name=>{await ready();return request({type:'prepare-music',name:String(name).toLowerCase()});}));
+ return{play,stop,prepare,prepareMusic,prefetchMusic,async activate(){await ready();output();},setMuted(value){muted=!!value;if(worker&&!disposed)void request({type:'mute',value:muted}).catch(error=>{if(!disposed)onError(error);});},async stats(){await ready();return request({type:'stats'});},dispose(){disposed=true;epoch++;musicTicket++;detach();worker?.terminate();worker=undefined;for(const task of pending.values()){clearTimeout(task.timer);task.reject(Error('Native audio disposed'));}pending.clear();}};
 }

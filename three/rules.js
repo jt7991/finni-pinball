@@ -15,7 +15,7 @@ export const KEY={left:42,right:54,launch:28,start:2,action:57,nudgeLeft:44,nudg
 const empty=()=>{};
 // Native COM return types for properties read by the authored rules. A
 // numerically integral float is still VT_R4; aliases must retain that type.
-const singleProperties={Flipper:new Set(['currentangle','startangle','endangle','strength','elasticity','eostorque','eostorqueangle']),Bumper:new Set(['threshold']),Kicker:new Set(['x','y']),Primitive:new Set(['rotx','roty','rotz']),Flasher:new Set(['rotz']),Light:new Set(['state'])};
+const singleProperties={Flipper:new Set(['x','y','currentangle','startangle','endangle','strength','elasticity','eostorque','eostorqueangle']),Bumper:new Set(['x','y','threshold']),Kicker:new Set(['x','y']),Primitive:new Set(['x','y','z','rotx','roty','rotz']),Flasher:new Set(['rotz']),Light:new Set(['x','y','state']),Trigger:new Set(['x','y']),Plunger:new Set(['x','y']),Gate:new Set(['x','y']),Spinner:new Set(['x','y']),Table:new Set(['width','height','slopemin','slopemax'])};
 const longProperties={Light:new Set(['blinkinterval']),LightSequencer:new Set(['updateinterval']),Timer:new Set(['interval'])};
 const booleanProperties={HitTarget:new Set(['isdropped']),Flasher:new Set(['visible']),Gate:new Set(['open']),Timer:new Set(['enabled'])};
 const liveProperties={Gate:new Set(['currentangle','collidable','open','hitthreshold']),HitTarget:new Set(['isdropped','currentanimoffset','hitthreshold']),Trigger:new Set(['currentanimoffset']),Bumper:new Set(['threshold','force','scatter','hashitevent','collidable','currentringoffset','rotx','roty','enableskirtanimation','ringspeed','ringdropoffset']),Wall:new Set(['disabled','slingshotthreshold','hitthreshold']),Primitive:new Set(['hitthreshold'])};
@@ -105,6 +105,7 @@ export function createRules(source,specs,host={}) {
     const dispatch=singles||longs||booleans?{
       getproperty(name){
         const key=String(name).toLowerCase(),value=proxy[key];
+        if(spec.kind==='Table'&&key==='option')return {type:'Object',value:{call:(...args)=>engine._getContext().functionRegistry.call('CSng',[args[4]])}};
         if(singles?.has(key))return {type:'Single',value:Math.fround(value)};
         if(longs?.has(key))return {type:'Long',value:Number(value)};
         // HitTarget::get_IsDropped deliberately returns a BOOL payload of
@@ -173,7 +174,7 @@ export function createRules(source,specs,host={}) {
   }
   for(let i=1;i<=41;i++)if(!objects.has(`digit${String(i).padStart(3,'0')}`))object({name:`digit${String(i).padStart(3,'0')}`});
   const extras=['Table1','digitgrid','HostPlunger'];
-  for(const name of extras)if(!objects.has(name.toLowerCase()))object({name});
+  for(const name of extras)if(!objects.has(name.toLowerCase()))object({name,...(name==='Table1'?{kind:'Table'}:{})});
   const impulsePlunger=createImpulsePlunger({
     random:()=>host.scriptRandom?.()??scriptRandom.rnd(),
     sound:name=>{if(name)host.sound?.(name,{});},
@@ -192,7 +193,7 @@ export function createRules(source,specs,host={}) {
   if(pulseTimer){generatedEvents.set('pulsetimer_timer',()=>vpmTimer.update());pulseTimer.interval=40;pulseTimer.enabled=true;}
   const natives={
     LoadEM:empty,DOF:empty,SoundFXDOF:name=>name,SoundFX:name=>name,
-    PlaySound:(name,loop=0,volume=1,pan=0,randomPitch=0,pitch=0,useExisting=false,restart=false,frontRearFade=0)=>host.sound?.(name,{loop,volume,pan,randomPitch,pitch,useExisting,restart,frontRearFade}),StopSound:name=>host.stopSound?.(name),
+    PlaySound:function(name,loop=0,volume=1,pan=0,randomPitch=0,pitch=0,useExisting=false,restart=false,frontRearFade=0){if(arguments.length>=3&&arguments[2]===undefined)volume=0;return host.sound?.(name,{loop,volume,pan,randomPitch,pitch,useExisting,restart,frontRearFade});},StopSound:name=>host.stopSound?.(name),
     PlayMusic:name=>host.sound?.(name,{music:true}),EndMusic:()=>host.stopSound?.(),
     // Both native storage backends expose VT_BSTR, including saved numbers.
     // Existing JSON data remains readable; convert with VB's text semantics.
@@ -298,7 +299,7 @@ export function createRules(source,specs,host={}) {
       }
       return info.revision+info.lampRevision;
     },
-    init(){run('Table1_Init');execute('bFreePlay=True:BallsPerGame=3:SongVolume=0.2');},
+    init(){run('Table1_Init');run('Table1_OptionEvent',0);execute('bFreePlay=True:BallsPerGame=3');},
     key(action,down){run(down?'Table1_KeyDown':'Table1_KeyUp',KEY[action]);},
     get time(){return time;},get timers(){return timers;},get delays(){return delays;},
   };
