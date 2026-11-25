@@ -6,17 +6,18 @@ import {verifyEffectBank} from './scripts/verify-effect-bank.mjs';
 import './scripts/patch-vbs-engine.mjs';
 
 let atlasPublicDirectory;
+const pocketBaseUrl=process.env.POCKETBASE_URL||'http://127.0.0.1:8090';
 
 export default defineConfig({
   root: 'three',
   base: '/three/',
   plugins:[{name:'dmd-atlas-integrity',apply:'build',configResolved(config){atlasPublicDirectory=config.publicDir;},buildStart(){verifyDmdAtlas(atlasPublicDirectory);verifyEffectBank(atlasPublicDirectory);}}],
   server: {proxy: {
-    '/api/leaderboard': {target:'http://127.0.0.1:8090',rewrite:()=>'/api/finni/leaderboard'},
-    '/api/runs': {target:'http://127.0.0.1:8090',rewrite:()=>'/api/finni/runs'},
-    '/api/scores': {target:'http://127.0.0.1:8090',rewrite:()=>'/api/finni/scores'},
+    '/api/leaderboard': {target:pocketBaseUrl,rewrite:()=>'/api/finni/leaderboard'},
+    '/api/runs': {target:pocketBaseUrl,rewrite:()=>'/api/finni/runs'},
+    '/api/scores': {target:pocketBaseUrl,rewrite:()=>'/api/finni/scores'},
     '/voice': {target:'http://127.0.0.1:8765'},
-    '/api/': {target:'http://127.0.0.1:8090'},
+    '/api/': {target:pocketBaseUrl},
   }},
   build: {outDir: '../browser/three', emptyOutDir: true},
 });
