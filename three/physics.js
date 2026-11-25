@@ -295,9 +295,19 @@ export class Pinball {
       f.body.resetTorques(true);
       f.contactTorque=0;
       f.angularAcceleration=torque/f.inertia;
-      if(Math.abs(f.angle-(pressed?f.raised:f.rest))<.01&&Math.abs(f.body.angvel().z)<1){
-        f.angle=pressed?f.raised:f.rest;f.body.setRotation(quaternion(f.angle-f.rest),true);
-        if(f.nativeAngle!==undefined)f.nativeAngle=pressed?f.nativeRaisedAngle:f.nativeRestAngle;
+      let nativeStop;
+      if(f.nativeMotion&&Math.abs(f.nativeMotion.speed)<=Math.fround(.01)){
+        // VPX tests inclusive Float32 bounds in native angle/speed units.
+        // Testing the converted Rapier speed can round this boundary to 1,
+        // and subtracting rendered angles loses the native stop tolerance.
+        const low=Math.min(f.nativeRestAngle,f.nativeRaisedAngle),high=Math.max(f.nativeRestAngle,f.nativeRaisedAngle);
+        if(f.nativeAngle>=Math.fround(high-Math.fround(.01))&&torque<0)nativeStop=high;
+        else if(f.nativeAngle<=Math.fround(low+Math.fround(.01))&&torque>0)nativeStop=low;
+      }
+      if(f.nativeMotion?nativeStop!==undefined:Math.abs(f.angle-(pressed?f.raised:f.rest))<.01&&Math.abs(f.body.angvel().z)<1){
+        if(f.nativeMotion){f.nativeAngle=nativeStop;f.angle=Math.PI/2-nativeStop;}
+        else f.angle=pressed?f.raised:f.rest;
+        f.body.setRotation(quaternion(f.angle-f.rest),true);
         f.nativeMotion?.stop();
         f.body.setAngvel({x:0,y:0,z:0},true);f.stopOmega=0;f.contactTorque=torque;f.angularAcceleration=0;continue;
       }
