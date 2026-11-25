@@ -1,0 +1,177 @@
+{
+  "scope": "Isolated original HitBall::HitTest and Collide calls on two allocated scratch copies with declared inputs. The two cases reverse their actual address order. Live balls and clocks are untouched; the original impact callback may emit sound and advance sound RNG. This is a component observation, not uninterrupted gameplay.",
+  "reference": {
+    "engine": "@valknar/vpinball-wasm 0.3.4",
+    "engineSHA256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+    "upstreamCommit": "195f214dd4849b8ef6113fd377258b78d0dec3bf",
+    "sourceCommit": "6f8116d0964429db0e2da41d583566784114fc5f",
+    "sourceSha256": "6160e43c1a74f6dc70fd9852433c3373fe11b3e55d4f3a3fedc435265591b5c5",
+    "controlledSha256": "6160e43c1a74f6dc70fd9852433c3373fe11b3e55d4f3a3fedc435265591b5c5",
+    "controlledOverrides": {},
+    "browserSourceCommit": "6f8116d0964429db0e2da41d583566784114fc5f",
+    "browserAppSHA256": "3608d26828ea120a3a56437746d74054b7f69abe019d9b9ec4f21288b1a4389f",
+    "scope": "Exact committed master VPX and browser snapshot, including its continuous HTML music player. No injected table instrumentation or chooser correction. Engine cache is read only. Individual comparison probes declare any observers or external inputs separately."
+  },
+  "engineSHA256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+  "inputs": [
+    {
+      "p": [
+        540.0999755859375,
+        1698.6160888671875,
+        25.005931854248047
+      ],
+      "v": [
+        5.241272449493408,
+        -7.171041011810303,
+        0.0000016391277313232422
+      ]
+    },
+    {
+      "p": [
+        502.62554931640625,
+        1664.804443359375,
+        25.014907836914062
+      ],
+      "v": [
+        2.363985061645508,
+        18.868452072143555,
+        -0.0000013262033462524414
+      ]
+    }
+  ],
+  "abi": {
+    "vtable": 1434700,
+    "hitTest": 4455,
+    "collide": 4456,
+    "ballState": 128,
+    "collision": 72,
+    "normal": 88
+  },
+  "rows": [
+    {
+      "name": "a-lower-address",
+      "addresses": [
+        366374656,
+        366375104
+      ],
+      "swapped": true,
+      "queries": [
+        {
+          "time": 0.031211312860250473,
+          "gap": 0.473358154296875,
+          "normal": [
+            0.7336727976799011,
+            0.6795029044151306,
+            -0.00017615346587263048
+          ]
+        },
+        {
+          "time": 0.031211312860250473,
+          "gap": 0.473358154296875,
+          "normal": [
+            -0.733672559261322,
+            -0.6795032024383545,
+            0.00017615355318412185
+          ]
+        }
+      ],
+      "outputs": [
+        {
+          "p": [
+            540.2635498046875,
+            1698.3922119140625,
+            25.005931854248047
+          ],
+          "v": [
+            15.53076171875,
+            2.358736515045166,
+            -0.0024688481353223324
+          ]
+        },
+        {
+          "p": [
+            502.6993408203125,
+            1665.393310546875,
+            25.014907836914062
+          ],
+          "v": [
+            -7.925504684448242,
+            9.338674545288086,
+            0.002469161059707403
+          ]
+        }
+      ],
+      "randomBefore": [
+        2593555533,
+        3330514630
+      ],
+      "randomAfter": [
+        2593555533,
+        3330514630
+      ]
+    },
+    {
+      "name": "a-higher-address",
+      "addresses": [
+        366375104,
+        366374656
+      ],
+      "swapped": true,
+      "queries": [
+        {
+          "time": 0.031211312860250473,
+          "gap": 0.473358154296875,
+          "normal": [
+            0.7336727976799011,
+            0.6795029044151306,
+            -0.00017615346587263048
+          ]
+        },
+        {
+          "time": 0.031211312860250473,
+          "gap": 0.473358154296875,
+          "normal": [
+            -0.733672559261322,
+            -0.6795032024383545,
+            0.00017615355318412185
+          ]
+        }
+      ],
+      "outputs": [
+        {
+          "p": [
+            540.2635498046875,
+            1698.3922119140625,
+            25.005931854248047
+          ],
+          "v": [
+            15.530765533447266,
+            2.3587470054626465,
+            -0.0024688511621207
+          ]
+        },
+        {
+          "p": [
+            502.6993408203125,
+            1665.393310546875,
+            25.014907836914062
+          ],
+          "v": [
+            -7.925508499145508,
+            9.338664054870605,
+            0.0024691640865057707
+          ]
+        }
+      ],
+      "randomBefore": [
+        2593555533,
+        3330514630
+      ],
+      "randomAfter": [
+        2593555533,
+        3330514630
+      ]
+    }
+  ],
+  "errors": []
+}

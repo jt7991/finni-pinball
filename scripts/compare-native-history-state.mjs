@@ -1,5 +1,7 @@
 // Replay only the recorded external UI/timer/frame inputs. Native bodies and
 // random words are expectations, never initialization or correction inputs.
+// An explicit allocator diagnostic can additionally supply pointer identities;
+// it never supplies BallS fields and is not production allocator equality.
 import fs from 'node:fs';
 import path from 'node:path';import {fileURLToPath} from 'node:url';
 import assert from 'node:assert/strict';
@@ -7,6 +9,7 @@ import {createFullGame} from '../three/full-game.js';
 import {nativeScriptClockInputs} from './native-script-clock-inputs.mjs';
 import {readNativeHistoryCapture} from './native-history-pages.mjs';
 import {nativeSourceAssets} from './native-source-assets.mjs';
+import {installNativeBallAllocationInputs,nativeBallAllocationInputs} from './native-ball-allocation-inputs.mjs';
 // References are consumed in physical/frame order. Retain only the current
 // group so long recordings do not need a second copy of every native body.
 function orderedRows(rows,key,{last=true}={}){
@@ -16,7 +19,7 @@ function orderedRows(rows,key,{last=true}={}){
   return current&&key(current)===wanted?current:undefined;
  }};
 }
-export async function compareNativeHistoryState(fixture,{write=()=>{},observeObjects=[],contactAudit,soundAudit}={}){
+export async function compareNativeHistoryState(fixture,{write=()=>{},observeObjects=[],contactAudit,soundAudit,allocationInputs}={}){
 const assets=nativeSourceAssets(fixture.reference.sourceSha256),load=name=>assets.json(name);
 const clocks=fixture.randomizeClocks?.timerRecords?nativeScriptClockInputs(fixture.randomizeClocks,{lastFrame:fixture.frames.at(-1).frameIndex,lastMilliseconds:fixture.frames.at(-1).snapshot.ms}):null;let randomizeIndex=0,timerIndex=0;
 const scriptRandomClock=clocks?()=>{assert.ok(randomizeIndex<clocks.observedRandomizeClocks.length);return clocks.observedRandomizeClocks[randomizeIndex++];}:undefined,scriptTimerSeconds=clocks?()=>{assert.ok(timerIndex<clocks.observedTimerSeconds.length);return clocks.observedTimerSeconds[timerIndex++];}:undefined;
@@ -24,6 +27,9 @@ const soundCalls=fixture.soundTimeline?[]:null;
 let game;const soundClock=()=>Math.round((game?.time??0)*1000);
 const media=soundCalls?{play:(name,settings)=>soundCalls.push({type:'play',ms:soundClock(),name:String(name).toLowerCase(),settings}),stop:name=>soundCalls.push({type:'stop',ms:soundClock(),name:String(name??'').toLowerCase()})}:undefined;
 game=await createFullGame(load('layout.json'),load('objects.json'),assets.text('rules.vbs'),()=>{},media,{frameAnimations:true,scriptBudget:{videoSyncMode:2},scriptRandomClock,scriptTimerSeconds});
+// Allocation identities are opt-in, named environmental inputs. The default
+// comparison continues to exercise production's own body-storage ordering.
+let finishAllocations=null;
 if(contactAudit){const hit=game.rules.hit.bind(game.rules);game.rules.hit=(name,kind,ball,...parameters)=>{if(kind==='Collide'&&/^(Left|Right)Flipper$/i.test(name))contactAudit.push({ms:Math.round(game.time*1000),name,speed:parameters[0]});return hit(name,kind,ball,...parameters);};}
 const timers=new Set(fixture.timers.events.filter(row=>row.interval>=0).map(row=>row.ms));
 let ticks=0,inputIndex=0,intervalsChecked=0,framesChecked=0,ruleObservationsChecked=0,ruleVariantFieldsChecked=0,scriptRandomStatesChecked=0;
@@ -81,6 +87,7 @@ function compareRuleState(input){
  if(randomIndex>=0)assert.equal(game.rules.scriptRandom.getState(),randomBefore,'Read-only script random observation does not advance the stream');
 }
 try{
+ if(allocationInputs)finishAllocations=installNativeBallAllocationInputs(game,fixture,allocationInputs);
  game.prepareFrame();
  for(const [i,frame] of fixture.frames.entries()){
   while(inputIndex<fixture.playerInputs.length&&fixture.playerInputs[inputIndex].frameIndex<frame.frameIndex){const input=fixture.playerInputs[inputIndex++];if(input.frameIndex>2)advance(input.ms+1);if(!input.script.split(':').some(statement=>statement.startsWith('DisableStaticPrerendering=')))await game.rules.execute(input.script);if(input.ruleState)compareRuleState(input);if(input.uiState){const balls=game.rules.value('Balls'),actual={score:game.rules.value('Score(CurrentPlayer)'),ball:balls===0?'—':String(balls),playing:game.rules.value('bGameInPlay'),plunger:game.rules.value('bBallInPlungerLane')};assert.deepEqual(actual,input.uiState,'Ordinary player state poll at '+input.ms+'ms');}if(input.frameIndex>2&&fixture.playerInputs[inputIndex]?.ms!==input.ms){const boundary=boundaries.get(ticks);if(boundary){intervalsChecked++;if(!compare(boundary,'after-ui'))throw Error('Native UI boundary differs at '+ticks);}}}
@@ -107,7 +114,7 @@ try{
   }
   if(soundAudit)soundAudit.push(...soundCalls);
  }
- return {framesChecked,intervalsChecked,ticks,randomizeClockSamples:randomizeIndex,timerClockSamples:timerIndex,...(soundCalls?{soundCallsChecked:soundCalls.length}:{}),...(ruleObservationsChecked?{ruleObservationsChecked}:{}),...(ruleVariantFieldsChecked?{ruleVariantFieldsChecked}:{}),...(scriptRandomStatesChecked?{scriptRandomStatesChecked}:{}),...(moverStatesChecked?{moverStatesChecked,moverFieldsChecked}:{})};
+ return {framesChecked,intervalsChecked,ticks,randomizeClockSamples:randomizeIndex,timerClockSamples:timerIndex,...(finishAllocations?{nativeAllocationIdentitiesConsumed:finishAllocations()}:{}),...(soundCalls?{soundCallsChecked:soundCalls.length}:{}),...(ruleObservationsChecked?{ruleObservationsChecked}:{}),...(ruleVariantFieldsChecked?{ruleVariantFieldsChecked}:{}),...(scriptRandomStatesChecked?{scriptRandomStatesChecked}:{}),...(moverStatesChecked?{moverStatesChecked,moverFieldsChecked}:{})};
 }finally{game.dispose();}
 }
-if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){const result=await compareNativeHistoryState(readNativeHistoryCapture(process.argv[2]),{write:row=>console.log(JSON.stringify(row)),observeObjects:process.argv.filter(arg=>arg.startsWith('--observe=')).map(arg=>arg.slice(10))});console.log(JSON.stringify({result}));}
+if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){const fixture=readNativeHistoryCapture(process.argv[2]),allocationInputs=process.argv.includes('--native-allocation-inputs')?fixture.allocationInputs??nativeBallAllocationInputs(fixture):undefined;const result=await compareNativeHistoryState(fixture,{allocationInputs,write:row=>console.log(JSON.stringify(row)),observeObjects:process.argv.filter(arg=>arg.startsWith('--observe=')).map(arg=>arg.slice(10))});console.log(JSON.stringify({result}));}
