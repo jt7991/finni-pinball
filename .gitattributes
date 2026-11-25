@@ -8,6 +8,7 @@ runtime/*.vpx filter=lfs diff=lfs merge=lfs -text
 runtime/music/*.mp3 filter=lfs diff=lfs merge=lfs -text
 three/public/music/*.mp3 filter=lfs diff=lfs merge=lfs -text
 three/tests/fixtures/vpx-main-6f8116d-party-victory-render-digests-native.json.gz filter=lfs diff=lfs merge=lfs -text
+three/tests/fixtures/vpx-main-6f8116d-harder-round-render-digests-native.json.gz filter=lfs diff=lfs merge=lfs -text
 three/public/*.bin binary
 three/public/arcade-background.svg -text
 three/public/fonts/** -text

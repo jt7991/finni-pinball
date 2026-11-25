@@ -1,0 +1,14 @@
+import test from'node:test';import assert from'node:assert/strict';import fs from'node:fs';import path from'node:path';import{fileURLToPath}from'node:url';import{gzipSync,gunzipSync}from'node:zlib';import{createHash}from'node:crypto';
+import{readNativeFrameHistory,readNativeFrameHistoryDigests,packNativeFrameHistoryDigests}from'../../scripts/native-frame-history-package.mjs';
+const sha=x=>createHash('sha256').update(x).digest('hex');
+
+test('compressed native metadata retains every original byte, frame and image digest without an expanded base64 wrapper',()=>{
+ const original=readNativeFrameHistory(new URL('fixtures/vpx-main-initial-frame-history-native.json.gz',import.meta.url)),root=fileURLToPath(new URL('../../.work/',import.meta.url));fs.mkdirSync(root,{recursive:true});const directory=fs.mkdtempSync(path.join(root,'frame-metadata-test-'));
+ try{
+  fs.writeFileSync(path.join(directory,'capture.json'),original.source);fs.writeFileSync(path.join(directory,'authored-camera.json'),JSON.stringify(original.packet.authoredCamera));for(const[name,bytes]of original.blobs)fs.writeFileSync(path.join(directory,name),bytes);
+  const output=path.join(directory,'verified.json.gz'),r=packNativeFrameHistoryDigests(directory,output);assert.equal(r.packet.version,2);assert.equal(r.packet.capture.encoding,'gzip-base64');assert.equal(r.packet.capture.sourceBytes,original.source.length);assert.ok(r.source.equals(original.source));assert.deepEqual(r.capture,original.capture);assert.equal(r.packet.capture.sha256,sha(original.source));assert.equal(r.packet.blobs,undefined);assert.ok(Buffer.from(r.packet.capture.bytes,'base64').length<original.source.length);
+  const again=readNativeFrameHistoryDigests(output);assert.ok(again.source.equals(original.source));assert.deepEqual(again.capture.frames.map(x=>x.images),original.capture.frames.map(x=>x.images));
+  const compressed=Buffer.from(r.packet.capture.bytes,'base64');compressed[Math.floor(compressed.length/2)]^=1;const corrupt={...r.packet,capture:{...r.packet.capture,bytes:compressed.toString('base64')}},file=path.join(directory,'changed-compressed.json.gz');fs.writeFileSync(file,gzipSync(JSON.stringify(corrupt)));assert.throws(()=>readNativeFrameHistoryDigests(file),/Compressed original metadata changed/);
+  const changed=Buffer.from(original.source);changed[changed.indexOf(Buffer.from('frameIndex'))]^=1;const altered=gzipSync(changed),rewrapped={...r.packet,capture:{...r.packet.capture,bytes:altered.toString('base64'),compressedSHA256:sha(altered)}},rewrappedFile=path.join(directory,'changed-source.json.gz');fs.writeFileSync(rewrappedFile,gzipSync(JSON.stringify(rewrapped)));assert.throws(()=>readNativeFrameHistoryDigests(rewrappedFile),/Original metadata bytes changed/);
+ }finally{assert.ok(path.resolve(directory).startsWith(path.resolve(root)+path.sep));fs.rmSync(directory,{recursive:true,force:true});}
+});

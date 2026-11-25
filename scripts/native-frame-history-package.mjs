@@ -2,15 +2,19 @@
 import fs from 'node:fs';import path from 'node:path';import{gzipSync,gunzipSync}from 'node:zlib';import{createHash}from 'node:crypto';import assert from 'node:assert/strict';import{fileURLToPath}from 'node:url';
 const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
 function readMetadata(packet){
- assert.equal(packet.version,1);
- const source=Buffer.from(packet.capture.bytes,'base64');assert.equal(sha(source),packet.capture.sha256);const capture=JSON.parse(source);
+ assert.ok([1,2].includes(packet.version));
+ const encoded=Buffer.from(packet.capture.bytes,'base64');let source;
+ if(packet.version===2){assert.equal(packet.capture.encoding,'gzip-base64');assert.ok(Number.isSafeInteger(packet.capture.sourceBytes)&&packet.capture.sourceBytes>0);assert.equal(sha(encoded),packet.capture.compressedSHA256,'Compressed original metadata changed');source=gunzipSync(encoded,{maxOutputLength:packet.capture.sourceBytes});assert.equal(source.length,packet.capture.sourceBytes);}
+ else{assert.equal(packet.capture.encoding,undefined);source=encoded;}
+ assert.equal(sha(source),packet.capture.sha256,'Original metadata bytes changed');const capture=JSON.parse(source);
  assert.equal(capture.engineSHA256,'c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8');assert.ok(['3ae17f498f745efa19076ca33e08f96f66d766367fc984e37aacf50774a35e14','6160e43c1a74f6dc70fd9852433c3373fe11b3e55d4f3a3fedc435265591b5c5'].includes(capture.reference.sourceSha256));assert.equal(capture.reference.sourceSha256,capture.reference.controlledSha256);assert.deepEqual(capture.reference.controlledOverrides,{});assert.deepEqual(capture.errors,[]);assert.ok(capture.frames.length>=2&&capture.frames.length<=8192);assert.deepEqual(capture.frames.map(frame=>frame.frameIndex),Array.from({length:capture.frames.length},(_,i)=>i+1));
  if(capture.imageWindow){assert.equal(capture.imageWindow.warmupFrames+capture.imageWindow.imageFrames,capture.frames.length);assert.ok(capture.imageWindow.warmupFrames>=0&&capture.imageWindow.imageFrames>=2);for(const [i,frame]of capture.frames.entries())assert.equal(Object.keys(frame.images).length>0,i>=capture.imageWindow.warmupFrames);}
  if(capture.imageTrigger){
-  assert.ok(['party-finale','party-finale-victory'].includes(capture.imageTrigger.kind));assert.equal(capture.physicalController.kind,'physical-party-finale');assert.equal(capture.physicalController.scenario.completeFinale,true);
+  assert.ok(['party-finale','party-finale-victory','next-round-completion'].includes(capture.imageTrigger.kind));assert.equal(capture.physicalController.kind,capture.imageTrigger.kind==='next-round-completion'?'physical-harder-round':'physical-party-finale');assert.equal(capture.physicalController.scenario.completeFinale,true);
   assert.equal(capture.imageTrigger.firstFrame,capture.imageWindow.warmupFrames+1);assert.ok(Number.isInteger(capture.imageTrigger.maxHistoryFrames)&&capture.imageTrigger.maxHistoryFrames>=capture.frames.length&&capture.imageTrigger.maxHistoryFrames<=8192);
   assert.ok(capture.frames[capture.imageWindow.warmupFrames].snapshot.ms>=capture.physicalController.result.finale.enteredAt);
   if(capture.imageTrigger.kind==='party-finale-victory')assert.ok(capture.frames[capture.imageWindow.warmupFrames].snapshot.ms>=capture.physicalController.result.finale.wonAt);
+  if(capture.imageTrigger.kind==='next-round-completion'){const c=capture.physicalController;assert.equal(c.scenario.continueRound,true);assert.equal(c.result.completed,true);assert.equal(c.result.last.won,8);assert.ok(capture.frames[capture.imageWindow.warmupFrames].snapshot.ms>=c.result.completedAt);}
   if(capture.physicalController.finaleVictoryRequired){assert.equal(capture.physicalController.result.finale.outcome,'native-victory');assert.equal(capture.physicalController.result.finale.win.won,7);}
  }
  assert.equal(packet.authoredCamera.sourceTableSHA256,capture.reference.sourceSha256);const names=new Set();
@@ -30,11 +34,14 @@ export function readNativeFrameHistory(file){
 // The browser replays its own scene and hashes its own buffers. It never needs
 // the reference image files, while a single changed image byte fails equality.
 export function readNativeFrameHistoryDigests(file){
- const result=readMetadata(JSON.parse(gunzipSync(fs.readFileSync(file))));assert.equal(result.packet.format,'native-frame-history-digests-v1');assert.equal(result.packet.blobs,undefined);return result;
+ const result=readMetadata(JSON.parse(gunzipSync(fs.readFileSync(file))));assert.equal(result.packet.format,'native-frame-history-digests-v'+result.packet.version);assert.equal(result.packet.blobs,undefined);return result;
 }
 export function packNativeFrameHistoryDigests(input,output){
  assert.equal(fs.existsSync(output),false);const bytes=fs.readFileSync(path.join(input,'capture.json')),camera=fs.existsSync(path.join(input,'authored-camera.json'))?path.join(input,'authored-camera.json'):path.join(input,'..','native-authored-startup-camera.json');
- const packet={version:1,format:'native-frame-history-digests-v1',capture:{sha256:sha(bytes),bytes:bytes.toString('base64')},authoredCamera:JSON.parse(fs.readFileSync(camera))},metadata=readMetadata(packet);
+ // Compress the exact original JSON before base64. Large histories can fit
+ // V8's JSON limit while their uncompressed base64 wrapper cannot. The native
+ // source bytes and their SHA remain unchanged; no observations are dropped.
+ const compressed=gzipSync(bytes,{level:9,mtime:0}),packet={version:2,format:'native-frame-history-digests-v2',capture:{encoding:'gzip-base64',sourceBytes:bytes.length,sha256:sha(bytes),compressedSHA256:sha(compressed),bytes:compressed.toString('base64')},authoredCamera:JSON.parse(fs.readFileSync(camera))},metadata=readMetadata(packet);
  for(const frame of metadata.capture.frames)for(const image of Object.values(frame.images)){const data=fs.readFileSync(path.join(input,image.file));assert.equal(data.length,image.width*image.height*4*(image.arrayType==='Float32Array'?4:1));assert.equal(sha(data),image.sha256,'Every digest must first match the actual independent native image file');}
  fs.writeFileSync(output,gzipSync(JSON.stringify(packet),{level:9,mtime:0}));return readNativeFrameHistoryDigests(output);
 }

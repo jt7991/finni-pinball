@@ -6,7 +6,7 @@ export function installNativeWholeFrameObserver(options={}){
   const imageStart=options.imageFromFrame??1;
   if(!Number.isInteger(options.frames)||options.frames<2||options.frames>8192||!Number.isInteger(imageStart)||imageStart<1||imageStart>options.frames)throw Error('Capture requires at most 8192 consecutive frames');
   if(options.imageWhen!==undefined){
-   if(!['party-finale','party-finale-victory'].includes(options.imageWhen)||options.imageFromFrame!==undefined||!Number.isInteger(options.imageFrames)||options.imageFrames<2||options.imageFrames>128||options.imageFrames>options.frames)throw Error('Invalid bounded party-finale image window');
+   if(!['party-finale','party-finale-victory','next-round-completion'].includes(options.imageWhen)||options.imageFromFrame!==undefined||!Number.isInteger(options.imageFrames)||options.imageFrames<2||options.imageFrames>128||options.imageFrames>options.frames)throw Error('Invalid bounded physical-milestone image window');
   }else if(options.frames-imageStart+1>128)throw Error('Capture requires at most 128 image frames');
   data.frames=[];
   data.captureFrameCount=options.frames;data.imageFromFrame=options.imageWhen?null:imageStart;
@@ -19,7 +19,7 @@ export function installNativeWholeFrameObserver(options={}){
    }
  };
  let busy=false,capturedWarmFlasher=false;
- const historyPrograms=new WeakMap();
+ const historyPrograms=new WeakMap(),postprocessProgramIds=new WeakMap();if(options.postprocessImages)data.postprocessPrograms=[];
  const location=(gl,program,name)=>gl.getUniformLocation(program,name);
  const uniform=(gl,program,name)=>{const loc=location(gl,program,name);if(loc===null)return null;const value=gl.getUniform(program,loc);return ArrayBuffer.isView(value)?Array.from(value):value;};
  const targetId=gl=>gl.getParameter(gl.DRAW_FRAMEBUFFER_BINDING)?io.textureId(gl.getFramebufferAttachmentParameter(gl.DRAW_FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.FRAMEBUFFER_ATTACHMENT_OBJECT_NAME)):null;
@@ -31,6 +31,7 @@ export function installNativeWholeFrameObserver(options={}){
   if(options.imageWhen&&data.imageFromFrame===null){
    if(!window.nativeMissionCompletionController?.finale)return false;
    if(options.imageWhen==='party-finale-victory'&&window.nativeMissionCompletionController.finale.outcome!=='native-victory')return false;
+   if(options.imageWhen==='next-round-completion'&&!(window.nativeMissionCompletionController.scenario.continueRound&&window.nativeMissionCompletionController.completed))return false;
    const first=window.nativeStartup.frameIndex(),last=first+options.imageFrames-1;
    if(last>options.frames)throw Error('Party-finale image window exceeds declared history limit');
    data.imageFromFrame=first;data.captureFrameCount=last;
@@ -96,6 +97,13 @@ export function installNativeWholeFrameObserver(options={}){
      const anisotropy=gl.getExtension('EXT_texture_filter_anisotropic');if(anisotropy)parameters[anisotropy.TEXTURE_MAX_ANISOTROPY_EXT]=sampler?gl.getSamplerParameter(sampler,anisotropy.TEXTURE_MAX_ANISOTROPY_EXT):gl.getTexParameter(gl.TEXTURE_2D,anisotropy.TEXTURE_MAX_ANISOTROPY_EXT);
      const buffer=gl.getVertexAttrib(0,gl.VERTEX_ATTRIB_ARRAY_BUFFER_BINDING),stride=gl.getVertexAttrib(0,gl.VERTEX_ATTRIB_ARRAY_STRIDE),pointer=gl.getVertexAttribOffset(0,gl.VERTEX_ATTRIB_ARRAY_POINTER);if(stride!==20)throw Error('Unexpected bloom vertex layout');const vertices=new Float32Array(20);gl.bindBuffer(gl.ARRAY_BUFFER,buffer);gl.getBufferSubData(gl.ARRAY_BUFFER,pointer,vertices);
      const id=samplerId(gl,program,'tex_fb_filtered');row.bloomState={unit,id,texture:nativePostprocess.textures[id],parameters,vertices:Array.from(vertices),blend:gl.isEnabled(gl.BLEND),depth:gl.isEnabled(gl.DEPTH_TEST),dither:gl.isEnabled(gl.DITHER),colorMask:Array.from(gl.getParameter(gl.COLOR_WRITEMASK))};
+     if(!postprocessProgramIds.has(program)){postprocessProgramIds.set(program,data.postprocessPrograms.length);data.postprocessPrograms.push({name,shaders:io.shadersFor(program)});}row.bloomState.program=postprocessProgramIds.get(program);
+     row.bloomState.uniforms={};for(let i=0;i<gl.getProgramParameter(program,gl.ACTIVE_UNIFORMS);i++){const info=gl.getActiveUniform(program,i);row.bloomState.uniforms[info.name]=uniform(gl,program,info.name);}
+     row.bloomState.attributes={};for(const name of ['vPosition','tc']){
+      const index=gl.getAttribLocation(program,name),enabled=gl.getVertexAttrib(index,gl.VERTEX_ATTRIB_ARRAY_ENABLED),size=gl.getVertexAttrib(index,gl.VERTEX_ATTRIB_ARRAY_SIZE),type=gl.getVertexAttrib(index,gl.VERTEX_ATTRIB_ARRAY_TYPE),stride=gl.getVertexAttrib(index,gl.VERTEX_ATTRIB_ARRAY_STRIDE),pointer=gl.getVertexAttribOffset(index,gl.VERTEX_ATTRIB_ARRAY_POINTER),entry={index,enabled,size,type,stride,pointer,normalized:gl.getVertexAttrib(index,gl.VERTEX_ATTRIB_ARRAY_NORMALIZED),integer:gl.getVertexAttrib(index,gl.VERTEX_ATTRIB_ARRAY_INTEGER),divisor:gl.getVertexAttrib(index,gl.VERTEX_ATTRIB_ARRAY_DIVISOR)};
+      if(enabled){if(type!==gl.FLOAT)throw Error('Unsupported observed fullscreen attribute type');const step=(stride||size*4)/4,values=new Float32Array(step*3+size);gl.bindBuffer(gl.ARRAY_BUFFER,gl.getVertexAttrib(index,gl.VERTEX_ATTRIB_ARRAY_BUFFER_BINDING));gl.getBufferSubData(gl.ARRAY_BUFFER,pointer,values);entry.values=Array.from({length:4},(_,i)=>Array.from(values.subarray(i*step,i*step+size)));}else entry.current=Array.from(gl.getVertexAttrib(index,gl.CURRENT_VERTEX_ATTRIB));row.bloomState.attributes[name]=entry;
+     }
+     row.bloomState.textureLevels=Object.fromEntries([gl.TEXTURE_BASE_LEVEL,gl.TEXTURE_MAX_LEVEL,gl.TEXTURE_IMMUTABLE_FORMAT,gl.TEXTURE_IMMUTABLE_LEVELS].map(key=>[key,gl.getTexParameter(gl.TEXTURE_2D,key)]));
      image(gl,({fb_bloom:'bloomHDR',fb_blur_horiz39x39:'bloomHorizontalInput',fb_blur_vert39x39:'bloomVerticalInput'})[name],id);
     }finally{gl.activeTexture(active);gl.bindBuffer(gl.ARRAY_BUFFER,prior);}
    }
