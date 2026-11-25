@@ -1,5 +1,5 @@
 // Keep the main player's DOM and CSS as the shared visual contract.
-export function prepareUI(){
+export function prepareUI({release=()=>{},focusGame=()=>{}}={}){
   const byId=id=>document.getElementById(id);
   const names={left:'Left flipper',right:'Right flipper',launch:'Launch',start:'Start',action:'Action',nudgeLeft:'Nudge left',nudgeForward:'Nudge up',nudgeRight:'Nudge right'};
   function button(action,parent){
@@ -29,9 +29,11 @@ export function prepareUI(){
   const charge=document.createElement('div');charge.id='charge';charge.hidden=true;charge.append(document.createElement('span'));document.querySelector('.screen').append(charge);
   const sound=document.createElement('button');sound.id='sound';sound.textContent='Sound on';sound.setAttribute('aria-pressed','true');byId('controls-panel').querySelector('.panel-actions').append(sound);
   byId('touch-help').onclick=()=>{
+    release();
     const visible=document.body.classList.toggle('show-touch-guide');byId('touch-guide').hidden=!visible;byId('touch-help').setAttribute('aria-pressed',String(visible));
+    if(!visible)focusGame();
   };
-  byId('dismiss-touch-guide').onclick=()=>{document.body.classList.remove('show-touch-guide');byId('touch-guide').hidden=true;byId('touch-help').setAttribute('aria-pressed','false');};
+  byId('dismiss-touch-guide').onclick=()=>{document.body.classList.remove('show-touch-guide');byId('touch-guide').hidden=true;byId('touch-help').setAttribute('aria-pressed','false');focusGame();};
   byId('showTouch').onchange=()=>{byId('release').click();for(const id of ['touch','flip-zones','nudge-zone'])if(byId(id))byId(id).hidden=!byId('showTouch').checked;};
   let toolbarTimer;
   const revealToolbar=()=>{document.body.classList.add('toolbar-visible');clearTimeout(toolbarTimer);toolbarTimer=setTimeout(()=>document.body.classList.remove('toolbar-visible'),1600);};

@@ -5,7 +5,7 @@ import {createLeaderboard} from '../browser/leaderboard.js';
 import {createMusic} from '../browser/music.js';
 import {prepareUI} from './ui.js';
 
-const $=prepareUI();
+const $=prepareUI({release,focusGame});
 let game,view,audio,display,leaderboard,paused=true,frames=0,sampleStart=0;
 let tableSupportsBrowserMusic=false,browserMusicActivated=false,startingGame=false,musicTrack='',musicVolume=0;
 const music=createMusic(error=>message(`Soundtrack: ${error}`),{base:import.meta.env.BASE_URL+'music/'});
@@ -61,6 +61,7 @@ function input(action,down,source){
     return;
   }
   if(!game||paused)return;
+  if(down&&(!$('overlay').hidden||$('initials-dialog').open||document.querySelector('.panel:popover-open')))return;
   if($('latch').checked&&(action==='left'||action==='right')){
     if(down){const key=`latched:${action}`,held=sources.has(key);if(held)sources.delete(key);else sources.set(key,action);game.input(action,!held);paint();}
     return;
@@ -71,8 +72,9 @@ function input(action,down,source){
   if(before!==held)game.input(action,held);
   paint();
 }
-function paint(){for(const b of buttons){const held=[...sources.values()].includes(b.dataset.input);b.classList.toggle('pressed',held);b.classList.toggle('held',held);}}
+function paint(){for(const b of buttons){const held=[...sources.values()].includes(b.dataset.input);b.classList.toggle('pressed',held);b.classList.toggle('held',held);b.setAttribute('aria-pressed',String(held));}}
 function release(){sources.clear();swipes.clear();pointers.clear();physical.clear();game?.release();paint();}
+function focusGame(){if(game&&view&&game.state!=='ready'&&!$('initials-dialog').open&&!document.querySelector('.panel:popover-open'))$('table').focus({preventScroll:true});}
 function finishPointer(event,cancelled=false){
   swipes.delete(event.pointerId);
   const action=pointers.get(event.pointerId);if(!action)return;
@@ -86,10 +88,10 @@ window.addEventListener('pointercancel',event=>finishPointer(event,true));
 for(const button of buttons){
   for(const type of ['touchstart','touchend'])button.addEventListener(type,e=>e.preventDefault(),{passive:false});
   button.addEventListener('pointerdown',e=>{
-    if(e.button!==0)return;e.preventDefault();try{button.setPointerCapture(e.pointerId);}catch{}
+    if(e.pointerType==='mouse'&&e.button!==0)return;e.preventDefault();try{button.setPointerCapture(e.pointerId);}catch{}
     pointers.set(e.pointerId,button.dataset.input);
     audio?.unlock();input(button.dataset.input,true,`pointer:${e.pointerId}`);
-    if(['touch','pen'].includes(e.pointerType)&&button.parentElement===$('flip-zones')&&['left','right'].includes(button.dataset.input))swipes.set(e.pointerId,{x:e.clientX,y:e.clientY,nudged:false});
+    if(['touch','pen'].includes(e.pointerType)&&button.parentElement===$('flip-zones')&&[...sources.values()].includes(button.dataset.input))swipes.set(e.pointerId,{x:e.clientX,y:e.clientY,nudged:false});
   });
   button.addEventListener('pointermove',e=>{
     const swipe=swipes.get(e.pointerId);if(!swipe||swipe.nudged)return;
@@ -115,20 +117,22 @@ window.addEventListener('keydown',e=>{
     for(const [code,action]of Object.entries(keys))if(action===rebinding)delete keys[code];keys[e.code]=rebinding;rebinding=null;
     save('bindings',JSON.stringify(Object.fromEntries(Object.entries(keys).map(([code,action])=>[action,code]))));$('binding-status').textContent='Binding saved.';bindings();return;
   }
-  if(e.target.closest?.('button,input,select,summary')||$('controls-panel').open||$('initials-dialog').open||e.ctrlKey||e.metaKey||e.altKey)return;
+  if(e.target.closest?.('button,input,select,summary')||document.querySelector('.panel:popover-open')||$('initials-dialog').open||e.ctrlKey||e.metaKey||e.altKey)return;
   if(keys[e.code]){e.preventDefault();if(physical.has(e.code))return;physical.add(e.code);input(keys[e.code],true,`key:${e.code}`);}
 });
 window.addEventListener('keyup',e=>{if(!physical.delete(e.code))return;if(keys[e.code]){e.preventDefault();input(keys[e.code],false,`key:${e.code}`);}});
 function pause(value){value=!!value||!game||game.state==='ready';paused=value;if(view)game?.setPaused(value);}
 window.addEventListener('blur',()=>{release();pause(true);});
-window.addEventListener('focus',()=>pause($('controls-panel').open||document.hidden));
-document.addEventListener('visibilitychange',()=>{release();pause(document.hidden||$('controls-panel').open);});
+window.addEventListener('focus',()=>pause(document.hidden));
+document.addEventListener('visibilitychange',()=>{if(document.hidden)release();pause(document.hidden);});
+window.addEventListener('pagehide',release);
 window.addEventListener('orientationchange',release);
 window.addEventListener('resize',release);
-$('settings').onclick=()=>{release();pause(true);};
-$('controls-panel').addEventListener('close',()=>{pause(document.hidden);$('table').focus({preventScroll:true});});
-$('controls-panel').addEventListener('toggle',()=>{release();pause($('controls-panel').open||document.hidden);});
-$('initials-dialog').addEventListener('close',()=>$('table').focus({preventScroll:true}));
+$('settings').onclick=release;
+$('controls-panel').addEventListener('close',focusGame);
+$('controls-panel').addEventListener('toggle',release);
+for(const panel of document.querySelectorAll('.panel'))panel.addEventListener('toggle',e=>{if(e.newState==='closed')focusGame();});
+$('initials-dialog').addEventListener('close',focusGame);
 $('play').onclick=async()=>{
   if($('play').disabled||startingGame)return;
   release();const browserMusic=music.unlock();startingGame=true;
