@@ -90,6 +90,7 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--kicker-ownership' in sys.argv:runner='probe-kicker-ownership.mjs'
         if '--kicker-creation' in sys.argv:runner='probe-kicker-creation.mjs'
         if '--active-ball-lifecycle' in sys.argv:runner='probe-active-ball-lifecycle.mjs'
+        if '--earned-multiball-scoop' in sys.argv:runner='probe-earned-multiball-scoop.mjs'
         if '--native-active-ball-frame' in sys.argv:runner='probe-native-active-ball-frame.mjs'
         if '--flipper-assembly' in sys.argv:runner='test-native-flipper-assembly-browser.mjs'
         if '--native-static-prepass' in sys.argv:runner='probe-native-static-prepass-browser.mjs'

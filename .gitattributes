@@ -39,3 +39,6 @@ three/tests/fixtures/vpx-active-ball-frame.json -text
 scripts/active-ball-lifecycle-scenario.mjs text eol=lf
 scripts/probe-active-ball-lifecycle.mjs text eol=lf
 scripts/probe-native-active-ball-frame.mjs text eol=lf
+three/tests/fixtures/vpx-earned-multiball-scoop.json -text
+scripts/earned-multiball-scoop-scenario.mjs text eol=lf
+scripts/probe-earned-multiball-scoop.mjs text eol=lf
