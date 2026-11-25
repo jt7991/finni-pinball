@@ -3,7 +3,7 @@ import fs from 'node:fs';import path from 'node:path';import assert from 'node:a
 import {decodeNativeGeometry,encodeNativeGeometry} from '../three/native-geometry-codec.js';
 const [updatePath,capturePath,staging]=process.argv.slice(2),root='three/public',update=JSON.parse(fs.readFileSync(updatePath)),capture=JSON.parse(fs.readFileSync(capturePath)),file=root+'/native-table/native-table.json',table=JSON.parse(fs.readFileSync(file));
 const sha=b=>createHash('sha256').update(b).digest('hex');assert.deepEqual(capture.errors,[]);assert.deepEqual(capture.observationErrors,[]);assert.equal(capture.reference.sourceSha256,update.sourceSha256);assert.equal(capture.engineSHA256,table.engineSHA256);fs.mkdirSync(staging,{recursive:true});
-const original=Buffer.from(decodeNativeGeometry(fs.readFileSync(root+'/native-table/'+table.geometry.file),table.parts));assert.equal(sha(original),table.geometry.sha256);
+const original=Buffer.from(decodeNativeGeometry(fs.readFileSync(root+'/native-table/'+table.geometry.file),table.parts,table.geometry.encoding));assert.equal(sha(original),table.geometry.sha256);
 const key=(v,i)=>v+':'+i,draws=new Map(),textureIds=new Map(),pendingTextures=[];
 for(const draw of capture.draws){const mesh=capture.meshes[draw.mesh],k=key(sha(Buffer.from(mesh.vertexBytes,'base64')),sha(Buffer.from(mesh.indexBytes,'base64')));if(!draws.has(k))draws.set(k,[]);draws.get(k).push(draw);}
 for(const [id,t]of Object.entries(table.textures))textureIds.set(t.width+':'+t.height+':'+t.levels[0].sourceSHA256,id);
@@ -40,7 +40,7 @@ for(const part of table.parts){
   if(part.uniforms.fenvEmissionScale_TexWidth)part.uniforms.fenvEmissionScale_TexWidth=environment;
   part.vertices=vertex.length/32;part.indices=index.length/4;part.vertexByteOffset=offset;part.indexByteOffset=offset+vertex.length;part.vertexSHA256=sha(vertex);part.indexSHA256=sha(index);chunks.push(vertex,index);offset+=vertex.length+index.length;
 }
-const geometry=Buffer.concat(chunks),encoded=encodeNativeGeometry(geometry,table.parts);assert.ok(Buffer.from(decodeNativeGeometry(encoded,table.parts)).equals(geometry));fs.writeFileSync(root+'/native-table/'+table.geometry.file,encoded);Object.assign(table.geometry,{bytes:geometry.length,sha256:sha(geometry),encodedSHA256:sha(encoded)});table.sourceTableSHA256=update.sourceSha256;
+const geometry=Buffer.concat(chunks),encoded=encodeNativeGeometry(geometry,table.parts,table.geometry.encoding);assert.ok(Buffer.from(decodeNativeGeometry(encoded,table.parts,table.geometry.encoding)).equals(geometry));fs.writeFileSync(root+'/native-table/'+table.geometry.file,encoded);Object.assign(table.geometry,{bytes:geometry.length,sha256:sha(geometry),encodedSHA256:sha(encoded)});table.sourceTableSHA256=update.sourceSha256;
 // All other render packs use the same audited authored appearance properties.
 function patchSpecs(value){if(!value||typeof value!=='object')return;if(value.spec?.name&&update.changes[value.spec.name])Object.assign(value.spec,update.changes[value.spec.name]);for(const child of Object.values(value))if(child&&typeof child==='object')patchSpecs(child);}
 for(const entry of fs.readdirSync(root,{withFileTypes:true})){if(!entry.isDirectory()||!entry.name.startsWith('native-')||entry.name==='native-table')continue;for(const name of fs.readdirSync(root+'/'+entry.name)){if(!name.endsWith('.json'))continue;const target=root+'/'+entry.name+'/'+name,metadata=JSON.parse(fs.readFileSync(target));patchSpecs(metadata);fs.writeFileSync(target,JSON.stringify(metadata));}}

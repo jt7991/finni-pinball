@@ -27,7 +27,7 @@ test('merged main keeps its authored appearance and observed native lighting',()
 });
 
 test('new decorative and bulb meshes match native GPU bytes while all other meshes stay unchanged',()=>{
-  const bytes=Buffer.from(decodeNativeGeometry(fs.readFileSync(new URL('../public/native-table/'+table.geometry.file,import.meta.url)),table.parts));
+  const bytes=Buffer.from(decodeNativeGeometry(fs.readFileSync(new URL('../public/native-table/'+table.geometry.file,import.meta.url)),table.parts,table.geometry.encoding));
   assert.equal(expected.changed.length,36);
   assert.equal(expected.unchanged.length,646);
   for(const reference of [...expected.changed,...expected.unchanged]){

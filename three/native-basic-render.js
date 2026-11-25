@@ -4,7 +4,7 @@ import * as THREE from 'three';
 import {nativeIdentity} from './native-matrix.js';
 import {nativePrimitiveWorld,nativePrimitiveMatrices,nativeModelMatrices} from './primitive-transform.js';
 import {nativeShaderArray} from './native-shader-state.js';
-import {decodeNativeGeometry} from './native-geometry-codec.js';
+import {decodeNativeGeometry,NATIVE_GEOMETRY_DICTIONARY} from './native-geometry-codec.js';
 import {nativeMirrorNormalFactor} from './native-reflection.js';
 import {nativeTransparentOrder,nativeBasicTransparentHeight,nativeBasicTransparentPass} from './native-render-order.js';
 import {nativeSamplersFor} from './native-samplers.js';
@@ -20,8 +20,8 @@ export class NativeMatrixStream{
 export function nativeTextureProfile(metadata,profile){return{...metadata,textures:Object.fromEntries(Object.entries(metadata.textures).map(([id,spec])=>[id,spec.variants?.[profile]??spec]))};}
 export async function loadNativePrimitiveVisuals(base,metadataFile='native-primitives.json',{textureProfile,baseColorOnly=false}={}){
  const read=async file=>{const response=await fetch(base+file);if(!response.ok)throw Error('Native render asset unavailable: '+file);return response;},metadata=nativeTextureProfile(await(await read(metadataFile)).json(),textureProfile),packed=await(await read(metadata.geometry.file)).arrayBuffer(),programs={},pixels={};
- if(metadata.geometry.encoding&&metadata.geometry.encoding!=='delta-byteplanes-v1')throw Error('Unsupported native geometry encoding');
- const geometry=metadata.geometry.encoding?decodeNativeGeometry(packed,metadata.parts):packed;
+ if(metadata.geometry.encoding&&!['delta-byteplanes-v1',NATIVE_GEOMETRY_DICTIONARY].includes(metadata.geometry.encoding))throw Error('Unsupported native geometry encoding');
+ const geometry=metadata.geometry.encoding?decodeNativeGeometry(packed,metadata.parts,metadata.geometry.encoding):packed;
  await Promise.all(Object.entries(metadata.programs).map(async([id,p])=>{programs[id]={vertex:stripVersion(await(await read(p.vertex)).text()),fragment:stripVersion(await(await read(p.fragment)).text())};}));
  const needed=baseColorOnly?new Set(metadata.parts.flatMap(part=>part.textures.tex_base_color?[String(part.textures.tex_base_color.id)]:[])):null;
  await Promise.all(Object.entries(metadata.textures).filter(([id])=>!needed||needed.has(id)).map(async([id,spec])=>{
