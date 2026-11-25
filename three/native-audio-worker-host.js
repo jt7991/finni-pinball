@@ -3,9 +3,11 @@ import {createNativePCMVoice} from './native-pcm-voice.js';
 import {createNativeMusicStream} from './native-music-stream.js';
 import {createNativeSoundEngine} from './native-sound-engine.js';
 import {nativeSoundRate} from './native-sound.js';
+import {createAuthoredFLACSource,createFLACFrameCache} from './flac-source.js';
 
 export function createNativeAudioWorkerHost(send,{loadCodec,loadMusicSource,pcmBudget=16*1024*1024,musicBudget=24*1024*1024}){
- let manifest,base,engine,sampleRate,codec,codecPromise,disposed=false,currentSource,currentMusic,pcmBytes=0,musicBytes=0,sourceSerial=0;
+ let manifest,base,engine,sampleRate,codec,codecPromise,disposed=false,currentSource,currentMusic,pcmBytes=0,encodedBytes=0,musicBytes=0,sourceSerial=0;
+ const frameCache=createFLACFrameCache();
  const pcm=new Map(),music=new Map(),commands=[],reservations=new Map();let reservationSerial=0;
  function cancelReservations(name){for(const[ticket,claim]of reservations)if(name===undefined||claim.name===name){engine.cancel(claim);reservations.delete(ticket);}}
  function claimFor(message){
@@ -29,10 +31,12 @@ export function createNativeAudioWorkerHost(send,{loadCodec,loadMusicSource,pcmB
  }
  function register(data){
   const existing=touch(pcm,data.key);if(existing)return existing;
-  const {channels,frames,rate}=data;if(!Array.isArray(channels)||![1,2].includes(channels.length)||!Number.isInteger(frames)||frames<1||!Number.isInteger(rate)||rate<8000||channels.some(c=>!(c instanceof Float32Array)||c.length!==frames))throw Error('Invalid original PCM registration');
-  const bytes=channels.reduce((n,c)=>n+c.byteLength,0);if(bytes>pcmBudget)throw Error('PCM source exceeds decoded cache budget');
-  const evicted=[];while(pcmBytes+bytes>pcmBudget&&pcm.size){const key=pcm.keys().next().value;pcmBytes-=pcm.get(key).bytes;pcm.delete(key);evicted.push(key);}
-  const result={key:data.key,id:++sourceSerial,bytes,source:{numberOfChannels:channels.length,length:frames,sampleRate:rate,getChannelData:c=>channels[c]}};pcm.set(data.key,result);pcmBytes+=bytes;
+  const {channels,frames,rate}=data,indexed=data.encoding==='flac-pcm24-indexed';let bytes,source;
+  if(indexed){if(!(data.encoded instanceof Uint8Array))throw Error('Invalid encoded effect registration');source=createAuthoredFLACSource(data.encoded,{frames,sampleRate:rate,channels:data.numberOfChannels},data.index,frameCache);bytes=data.encoded.byteLength;}
+  else{if(!Array.isArray(channels)||![1,2].includes(channels.length)||!Number.isInteger(frames)||frames<1||!Number.isInteger(rate)||rate<8000||channels.some(c=>!(c instanceof Float32Array)||c.length!==frames))throw Error('Invalid original PCM registration');bytes=channels.reduce((n,c)=>n+c.byteLength,0);source={numberOfChannels:channels.length,length:frames,sampleRate:rate,getChannelData:c=>channels[c]};}
+  if(bytes>pcmBudget)throw Error('Effect source exceeds cache budget');
+  const evicted=[];while(pcmBytes+encodedBytes+bytes>pcmBudget&&pcm.size){const key=pcm.keys().next().value,old=pcm.get(key);if(old.indexed)encodedBytes-=old.bytes;else pcmBytes-=old.bytes;pcm.delete(key);evicted.push(key);}
+  const result={key:data.key,id:++sourceSerial,bytes,source,indexed};pcm.set(data.key,result);if(indexed)encodedBytes+=bytes;else pcmBytes+=bytes;
   if(evicted.length&&!disposed)send({type:'evicted',keys:evicted});return result;
  }
  function makeVoice(name,entry,settings,state){
@@ -56,7 +60,7 @@ export function createNativeAudioWorkerHost(send,{loadCodec,loadMusicSource,pcmB
     const claim={...engine.reserve(message.name,message.settings),name:message.name},ticket=++reservationSerial;reservations.set(ticket,claim);respond(id,{status:'reserved',reservation:ticket,playerID:claim.id});return;
    }
    if(type==='cancel-reservation'){const claim=reservations.get(message.reservation);if(claim){engine.cancel(claim);reservations.delete(message.reservation);}respond(id,{status:'cancelled'});return;}
-   if(type==='register-effect'){const source=register(message.source);respond(id,{status:'registered',key:source.key,sourceID:source.id});return;}
+   if(type==='register-effect'){const source=register(message.source);respond(id,{status:'registered',key:source.key,sourceID:source.id,encoding:source.indexed?'flac-pcm24-indexed':'pcm'});return;}
    if(type==='play-effect'){
     if(message.reservation!==undefined&&!reservations.has(message.reservation)){respond(id,{status:'cancelled'});return;}
     const entry=sound(message.name);if(entry.music)throw Error('Music requires original source preparation');const source=message.source?register(message.source):touch(pcm,message.key);
@@ -85,8 +89,8 @@ export function createNativeAudioWorkerHost(send,{loadCodec,loadMusicSource,pcmB
     }catch(error){if(command.claim)engine.cancel(command.claim);if(command.entry?.music){musicBytes-=music.get(command.source.key)?.bytes.byteLength??0;music.delete(command.source.key);}warnings.push({name:command.name,error:String(error.message??error)});}
     currentSource=undefined;const block=engine.render();respond(id,{status:'pcm',...block,applied,warnings},[block.pcm.buffer]);return;
    }
-   if(type==='stats'){respond(id,{status:'stats',...engine.stats,pcmBytes,musicBytes,queued:commands.length,pendingReservations:reservations.size,codecBytes:codec?.memoryBytes??0});return;}
-   if(type==='dispose'){commands.length=0;cancelReservations();engine.stop();codec?.close();respond(id,{status:'disposed'});disposed=true;return;}
+   if(type==='stats'){respond(id,{status:'stats',...engine.stats,pcmBytes,encodedBytes,frameCacheBytes:frameCache.stats.retainedBytes,musicBytes,queued:commands.length,pendingReservations:reservations.size,codecBytes:codec?.memoryBytes??0});return;}
+   if(type==='dispose'){commands.length=0;cancelReservations();engine.stop();frameCache.clear();codec?.close();respond(id,{status:'disposed'});disposed=true;return;}
    throw Error('Unknown native audio worker command');
   }catch(error){respond(id,{status:'error',error:String(error.message??error)});}
  }

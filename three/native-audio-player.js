@@ -23,8 +23,8 @@ export function createNativeAudioPlayer(context,base,manifest,{loadBuffer,onErro
  function ready(){
   if(!initializing){const task=request({type:'audio-init',manifest,sampleRate:context.sampleRate}).then(async()=>{if(muted)await request({type:'mute',value:true});});initializing=task;task.catch(()=>{if(initializing===task)initializing=undefined;});}return initializing;
  }
- function source(name,buffer){return{key:manifest[name].file??name,frames:buffer.length,rate:buffer.sampleRate,channels:Array.from({length:buffer.numberOfChannels},(_,c)=>buffer.getChannelData(c).slice())};}
- function sendSource(type,name,buffer,settings,reservation){const data=source(name,buffer);return request({type,name,source:data,settings,reservation},data.channels.map(c=>c.buffer));}
+ function source(name,buffer){if(buffer.encoding==='flac-pcm24-indexed')return buffer;return{key:manifest[name].file??name,frames:buffer.length,rate:buffer.sampleRate,channels:Array.from({length:buffer.numberOfChannels},(_,c)=>buffer.getChannelData(c).slice())};}
+ function sendSource(type,name,buffer,settings,reservation){const data=source(name,buffer);return request({type,name,source:data,settings,reservation},data.channels?.map(c=>c.buffer)??[]);}
  async function cancelClaim(claim){if(claim&&!disposed)try{await request({type:'cancel-reservation',reservation:claim.reservation});}catch{}}
  async function pump(){
   if(inFlight||disposed||!node)return;inFlight=true;const generation=outputGeneration;

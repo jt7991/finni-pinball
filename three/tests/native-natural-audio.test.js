@@ -1,15 +1,17 @@
 import fs from'node:fs';import assert from'node:assert/strict';import test from'node:test';import{createHash}from'node:crypto';
 import{readNativeHistoryCapture}from'../../scripts/native-history-pages.mjs';import{compareNativeHistoryState}from'../../scripts/compare-native-history-state.mjs';
 import{createNativeAudioPlayer}from'../native-audio-player.js';import{decodePCM16Wave}from'../audio-pcm.js';
+import{openEffectBank}from'../effect-bank.js';
 const file=new URL('fixtures/vpx-main-natural-audio-native.json.gz',import.meta.url),bytes=fs.readFileSync(file);
 assert.equal(createHash('sha256').update(bytes).digest('hex'),'57ae1a05618e8d8b372d2c02f31699e68fccdd3b57380a4709fc35e612cc2f3e');
 const fixture=readNativeHistoryCapture(file),root=new URL('../public/',import.meta.url),manifest=JSON.parse(fs.readFileSync(new URL('audio.json',root)));
 
-async function outputComparison(calls){
+async function outputComparison(calls,indexed=false){
  const originalFetch=globalThis.fetch,errors=[];let output;
  const context={sampleRate:48000,currentTime:0,destination:{},createBuffer(numberOfChannels,length,sampleRate){const channels=Array.from({length:numberOfChannels},()=>new Float32Array(length));return{numberOfChannels,length,sampleRate,getChannelData:c=>channels[c]};},createScriptProcessor(){return output={connect(){},disconnect(){}};}};
  globalThis.fetch=async url=>{const b=fs.readFileSync(new URL(new URL(String(url),'http://test/').pathname.slice('/three/'.length),root));return{ok:true,arrayBuffer:async()=>b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength)};};
- const loadBuffer=async name=>{const b=fs.readFileSync(new URL('audio/'+manifest[name].fallbackFile,root));return decodePCM16Wave(context,b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength));};
+ const metadata=indexed?JSON.parse(fs.readFileSync(new URL('native-audio/effects.json',root))):null,bank=indexed?openEffectBank(manifest,metadata,fs.readFileSync(new URL('native-audio/'+metadata.file,root))):null;
+ const loadBuffer=async name=>{if(bank)return bank.get(name);const b=fs.readFileSync(new URL('audio/'+manifest[name].fallbackFile,root));return decodePCM16Wave(context,b.buffer.slice(b.byteOffset,b.byteOffset+b.byteLength));};
  const player=createNativeAudioPlayer(context,'http://test/three/',manifest,{loadBuffer,onError:e=>errors.push(e.message)});
  try{
   const names=[...new Set(calls.filter(e=>e.type==='play').map(e=>e.name))];
@@ -34,6 +36,7 @@ test('ordinary native play retains every sound call/time/COM argument and every 
  const calls=[],result=await compareNativeHistoryState(fixture,{soundAudit:calls});
  assert.equal(result.intervalsChecked,20016);assert.equal(result.framesChecked,1165);assert.equal(result.soundCallsChecked,33348);
  const output=await outputComparison(calls);assert.deepEqual(output,{differences:0,blocks:604,samples:2473984});
+ const encodedOutput=await outputComparison(calls,true);assert.deepEqual(encodedOutput,output,'Indexed lossless source pulls retain every native gameplay device sample');
  // Restore only the preceding wrong restart behavior in generated commands.
  // Original observations, source samples and callback schedule stay unchanged.
  const negative=calls.map(e=>e.type==='play'?{...e,settings:{...e.settings,restart:false}}:e),wrong=await outputComparison(negative);

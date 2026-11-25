@@ -3,15 +3,15 @@ import {createFullGame} from '../full-game.js';import {createAudio} from '../med
 const root=new URL('../public/',import.meta.url),load=name=>JSON.parse(fs.readFileSync(new URL(name,root))),manifest=load('audio.json'),packed=fs.readFileSync(new URL('fixtures/vpx-main-cold-start-audio-native.json.gz',import.meta.url));
 assert.equal(createHash('sha256').update(packed).digest('hex'),'83f6d938736d1460ae3e880256fbc8a57bf4bedbb9e31ec8a8d781da84a95418');const fixture=JSON.parse(gunzipSync(packed));
 
-async function renderStartup(includeInitialization){
+async function renderStartup(includeInitialization,sourceBank=false){
  const originals={AudioContext:globalThis.AudioContext,fetch:globalThis.fetch},outputs=[],initial=[],playing=[],errors=[];let context,live=false;
  globalThis.AudioContext=class{
   constructor(){context=this;}sampleRate=48000;currentTime=0;state='suspended';destination={};resume(){this.state='running';return Promise.resolve();}
   createBuffer(numberOfChannels,length,sampleRate){const channels=Array.from({length:numberOfChannels},()=>new Float32Array(length));return{numberOfChannels,length,sampleRate,getChannelData:c=>channels[c]};}
   createScriptProcessor(...args){const node={args,connect(){},disconnect(){}};outputs.push(node);return node;}
  };
- globalThis.fetch=async url=>{const file=new URL(new URL(String(url),'http://test/').pathname.slice('/three/'.length),root),bytes=fs.readFileSync(file);return{ok:true,arrayBuffer:async()=>bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength)};};
- const audio=createAudio(manifest,'http://test/three/',{deferInitialization:true,onError:e=>errors.push(e.message)}),game=await createFullGame(load('layout.json'),load('objects.json'),fs.readFileSync(new URL('rules.vbs',root),'utf8'),()=>{},{play:(name,settings)=>live?playing.push(audio.play(name,settings)):initial.push({type:'play',name,settings}),stop:name=>live?audio.stop(name):initial.push({type:'stop',name})});
+ globalThis.fetch=async url=>{const file=new URL(new URL(String(url),'http://test/').pathname.slice('/three/'.length),root),bytes=fs.readFileSync(file);return{ok:true,json:async()=>JSON.parse(bytes),arrayBuffer:async()=>bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength)};};
+ const audio=createAudio(manifest,'http://test/three/',{deferInitialization:true,sourceBank,onError:e=>errors.push(e.message)}),game=await createFullGame(load('layout.json'),load('objects.json'),fs.readFileSync(new URL('rules.vbs',root),'utf8'),()=>{},{play:(name,settings)=>live?playing.push(audio.play(name,settings)):initial.push({type:'play',name,settings}),stop:name=>live?audio.stop(name):initial.push({type:'stop',name})});
  try{
   assert.equal(game.rules.value('Song'),'mu_hellhouse1');assert.equal(game.rules.value('VarType(SongVolume)'),4);assert.equal(game.rules.value('SongVolume'),Math.fround(.2));assert.equal(game.rules.value('VarType(TableWidth)'),4);assert.equal(game.rules.value('VarType(li036.X)'),4);assert.equal(game.rules.value('Pan(li036)'),-1.549814724435988e-28);
   const title=initial.find(e=>e.type==='play'&&manifest[e.name.toLowerCase()].music);assert.equal(title.settings.volume,0,'An explicit Empty volume is coerced to zero before options are initialized');
@@ -31,3 +31,5 @@ test('authored native options and deferred initialization reproduce every cold-s
 test('discarding the authored initialization audio fails the independent cold-start recording',async()=>{
  const negative=await renderStartup(false);assert.ok(negative.differences>300000,'The former dropped-initialization path cannot reproduce the native startup waveform');
 });
+
+test('indexed encoded sources retain every original cold-start device sample without full decoded buffers',async()=>{await renderStartup(true,true);});

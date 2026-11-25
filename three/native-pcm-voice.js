@@ -7,11 +7,11 @@ import {nativeSoundRate} from './native-sound.js';
 export function createNativePCMVoice(source,sound,outputRate,settings={},state){
  const channels=sound.outputTarget==='backglass'?2:1,inputChannels=source.numberOfChannels;
  if(![1,2].includes(inputChannels)||channels===1&&inputChannels!==1||source.sampleRate!==sound.sampleRate||source.length!==sound.frames)throw Error('PCM voice differs from authored source format');
- let cursor=0;const input=Array.from({length:inputChannels},(_,c)=>source.getChannelData(c));
+ let cursor=0;const indexed=typeof source.readInterleaved==='function',input=indexed?null:Array.from({length:inputChannels},(_,c)=>source.getChannelData(c));
  const codec={
   read(requested){
-   const frames=Math.min(requested,source.length-cursor),pcm=new Float32Array(frames*channels);
-   for(let c=0;c<channels;c++){const samples=input[Math.min(c,inputChannels-1)];for(let i=0;i<frames;i++)pcm[i*channels+c]=samples[cursor+i];}
+   const frames=Math.min(requested,source.length-cursor),pcm=indexed?source.readInterleaved(cursor,frames,channels):new Float32Array(frames*channels);
+   if(!indexed)for(let c=0;c<channels;c++){const samples=input[Math.min(c,inputChannels-1)];for(let i=0;i<frames;i++)pcm[i*channels+c]=samples[cursor+i];}
    cursor+=frames;
    // The native S16-to-F32 cache refill reads until its device-sized cache is
    // full. EOF is reported during a partial refill, leaving that partial tail

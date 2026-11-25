@@ -1,0 +1,11 @@
+import fs from'node:fs';import path from'node:path';import assert from'node:assert/strict';import{createHash}from'node:crypto';import{parseArgs}from'node:util';
+import{indexAuthoredFLAC,createAuthoredFLACSource,createFLACFrameCache}from'../three/flac-source.js';import{crc32,effectCatalogue,openEffectBank}from'../three/effect-bank.js';
+const{values}=parseArgs({options:{'public-dir':{type:'string',default:'three/public'},'output-dir':{type:'string'}}});assert.ok(values['output-dir'],'Use a fresh --output-dir');const out=path.resolve(values['output-dir']);assert.equal(fs.existsSync(out),false,'Preserve existing banks');fs.mkdirSync(out,{recursive:true});
+const root=values['public-dir'],manifest=JSON.parse(fs.readFileSync(path.join(root,'audio.json'))),sha=b=>createHash('sha256').update(b).digest('hex'),sources={},payload=[];let offset=0,blocks=0;
+for(const entry of effectCatalogue(manifest)){
+ const bytes=fs.readFileSync(path.join(root,'audio',entry.file));assert.equal(sha(bytes),entry.encodedSHA256,'Original encoded effect changed');const index=indexAuthoredFLAC(bytes,entry);
+ sources[entry.file]={...entry,offset,bytes:bytes.length,firstFrame:index[0].at,strategy:index[0].strategy,blocks:index.map(row=>[row.next-row.at,row.count])};delete sources[entry.file].file;payload.push(bytes);offset+=bytes.length;blocks+=index.length;
+}
+const bytes=Buffer.concat(payload),bankSHA256=sha(bytes),file='effects-'+bankSHA256.slice(0,24)+'.bank',index={format:'finni-authored-effects-v1',file,sha256:bankSHA256,crc32:crc32(bytes),bytes:bytes.length,sources},opened=openEffectBank(manifest,index,bytes),cache=createFLACFrameCache(262144);
+for(const entry of effectCatalogue(manifest)){const descriptor=opened.get(Object.keys(manifest).find(name=>manifest[name].file===entry.file));assert.ok(descriptor);createAuthoredFLACSource(descriptor.encoded,entry,descriptor.index,cache);}
+fs.writeFileSync(path.join(out,file),bytes,{flag:'wx'});fs.writeFileSync(path.join(out,'effects.json'),JSON.stringify(index),{flag:'wx'});console.log(JSON.stringify({directory:out,file,bytes:bytes.length,sha256:bankSHA256,uniqueSources:opened.size,blocks,indexBytes:fs.statSync(path.join(out,'effects.json')).size}));

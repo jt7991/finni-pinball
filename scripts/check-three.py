@@ -117,6 +117,8 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--cold-audio-output' in sys.argv:runner='test-cold-audio-browser.mjs'
         if '--native-music' in sys.argv:runner='test-native-music-browser.mjs'
         if '--native-audio-player' in sys.argv:runner='test-native-audio-player-browser.mjs'
+        if '--effect-bank-component' in sys.argv:runner='test-effect-bank-browser.mjs'
+        if '--effect-bank-production' in sys.argv:runner='test-effect-bank-production.mjs'
         if '--production-music' in sys.argv:runner='test-music-production.mjs'
         if '--native-audio-mix' in sys.argv:runner='probe-native-audio-mix.mjs'
         if '--audio-mix' in sys.argv:runner='test-native-audio-mix-browser.mjs'

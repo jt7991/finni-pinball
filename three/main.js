@@ -163,15 +163,15 @@ async function boot(){
     const base=import.meta.env.BASE_URL;
     const load=async(name,json=true)=>{const response=await fetch(`${base}${name}`);if(!response.ok)throw Error(`${name} could not be loaded.`);return json?response.json():response.text();};
     const manifest=await load('audio.json');
-    audio=createAudio(manifest,base,{deferInitialization:true});
-    // Keep first-use fetch/decode off the flipper input path. Preparation runs
-    // alongside table loading and never gates Start or resumes the context.
+    audio=createAudio(manifest,base,{deferInitialization:true,sourceBank:true});
+    // Register the flipper sources alongside loading without activating audio.
+    // The complete encoded effect bank is awaited below before enabling Start.
     void audio.prepare(['fx_flipperup','fx_flipperdown']);
     game=await createRuntimeGame(base,event,audio);
     leaderboard=createLeaderboard(statement=>game.rules.execute(statement),release);
     $('load-status').textContent='Loading artwork and table model…';
     const quality=$('quality').value==='auto'?(matchMedia('(max-width:650px), (pointer:coarse) and (max-width:1024px)').matches?'performance':'detailed'):$('quality').value;
-    [display,view]=await Promise.all([createDisplay($('dmd'),game.rules.objects,base),createView($('table'),game,{quality}),audio.whenInitialized(),audio.prepare(['fx_gion','fx_gioff'])]);view.applyPlayerCamera(cameraMode());
+    [display,view]=await Promise.all([createDisplay($('dmd'),game.rules.objects,base),createView($('table'),game,{quality}),audio.prepareSources(),audio.whenInitialized(),audio.prepare(['fx_gion','fx_gioff'])]);view.applyPlayerCamera(cameraMode());
     const seconds=((performance.now()-startTime)/1000).toFixed(1);
     $('load-status').textContent=`Ready in ${seconds}s. Hold Launch, then release to shoot.`;
     $('play').disabled=false;$('play').textContent='Start game';$('progress').hidden=true;message('Ready to play');
