@@ -17,6 +17,8 @@ services:
       context: .
       dockerfile: pocketbase/Dockerfile
     restart: unless-stopped
+    environment:
+      VOICE_STUDIO_PASSWORD: ${VOICE_STUDIO_PASSWORD:-}
     volumes:
       # Includes SQLite, settings, backups, and storage/ with both WAV versions.
       # Keep files and database together; do not mount a second volume over storage/.

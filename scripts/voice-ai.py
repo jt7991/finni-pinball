@@ -9,7 +9,7 @@ import urllib.error
 import urllib.request
 import wave
 
-MIN_ISOLATION_SECONDS = 5
+MIN_ISOLATION_SECONDS = 6
 MAX_AUDIO = 4_000_000
 ENHANCEMENT_LOCK = threading.Lock()
 
@@ -98,8 +98,8 @@ def enhance(audio):
                 raise ValueError()
     except (wave.Error, EOFError, ValueError):
         raise VoiceAIError('Use a complete 32 kHz stereo 16-bit WAV of 30 seconds or less. Record or upload a new take in the studio.', 400) from None
-    # Voice Isolator rejects clips under 4.6 seconds. Only append silence so
-    # speech timing stays aligned; the browser crops back to the original length.
+    # Give short takes headroom over the five-second cutoff. Trailing silence
+    # keeps the speech aligned so the browser can crop back to the take length.
     padding_frames = max(0, 32000 * MIN_ISOLATION_SECONDS - frames)
     if padding_frames:
         padded = io.BytesIO()

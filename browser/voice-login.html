@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0c102a">
+  <title>Sign in to Voice Studio · Finni’s Big Day</title>
+  <link rel="icon" href="/favicon.ico?v=dmd">
+  <link rel="stylesheet" href="/arcade.css?v=voice-studio">
+  <link rel="stylesheet" href="/voice.css">
+  <script type="module" src="/voice-login.js"></script>
+</head>
+<body class="voice-page">
+<header class="studio-header"><a class="brand" href="/">Finni’s Big Day</a></header>
+<main>
+  <div class="intro"><h1>Voice Studio sign-in</h1></div>
+  <div class="studio">
+    <section aria-label="Sign in">
+      <form id="voice-login">
+        <label for="name">Your name</label><input id="name" autocomplete="username" maxlength="80" required>
+        <label for="password">Studio password</label><input id="password" type="password" autocomplete="current-password" maxlength="512" required>
+        <div class="actions">
+          <button class="primary" type="submit">Sign in</button>
+          <a class="how-to-play-button" href="/how-to-play">How to Play</a>
+        </div>
+        <p id="login-status" class="status error" role="status"></p>
+      </form>
+    </section>
+  </div>
+</main>
+</body>
+</html>
