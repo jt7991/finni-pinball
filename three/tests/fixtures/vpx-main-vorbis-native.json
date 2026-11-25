@@ -1,0 +1,125 @@
+{
+  "engineSHA256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+  "sourceTableSHA256": "3ae17f498f745efa19076ca33e08f96f66d766367fc984e37aacf50774a35e14",
+  "scope": "Original compiled decoder callbacks, reached through validated ma_decoder vtables of explicitly played/stopped native sound players. SDL audio is suspended for complete source-rate decoding. An explicit original decoder seek establishes sample zero and its cursor is consumed by inspection; this is an isolated codec observation, not uninterrupted playback or game-state parity. No native body, clock or RNG values are replaced.",
+  "originalDecoderCallbacks": [
+    {
+      "index": 803,
+      "arguments": 4
+    },
+    {
+      "index": 804,
+      "arguments": 2
+    },
+    {
+      "index": 805,
+      "arguments": 6
+    },
+    {
+      "index": 806,
+      "arguments": 2
+    },
+    {
+      "index": 807,
+      "arguments": 2
+    }
+  ],
+  "originalBackendCallbacks": [
+    {
+      "slot": 239,
+      "index": 823,
+      "arguments": 8
+    },
+    {
+      "slot": 240,
+      "index": 824,
+      "arguments": 5
+    },
+    {
+      "slot": 0,
+      "index": null
+    },
+    {
+      "slot": 241,
+      "index": 825,
+      "arguments": 6
+    },
+    {
+      "slot": 242,
+      "index": 826,
+      "arguments": 3
+    }
+  ],
+  "clips": [
+    {
+      "name": "mu_beserkerrage",
+      "file": "022c79dab6b897ca6b4b5217.ogg",
+      "sourceSHA256": "022c79dab6b897ca6b4b52174a24629e35215244b62429799d3746d8d66d8aa1",
+      "sourceGranuleFrames": 32000,
+      "frames": 32000,
+      "channels": 2,
+      "sampleRate": 32000,
+      "pcmSHA256": "3a32a82f0f019acb283ee5a1d36fb64e67ffc6227463c8d1c55137db7000339f"
+    },
+    {
+      "name": "mu_discoloops",
+      "file": "467d3bf5363aac002bb01b41.ogg",
+      "sourceSHA256": "467d3bf5363aac002bb01b4135be90b04a873a3397d3a81a8e1f93edcfdc1673",
+      "sourceGranuleFrames": 4259200,
+      "frames": 4258910,
+      "channels": 2,
+      "sampleRate": 32000,
+      "pcmSHA256": "6f80a926d472907fe7f3df39815d201f5e70cd252054856c31c78fa37705007e"
+    },
+    {
+      "name": "mu_discomb",
+      "file": "d54c9ed2a8a091b04b2f41fe.ogg",
+      "sourceSHA256": "d54c9ed2a8a091b04b2f41fefa04fb2057c9d5246357d09406c3f1aae2b11268",
+      "sourceGranuleFrames": 10483200,
+      "frames": 10482788,
+      "channels": 2,
+      "sampleRate": 32000,
+      "pcmSHA256": "f2311cdf451b8395bf2e4c223b44aa9296d10698ecd2869e205fcc18a3374f57"
+    },
+    {
+      "name": "mu_hellhouse1",
+      "file": "2df69f9d0c1f608a1ab874dc.ogg",
+      "sourceSHA256": "2df69f9d0c1f608a1ab874dc241d34acd55d3fb16a09345ec8e4cc5dee4c24bc",
+      "sourceGranuleFrames": 7801601,
+      "frames": 7798562,
+      "channels": 2,
+      "sampleRate": 32000,
+      "pcmSHA256": "ee1897a64493043da60b4bf8105578838ad8e01eaba2fe72cd0b4c96ecab3a07"
+    },
+    {
+      "name": "mu_juggernaut",
+      "file": "a5194410192a82607f993b0e.ogg",
+      "sourceSHA256": "a5194410192a82607f993b0ec4d8fbdabcb47bd466e1c203cf99a8a5584fedd9",
+      "sourceGranuleFrames": 7168000,
+      "frames": 7167350,
+      "channels": 2,
+      "sampleRate": 32000,
+      "pcmSHA256": "d907d85d2c9beef2f7c1564d4b65bdbac95ddfdf1f2eb13e4c617b70ade8dc15"
+    },
+    {
+      "name": "mu_multiball",
+      "file": "07c016253455d8aed95c21f2.ogg",
+      "sourceSHA256": "07c016253455d8aed95c21f24f743c4790e33a65ab34309f291b95ca2c9ff418",
+      "sourceGranuleFrames": 7593600,
+      "frames": 7592322,
+      "channels": 2,
+      "sampleRate": 32000,
+      "pcmSHA256": "686fcd50eb245b6507e8fd0eac621f5c8bfbde6a3c4618e87277fc346fa20f8f"
+    },
+    {
+      "name": "mu_ninjamb",
+      "file": "8f0f0b1acd8f7f3f60003a5e.ogg",
+      "sourceSHA256": "8f0f0b1acd8f7f3f60003a5eeb2eb80996b1a1ea24d1399ead4983cb8a1aa54b",
+      "sourceGranuleFrames": 6886400,
+      "frames": 6883881,
+      "channels": 2,
+      "sampleRate": 32000,
+      "pcmSHA256": "6c3a9ee5365711bb16166439370d680aae4e937adfbbe280070e7d4e0559c0f2"
+    }
+  ]
+}

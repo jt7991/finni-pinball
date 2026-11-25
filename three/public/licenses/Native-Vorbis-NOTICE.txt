@@ -1,0 +1,20 @@
+The independent native-audio/vorbis.wasm codec and native-vorbis.js adapter
+derive from Visual Pinball's miniaudio/stb_vorbis integration at:
+https://github.com/vpinball/vpinball/tree/195f214dd4849b8ef6113fd377258b78d0dec3bf
+
+Source files and original third-party license notices:
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/src/audio/AudioPlayer.cpp
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/third-party/include/miniaudio/miniaudio.h
+https://github.com/vpinball/vpinball/blob/195f214dd4849b8ef6113fd377258b78d0dec3bf/third-party/include/miniaudio/extras/stb_vorbis.c
+
+The derived codec/adapter are distributed under GPL-3.0-or-later. The original
+Visual Pinball license is in VPX-Upstream-LICENSE.txt; GPL-3.0.txt is included.
+Original third-party components retain their upstream notices and terms.
+
+scripts/build-native-vorbis.mjs reproduces the subset from the pinned compiled
+reference engine (SHA-256 c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8).
+native-audio/vorbis.json records the retained original function-body hashes,
+codec API, data regions and resulting artifact identity. Native source PCM
+observations and independent complete-track tests are retained in the repo.
+The module exposes only decoder, allocation and memory exports. It has no
+player initialization and imports only the heap-growth callback.
