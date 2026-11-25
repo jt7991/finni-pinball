@@ -14,7 +14,9 @@ from three_sound_settings import sound_settings
 ROOT=Path(__file__).resolve().parents[1]
 p=argparse.ArgumentParser(description=__doc__)
 p.add_argument('--old-vpx',type=Path,required=True);p.add_argument('--vpx',type=Path,required=True)
-p.add_argument('--output',type=Path,required=True);args=p.parse_args()
+p.add_argument('--output',type=Path,required=True)
+p.add_argument('--audit-only',action='store_true',help='Stage imported rules and objects without changing playback assets.')
+args=p.parse_args()
 out=args.output.resolve();out.mkdir(parents=True,exist_ok=True)
 sha=lambda data:hashlib.sha256(data).hexdigest()
 def tags(data,offset=0):
@@ -99,10 +101,10 @@ with olefile.OleFileIO(args.old_vpx) as old,olefile.OleFileIO(args.vpx) as new:
         sounds.append(entry)
     (out/'sounds.json').write_text(json.dumps(sounds,separators=(',',':')))
     globals_={'env_emission_scale':scalar(new_data[b'ENES']),'bloom_strength':scalar(new_data[b'BLST'])}
-    (public/'rules.vbs').write_text(adapt_rules(script(new_data[b'CODE'])),encoding='utf-8')
+    ((out if args.audit_only else public)/'rules.vbs').write_text(adapt_rules(script(new_data[b'CODE'])),encoding='utf-8')
 objects=json.loads((public/'objects.json').read_text())
 for obj in objects['objects']:obj.update(changes.get(obj['name'],{}))
 objects['sound_names']=[sound['name'].lower() for sound in sounds]
-(public/'objects.json').write_text(json.dumps(objects,separators=(',',':')))
-(out/'table-update.json').write_text(json.dumps({'sourceSha256':sha(args.vpx.read_bytes()),'changes':changes,'meshes':meshes,'globals':globals_},separators=(',',':')))
+((out if args.audit_only else public)/'objects.json').write_text(json.dumps(objects,separators=(',',':')))
+(out/'table-update.json').write_text(json.dumps({'sourceSha256':sha(args.vpx.read_bytes()),'previousSourceSha256':sha(args.old_vpx.read_bytes()),'auditOnly':args.audit_only,'changes':changes,'meshes':meshes,'globals':globals_},separators=(',',':')))
 print(json.dumps({'sourceSha256':sha(args.vpx.read_bytes()),'changedObjects':len(changes),'meshes':list(meshes),'sounds':len(sounds),'globals':globals_}))
