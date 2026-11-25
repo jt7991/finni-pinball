@@ -3,6 +3,7 @@
 import assert from 'node:assert/strict';
 import {writeFile} from 'node:fs/promises';
 const [debug,base,output]=process.argv.slice(2),seconds=Number(process.argv.find(a=>a.startsWith('--seconds='))?.split('=')[1]??15);
+const profile=process.argv.includes('--profile');
 assert.ok(seconds>=5&&seconds<=30);
 const tabs=await(await fetch(`${debug}/json/list`)).json(),socket=new WebSocket(tabs.find(t=>t.type==='page').webSocketDebuggerUrl);
 await new Promise(resolve=>socket.addEventListener('open',resolve,{once:true}));
@@ -18,6 +19,7 @@ try{
     await call('Emulation.setCPUThrottlingRate',{rate:cpuRate});
     await call('Page.navigate',{url:base});await wait('!!window.finniThree && document.getElementById("play")?.textContent==="Start game"');
     await evaluate('document.getElementById("play").click()');await wait('document.body.classList.contains("ball-in-plunger")');
+    if(profile){await call('Profiler.enable');await call('Profiler.start');}
     await evaluate(`(()=>{
       const {game,view}=finniThree;if(!game.workerSimulation)throw Error('Expected full simulation worker');
       const stats=window.playTiming={started:performance.now(),initialTime:game.time,initialStats:{...game.runtimeStats},frames:0,renderMs:0,frameIntervals:[],maxBalls:0,maxFreeBalls:0,multiballRequests:0,multiballCompleted:0,roundTrips:[],inputToDraw:[],supersededInputs:0,errors:[],longTasks:[]};
@@ -44,7 +46,8 @@ try{
     })()`);
     await new Promise(resolve=>setTimeout(resolve,seconds*1000));
     const report=await evaluate(`(async()=>{const s=playTiming,{game}=finniThree;clearInterval(s.controller);clearInterval(s.barriers);game.release();await game.flush();const wallMs=performance.now()-s.started,sorted=s.frameIntervals.slice().sort((a,b)=>a-b),rpc=s.roundTrips.slice().sort((a,b)=>a-b),draw=s.inputToDraw.map(r=>r.milliseconds).sort((a,b)=>a-b),runtime=game.runtimeStats;return {wallMs,simulatedMs:(game.time-s.initialTime)*1000,simulationRatio:(game.time-s.initialTime)*1000/wallMs,frames:s.frames,fps:s.frames*1000/wallMs,renderMs:s.renderMs,p95FrameMs:sorted[Math.floor(sorted.length*.95)],maxFrameMs:Math.max(...sorted),p95CommandMs:rpc[Math.floor(rpc.length*.95)],maxCommandMs:Math.max(...rpc),inputToDraw:{scope:'Control command to completed WebGL draw call with matching held state and a changed flipper angle; includes frame scheduling, not physical display scanout.',samples:draw.length,p50Ms:draw[Math.floor(draw.length*.5)],p95Ms:draw[Math.floor(draw.length*.95)],maxMs:draw.at(-1),superseded:s.supersededInputs},maxBalls:s.maxBalls,maxFreeBalls:s.maxFreeBalls,multiballRequests:s.multiballRequests,multiballCompleted:s.multiballCompleted,longTasks:s.longTasks,errors:s.errors,worker:{ticks:runtime.ticks-s.initialStats.ticks,physicsMs:runtime.physicsMs-s.initialStats.physicsMs,snapshotMs:runtime.snapshotMs-s.initialStats.snapshotMs,initialLifetimeMaxChunkMs:s.initialStats.maxChunkMs,lifetimeMaxChunkMs:runtime.maxChunkMs,lagMs:runtime.lagMs},physicsStats:game.physicsStats};})()`);
-    reports.push({cpuRate,environment:'desktop headless Edge; main-target throttle; worker throttle coverage unverified',...report});console.log(JSON.stringify(reports.at(-1)));
+    if(profile){const recording=await call('Profiler.stop');await writeFile(`${output}/worker-main-cpu-${cpuRate}.json`,JSON.stringify(recording.profile));}
+    reports.push({cpuRate,profiled:profile,environment:'desktop headless Edge; main-target throttle; worker throttle coverage unverified',...report});console.log(JSON.stringify(reports.at(-1)));
     assert.deepEqual(report.errors,[]);assert.equal(report.physicsStats.substepBudgetExceeded,0);assert.ok(report.maxBalls>=3&&report.maxFreeBalls>=2&&report.multiballCompleted>0,'authored multiball request completed with multiple free game balls; parked toy balls are excluded');assert.ok(report.inputToDraw.samples>20,'flipper commands reached changed drawn angles');
   }
   assert.deepEqual(errors,[]);await writeFile(`${output}/worker-browser-timing.json`,JSON.stringify(reports,null,2));
