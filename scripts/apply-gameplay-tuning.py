@@ -91,4 +91,4 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--install',type=Path,default=ROOT/'.work/finni-live-extracted')
     args=parser.parse_args();install(args.install)
-    print('Applied scoop, modest lock-ramp tuning, presentation, lighting and task selection.')
+    print('Applied scoop, Friendship ramp tuning, presentation, lighting and task selection.')
