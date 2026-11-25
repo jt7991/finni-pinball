@@ -24,8 +24,9 @@ const assets=nativeSourceAssets(fixture.reference.sourceSha256),load=name=>asset
 const clocks=fixture.randomizeClocks?.timerRecords?nativeScriptClockInputs(fixture.randomizeClocks,{lastFrame:fixture.frames.at(-1).frameIndex,lastMilliseconds:fixture.frames.at(-1).snapshot.ms}):null;let randomizeIndex=0,timerIndex=0;
 const scriptRandomClock=clocks?()=>{assert.ok(randomizeIndex<clocks.observedRandomizeClocks.length);return clocks.observedRandomizeClocks[randomizeIndex++];}:undefined,scriptTimerSeconds=clocks?()=>{assert.ok(timerIndex<clocks.observedTimerSeconds.length);return clocks.observedTimerSeconds[timerIndex++];}:undefined;
 const soundCalls=fixture.soundTimeline?[]:null;
+const musicEvents=fixture.musicTimeline?[]:null;
 let game;const soundClock=()=>Math.round((game?.time??0)*1000);
-const media=soundCalls?{play:(name,settings)=>soundCalls.push({type:'play',ms:soundClock(),name:String(name).toLowerCase(),settings}),stop:name=>soundCalls.push({type:'stop',ms:soundClock(),name:String(name??'').toLowerCase()})}:undefined;
+const media=soundCalls||musicEvents?{play:(name,settings)=>soundCalls?.push({type:'play',ms:soundClock(),name:String(name).toLowerCase(),settings}),stop:name=>soundCalls?.push({type:'stop',ms:soundClock(),name:String(name??'').toLowerCase()}),log:text=>{if(!musicEvents)return;const ready=String(text).includes('FINNI_MUSIC_READY'),cue=String(text).match(/FINNI_MUSIC\|(mu_[a-z0-9]+)?\|(\d+(?:\.\d+)?)/);if(ready||cue)musicEvents.push({ms:soundClock(),type:ready?'ready':'cue',...(cue?{track:cue[1]??'',volumeText:cue[2]}:{})});}}:undefined;
 game=await createFullGame(load('layout.json'),load('objects.json'),assets.text('rules.vbs'),()=>{},media,{frameAnimations:true,scriptBudget:{videoSyncMode:2},scriptRandomClock,scriptTimerSeconds});
 // Allocation identities are opt-in, named environmental inputs. The default
 // comparison continues to exercise production's own body-storage ordering.
@@ -77,7 +78,7 @@ function compareRuleState(input){
  }
  // The native marker prints CStr(CDbl(expression)), including Empty -> 0.
  // Evaluate that same numeric conversion; raw JavaScript coercion is different.
- assert.deepEqual(expressions.map(expression=>Number(game.rules.value(`CDbl(${expression})`))),values,'Native authored rule fields '+names.join(',')+' at '+input.ms+'ms');
+ assert.deepEqual(expressions.map(expression=>Number(game.rules.value(`CStr(CDbl(${expression}))`))),values,'Native authored rule fields '+names.join(',')+' at '+input.ms+'ms');
  ruleObservationsChecked++;
  if(types){
   assert.equal(types.length,expressions.length);
@@ -114,7 +115,8 @@ try{
   }
   if(soundAudit)soundAudit.push(...soundCalls);
  }
- return {framesChecked,intervalsChecked,ticks,randomizeClockSamples:randomizeIndex,timerClockSamples:timerIndex,...(finishAllocations?{nativeAllocationIdentitiesConsumed:finishAllocations()}:{}),...(soundCalls?{soundCallsChecked:soundCalls.length}:{}),...(ruleObservationsChecked?{ruleObservationsChecked}:{}),...(ruleVariantFieldsChecked?{ruleVariantFieldsChecked}:{}),...(scriptRandomStatesChecked?{scriptRandomStatesChecked}:{}),...(moverStatesChecked?{moverStatesChecked,moverFieldsChecked}:{})};
+ if(musicEvents)assert.deepEqual(musicEvents,fixture.musicTimeline.events.map(({ms,type,track,volumeText})=>({ms,type,...(type==='cue'?{track,volumeText}:{})})),'Every original browser-music handshake/cue and its native player time');
+ return {framesChecked,intervalsChecked,ticks,randomizeClockSamples:randomizeIndex,timerClockSamples:timerIndex,...(finishAllocations?{nativeAllocationIdentitiesConsumed:finishAllocations()}:{}),...(soundCalls?{soundCallsChecked:soundCalls.length}:{}),...(musicEvents?{musicEventsChecked:musicEvents.length}:{}),...(ruleObservationsChecked?{ruleObservationsChecked}:{}),...(ruleVariantFieldsChecked?{ruleVariantFieldsChecked}:{}),...(scriptRandomStatesChecked?{scriptRandomStatesChecked}:{}),...(moverStatesChecked?{moverStatesChecked,moverFieldsChecked}:{})};
 }finally{game.dispose();}
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){const fixture=readNativeHistoryCapture(process.argv[2]),allocationInputs=process.argv.includes('--native-allocation-inputs')?fixture.allocationInputs??nativeBallAllocationInputs(fixture):undefined;const result=await compareNativeHistoryState(fixture,{allocationInputs,write:row=>console.log(JSON.stringify(row)),observeObjects:process.argv.filter(arg=>arg.startsWith('--observe=')).map(arg=>arg.slice(10))});console.log(JSON.stringify({result}));}

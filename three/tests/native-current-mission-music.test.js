@@ -1,0 +1,22 @@
+import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import{gunzipSync}from'node:zlib';import{createHash}from'node:crypto';
+import{unpackNativeHistoryState}from'../../scripts/native-history-state-package.mjs';import{compareNativeHistoryState}from'../../scripts/compare-native-history-state.mjs';import{nativeMusicStateFields}from'../../scripts/native-music-timeline-observer.mjs';import{partyChooserScript}from'../../browser/party-chooser.js';
+
+test('seven earned current-master missions preserve original music cues and read-only soundtrack state',async()=>{
+ const bytes=fs.readFileSync(new URL('fixtures/vpx-main-6f8116d-finale-music-frames-native.json.gz',import.meta.url));assert.equal(createHash('sha256').update(bytes).digest('hex'),'b688ca910eb31e517070cd9e772c1615cdaedec3efe33630bd38f65432b5d9c2');const packet=JSON.parse(gunzipSync(bytes));assert.equal(packet.sourceBytes,72313857);assert.equal(packet.sourceSHA256,'996700548c1b7442d895a5401063e3df512fb0d4e506f2070cfa3868c09159b6');
+ const f=unpackNativeHistoryState(packet),c=f.completionController;assert.equal(f.engineSHA256,'c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8');assert.equal(f.reference.sourceSha256,'6160e43c1a74f6dc70fd9852433c3373fe11b3e55d4f3a3fedc435265591b5c5');assert.equal(f.reference.controlledSha256,f.reference.sourceSha256);assert.deepEqual(f.reference.controlledOverrides,{});
+ assert.deepEqual(f.projection,{sourceLogicalJSONBytes:465983689,sourceLogicalJSONSHA256:'cc06020307f79babeaf8fa4c9d957af898bd93f61197f580aba3712264af4a7b',excludedArray:{path:'startup.boundaries',rows:110006}});assert.deepEqual(f.startup.boundaries,[]);assert.equal(Object.hasOwn(f,'allocationInputs'),false,'This comparison uses production collision ordering');
+ for(const observer of [f,f.startup,f.clock,f.timers,f.randomizeClocks,f.flipperMotion,f.moverMotion,c,f.musicTimeline])assert.deepEqual(observer.errors,[]);assert.deepEqual(f.browserErrors,[]);
+ assert.equal(c.completed,true);assert.equal(c.completedAt,89571);assert.equal(c.finale.outcome,'native-victory');assert.deepEqual(c.completions.map(row=>[row.mission,row.won,row.score]),[[1,1,3076000],[2,2,6438000],[3,3,10688110],[4,4,14062110],[5,5,17602110],[6,6,22012110],[7,7,30869110]]);
+ assert.equal(f.playerCorrections.partyChooserSHA256,createHash('sha256').update(partyChooserScript).digest('hex'));assert.ok(f.playerInputs.some(input=>input.script===partyChooserScript));
+ assert.deepEqual(f.musicTimeline.imports,['env.fd_write'],'Pinned glue aliases env and WASI to the same import object');assert.equal(f.musicTimeline.notReady,0);assert.equal(f.musicTimelineObserverSourceSHA256,'ebc503fc0f2deccff2fcbf3cab221ddd09848ee88db27d21c6380af44607816b');
+ const events=f.musicTimeline.events;assert.deepEqual(events.map(row=>[row.ms,row.type,row.track??'']),[[0,'ready',''],[0,'cue',''],[0,'cue','mu_hellhouse1'],[3202,'cue','mu_juggernaut'],[12202,'cue','mu_hellhouse1'],[17452,'cue','mu_juggernaut'],[24040,'cue','mu_hellhouse1'],[29826,'cue','mu_juggernaut'],[37240,'cue','mu_multiball'],[97602,'cue','mu_hellhouse1']]);
+ for(const row of events)assert.ok(row.type==='ready'?row.line.includes("Script.Print 'FINNI_MUSIC_READY'"):row.line.includes(`Script.Print 'FINNI_MUSIC|${row.track}|${row.volumeText}'`),'Expected cues retain independently recorded original stdout');
+ const checkpoints=f.playerInputs.filter(input=>input.ruleState);assert.equal(checkpoints.length,841);
+ for(const input of checkpoints){
+  const {names,expressions,values,types}=input.ruleState;assert.deepEqual(names.filter(name=>name.startsWith('music')),Object.keys(nativeMusicStateFields));
+  for(const[name,expression]of Object.entries(nativeMusicStateFields)){const i=names.indexOf(name);assert.equal(expressions[i],expression);assert.equal(types[i],name==='musicVolume'||name==='musicLastVolume'?4:3);}
+  assert.equal(values[names.indexOf('musicVolume')],0.200000002980232,'The native checkpoint is CStr(CDbl(SongVolume)), not the unformatted underlying Double');
+  assert.equal(Array.from({length:7},(_,i)=>values[names.indexOf('musicSong'+i)]).reduce((a,b)=>a+b,0),1);
+ }
+ assert.deepEqual(await compareNativeHistoryState(f),{framesChecked:6557,intervalsChecked:0,ticks:110007,randomizeClockSamples:2,timerClockSamples:61,musicEventsChecked:10,ruleObservationsChecked:841,ruleVariantFieldsChecked:56347,scriptRandomStatesChecked:841,moverStatesChecked:78684,moverFieldsChecked:603244});
+});
