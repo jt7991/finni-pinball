@@ -38,7 +38,8 @@ def gameplay(data, story=False):
 
 scoop_only = source.replace(b'HellHouse.kick 164, 30, 1', b'HellHouse.kick 164, 12, 0', 1)
 scoop_only = runpy.run_path(str(ROOT/'scripts/apply-party-selection.py'))['selection_script'](scoop_only)
-without_lighting = runpy.run_path(str(ROOT/'scripts/apply-finni-lighting.py'))['restore_lighting'](script, source)
+presentation = tuning['tuned_script'](source, trim_callouts=False)
+without_lighting = runpy.run_path(str(ROOT/'scripts/apply-finni-lighting.py'))['restore_lighting'](presentation, source)
 without_lighting = runpy.run_path(str(ROOT/'scripts/finni-dmd-native-motion.py'))['restore_motion'](without_lighting)
 without_lighting = runpy.run_path(str(ROOT/'scripts/apply-lock-ramp-tuning.py'))['restore_script'](without_lighting)
 assert gameplay(without_lighting, True) == gameplay(scoop_only), 'Script changed beyond approved presentation, scoop and task selection'

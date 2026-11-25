@@ -1,14 +1,12 @@
 # Team voice casting
 
-Give each teammate a small recording set to start. These are sets to distribute, not eleven characters that require eleven people. Someone can take another set later, and the gameplay sets can go to different teammates. Team names are not assigned yet; the studio does not reserve sets or enforce performer assignments.
+Give each teammate a small recording set to start. These are sets to distribute, not a separate character for every performer. Someone can take another set later, and the gameplay sets can go to different teammates. Team names are not assigned yet; the studio does not reserve sets or enforce performer assignments.
 
 | Character or recording set | First session | Owns |
 | --- | ---: | --- |
 | Mini Finni | 12 | Complete toy reaction set, reused across all 44 reaction slots. |
 | Cake Time host | 12 | Cake Time introductions, instructions, jackpots, and timer cues. |
-| Finni the host | 22 | Party welcomes, celebrations, and the first set of party chatter. |
-| Party guest · chatter A | 14 | A small set of remarks from another guest at the party. |
-| Party guest · chatter B | 14 | A small set of remarks from another guest at the party. |
+| Finni the host | 8 | Party welcomes, task prompts, and celebrations. |
 | Party crew | 25 | A helpful friend announcing tasks, supplies, and party moments. |
 | Shot guide · basics | 21 | Ramps, loops, targets, and skill shots. |
 | Shot guide · party modes | 24 | Context-specific instructions for tasks and party modes. |
@@ -20,13 +18,13 @@ Give each teammate a small recording set to start. These are sets to distribute,
 
 Keep Mini Finni’s toy reactions with one person. There are 12 recordings total, with no extra variations to finish later. `design/finni-callouts.json` maps the other 32 toy sound IDs to these recordings. The importer copies the chosen WAV bytes to every corresponding game slot, preserving the existing triggers and game rules. Each slot is still available, but the performer only records the 12 canonical lines.
 
-The Cake Time host can be a different person: they guide the mode while Mini Finni remains the little toy being hit. The main party host and the two guest chatter sets can also use different voices, making the party sound like several people rather than one person recording 50 remarks.
+The Cake Time host can be a different person: they guide the mode while Mini Finni remains the little toy being hit.
 
 Gameplay instructions do not require a single announcer. Give each context set to a different willing teammate. Keep closely related cues together: player numbers in Welcome & timers, combo levels in Scorekeeper, and Cake Time guidance with the Cake Time host. Match pronunciation and sound settings across all instruction voices. Cast by game ID and context, since identical words can occur in different modes.
 
 ## First session
 
-1. Choose a set of 12–25 lines. No one needs to commit to the whole game.
+1. Choose a recording set. No one needs to commit to the whole game.
 2. Try three lines: a short cue, a longer instruction or remark, and an excited moment. For Mini Finni, try “Oh! Hello there.”, “A little warning next time?”, and “You found me.”
 3. Listen together, select a reference performance, and note who owns each set. Agree how to pronounce Finni and the task names.
 4. Use the same quiet room, microphone distance, and sound settings within each set. Use the performance to give each character its personality.
@@ -47,7 +45,7 @@ Reviewers approve one take per recording task in the PocketBase dashboard. Then 
 python3 scripts/import-team-voices.py --url https://your-game.example.com
 ```
 
-This downloads approved processed WAVs into `.work/team-voices/`, checks 32 kHz stereo 16-bit PCM, expands the Mini Finni aliases byte for byte, and writes `voice-report.json` with take IDs, speakers, hashes, reused sources, and missing recording tasks. Multiple approved takes for a line, outdated transcripts, and invalid WAVs stop the import. Custom lines are skipped because they do not have game triggers. No audio is generated.
+This downloads approved processed WAVs into `.work/team-voices/`, checks 32 kHz stereo 16-bit PCM, expands the Mini Finni aliases byte for byte, and writes `voice-report.json` with take IDs, speakers, hashes, reused sources, and missing recording tasks. Multiple approved takes for a line, outdated transcripts, and invalid WAVs stop the import. The importer skips custom lines and retired random chatter. No audio is generated.
 
 To insert approved audio into an already-built extracted table:
 
@@ -55,7 +53,7 @@ To insert approved audio into an already-built extracted table:
 python3 scripts/import-team-voices.py --url https://your-game.example.com --install .work/finni-live-extracted
 ```
 
-The importer preserves existing sound IDs and leaves sounds without an approved replacement unchanged. Use `--require-complete` to require all 201 recording tasks before writing or installing anything. All 12 Mini Finni takes cover its 44 game slots. Build the base table before importing so a later base build does not overwrite the team recordings.
+The importer preserves existing sound IDs and leaves sounds without an approved replacement unchanged. Use `--require-complete` to require all active recording tasks before writing or installing anything. All 12 Mini Finni takes cover its 44 game slots. Build the base table before importing so a later base build does not overwrite the team recordings.
 
 After installation, assemble the extraction with the existing vpxtool workflow, validate the packaged audio, and update the deployed `runtime/Finni-Big-Day.vpx` through the usual release process. Approval alone does not publish a new table. The import command can be added to that build process for repeatable updates; it does not poll the live service or deploy on every approval.
 
