@@ -1,0 +1,49 @@
+{
+  "scope": "Two independently started games. Each atomic public API component creates two extra balls at one kicker and then kicks/destroys in opposite orders, retaining immediate script snapshots. No Hit handler, body state, clock, RNG, timer deadline or expected outcome is supplied. CStr observations retain native script precision; these are component inputs, not naturally enrolled multiball or proof of the reported intermittent hold.",
+  "base": "http://127.0.0.1:50835/",
+  "native": true,
+  "provenance": {
+    "metadata": {
+      "engine": "@valknar/vpinball-wasm 0.3.4",
+      "engineSHA256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+      "upstreamCommit": "195f214dd4849b8ef6113fd377258b78d0dec3bf",
+      "sourceCommit": "6f8116d0964429db0e2da41d583566784114fc5f",
+      "sourceSha256": "6160e43c1a74f6dc70fd9852433c3373fe11b3e55d4f3a3fedc435265591b5c5",
+      "controlledSha256": "6160e43c1a74f6dc70fd9852433c3373fe11b3e55d4f3a3fedc435265591b5c5",
+      "controlledOverrides": {},
+      "browserSourceCommit": "6f8116d0964429db0e2da41d583566784114fc5f",
+      "browserAppSHA256": "3608d26828ea120a3a56437746d74054b7f69abe019d9b9ec4f21288b1a4389f",
+      "scope": "Exact committed master VPX and browser snapshot, including its continuous HTML music player. No injected table instrumentation or chooser correction. Engine cache is read only. Individual comparison probes declare any observers or external inputs separately."
+    },
+    "engineBytesVerified": true,
+    "probeSHA256": "70de3739a73f3645bf0f8ebad711e7c9484d1182177f1acb161dfa3c3c3e7969",
+    "scenarioSHA256": "9b9314d87d30207ef4388ab20a4fc727f0784f03b6802c2005d39a7952b165a5"
+  },
+  "cases": [
+    {
+      "order": "kick-destroy",
+      "statement": "Dim CreationFirst,CreationSecond,CreationBefore,CreationAfter,CreationRemoved,CreationFinal\nFunction CreationPose(ball)\n CreationPose=CStr(ball.ID)&\",\"&CStr(ball.X)&\",\"&CStr(ball.Y)&\",\"&CStr(ball.Z)&\",\"&CStr(ball.VelX)&\",\"&CStr(ball.VelY)&\",\"&CStr(ball.VelZ)\nEnd Function\nFunction CreationState()\n Dim all,ball,ids\n ids=\"\":all=GetBalls()\n For Each ball In all:ids=ids&CStr(ball.ID)&\",\":Next\n CreationState=CreationPose(CreationFirst)&\";\"&CreationPose(CreationSecond)&\";\"&ids\nEnd Function\nSet CreationFirst=HellHouse.CreateBall\nSet CreationSecond=HellHouse.CreateBall\nCreationBefore=CreationState()\nHellHouse.Kick 164,12,0\nCreationAfter=CreationState()\nCreationRemoved=HellHouse.DestroyBall\nCreationFinal=CreationState()",
+      "statementSHA256": "7c2724230e718da4c0dbe8c2cf9c532baaae33fccbac0358821f47c2e49652db",
+      "values": {
+        "CreationBefore": "4,293.6843,473.6344,25,0,0,0;5,293.6843,473.6344,25,0.1,0,0;0,1,2,3,4,5,",
+        "CreationAfter": "4,293.6843,473.6344,25,3.307648,11.53514,0;5,293.6843,473.6344,25,0.1,0,0;0,1,2,3,4,5,",
+        "CreationRemoved": 0,
+        "CreationFinal": "4,293.6843,473.6344,25,3.307648,11.53514,0;5,293.6843,473.6344,25,0.1,0,0;0,1,2,3,4,5,",
+        "VarType(CreationRemoved)": 3
+      }
+    },
+    {
+      "order": "destroy-kick",
+      "statement": "Dim CreationFirst,CreationSecond,CreationBefore,CreationAfter,CreationRemoved,CreationFinal\nFunction CreationPose(ball)\n CreationPose=CStr(ball.ID)&\",\"&CStr(ball.X)&\",\"&CStr(ball.Y)&\",\"&CStr(ball.Z)&\",\"&CStr(ball.VelX)&\",\"&CStr(ball.VelY)&\",\"&CStr(ball.VelZ)\nEnd Function\nFunction CreationState()\n Dim all,ball,ids\n ids=\"\":all=GetBalls()\n For Each ball In all:ids=ids&CStr(ball.ID)&\",\":Next\n CreationState=CreationPose(CreationFirst)&\";\"&CreationPose(CreationSecond)&\";\"&ids\nEnd Function\nSet CreationFirst=HellHouse.CreateBall\nSet CreationSecond=HellHouse.CreateBall\nCreationBefore=CreationState()\nCreationRemoved=HellHouse.DestroyBall\nCreationAfter=CreationState()\nHellHouse.Kick 164,12,0\nCreationFinal=CreationState()",
+      "statementSHA256": "9cd5967158c6c392ce47408187a5ea79ce8ebb4a6e58eb8fef4e95c76d6aa98c",
+      "values": {
+        "CreationBefore": "4,293.6843,473.6344,25,0,0,0;5,293.6843,473.6344,25,0.1,0,0;0,1,2,3,4,5,",
+        "CreationAfter": "4,293.6843,473.6344,25,0,0,0;5,293.6843,473.6344,25,0.1,0,0;0,1,2,3,5,",
+        "CreationRemoved": 1,
+        "CreationFinal": "4,293.6843,473.6344,25,0,0,0;5,293.6843,473.6344,25,0.1,0,0;0,1,2,3,5,",
+        "VarType(CreationRemoved)": 3
+      }
+    }
+  ],
+  "errors": []
+}

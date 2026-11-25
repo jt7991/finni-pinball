@@ -88,6 +88,7 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--player-control-transitions' in sys.argv:runner='probe-player-control-transitions.mjs'
         if '--scoop-release' in sys.argv:runner='test-scoop-release-production.mjs'
         if '--kicker-ownership' in sys.argv:runner='probe-kicker-ownership.mjs'
+        if '--kicker-creation' in sys.argv:runner='probe-kicker-creation.mjs'
         if '--flipper-assembly' in sys.argv:runner='test-native-flipper-assembly-browser.mjs'
         if '--native-static-prepass' in sys.argv:runner='probe-native-static-prepass-browser.mjs'
         if '--trigger-animation' in sys.argv:runner='test-trigger-animation-browser.mjs'

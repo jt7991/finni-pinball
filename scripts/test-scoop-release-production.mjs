@@ -3,7 +3,8 @@
 import fs from 'node:fs';
 import assert from 'node:assert/strict';
 import {partyChooserScript} from '../browser/party-chooser.js';
-const [debug,base,output]=process.argv.slice(2),native=process.argv.includes('--native-player'),installFix=process.argv.includes('--install-scoop-fix');
+const [debug,base,output]=process.argv.slice(2),native=process.argv.includes('--native-player'),installFix=process.argv.includes('--install-scoop-fix'),pauseScoop=process.argv.includes('--pause-scoop');
+assert.ok(!pauseScoop||!native,'Pause observation currently targets the production worker');
 const source=fs.readFileSync('three/public/rules.vbs','utf8'),sub=name=>source.match(new RegExp('^Sub '+name+'\\b[^\\n]*[\\s\\S]*?^End Sub','mi'))[0];
 const instrumentation='Dim ScoopQKicks\nScoopQKicks=0\n'+sub('kickBallOut').replace(/(If BallsinHole> 0 Then)/i,'$1\n ScoopQKicks=ScoopQKicks+1');
 const tabs=await(await fetch(debug+'/json/list')).json(),socket=new WebSocket(tabs.find(t=>t.type==='page').webSocketDebuggerUrl);await new Promise(r=>socket.addEventListener('open',r,{once:true}));let serial=0;const pending=new Map(),errors=[];
@@ -31,9 +32,16 @@ try{
   const samples=[];let captured;
   for(let i=0;i<100;i++){const state=await read();samples.push(state);if(state.hole>0){captured=state;break;}await new Promise(r=>setTimeout(r,25));}
   assert.ok(captured,'incoming ball physically reaches the scoop');assert.equal(captured.choosing,false);assert.equal(captured.mode,1);
-  let released;
+  let released,pauseObservation;
+  if(pauseScoop){
+    await evaluate('window.dispatchEvent(new Event("blur"))');await wait('scoopQA.latest.paused');
+    const paused=await read();await new Promise(r=>setTimeout(r,2000));const held=await read();
+    assert.equal(held.ms,paused.ms,'focus loss freezes the physics/rule clock');assert.equal(held.hole,captured.hole);assert.equal(held.kicks,0,'an unelapsed eject delay remains pending');
+    await evaluate('window.dispatchEvent(new Event("focus"))');await wait('!scoopQA.latest.paused');
+    pauseObservation={paused,held,wallPauseMilliseconds:2000};
+  }
   while(samples.at(-1).ms-captured.ms<2200){const state=await read();samples.push(state);if(state.kicks>0){released=state;break;}await new Promise(r=>setTimeout(r,25));}
-  const report={scope:'Explicit active-mode and stale-ready qualification with two additional balls created by authored CreateNewBall. One declared physical approach selects live ball ID3. Original KickBallOut body gains only a counter inside its existing positive-hole condition. No clocks, RNG, timer deadlines, collision outputs or ball rescue are supplied. This verifies the rejected-chooser branch during multiball, not natural reachability of the initial stale-ready qualification.',base,native,installFix,qualified,captured,released,samples,errors};
+  const report={scope:'Explicit active-mode and stale-ready qualification with two additional balls created by authored CreateNewBall. One declared physical approach selects live ball ID3. Original KickBallOut body gains only a counter inside its existing positive-hole condition. No clocks, RNG, timer deadlines, collision outputs or ball rescue are supplied. This verifies the rejected-chooser branch during multiball, not natural reachability of the initial stale-ready qualification. Optional pause observation dispatches browser blur/focus events through the player lifecycle.',base,native,installFix,pauseObservation,qualified,captured,released,samples,errors};
   fs.writeFileSync(output+'/scoop-release-production.json',JSON.stringify(report,null,2),{flag:'wx'});console.log(JSON.stringify({native,installFix,qualified,captured,released,errors}));
   assert.deepEqual(errors,[]);if(!native)assert.deepEqual(await evaluate('scoopQA.fatal'),[]);assert.ok(released,'captured multiball must receive its normal eject callback');assert.equal(released.choosing,false);assert.equal(released.mode,1);
 }finally{socket.close();}

@@ -202,14 +202,17 @@ class FullGame extends Pinball {
 
   spawn(name) {
     const key=name.toLowerCase(),spec=this.specs.objects.find(s=>s.name.toLowerCase()===key);
+    const occupied=this.captures.has(key);
     const p={...point(spec?.center??{x:293.68,y:473.63}),z:this.surface(spec??{})+RADIUS};
-    const body=this.world.createRigidBody(RAPIER.RigidBodyDesc.dynamic().setTranslation(p.x,p.y,p.z)
+    // Native CreateBall always allocates, but DoCollide immediately returns
+    // if this kicker already holds a ball. The new ball stays free at vx=.1.
+    const body=this.world.createRigidBody(RAPIER.RigidBodyDesc.dynamic().setTranslation(p.x,p.y,p.z).setLinvel(occupied?Math.fround(.1):0,-0,0)
       .setCcdEnabled(true).setCanSleep(false));
     if(this.nativePlayfieldContacts)body.setGravityScale(0,true);
     const collider=this.world.createCollider(RAPIER.ColliderDesc.ball(RADIUS).setMass(1).setRestitution(BALL_RESTITUTION).setRestitutionCombineRule(RAPIER.CoefficientCombineRule.Multiply).setFriction(0).setFrictionCombineRule(RAPIER.CoefficientCombineRule.Max)
       .setCollisionGroups(this.nativeBallContacts?NATIVE_BALL_GROUP:BALL_GROUP).setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS),body);
     if(this.nativePositionUnits)this.nativeBall(body).body.setTranslation(p,true);
-    const isToy=['he','la','ra'].includes(key),rec={body,collider,isToy,held:key,inLane:false,previous:{...p},cooldowns:new Map(),laneTime:this.time};
+    const isToy=['he','la','ra'].includes(key),rec={body,collider,isToy,held:occupied?null:key,inLane:false,previous:{...p},cooldowns:new Map(),laneTime:this.time};
     const tableDecal=this.rules?.objects.get('table1').ballfrontdecal;
     rec.render={visible:true,color:0xffffff,reflectionenabled:true,forcereflection:false,bulbintensityscale:Math.fround(this.specs.ball_settings?.default_bulb_intensity_scale_on_ball??.15),playfieldreflectionscale:1,frontdecal:typeof tableDecal==='string'?tableDecal:this.specs.ball_settings?.ball_image_front??''};
     this.scriptBallSequence??=0;
@@ -250,8 +253,11 @@ class FullGame extends Pinball {
       setProperty:{value:(name,variant)=>{const key=String(name).toLowerCase();rec.proxy[key]=singleProperty(key)?Math.fround(variant.value):variant.value;}},
     });
     if(rec.held&&!this.nativeDisplacements)body.setBodyType(RAPIER.RigidBodyType.KinematicPositionBased,true);
-    (isToy?this.toyRecords:this.records).push(rec);this.physicalRecords.push(rec);this.renderRecords.push(rec);this.byCollider.set(collider.handle,rec);this.captures.set(key,rec);this.pendingCreate=rec;if(!isToy)this.ball=body;
-    const kicker=this.kickers.find(k=>k.key===key);if(kicker){kicker.members.set(this.nativeBall(body).body,1);kicker.captured=rec;}
+    (isToy?this.toyRecords:this.records).push(rec);this.physicalRecords.push(rec);this.renderRecords.push(rec);this.byCollider.set(collider.handle,rec);this.pendingCreate=rec;if(!isToy)this.ball=body;
+    if(!occupied){
+      this.captures.set(key,rec);
+      const kicker=this.kickers.find(k=>k.key===key);if(kicker){kicker.members.set(this.nativeBall(body).body,1);kicker.captured=rec;}
+    }
     return rec.proxy;
   }
 
