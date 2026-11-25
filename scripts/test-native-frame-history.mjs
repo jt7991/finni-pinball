@@ -1,6 +1,7 @@
 // Consecutive whole-scene comparison. Native current/prior pixels are read
 // only as expectations. No native image, scene property, body or RNG is set.
 import fs from 'node:fs';import path from 'node:path';import assert from 'node:assert/strict';
+import{createHash}from'node:crypto';
 import{installNativePostprocessObserver}from './native-postprocess-observer.mjs';
 import{nativeScriptClockInputs}from './native-script-clock-inputs.mjs';
 import{installPortPixelObserver}from './port-pixel-observer.mjs';
@@ -15,7 +16,7 @@ const imageDigests=process.argv.includes('--image-digests');
 function assertImageComparison(value,label){if(value.algorithm==='sha256'){assert.equal(value.sameBytes,true,label+' bytes');assert.equal(value.actualSHA256,value.expectedSHA256,label+' SHA256');}else{assert.equal(value.different,0,label);assert.equal(value.alphaDifferent,0,label+' alpha');}}
 const traceFrame=Number(process.argv.find(arg=>arg.startsWith('--trace-frame='))?.slice(14)??1);assert.ok(Number.isInteger(traceFrame)&&traceFrame>=1&&traceFrame<=4096);
 assert.match(name,/^[a-z0-9-]+$/);assert.match(report,/^[a-z0-9-]+$/);
-const directory=path.join(output,'native-frame-history-'+name),fixture=JSON.parse(fs.readFileSync(path.join(directory,'capture.json'))),authoredCamera=JSON.parse(fs.readFileSync(fs.existsSync(path.join(directory,'authored-camera.json'))?path.join(directory,'authored-camera.json'):output+'/native-authored-startup-camera.json'));
+const directory=path.join(output,'native-frame-history-'+name),captureBytes=fs.readFileSync(path.join(directory,'capture.json')),captureSHA256=createHash('sha256').update(captureBytes).digest('hex'),fixture=JSON.parse(captureBytes),authoredCamera=JSON.parse(fs.readFileSync(fs.existsSync(path.join(directory,'authored-camera.json'))?path.join(directory,'authored-camera.json'):output+'/native-authored-startup-camera.json'));
 const sourceAssets=nativeSourceAssets(fixture.reference.sourceSha256),authoredInputs={layout:sourceAssets.json('layout.json'),specs:sourceAssets.json('objects.json'),source:sourceAssets.text('rules.vbs')};
 assert.ok(traceFrame<=fixture.frames.length);assert.deepEqual(fixture.errors,[],'Native capture must have no browser errors');
 for(const observed of [fixture.clock,fixture.timers,fixture.startup,fixture.randomizeClocks,...fixture.frames])assert.deepEqual(observed.errors,[],'Native observers must complete without errors');
@@ -31,14 +32,16 @@ const observedScriptClocks=process.argv.includes('--observed-script-clocks'),scr
 const assetBase='/three/@fs/'+path.resolve(directory).replaceAll('\\','/')+'/';
 const tabs=await(await fetch(debug+'/json/list')).json(),socket=new WebSocket(tabs.find(tab=>tab.type==='page').webSocketDebuggerUrl);await new Promise(resolve=>socket.addEventListener('open',resolve,{once:true}));let sequence=0;const pending=new Map(),errors=[];
 socket.addEventListener('message',event=>{const data=JSON.parse(event.data);if(data.id){const item=pending.get(data.id);pending.delete(data.id);data.error?item.reject(Error(data.error.message)):item.resolve(data.result);}if(data.method==='Runtime.exceptionThrown')errors.push(data.params);});
-const call=(method,params={})=>new Promise((resolve,reject)=>{const id=++sequence;pending.set(id,{resolve,reject});socket.send(JSON.stringify({id,method,params}));});
+socket.addEventListener('close',()=>{for(const item of pending.values())item.reject(Error('Chrome debugging connection closed'));pending.clear();});
+const call=(method,params={})=>new Promise((resolve,reject)=>{if(socket.readyState!==WebSocket.OPEN){reject(Error('Chrome debugging connection is not open'));return;}const id=++sequence;pending.set(id,{resolve,reject});socket.send(JSON.stringify({id,method,params}));});
 const evaluate=async expression=>{const r=await call('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true});if(r.exceptionDetails)throw Error(JSON.stringify(r.exceptionDetails));return r.result.value;};
 try{
  await call('Page.enable');await call('Runtime.enable');await call('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:2,mobile:true});await call('Page.addScriptToEvaluateOnNewDocument',{source:'('+installNativePostprocessObserver.toString()+')({highPrecisionDepth:true});('+installPortPixelObserver.toString()+')();'});await call('Page.navigate',{url:base});
  for(let i=0;i<600;i++){if(await evaluate('!!window.finniThree'))break;await new Promise(resolve=>setTimeout(resolve,50));}
  const result=await evaluate(`(async()=>{
   const finishFrames=${JSON.stringify(finishFrames)};
-  const fixture=${JSON.stringify(fixture)},cameraFields=${JSON.stringify(authoredCamera.fields)},base=${JSON.stringify(assetBase)};
+  const cameraFields=${JSON.stringify(authoredCamera.fields)},base=${JSON.stringify(assetBase)};
+  const fixture=await(async()=>{const response=await fetch(base+'capture.json');if(!response.ok)throw Error('Native metadata unavailable: '+response.status);const bytes=await response.arrayBuffer(),digest=await crypto.subtle.digest('SHA-256',bytes),hash=Array.from(new Uint8Array(digest),v=>v.toString(16).padStart(2,'0')).join('');if(hash!==${JSON.stringify(captureSHA256)})throw Error('Fetched native metadata differs from the independently validated capture');return JSON.parse(new TextDecoder().decode(bytes));})();
   finniThree.game.setPaused(true);await finniThree.game.flush();finniThree.view.render=()=>{};
   const {connectSimulation}=await import('/three/game-runtime.js'),{createView}=await import('/three/scene.js'),{nativeCameraPresets}=await import('/three/native-camera.js');
   const source=await(await fetch('/three/scene.js')).text(),THREE=await import(source.match(/import \\* as THREE from "([^"]+)"/)[1]);
@@ -112,7 +115,8 @@ try{
    if(i>0)await finishFrame(i);
   }
   const finalInspection=await game.debug({action:'inspect'});if(${observedScriptClocks}&&(finalInspection.randomizeClockSamples!==${scriptClocks.observedRandomizeClocks?.length??0}||finalInspection.timerClockSamples!==${scriptClocks.observedTimerSeconds?.length??0}))throw Error('Unconsumed script wall clocks');if(${observedPresentation}&&presentationIndex!==fixture.presentation.records.filter(row=>row.frameIndex<=fixture.frames.length).length)throw Error('Unconsumed native submission clocks');await game.dispose();return{frames,observedPlayerInputs,observedPreparedFrames:${observedPreparedFrames},observedFinishFrames:${observedFinishFrames},observedPresentationClocks:${observedPresentation},presentationSamples:presentationIndex,contextAttributes:gl.getContextAttributes(),scriptClockObservationWindow:{lastFrame:fixture.frames.at(-1).frameIndex,lastMilliseconds:fixture.frames.at(-1).snapshot.ms},presentationFramebuffer:'Fresh transparent black per presentation, matching the native non-preserved default framebuffer; offscreen comparisons cannot retain the prior final frame at uncovered nudge edges.',scriptClockSamples:{randomize:finalInspection.randomizeClockSamples??0,timer:finalInspection.timerClockSamples??0},cacheEnabled:${process.argv.includes('--cache')},diagnosticNoDepth:${process.argv.includes('--diagnostic-no-depth')},glError:gl.getError(),copiedNativeImages:0,copiedNativeProperties:0,copiedNativeBodies:0,copiedNativeRandom:0,submissionBodyAndRotationFieldsChecked:presentationIndex*22,scope:'Fresh production worker/model and renderer beginning at original initialization. Original authored startup camera is an explicit source-table input. Ordinary main-player configuration/Start, and independently observed animation/submission and positive-timer delivery clocks are diagnostic inputs. All prior textures, AO, bloom, reflections, current scene properties, bodies and RNG are port-owned. Native pixels are expectations only. This comparison exposes remaining differences; no parity is claimed unless every frame/buffer passes.'};
- })()`).catch(async error=>{const progress=await evaluate('window.nativeFrameReplayProgress??null');fs.writeFileSync(path.join(directory,'comparison-'+report+'-failure.json'),JSON.stringify({error:error.message,progress,errors},null,2));throw error;});
+ })()`).catch(async error=>{const progress=await evaluate('window.nativeFrameReplayProgress??null').catch(()=>null);fs.writeFileSync(path.join(directory,'comparison-'+report+'-failure.json'),JSON.stringify({error:error.message,progress,errors},null,2));throw error;});
+ result.captureSHA256=captureSHA256;result.captureTransport='sha256-verified-same-origin-json-fetch';
  result.imageComparison=imageDigests?'sha256-all-image-bytes':'pixel-components';if(imageDigests)result.scope+=' Every image digest compares all bytes, including alpha and floating-point bit patterns; no reference image files are fetched.';
  result.scope+=' Full-table texture-cache aliases are baked source resource bindings verified against the original virtual getter and the unchanged embedded VPX image; no runtime frame or texture snapshot is seeded.';
  if(observedScriptClocks)result.scope+=' Original omitted-Randomize CLOCK_REALTIME and original Timer Single returns are explicit external script-clock inputs; no native script RNG state or output is read or restored.';
