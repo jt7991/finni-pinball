@@ -15,6 +15,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / ".work/deadpool-extracted"
+TOY_AUDIO = ROOT / "assets/finni/audio/mini-finni"
 ADDED_STORY_IDS = {'vo_friendshipmb', 'vo_caketimetoppings', 'vo_caketimefinish', 'vo_caketimefrosting'}
 ADDED_EVENT_IDS = {'vo_ballsaved'}
 FF = ROOT / ".tools/pydeps/imageio_ffmpeg/binaries/ffmpeg-win-x86_64-v9.0.2.exe"
@@ -34,7 +35,7 @@ def lines(validate_source=True):
     assert len(set(quotes.values())) == 42 and all(t.strip() for t in quotes.values())
     result.update({f"quote{n}": text for n, text in quotes.items()})
     reactions = config["toy_reactions"]
-    assert len(reactions) == 12 and len(set(reactions.values())) == 12
+    assert reactions and len(set(reactions.values())) == len(reactions)
     assert all(text.strip() for text in reactions.values()), "Silent toy reaction"
     canonical = {f"vo_lildp{n}": text for n, text in reactions.items()}
     aliases = config["recording_aliases"]
@@ -121,11 +122,17 @@ def build(destination):
     destination.mkdir(parents=True, exist_ok=True)
     cache = destination / "cache"
     cache.mkdir(exist_ok=True)
-    generated = asyncio.run(synthesize(config, sorted(set(mapping.values())), cache))
+    toy_recordings = {f"vo_lildp{slot}": TOY_AUDIO / f"vo_lildp{slot}.wav"
+                      for slot in config["toy_reactions"]}
+    toy_slots = {**toy_recordings,
+                 **{slot: toy_recordings[target] for slot, target in config["recording_aliases"].items()}}
+    texts = sorted({text for name, text in mapping.items() if name not in toy_slots})
+    generated = asyncio.run(synthesize(config, texts, cache))
     report = {"voice": config["voice"], "rate": config["rate"], "pitch": config["pitch"], "callouts": {}}
     for name, text in mapping.items():
         path = destination / (name + ".wav")
-        shutil.copyfile(generated[text], path)
+        source = toy_slots[name] if name in toy_slots else generated[text]
+        shutil.copyfile(source, path)
         frames = pcm(path)
         report["callouts"][name] = {"text": text, "silent": not text,
                                     "seconds": len(frames) / (32000 * 4),
@@ -135,7 +142,7 @@ def build(destination):
                  "vo_trex", "vo_megalodon", "vo_sauron", "vo_mrsinister",
                  "vo_lockislit", "vo_ball1locked", "vo_friendshipmb", "vo_lildp_multiball2",
                  "vo_caketimetoppings", "vo_caketimefinish", "vo_jackpot", "vo_ballsaved",
-                 "quote1", "quote2", "quote3", "vo_lildp1", "vo_lildp2", "vo_lildp3", "vo_discoloops"):
+                 "quote1", "quote2", "quote3", *toy_recordings, "vo_discoloops"):
         preview.extend((pcm(destination / (name + ".wav")), bytes(32000)))
     write_pcm(destination / "finni-callouts-sampler.wav", b"".join(preview))
     (destination / "voice-report.json").write_text(json.dumps(report, indent=2) + "\n")

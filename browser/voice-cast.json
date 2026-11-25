@@ -4,22 +4,13 @@
     {
       "id": "mini-finni",
       "name": "Mini Finni",
-      "summary": "12 complete reactions for the little Finni toy, reused across all 44 reaction slots.",
-      "direction": "One performer keeps this character consistent. Small, cheeky, and conversational. Record these 12 reactions once; the game reuses them across all toy-hit slots. There are no extra reactions to record.",
+      "summary": "Three reactions for the little Finni toy, reused across all 44 reaction slots.",
+      "direction": "Keep each toy-hit reaction short and immediate. One performer keeps Mini Finni’s voice consistent.",
       "prefixes": [],
       "line_ids": [
-        "vo_lildp1",
-        "vo_lildp2",
-        "vo_lildp4",
-        "vo_lildp8",
-        "vo_lildp11",
-        "vo_lildp13",
-        "vo_lildp18",
-        "vo_lildp25",
-        "vo_lildp30",
-        "vo_lildp33",
-        "vo_lildp36",
-        "vo_lildp43"
+        "vo_lildp3",
+        "vo_lildp5",
+        "vo_lildp6"
       ],
       "recommended_preset": "party"
     },

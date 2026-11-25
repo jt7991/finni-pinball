@@ -14,6 +14,7 @@ __pycache__/
 *.avi
 *.wav
 !/assets/finni/audio/doorbell.wav
+!/assets/finni/audio/mini-finni/*.wav
 *.log
 *.pyc
 

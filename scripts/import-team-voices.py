@@ -57,7 +57,7 @@ def import_voices(url, token, output, install=None, require_complete=False):
         batch = request(f'collections/voice_takes/records?{query}')
         for take in batch['items']:
             id = take['line_id']
-            if id == 'custom' or id in chatter:
+            if id == 'custom' or id in chatter or id in aliases:
                 continue
             if id not in canonical or take['line_text'].strip() != canonical[id]:
                 raise ValueError(f'Approved take {take["id"]} does not match the current script for {id}. Review it before importing.')

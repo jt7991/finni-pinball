@@ -15,10 +15,10 @@ try {
     await call('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:false});
     await call('Page.navigate',{url:`${base}/voice`});
     for(let i=0;i<100;i++) {
-      if(await evaluate('document.querySelectorAll("#line option").length === 13'))break;
+      if(await evaluate('document.querySelectorAll("#line option").length === 4'))break;
       await new Promise(resolve=>setTimeout(resolve,50));
     }
-    assert.equal(await evaluate('document.querySelectorAll("#line option").length'),13);
+    assert.equal(await evaluate('document.querySelectorAll("#line option").length'),4);
     await evaluate('document.fonts.ready.then(()=>true)');
     assert.equal(await evaluate('document.documentElement.scrollWidth <= innerWidth'),true,`${name} overflow`);
     const capture=await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:true});
@@ -70,5 +70,5 @@ try {
     await new Promise(resolve=>setTimeout(resolve,50));
   }
   assert.equal(await evaluate('!document.getElementById("download").disabled'),true,'Microphone take processes');
-  console.log('Browser: 12 Mini Finni lines plus custom, desktop/phone layouts, all preset audio renders, upload and simulated-microphone capture, and stale export protection pass.');
+  console.log('Browser: three Mini Finni lines plus custom, desktop/phone layouts, all preset audio renders, upload and simulated-microphone capture, and stale export protection pass.');
 } finally {socket.close();}

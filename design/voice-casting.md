@@ -4,7 +4,7 @@ Give each teammate a small recording set to start. These are sets to distribute,
 
 | Character or recording set | First session | Owns |
 | --- | ---: | --- |
-| Mini Finni | 12 | Complete toy reaction set, reused across all 44 reaction slots. |
+| Mini Finni | 3 | Complete toy reaction set, reused across all 44 reaction slots. |
 | Cake Time host | 12 | Cake Time introductions, instructions, jackpots, and timer cues. |
 | Finni the host | 8 | Party welcomes, task prompts, and celebrations. |
 | Party crew | 25 | A helpful friend announcing tasks, supplies, and party moments. |
@@ -16,7 +16,9 @@ Give each teammate a small recording set to start. These are sets to distribute,
 
 ## Character continuity
 
-Keep Mini Finni’s toy reactions with one person. There are 12 recordings total, with no extra variations to finish later. `design/finni-callouts.json` maps the other 32 toy sound IDs to these recordings. The importer copies the chosen WAV bytes to every corresponding game slot, preserving the existing triggers and game rules. Each slot is still available, but the performer only records the 12 canonical lines.
+Keep Mini Finni’s toy reactions with one person. There are three recordings total. `design/finni-callouts.json` maps the other 41 toy sound IDs to these recordings. The importer copies the chosen WAV bytes to every corresponding game slot, preserving the existing triggers and game rules. Each slot is still available, but the performer only records the three lines.
+
+The default “Ouch!” clip comes from [Legnalegna55’s Freesound recording](https://freesound.org/people/Legnalegna55/sounds/547344/) under [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/). “Oh!” and “That tickles.” are trimmed from the existing Finni table’s `vo_lildp2` and `vo_lildp25` recordings at commit `6f8116d`.
 
 The Cake Time host can be a different person: they guide the mode while Mini Finni remains the little toy being hit.
 
@@ -53,7 +55,7 @@ To insert approved audio into an already-built extracted table:
 python3 scripts/import-team-voices.py --url https://your-game.example.com --install .work/finni-live-extracted
 ```
 
-The importer preserves existing sound IDs and leaves sounds without an approved replacement unchanged. Use `--require-complete` to require all active recording tasks before writing or installing anything. All 12 Mini Finni takes cover its 44 game slots. Build the base table before importing so a later base build does not overwrite the team recordings.
+The importer preserves existing sound IDs and leaves sounds without an approved replacement unchanged. Use `--require-complete` to require all active recording tasks before writing or installing anything. All three Mini Finni takes cover its 44 game slots. Approved takes for retired reactions are skipped. Build the base table before importing so a later base build does not overwrite the team recordings.
 
 After installation, assemble the extraction with the existing vpxtool workflow, validate the packaged audio, and update the deployed `runtime/Finni-Big-Day.vpx` through the usual release process. Approval alone does not publish a new table. The import command can be added to that build process for repeatable updates; it does not poll the live service or deploy on every approval.
 
@@ -62,4 +64,4 @@ After installation, assemble the extraction with the existing vpxtool workflow, 
 
 Keep each teammate recognizably themselves. The local studio uses ElevenLabs Voice Isolator for AI noise cleanup, followed by local filtering, gentle compression, level matching and optional end trimming. It processes the actual recording without a target voice, clone, remix or blended second performance. Use Clean & natural for a consistent, natural starting point. The more theatrical local effects remain optional.
 
-Run with `--voice-only --voice-ai` and use Enhance recording explicitly after recording or uploading. The UI shows a cost estimate before the paid request. Compare original and processed takes, undo or reapply the cached cleanup without another request, then submit for review. Keep the same setup across a recording set; AI cleanup cannot substitute for a clear source recording. See the README for Secrets Manager access and local startup.
+Run with `--voice-only --voice-ai` and use Clean up with ElevenLabs explicitly after recording or uploading. The UI shows a cost estimate before the paid request. Compare original and processed takes, undo or reapply the cached cleanup without another request, then submit for review. Keep the same setup across a recording set; AI cleanup cannot substitute for a clear source recording. See the README for Secrets Manager access and local startup.
