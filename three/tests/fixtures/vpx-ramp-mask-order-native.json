@@ -1,0 +1,398 @@
+{
+  "engineSHA256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+  "sourceTableSHA256": "6160e43c1a74f6dc70fd9852433c3373fe11b3e55d4f3a3fedc435265591b5c5",
+  "captureSHA256": "b7b6a4aae5fb2e558174e5269e98d410a97ac589b6dc926b2972e8498cf5f1b7",
+  "frame": 16,
+  "milliseconds": 3060,
+  "pixel": [
+    207,
+    273
+  ],
+  "actions": [
+    {
+      "afterMilliseconds": 1000,
+      "script": "Flasher016.Visible=True",
+      "ms": 1511,
+      "frameIndex": 6
+    }
+  ],
+  "flasher": {
+    "name": "Flasher016",
+    "drawIndex": 263,
+    "draw": {
+      "method": "drawElements",
+      "args": [
+        4,
+        6,
+        5123,
+        612
+      ],
+      "name": "noLight",
+      "target": 1,
+      "viewport": [
+        0,
+        0,
+        230,
+        424
+      ],
+      "scissorEnabled": false,
+      "scissor": [
+        8,
+        23,
+        41,
+        75
+      ],
+      "uniforms": {
+        "matWorldViewProj[0]": [
+          5.064915180206299,
+          0,
+          0,
+          0,
+          0,
+          -2.379385232925415,
+          -0.924288272857666,
+          -0.5,
+          0,
+          1.3737388849258423,
+          -1.6009142398834229,
+          -0.8660253882408142,
+          -2410.899658203125,
+          2502.851318359375,
+          3044.1669921875,
+          3693.026123046875
+        ],
+        "layer": 0,
+        "staticColor_Alpha": [
+          1,
+          1,
+          1,
+          3.75
+        ],
+        "alphaTestValueAB_filterMode_addBlend": [
+          -1,
+          -1,
+          2,
+          1
+        ],
+        "amount_blend_modulate_vs_add_flasherMode": [
+          1,
+          0.9998999834060669,
+          0
+        ],
+        "lightCenter_doShadow": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "balls[0]": [
+          67.20219421386719,
+          2059.921142578125,
+          27.821531295776367,
+          25
+        ],
+        "tex_flasher_A": 5,
+        "tex_flasher_B": 10
+      },
+      "flasherGeometry": {
+        "vertices": 4,
+        "indices": 6,
+        "vertexBytes": "pYNBRHroUUSaL7JDAAAAAAAAAAAAAIA/AAAAAAAAAAClg0FEkH9aROB8EcIAAAAAAAAAAAAAgD8AAAAAAACAP9cqfkSQf1pE4HwRwgAAAAAAAAAAAACAPwAAgD8AAIA/1yp+RHroUUSaL7JDAAAAAAAAAAAAAIA/AACAPwAAAAA=",
+        "indexBytes": "AAAAAAIAAAABAAAAAAAAAAMAAAACAAAA"
+      },
+      "pixelBefore": [
+        0.0033626556396484375,
+        0.0023097991943359375,
+        0.00910186767578125,
+        1
+      ],
+      "blend": {
+        "enabled": true,
+        "src": 770,
+        "dst": 769,
+        "srcAlpha": 0,
+        "dstAlpha": 1,
+        "equation": 32779,
+        "equationAlpha": 32779,
+        "mask": [
+          true,
+          true,
+          true,
+          true
+        ]
+      },
+      "pixelAfter": [
+        0.00341796875,
+        0.0023479461669921875,
+        0.009246826171875,
+        1
+      ]
+    }
+  },
+  "ramp": {
+    "name": "rrail",
+    "drawIndex": 266,
+    "draw": {
+      "method": "drawElements",
+      "args": [
+        4,
+        6,
+        5123,
+        130908
+      ],
+      "name": "texture",
+      "target": 1,
+      "viewport": [
+        0,
+        0,
+        230,
+        424
+      ],
+      "scissorEnabled": false,
+      "scissor": [
+        8,
+        23,
+        41,
+        75
+      ],
+      "uniforms": {
+        "layer": 0,
+        "objectSpaceNormalMap": false,
+        "is_metal": false,
+        "doNormalMapping": false,
+        "doRefractions": false,
+        "matProj[0]": [
+          5.064915180206299,
+          0,
+          0,
+          0,
+          0,
+          -2.7474775314331055,
+          0,
+          0,
+          0,
+          0.00006103515625,
+          -1.848576545715332,
+          -1,
+          0,
+          0.00033538544084876776,
+          -3782.6748046875,
+          -0.000244140625
+        ],
+        "refractionTint_thickness": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "basicLightPos[0]": [
+          476,
+          705,
+          7500,
+          0
+        ],
+        "basicLightEmission[0]": [
+          5600000,
+          5358431.5,
+          5094902.5,
+          0
+        ],
+        "cAmbient_LightRange": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "fenvEmissionScale_TexWidth": [
+          1.399999976158142,
+          256
+        ],
+        "fDisableLighting_top_below": [
+          0,
+          0
+        ],
+        "cBase_Alpha": [
+          0.7529412508010864,
+          0.7529412508010864,
+          0.7529412508010864,
+          0.9998999834060669
+        ],
+        "Roughness_WrapL_Edge_Thickness": [
+          16,
+          0.25,
+          1,
+          0.047058820724487305
+        ],
+        "cClearcoat_EdgeAlpha": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "cGlossy_ImageLerp": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "staticColor_Alpha": [
+          1,
+          1,
+          1,
+          1
+        ],
+        "w_h_height": [
+          0.004347825888544321,
+          0.002358490601181984,
+          0,
+          0
+        ],
+        "mirrorNormal_factor": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "lightCenter_doShadow": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "balls[0]": [
+          67.20219421386719,
+          2059.921142578125,
+          27.821531295776367,
+          25
+        ],
+        "tex_base_color": 15,
+        "tex_env": 6,
+        "tex_diffuse_env": 2,
+        "tex_base_transmission": 3,
+        "tex_base_normalmap": 10,
+        "tex_reflection": 7,
+        "tex_refraction": 13,
+        "tex_probe_depth": 13
+      },
+      "pixelBefore": [
+        0.00341796875,
+        0.0023479461669921875,
+        0.009246826171875,
+        1
+      ],
+      "blend": {
+        "enabled": false,
+        "src": 770,
+        "dst": 769,
+        "srcAlpha": 0,
+        "dstAlpha": 1,
+        "equation": 32779,
+        "equationAlpha": 32779,
+        "mask": [
+          true,
+          true,
+          true,
+          true
+        ]
+      },
+      "matrixKind": "basic",
+      "matrices": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0.8660253882408142,
+        0.5,
+        0,
+        0,
+        -0.5,
+        0.8660253882408142,
+        0,
+        -476,
+        -910.96337890625,
+        -3693.0263671875,
+        1,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0.8660253882408142,
+        0.5,
+        0,
+        0,
+        -0.5,
+        0.8660253882408142,
+        0,
+        -476,
+        -910.96337890625,
+        -3693.0263671875,
+        1,
+        1,
+        0,
+        0,
+        476,
+        0,
+        0.8660253882408142,
+        0.5,
+        2635.4306640625,
+        0,
+        -0.5,
+        0.866025447845459,
+        2742.773193359375,
+        0,
+        0,
+        0,
+        1,
+        5.064915180206299,
+        0,
+        0,
+        0,
+        0,
+        -2.379385232925415,
+        -0.924288272857666,
+        -0.5,
+        0,
+        1.3737388849258423,
+        -1.6009142398834229,
+        -0.8660253882408142,
+        -2410.899658203125,
+        2502.851318359375,
+        3044.1669921875,
+        3693.026123046875
+      ],
+      "transmissionActive": true,
+      "transmissionTexture": 5,
+      "pixelAfter": [
+        0.00913238525390625,
+        0.00794219970703125,
+        0.00754547119140625,
+        0.99951171875
+      ]
+    }
+  },
+  "sourceRevision": "195f214dd4849b8ef6113fd377258b78d0dec3bf",
+  "sourceFunctions": [
+    "src/parts/ramp.cpp Ramp::UpdateBounds/Render",
+    "src/renderer/RenderDevice.cpp RenderDevice::DrawMesh",
+    "src/renderer/Shader.cpp Shader::SetMaterial"
+  ],
+  "scope": "Original committed current-master table and unchanged native engine. Explicit Flasher016.Visible=True is the sole declared component input; all source physics, clocks, draw order, pixels and states remain native. The native depth-writing ramp is submitted after the flasher although GL blending is disabled."
+}

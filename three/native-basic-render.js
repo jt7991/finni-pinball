@@ -6,7 +6,7 @@ import {nativePrimitiveWorld,nativePrimitiveMatrices,nativeModelMatrices} from '
 import {nativeShaderArray} from './native-shader-state.js';
 import {decodeNativeGeometry} from './native-geometry-codec.js';
 import {nativeMirrorNormalFactor} from './native-reflection.js';
-import {nativeTransparentOrder} from './native-render-order.js';
+import {nativeTransparentOrder,nativeBasicTransparentHeight,nativeBasicTransparentPass} from './native-render-order.js';
 import {nativeSamplersFor} from './native-samplers.js';
 import {nativeCameraForPart} from './native-camera-stage.js';
 
@@ -48,7 +48,7 @@ export function createNativePrimitiveVisuals(renderer,scene,assets,lighting,{sta
   uniforms.matProj={value:new Float32Array(16)};
   uniforms.balls={value:new Float32Array(32)};
   for(const [name,record]of Object.entries(spec.textures)){let texture=dummy;if(name==='tex_base_color')texture=baseTexture(record);else if(name==='tex_env')texture=lighting.textures.environment;else if(name==='tex_diffuse_env')texture=lighting.textures.irradiance;else if(name==='tex_base_transmission')texture=transmissionTexture??dummy;else if(name==='tex_reflection')texture=reflectionTexture??dummy;uniforms[name]={value:texture};}
-  const state=spec.renderState,legacyTransparent=state.blend||spec.spec.kind==='Wall'&&dynamicWalls.has(spec.spec.name);
+  const state=spec.renderState,legacyTransparent=nativeBasicTransparentPass(spec,spec.spec.kind==='Wall'&&dynamicWalls.has(spec.spec.name));
   // These are the native states supported by this basic material path. Fail
   // explicitly if a newly exported part needs another rendering technique.
   if(state.frontFace!==2305||state.depthFunc!==515||state.cull&&![1028,1029].includes(state.cullFace)||state.blend&&(state.blendSrcRGB!==770||state.blendSrcAlpha!==770||state.blendDstRGB!==771||state.blendDstAlpha!==771||state.blendEquationRGB!==32774||state.blendEquationAlpha!==32774))throw Error('Unsupported native basic render state: '+spec.spec.name);
@@ -67,7 +67,7 @@ export function createNativePrimitiveVisuals(renderer,scene,assets,lighting,{sta
   const projection=nativeShaderArray(cameraNative.projection);
   for(const part of parts){if(skipParts?.has(part))continue;const {state,spec,record}=part,native=nativeCameraForPart(cameraNative,spec);part.material.uniforms.w_h_height.value.set(screen);part.material.uniforms.matProj.value.set(projection);
    part.mesh.renderOrder=native.reflection?(record.reflectionDrawOrder??record.drawOrder):record.drawOrder;
-   if(part.material.transparent){const height=spec.kind==='Wall'?spec.height_top:spec.kind==='Light'?Math.fround(Math.fround(spec.surface_height??0)+Math.fround(spec.height)):spec.position?.z??0,bias=spec.kind==='Wall'?0:spec.depth_bias??0,slot=spec.kind==='Wall'?({side:0,top:1,bottom:2}[record.role]??0):0;part.mesh.userData.nativeTransparentOrder=nativeTransparentOrder(height,bias,spec.native_source_order,slot,!!native.reflection);part.mesh.renderOrder=part.mesh.userData.nativeTransparentOrder[0];}
+   if(part.material.transparent){const height=nativeBasicTransparentHeight(spec),bias=spec.kind==='Wall'?0:spec.depth_bias??0,slot=spec.kind==='Wall'?({side:0,top:1,bottom:2}[record.role]??0):0;part.mesh.userData.nativeTransparentOrder=nativeTransparentOrder(height,bias,spec.native_source_order,slot,!!native.reflection);part.mesh.renderOrder=part.mesh.userData.nativeTransparentOrder[0];}
    const angles=record.transform==='identity'?noAngles:[state?.rotx??spec.rot_and_tra[0],state?.roty??spec.rot_and_tra[1],state?.rotz??spec.rot_and_tra[2]];
    let cached=part.cameras.get(native);
    if(!cached||angles.some((value,i)=>value!==cached.angles[i])){
