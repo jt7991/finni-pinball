@@ -1,0 +1,103 @@
+{
+  "scope": "Isolated original-engine event component. Declared added Bumper1_Animate counter, PlayHit and direct unchanged native UpdateAnimation calls execute while native GameTime remains paused. This modifies the component and is not a clean whole-game fidelity reference.",
+  "engineSHA256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+  "functionIndex": 2568,
+  "spec": {
+    "center": {
+      "x": 518.45123,
+      "y": 387.1423
+    },
+    "radius": 45,
+    "is_timer_enabled": false,
+    "timer_interval": 100,
+    "threshold": 1,
+    "force": 10,
+    "scatter": 0,
+    "height_scale": 90,
+    "ring_speed": 0.5,
+    "orientation": 90,
+    "ring_drop_offset": 0,
+    "cap_material": "",
+    "base_material": "Plastic Flippers",
+    "socket_material": "Plastic Red",
+    "ring_material": "Metal",
+    "surface": "",
+    "name": "Bumper1",
+    "is_cap_visible": false,
+    "is_base_visible": false,
+    "is_ring_visible": true,
+    "is_socket_visible": true,
+    "hit_event": true,
+    "is_collidable": true,
+    "is_reflection_enabled": true,
+    "kind": "Bumper",
+    "native_source_order": 268,
+    "surface_height": 0
+  },
+  "rows": [
+    {
+      "kind": "settled",
+      "ms": 2266,
+      "count": 0
+    },
+    {
+      "kind": "idle",
+      "delta": 16,
+      "ms": 2266,
+      "count": 0
+    },
+    {
+      "kind": "idle",
+      "delta": 33,
+      "ms": 2266,
+      "count": 0
+    },
+    {
+      "kind": "idle",
+      "delta": 1000,
+      "ms": 2266,
+      "count": 0
+    },
+    {
+      "kind": "hit-update",
+      "delta": 16,
+      "ms": 2266,
+      "count": 2
+    },
+    {
+      "kind": "hit-update",
+      "delta": 100,
+      "ms": 2266,
+      "count": 4
+    },
+    {
+      "kind": "hit-update",
+      "delta": 100,
+      "ms": 2266,
+      "count": 6
+    },
+    {
+      "kind": "hit-update",
+      "delta": 100,
+      "ms": 2266,
+      "count": 6
+    },
+    {
+      "kind": "hit-update",
+      "delta": 100,
+      "ms": 2266,
+      "count": 6
+    }
+  ],
+  "freeze": {
+    "before": {
+      "ms": 2266,
+      "count": 0
+    },
+    "after": {
+      "ms": 2266,
+      "count": 0
+    }
+  },
+  "errors": []
+}

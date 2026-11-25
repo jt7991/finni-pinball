@@ -70,6 +70,7 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--native-whole-frame' in sys.argv:runner='probe-native-whole-frame-browser.mjs'
         if '--whole-frame-render' in sys.argv:runner='test-native-whole-frame-browser.mjs'
         if '--native-frame-history' in sys.argv:runner='probe-native-frame-history.mjs'
+        if '--native-bumper-events' in sys.argv:runner='probe-native-bumper-events.mjs'
         if '--native-gameplay-history' in sys.argv:runner='probe-native-gameplay-history.mjs'
         if '--native-ball-identity' in sys.argv:runner='probe-native-ball-identity.mjs'
         if '--native-live-ball-identity' in sys.argv:runner='probe-native-live-ball-identity.mjs'
@@ -141,6 +142,7 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--native-frame-history' in sys.argv:
             frame_count=next((int(arg.split('=',1)[1]) for arg in sys.argv if arg.startswith('--frames=')),6)
             timeout=max(timeout,60+frame_count*4)
+            if '--paged-history' in sys.argv:timeout=max(timeout,1200)
         if '--frame-history-render' in sys.argv:
             capture_name=next((arg.split('=',1)[1] for arg in sys.argv if arg.startswith('--capture-name=')),'initial-history-r6')
             capture_path=OUT/('native-frame-history-'+capture_name)/'capture.json'

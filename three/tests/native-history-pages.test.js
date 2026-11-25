@@ -15,7 +15,7 @@ test('paged native input reproduces all original launch/control boundaries witho
  const dir=fs.mkdtempSync(path.join(os.tmpdir(),'native-history-replay-'));try{
   const bytes=gunzipSync(fs.readFileSync(new URL('fixtures/vpx-main-launched-controls-state-native.json.gz',import.meta.url)));assert.equal(createHash('sha256').update(bytes).digest('hex'),'607cd21e81a1df7c6de4363dada3ed2a1b3016f51fa116332f5ab298c7783161');
   const original=JSON.parse(bytes),metadata=structuredClone(original),writer=new NativeHistoryPageWriter(dir);
-  for(const keys of nativeHistoryArrayPaths){const parent=keys.slice(0,-1).reduce((v,k)=>v?.[k],metadata),rows=parent?.[keys.at(-1)];if(!rows?.length)continue;for(let i=0;i<rows.length;i+=113)writer.add(keys,Buffer.from(JSON.stringify(rows.slice(i,i+113))));parent[keys.at(-1)]=[];}
+  const paged=writer.pageRemaining(metadata,{pageSize:113});assert.ok(paged.includes('frames'));assert.ok(paged.includes('startup.boundaries'));assert.ok(paged.includes('clock.preparedFrames'));for(const keys of nativeHistoryArrayPaths){const rows=keys.reduce((v,k)=>v?.[k],metadata);if(rows!==undefined)assert.deepEqual(rows,[],'Every supported observer array is paged before manifest serialization');}
   const manifest=writer.finish(metadata);assert.deepEqual(hashNativeHistoryJSON(original),{logicalJSONBytes:manifest.logicalJSONBytes,logicalJSONSHA256:manifest.logicalJSONSHA256});
   const loaded=readNativeHistoryCapture(path.join(dir,'capture-pages.json'));assert.equal(loaded.frames.length,64);assert.equal(loaded.startup.boundaries.length,10000);
   assert.deepEqual(await compareNativeHistoryState(loaded),{framesChecked:64,intervalsChecked:10000,ticks:10230,randomizeClockSamples:2,timerClockSamples:4});

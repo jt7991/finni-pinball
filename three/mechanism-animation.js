@@ -36,8 +36,8 @@ export class BumperAnimation{
   if(this.ringMoving){const step=this.ringDown?-f(this.spec.ring_speed):f(this.spec.ring_speed);this.ringOffset=f(this.ringOffset+f(step*f(milliseconds)));
    if(this.ringDown&&this.ringOffset<=-limit){this.ringOffset=-limit;this.ringDown=false;}
    else if(!this.ringDown&&this.ringOffset>=0){this.ringOffset=0;this.ringMoving=false;}
+   this.emit();
   }
-  this.emit();
   if(this.enableSkirt){
    if(hit){this.skirtMoving=true;this.tilt(true);this.skirtTime=0;}
    if(this.skirtMoving){this.skirtTime=f(this.skirtTime+f(milliseconds));if(this.skirtTime>160){this.skirtMoving=false;this.tilt(false);}this.emit();}

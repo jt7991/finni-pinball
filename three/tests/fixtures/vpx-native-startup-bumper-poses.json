@@ -1,0 +1,884 @@
+{
+  "scope": "Read-only original engine startup component. Initial hit-position bytes are uninitialized native allocator contents, explicitly supplied only in the component test. This does not establish production initialization or whole-frame parity, and these native words must not initialize the playing model.",
+  "engineSHA256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+  "sourceTableSHA256": "6160e43c1a74f6dc70fd9852433c3373fe11b3e55d4f3a3fedc435265591b5c5",
+  "sourceManifestSHA256": "f6381823621f10c36e72a807640280711f5871533cd06178cc4f7a06fe8d77b4",
+  "sourceLogicalJSONBytes": 2369483,
+  "sourceLogicalJSONSHA256": "2c7caa23e0217a94f27490401d2de6a3327e31d17b3596e9b7e597816c410151",
+  "specs": [
+    {
+      "center": {
+        "x": 518.45123,
+        "y": 387.1423
+      },
+      "radius": 45,
+      "is_timer_enabled": false,
+      "timer_interval": 100,
+      "threshold": 1,
+      "force": 10,
+      "scatter": 0,
+      "height_scale": 90,
+      "ring_speed": 0.5,
+      "orientation": 90,
+      "ring_drop_offset": 0,
+      "cap_material": "",
+      "base_material": "Plastic Flippers",
+      "socket_material": "Plastic Red",
+      "ring_material": "Metal",
+      "surface": "",
+      "name": "Bumper1",
+      "is_cap_visible": false,
+      "is_base_visible": false,
+      "is_ring_visible": true,
+      "is_socket_visible": true,
+      "hit_event": true,
+      "is_collidable": true,
+      "is_reflection_enabled": true,
+      "kind": "Bumper",
+      "native_source_order": 268,
+      "surface_height": 0
+    },
+    {
+      "center": {
+        "x": 669.3442,
+        "y": 483.2214
+      },
+      "radius": 45,
+      "is_timer_enabled": false,
+      "timer_interval": 100,
+      "threshold": 1,
+      "force": 10,
+      "scatter": 0,
+      "height_scale": 90,
+      "ring_speed": 0.5,
+      "orientation": 90,
+      "ring_drop_offset": 0,
+      "cap_material": "",
+      "base_material": "Plastic Flippers",
+      "socket_material": "Plastic Red",
+      "ring_material": "Metal",
+      "surface": "",
+      "name": "Bumper2",
+      "is_cap_visible": false,
+      "is_base_visible": false,
+      "is_ring_visible": true,
+      "is_socket_visible": true,
+      "hit_event": true,
+      "is_collidable": true,
+      "is_reflection_enabled": true,
+      "kind": "Bumper",
+      "native_source_order": 269,
+      "surface_height": 0
+    },
+    {
+      "center": {
+        "x": 500.89777,
+        "y": 632.8832
+      },
+      "radius": 45,
+      "is_timer_enabled": false,
+      "timer_interval": 100,
+      "threshold": 1,
+      "force": 10,
+      "scatter": 0,
+      "height_scale": 90,
+      "ring_speed": 0.5,
+      "orientation": 90,
+      "ring_drop_offset": 0,
+      "cap_material": "",
+      "base_material": "Plastic Flippers",
+      "socket_material": "Plastic Red",
+      "ring_material": "Metal",
+      "surface": "",
+      "name": "Bumper3",
+      "is_cap_visible": false,
+      "is_base_visible": false,
+      "is_ring_visible": true,
+      "is_socket_visible": true,
+      "hit_event": true,
+      "is_collidable": true,
+      "is_reflection_enabled": true,
+      "kind": "Bumper",
+      "native_source_order": 270,
+      "surface_height": 0
+    }
+  ],
+  "frames": [
+    {
+      "frameIndex": 1,
+      "ms": 0,
+      "animationMilliseconds": 0,
+      "poses": {
+        "latest": {
+          "Bumper1": {
+            "name": "Bumper1",
+            "center": {
+              "x": 518.4512329101562,
+              "y": 387.1423034667969
+            },
+            "ringOffset": 0,
+            "rotx": 0,
+            "roty": 0,
+            "hitPosition": [
+              415.544921875,
+              341.156982421875,
+              225.69619750976562
+            ],
+            "hitPositionBits": [
+              1137690048,
+              1135252504,
+              1130476090
+            ],
+            "hitPending": true,
+            "skirtTime": 0,
+            "skirtMoving": false,
+            "object": 45504880,
+            "circle": 239927080,
+            "vtable": 901632
+          },
+          "Bumper2": {
+            "name": "Bumper2",
+            "center": {
+              "x": 669.3441772460938,
+              "y": 483.2214050292969
+            },
+            "ringOffset": 0,
+            "rotx": 0,
+            "roty": 0,
+            "hitPosition": [
+              184.64796447753906,
+              9.403955927617072e-38,
+              1.6988589243419661e-37
+            ],
+            "hitPositionBits": [
+              1127785953,
+              33554433,
+              40320152
+            ],
+            "hitPending": true,
+            "skirtTime": 0,
+            "skirtMoving": false,
+            "object": 45423984,
+            "circle": 239927184,
+            "vtable": 901632
+          },
+          "Bumper3": {
+            "name": "Bumper3",
+            "center": {
+              "x": 500.89776611328125,
+              "y": 632.8831787109375
+            },
+            "ringOffset": 0,
+            "rotx": 0,
+            "roty": 0,
+            "hitPosition": [
+              1.6988589243419661e-37,
+              287.2916564941406,
+              157.72665405273438
+            ],
+            "hitPositionBits": [
+              40320152,
+              1133487445,
+              1126021638
+            ],
+            "hitPending": true,
+            "skirtTime": 0,
+            "skirtMoving": false,
+            "object": 45496992,
+            "circle": 239927288,
+            "vtable": 901632
+          }
+        },
+        "errors": [],
+        "layout": {
+          "sourceFunction": 2568,
+          "center": 264,
+          "circlePointer": 500,
+          "ringOffsetInCircle": 88,
+          "rotx": 504,
+          "roty": 508,
+          "scope": "Read-only current CPU memory snapshot; unique exact authored properties, live circle pointer and six valid vtable entries. No state, time, geometry or draw changes."
+        }
+      }
+    },
+    {
+      "frameIndex": 2,
+      "ms": 0,
+      "animationMilliseconds": 0,
+      "poses": {
+        "latest": {
+          "Bumper1": {
+            "name": "Bumper1",
+            "center": {
+              "x": 518.4512329101562,
+              "y": 387.1423034667969
+            },
+            "ringOffset": 0,
+            "rotx": 0,
+            "roty": 0,
+            "hitPosition": [
+              415.544921875,
+              341.156982421875,
+              225.69619750976562
+            ],
+            "hitPositionBits": [
+              1137690048,
+              1135252504,
+              1130476090
+            ],
+            "hitPending": true,
+            "skirtTime": 0,
+            "skirtMoving": false,
+            "object": 45504880,
+            "circle": 239927080,
+            "vtable": 901632
+          },
+          "Bumper2": {
+            "name": "Bumper2",
+            "center": {
+              "x": 669.3441772460938,
+              "y": 483.2214050292969
+            },
+            "ringOffset": 0,
+            "rotx": 0,
+            "roty": 0,
+            "hitPosition": [
+              184.64796447753906,
+              9.403955927617072e-38,
+              1.6988589243419661e-37
+            ],
+            "hitPositionBits": [
+              1127785953,
+              33554433,
+              40320152
+            ],
+            "hitPending": true,
+            "skirtTime": 0,
+            "skirtMoving": false,
+            "object": 45423984,
+            "circle": 239927184,
+            "vtable": 901632
+          },
+          "Bumper3": {
+            "name": "Bumper3",
+            "center": {
+              "x": 500.89776611328125,
+              "y": 632.8831787109375
+            },
+            "ringOffset": 0,
+            "rotx": 0,
+            "roty": 0,
+            "hitPosition": [
+              1.6988589243419661e-37,
+              287.2916564941406,
+              157.72665405273438
+            ],
+            "hitPositionBits": [
+              40320152,
+              1133487445,
+              1126021638
+            ],
+            "hitPending": true,
+            "skirtTime": 0,
+            "skirtMoving": false,
+            "object": 45496992,
+            "circle": 239927288,
+            "vtable": 901632
+          }
+        },
+        "errors": [],
+        "layout": {
+          "sourceFunction": 2568,
+          "center": 264,
+          "circlePointer": 500,
+          "ringOffsetInCircle": 88,
+          "rotx": 504,
+          "roty": 508,
+          "scope": "Read-only current CPU memory snapshot; unique exact authored properties, live circle pointer and six valid vtable entries. No state, time, geometry or draw changes."
+        }
+      }
+    },
+    {
+      "frameIndex": 3,
+      "ms": 2,
+      "animationMilliseconds": 0,
+      "poses": {
+        "latest": {
+          "Bumper1": {
+            "name": "Bumper1",
+            "center": {
+              "x": 518.4512329101562,
+              "y": 387.1423034667969
+            },
+            "ringOffset": 0,
+            "rotx": 0,
+            "roty": 0,
+            "hitPosition": [
+              415.544921875,
+              341.156982421875,
+              225.69619750976562
+            ],
+            "hitPositionBits": [
+              1137690048,
+              1135252504,
+              1130476090
+            ],
+            "hitPending": true,
+            "skirtTime": 0,
+            "skirtMoving": false,
+            "object": 45504880,
+            "circle": 239927080,
+            "vtable": 901632
+          },
+          "Bumper2": {
+            "name": "Bumper2",
+            "center": {
+              "x": 669.3441772460938,
+              "y": 483.2214050292969
+            },
+            "ringOffset": 0,
+            "rotx": 0,
+            "roty": 0,
+            "hitPosition": [
+              184.64796447753906,
+              9.403955927617072e-38,
+              1.6988589243419661e-37
+            ],
+            "hitPositionBits": [
+              1127785953,
+              33554433,
+              40320152
+            ],
+            "hitPending": true,
+            "skirtTime": 0,
+            "skirtMoving": false,
+            "object": 45423984,
+            "circle": 239927184,
+            "vtable": 901632
+          },
+          "Bumper3": {
+            "name": "Bumper3",
+            "center": {
+              "x": 500.89776611328125,
+              "y": 632.8831787109375
+            },
+            "ringOffset": 0,
+            "rotx": 0,
+            "roty": 0,
+            "hitPosition": [
+              1.6988589243419661e-37,
+              287.2916564941406,
+              157.72665405273438
+            ],
+            "hitPositionBits": [
+              40320152,
+              1133487445,
+              1126021638
+            ],
+            "hitPending": true,
+            "skirtTime": 0,
+            "skirtMoving": false,
+            "object": 45496992,
+            "circle": 239927288,
+            "vtable": 901632
+          }
+        },
+        "errors": [],
+        "layout": {
+          "sourceFunction": 2568,
+          "center": 264,
+          "circlePointer": 500,
+          "ringOffsetInCircle": 88,
+          "rotx": 504,
+          "roty": 508,
+          "scope": "Read-only current CPU memory snapshot; unique exact authored properties, live circle pointer and six valid vtable entries. No state, time, geometry or draw changes."
+        }
+      }
+    },
+    {
+      "frameIndex": 4,
+      "ms": 151,
+      "animationMilliseconds": 145,
+      "poses": {
+        "latest": {
+          "Bumper1": {
+            "name": "Bumper1",
+            "center": {
+              "x": 518.4512329101562,
+              "y": 387.1423034667969
+            },
+            "ringOffset": -45,
+            "rotx": 2.0399186611175537,
+            "roty": -4.564946174621582,
+            "hitPosition": [
+              415.544921875,
+              341.156982421875,
+              225.69619750976562
+            ],
+            "hitPositionBits": [
+              1137690048,
+              1135252504,
+              1130476090
+            ],
+            "hitPending": false,
+            "skirtTime": 145,
+            "skirtMoving": true,
+            "object": 45504880,
+            "circle": 239927080,
+            "vtable": 901632
+          },
+          "Bumper2": {
+            "name": "Bumper2",
+            "center": {
+              "x": 669.3441772460938,
+              "y": 483.2214050292969
+            },
+            "ringOffset": -45,
+            "rotx": 3.5301425457000732,
+            "roty": -3.540916919708252,
+            "hitPosition": [
+              184.64796447753906,
+              9.403955927617072e-38,
+              1.6988589243419661e-37
+            ],
+            "hitPositionBits": [
+              1127785953,
+              33554433,
+              40320152
+            ],
+            "hitPending": false,
+            "skirtTime": 145,
+            "skirtMoving": true,
+            "object": 45423984,
+            "circle": 239927184,
+            "vtable": 901632
+          },
+          "Bumper3": {
+            "name": "Bumper3",
+            "center": {
+              "x": 500.89776611328125,
+              "y": 632.8831787109375
+            },
+            "ringOffset": -45,
+            "rotx": 2.839470863342285,
+            "roty": -4.115508079528809,
+            "hitPosition": [
+              1.6988589243419661e-37,
+              287.2916564941406,
+              157.72665405273438
+            ],
+            "hitPositionBits": [
+              40320152,
+              1133487445,
+              1126021638
+            ],
+            "hitPending": false,
+            "skirtTime": 145,
+            "skirtMoving": true,
+            "object": 45496992,
+            "circle": 239927288,
+            "vtable": 901632
+          }
+        },
+        "errors": [],
+        "layout": {
+          "sourceFunction": 2568,
+          "center": 264,
+          "circlePointer": 500,
+          "ringOffsetInCircle": 88,
+          "rotx": 504,
+          "roty": 508,
+          "scope": "Read-only current CPU memory snapshot; unique exact authored properties, live circle pointer and six valid vtable entries. No state, time, geometry or draw changes."
+        }
+      }
+    },
+    {
+      "frameIndex": 5,
+      "ms": 949,
+      "animationMilliseconds": 220,
+      "poses": {
+        "latest": {
+          "Bumper1": {
+            "name": "Bumper1",
+            "center": {
+              "x": 518.4512329101562,
+              "y": 387.1423034667969
+            },
+            "ringOffset": -7.5,
+            "rotx": 0,
+            "roty": 0,
+            "hitPosition": [
+              415.544921875,
+              341.156982421875,
+              225.69619750976562
+            ],
+            "hitPositionBits": [
+              1137690048,
+              1135252504,
+              1130476090
+            ],
+            "hitPending": false,
+            "skirtTime": 220,
+            "skirtMoving": false,
+            "object": 45504880,
+            "circle": 239927080,
+            "vtable": 901632
+          },
+          "Bumper2": {
+            "name": "Bumper2",
+            "center": {
+              "x": 669.3441772460938,
+              "y": 483.2214050292969
+            },
+            "ringOffset": -7.5,
+            "rotx": 0,
+            "roty": 0,
+            "hitPosition": [
+              184.64796447753906,
+              9.403955927617072e-38,
+              1.6988589243419661e-37
+            ],
+            "hitPositionBits": [
+              1127785953,
+              33554433,
+              40320152
+            ],
+            "hitPending": false,
+            "skirtTime": 220,
+            "skirtMoving": false,
+            "object": 45423984,
+            "circle": 239927184,
+            "vtable": 901632
+          },
+          "Bumper3": {
+            "name": "Bumper3",
+            "center": {
+              "x": 500.89776611328125,
+              "y": 632.8831787109375
+            },
+            "ringOffset": -7.5,
+            "rotx": 0,
+            "roty": 0,
+            "hitPosition": [
+              1.6988589243419661e-37,
+              287.2916564941406,
+              157.72665405273438
+            ],
+            "hitPositionBits": [
+              40320152,
+              1133487445,
+              1126021638
+            ],
+            "hitPending": false,
+            "skirtTime": 220,
+            "skirtMoving": false,
+            "object": 45496992,
+            "circle": 239927288,
+            "vtable": 901632
+          }
+        },
+        "errors": [],
+        "layout": {
+          "sourceFunction": 2568,
+          "center": 264,
+          "circlePointer": 500,
+          "ringOffsetInCircle": 88,
+          "rotx": 504,
+          "roty": 508,
+          "scope": "Read-only current CPU memory snapshot; unique exact authored properties, live circle pointer and six valid vtable entries. No state, time, geometry or draw changes."
+        }
+      }
+    },
+    {
+      "frameIndex": 6,
+      "ms": 998,
+      "animationMilliseconds": 997,
+      "poses": {
+        "latest": {
+          "Bumper1": {
+            "name": "Bumper1",
+            "center": {
+              "x": 518.4512329101562,
+              "y": 387.1423034667969
+            },
+            "ringOffset": 0,
+            "rotx": 0,
+            "roty": 0,
+            "hitPosition": [
+              415.544921875,
+              341.156982421875,
+              225.69619750976562
+            ],
+            "hitPositionBits": [
+              1137690048,
+              1135252504,
+              1130476090
+            ],
+            "hitPending": false,
+            "skirtTime": 220,
+            "skirtMoving": false,
+            "object": 45504880,
+            "circle": 239927080,
+            "vtable": 901632
+          },
+          "Bumper2": {
+            "name": "Bumper2",
+            "center": {
+              "x": 669.3441772460938,
+              "y": 483.2214050292969
+            },
+            "ringOffset": 0,
+            "rotx": 0,
+            "roty": 0,
+            "hitPosition": [
+              184.64796447753906,
+              9.403955927617072e-38,
+              1.6988589243419661e-37
+            ],
+            "hitPositionBits": [
+              1127785953,
+              33554433,
+              40320152
+            ],
+            "hitPending": false,
+            "skirtTime": 220,
+            "skirtMoving": false,
+            "object": 45423984,
+            "circle": 239927184,
+            "vtable": 901632
+          },
+          "Bumper3": {
+            "name": "Bumper3",
+            "center": {
+              "x": 500.89776611328125,
+              "y": 632.8831787109375
+            },
+            "ringOffset": 0,
+            "rotx": 0,
+            "roty": 0,
+            "hitPosition": [
+              1.6988589243419661e-37,
+              287.2916564941406,
+              157.72665405273438
+            ],
+            "hitPositionBits": [
+              40320152,
+              1133487445,
+              1126021638
+            ],
+            "hitPending": false,
+            "skirtTime": 220,
+            "skirtMoving": false,
+            "object": 45496992,
+            "circle": 239927288,
+            "vtable": 901632
+          }
+        },
+        "errors": [],
+        "layout": {
+          "sourceFunction": 2568,
+          "center": 264,
+          "circlePointer": 500,
+          "ringOffsetInCircle": 88,
+          "rotx": 504,
+          "roty": 508,
+          "scope": "Read-only current CPU memory snapshot; unique exact authored properties, live circle pointer and six valid vtable entries. No state, time, geometry or draw changes."
+        }
+      }
+    },
+    {
+      "frameIndex": 7,
+      "ms": 1048,
+      "animationMilliseconds": 1047,
+      "poses": {
+        "latest": {
+          "Bumper1": {
+            "name": "Bumper1",
+            "center": {
+              "x": 518.4512329101562,
+              "y": 387.1423034667969
+            },
+            "ringOffset": 0,
+            "rotx": 0,
+            "roty": 0,
+            "hitPosition": [
+              415.544921875,
+              341.156982421875,
+              225.69619750976562
+            ],
+            "hitPositionBits": [
+              1137690048,
+              1135252504,
+              1130476090
+            ],
+            "hitPending": false,
+            "skirtTime": 220,
+            "skirtMoving": false,
+            "object": 45504880,
+            "circle": 239927080,
+            "vtable": 901632
+          },
+          "Bumper2": {
+            "name": "Bumper2",
+            "center": {
+              "x": 669.3441772460938,
+              "y": 483.2214050292969
+            },
+            "ringOffset": 0,
+            "rotx": 0,
+            "roty": 0,
+            "hitPosition": [
+              184.64796447753906,
+              9.403955927617072e-38,
+              1.6988589243419661e-37
+            ],
+            "hitPositionBits": [
+              1127785953,
+              33554433,
+              40320152
+            ],
+            "hitPending": false,
+            "skirtTime": 220,
+            "skirtMoving": false,
+            "object": 45423984,
+            "circle": 239927184,
+            "vtable": 901632
+          },
+          "Bumper3": {
+            "name": "Bumper3",
+            "center": {
+              "x": 500.89776611328125,
+              "y": 632.8831787109375
+            },
+            "ringOffset": 0,
+            "rotx": 0,
+            "roty": 0,
+            "hitPosition": [
+              1.6988589243419661e-37,
+              287.2916564941406,
+              157.72665405273438
+            ],
+            "hitPositionBits": [
+              40320152,
+              1133487445,
+              1126021638
+            ],
+            "hitPending": false,
+            "skirtTime": 220,
+            "skirtMoving": false,
+            "object": 45496992,
+            "circle": 239927288,
+            "vtable": 901632
+          }
+        },
+        "errors": [],
+        "layout": {
+          "sourceFunction": 2568,
+          "center": 264,
+          "circlePointer": 500,
+          "ringOffsetInCircle": 88,
+          "rotx": 504,
+          "roty": 508,
+          "scope": "Read-only current CPU memory snapshot; unique exact authored properties, live circle pointer and six valid vtable entries. No state, time, geometry or draw changes."
+        }
+      }
+    },
+    {
+      "frameIndex": 8,
+      "ms": 1090,
+      "animationMilliseconds": 1089,
+      "poses": {
+        "latest": {
+          "Bumper1": {
+            "name": "Bumper1",
+            "center": {
+              "x": 518.4512329101562,
+              "y": 387.1423034667969
+            },
+            "ringOffset": 0,
+            "rotx": 0,
+            "roty": 0,
+            "hitPosition": [
+              415.544921875,
+              341.156982421875,
+              225.69619750976562
+            ],
+            "hitPositionBits": [
+              1137690048,
+              1135252504,
+              1130476090
+            ],
+            "hitPending": false,
+            "skirtTime": 220,
+            "skirtMoving": false,
+            "object": 45504880,
+            "circle": 239927080,
+            "vtable": 901632
+          },
+          "Bumper2": {
+            "name": "Bumper2",
+            "center": {
+              "x": 669.3441772460938,
+              "y": 483.2214050292969
+            },
+            "ringOffset": 0,
+            "rotx": 0,
+            "roty": 0,
+            "hitPosition": [
+              184.64796447753906,
+              9.403955927617072e-38,
+              1.6988589243419661e-37
+            ],
+            "hitPositionBits": [
+              1127785953,
+              33554433,
+              40320152
+            ],
+            "hitPending": false,
+            "skirtTime": 220,
+            "skirtMoving": false,
+            "object": 45423984,
+            "circle": 239927184,
+            "vtable": 901632
+          },
+          "Bumper3": {
+            "name": "Bumper3",
+            "center": {
+              "x": 500.89776611328125,
+              "y": 632.8831787109375
+            },
+            "ringOffset": 0,
+            "rotx": 0,
+            "roty": 0,
+            "hitPosition": [
+              1.6988589243419661e-37,
+              287.2916564941406,
+              157.72665405273438
+            ],
+            "hitPositionBits": [
+              40320152,
+              1133487445,
+              1126021638
+            ],
+            "hitPending": false,
+            "skirtTime": 220,
+            "skirtMoving": false,
+            "object": 45496992,
+            "circle": 239927288,
+            "vtable": 901632
+          }
+        },
+        "errors": [],
+        "layout": {
+          "sourceFunction": 2568,
+          "center": 264,
+          "circlePointer": 500,
+          "ringOffsetInCircle": 88,
+          "rotx": 504,
+          "roty": 508,
+          "scope": "Read-only current CPU memory snapshot; unique exact authored properties, live circle pointer and six valid vtable entries. No state, time, geometry or draw changes."
+        }
+      }
+    }
+  ]
+}

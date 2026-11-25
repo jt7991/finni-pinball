@@ -16,7 +16,8 @@ export function installNativePostprocessObserver(options={}){
   if(!asyncReadback){gl.readPixels(0,0,width,height,gl.RGBA,pixels instanceof Float32Array?gl.FLOAT:gl.UNSIGNED_BYTE,pixels);return image(id,width,height,pixels,defer);}
   if(!(defer??options.deferImageEncoding))throw Error('Asynchronous readback requires deferred encoding');
   const prior=gl.getParameter(gl.PIXEL_PACK_BUFFER_BINDING),buffer=gl.createBuffer();let sync;
-  try{gl.bindBuffer(gl.PIXEL_PACK_BUFFER,buffer);gl.bufferData(gl.PIXEL_PACK_BUFFER,pixels.byteLength,gl.STREAM_READ);gl.readPixels(0,0,width,height,gl.RGBA,pixels instanceof Float32Array?gl.FLOAT:gl.UNSIGNED_BYTE,0);sync=gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE,0);if(!sync)throw Error('Image readback fence unavailable');}
+  const check=stage=>{const error=gl.getError();if(error)throw Error('Asynchronous image '+stage+' GL error '+error+' '+width+'x'+height+' '+pixels.byteLength+' bytes');};
+  try{gl.bindBuffer(gl.PIXEL_PACK_BUFFER,buffer);gl.bufferData(gl.PIXEL_PACK_BUFFER,pixels.byteLength,gl.STREAM_READ);check('buffer allocation');gl.readPixels(0,0,width,height,gl.RGBA,pixels instanceof Float32Array?gl.FLOAT:gl.UNSIGNED_BYTE,0);check('readPixels');sync=gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE,0);check('fence');if(!sync)throw Error('Image readback fence unavailable');}
   catch(error){if(sync)gl.deleteSync(sync);gl.deleteBuffer(buffer);throw error;}finally{gl.bindBuffer(gl.PIXEL_PACK_BUFFER,prior);}
   const row={gl,buffer,sync,pixels,ready:false};pendingReadbacks.push(row);data.imageEncoding.queued++;return image(id,width,height,pixels,defer,()=>row.ready);
  };
