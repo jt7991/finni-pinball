@@ -3,6 +3,7 @@
 // revision 195f214dd4849b8ef6113fd377258b78d0dec3bf.
 // See licenses/VPX-Physics-NOTICE.txt. All calculations use native VPU/VPT.
 import {f,add,sub,mul,div,dot,cross,length,unit,clamp,nativeNormal,nativeGravity,elasticityAtSpeed} from './native-vector.js';
+import {nativeAngleSin,nativeAngleCos} from './native-angle-math.js';
 export function collideNativeSurface(body,hit,material,radius,random){
   const state=body.native,ball=state.snapshot(),n=nativeNormal(hit.normal),gap=f(hit.gap*100);let vn=dot(ball.v,n);
   if(vn>=-f(.0001)){if(vn>f(.0001)||gap>=0)return;vn=-f(.05);}
@@ -16,7 +17,7 @@ export function collideNativeSurface(body,hit,material,radius,random){
   }
   const scatter=f(f((material.scatter<0?material.default_scatter:material.scatter)*Math.PI/180)*f(material.difficulty));
   if(delta>1&&scatter>f(1e-5)){
-    let a=random.signed?random.signed():f(random()*2-1);a=f(a*f(f(f(1-f(a*a))*f(2.59808))*scatter));const sn=f(Math.sin(a)),cs=f(Math.cos(a)),v=ball.v;
+    let a=random.signed?random.signed():f(random()*2-1);a=f(a*f(f(f(1-f(a*a))*f(2.59808))*scatter));const sn=nativeAngleSin(a),cs=nativeAngleCos(a),v=ball.v;
     ball.v={x:f(f(v.x*cs)-f(v.y*sn)),y:f(f(v.y*cs)+f(v.x*sn)),z:v.z};
   }
   state.commit(ball);

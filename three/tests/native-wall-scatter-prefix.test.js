@@ -1,0 +1,12 @@
+import test from'node:test';import assert from'node:assert/strict';import fs from'node:fs';import{gunzipSync}from'node:zlib';import{createHash}from'node:crypto';import{collideNativeSurface}from'../native-ball-response.js';import{runtimeNativeRandom}from'../native-random.js';
+const sha=x=>createHash('sha256').update(x).digest('hex'),vector=a=>({x:a[0],y:a[1],z:a[2]});
+
+test('original wall scatter matches every contact and RNG state across an uninterrupted 65,536-contact prefix',()=>{
+ const bytes=fs.readFileSync(new URL('fixtures/vpx-native-wall-scatter-prefix.json.gz',import.meta.url));assert.equal(sha(bytes),'f0cb3680d1da89317547b74debd6b5f7ec60f9ea05d280bb6ba1bacc31caf8e6');const f=JSON.parse(gunzipSync(bytes));assert.equal(f.format,'native-wall-scatter-v1');assert.equal(f.engineSHA256,'c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8');assert.equal(f.functionIndex,4452);assert.equal(f.functionSHA256,'aa706fb6bc33224dd51be5b28a86e8c72ce33f61a58f8df1e308b1ec5e292dea');assert.equal(f.count,65536);const data=Buffer.from(f.data,'base64');assert.equal(sha(data),f.dataSHA256);assert.equal(data.length,f.count*16);
+ const input=f.input,random=runtimeNativeRandom(),hit={normal:{x:input.normal[0],y:-input.normal[1],z:input.normal[2]},gap:input.gap*.01},material={elasticity:input.elasticity,elasticity_falloff:input.falloff,friction:input.friction,difficulty:input.difficulty};assert.deepEqual(random.getState(),f.initialRandomWords);let ball;const body={native:{snapshot:()=>({p:{...ball.p},v:{...ball.v},m:{...ball.m},mass:input.mass,inertia:250}),commit:value=>ball=value}};
+ for(let i=0;i<f.count;i++){
+  ball={p:vector(input.p),v:vector(input.v),m:vector(input.m),mass:input.mass,inertia:250};collideNativeSurface(body,hit,{...material,scatter:f.scatters[i%f.scatters.length]},input.radius*.01,random);
+  assert.deepEqual(Object.values(ball.p),f.constants.p,'Position at contact '+i);assert.deepEqual(Object.values(ball.m),f.constants.m,'Momentum at contact '+i);assert.equal(ball.v.z,f.constants.vz,'Vertical velocity at contact '+i);assert.equal(ball.v.x,data.readFloatLE(i*16),'Horizontal X velocity at contact '+i);assert.equal(ball.v.y,data.readFloatLE(i*16+4),'Horizontal Y velocity at contact '+i);assert.deepEqual(random.getState(),[data.readUInt32LE(i*16+8),data.readUInt32LE(i*16+12)],'Own RNG at contact '+i);
+ }
+ assert.equal(random.calls,f.count,'One original scatter draw per declared contact, with no state restoration');
+});
