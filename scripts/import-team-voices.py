@@ -48,7 +48,8 @@ def import_voices(url, token, output, install=None, require_complete=False):
     builder = runpy.run_path(str(ROOT / 'scripts/build-finni-callouts.py'))
     config, mapping = builder['lines'](validate_source=False)
     aliases = config['recording_aliases']
-    canonical = {id: text for id, text in mapping.items() if id not in aliases}
+    canonical = builder['recording_lines'](config, mapping)
+    chatter = {f'quote{n}' for n in config['random_quotes']}
     chosen = {}
     page = 1
     while True:
@@ -56,7 +57,7 @@ def import_voices(url, token, output, install=None, require_complete=False):
         batch = request(f'collections/voice_takes/records?{query}')
         for take in batch['items']:
             id = take['line_id']
-            if id == 'custom':
+            if id == 'custom' or id in chatter:
                 continue
             if id not in canonical or take['line_text'].strip() != canonical[id]:
                 raise ValueError(f'Approved take {take["id"]} does not match the current script for {id}. Review it before importing.')

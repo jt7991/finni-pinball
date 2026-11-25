@@ -1,4 +1,4 @@
-"""Apply approved scoop, lock-ramp, presentation, lighting, task-selection and music-routing changes."""
+"""Apply the Finni scoop, lock-ramp, presentation, lighting, audio and task-selection changes."""
 import argparse
 import json
 import runpy
@@ -31,7 +31,7 @@ def restore_tilt(source):
     return source
 
 
-def tuned_script(source, motion=True, music=True):
+def tuned_script(source, motion=True, music=True, trim_callouts=True):
     tuning=json.loads((ROOT/'design/gameplay-tuning.json').read_text())['scoop']
     if source.count(ORIGINAL)!=1:
         raise ValueError('Expected exactly one original HellHouse kick; refusing an unknown source revision.')
@@ -49,15 +49,22 @@ def tuned_script(source, motion=True, music=True):
     lighting = runpy.run_path(str(ROOT/'scripts/apply-finni-lighting.py'))['lighting_script'](display)
     selected = runpy.run_path(str(ROOT/'scripts/apply-party-selection.py'))['selection_script'](lighting)
     ramp = tilt_script(runpy.run_path(str(ROOT/'scripts/apply-lock-ramp-tuning.py'))['ramp_script'](selected))
-    return runpy.run_path(str(ROOT/'scripts/apply-multiball-music.py'))['music_script'](ramp) if music else ramp
+    tuned = runpy.run_path(str(ROOT/'scripts/apply-multiball-music.py'))['music_script'](ramp) if music else ramp
+    if trim_callouts:
+        tuned = runpy.run_path(str(ROOT/'scripts/apply-finni-callout-trim.py'))['trim_script'](tuned)
+    return tuned
 
 
 def install(extracted):
     source=(ROOT/'.work/deadpool-extracted/script.vbs').read_bytes()
     path=extracted/'script.vbs'
+    result = tuned_script(source)
+    existing = path.read_bytes()
+    if existing == result:
+        return result
     music = runpy.run_path(str(ROOT/'scripts/apply-multiball-music.py'))
-    current = restore_tilt(music['restore_music'](path.read_bytes()))
-    expected=restore_tilt(tuned_script(source, music=False))
+    current = restore_tilt(music['restore_music'](existing))
+    expected=restore_tilt(tuned_script(source, music=False, trim_callouts=False))
     # Preserve the prior presentation build as a recognized upgrade input.
     prior_selection = runpy.run_path(str(ROOT/'scripts/apply-finni-lighting.py'))['lighting_script'](
         runpy.run_path(str(ROOT/'scripts/apply-finni-dmd.py'))['dmd_script'](
@@ -80,9 +87,8 @@ def install(extracted):
     prior_cake_task = expected.replace(b'COOKIES BAKED',b'CAKE BAKED').replace(b'COOKIE SUPER JACKPOT',b'BAKING SUPER JACKPOT').replace(b'COOKIE JACKPOT',b'BAKING JACKPOT')
     prior_ramp = runpy.run_path(str(ROOT/'scripts/apply-lock-ramp-tuning.py'))['restore_script'](expected)
     current_without_ramp = runpy.run_path(str(ROOT/'scripts/apply-lock-ramp-tuning.py'))['restore_script'](current)
-    if current_without_ramp != prior_ramp and current not in (source,previous,previous_story,previous_without_save_voice,old_tasks,previous_dmd,first_pass,previous_lighting,prior_selection,expected,without_motion,prior_cake_task,prior_ramp) and prior_motion not in (restore_tilt(tuned_script(source,motion=False,music=False)),prior_friendship):
+    if current_without_ramp != prior_ramp and current not in (source,previous,previous_story,previous_without_save_voice,old_tasks,previous_dmd,first_pass,previous_lighting,prior_selection,expected,without_motion,prior_cake_task,prior_ramp) and prior_motion not in (restore_tilt(tuned_script(source,motion=False,music=False,trim_callouts=False)),prior_friendship):
         raise ValueError('Working script has unrelated edits; refusing to overwrite them.')
-    result = music['music_script'](tilt_script(expected))
     path.write_bytes(result)
     return result
 
@@ -91,4 +97,4 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--install',type=Path,default=ROOT/'.work/finni-live-extracted')
     args=parser.parse_args();install(args.install)
-    print('Applied scoop, modest lock-ramp tuning, presentation, lighting and task selection.')
+    print('Applied scoop, Friendship ramp tuning, presentation, lighting and task selection.')

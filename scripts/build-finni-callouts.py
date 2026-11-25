@@ -56,6 +56,12 @@ def lines(validate_source=True):
     return config, result
 
 
+def recording_lines(config, mapping):
+    chatter = {f"quote{n}" for n in config["random_quotes"]}
+    return {name: text for name, text in mapping.items()
+            if name not in chatter and name not in config["recording_aliases"]}
+
+
 def pcm(path):
     with wave.open(str(path), "rb") as wav:
         assert (wav.getframerate(), wav.getnchannels(), wav.getsampwidth()) == (32000, 2, 2)
