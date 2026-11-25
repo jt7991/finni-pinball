@@ -29,10 +29,14 @@ export function createEffectDecoder(context){
   return buffer;
  }
  return async(bytes,entry,loadFallback)=>{
-  if(entry.encoding!=='flac-pcm24')return context.decodeAudioData(bytes);
+  if(entry.encoding!=='flac-pcm24'){
+   // Legacy PCM16 sources use the same signed mapping and authored rate.
+   // Browser decodeAudioData otherwise normalizes/resamples these WAVs.
+   try{return decodePCM16Wave(context,bytes);}catch{return context.decodeAudioData(bytes);}
+  }
   try{
    // Decode at the authored rate so the cached samples stay unchanged. The
-   // live AudioBufferSource handles conversion to the destination device.
+   // native mixer performs conversion to the destination device.
    let decoder=decoders.get(entry.sampleRate);
    if(!decoder){decoder=new OfflineAudioContext(entry.channels,1,entry.sampleRate);decoders.set(entry.sampleRate,decoder);}
    return check(await decoder.decodeAudioData(bytes),entry);

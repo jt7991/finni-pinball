@@ -1,0 +1,1176 @@
+{
+  "engineSHA256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+  "sourceTableSHA256": "3ae17f498f745efa19076ca33e08f96f66d766367fc984e37aacf50774a35e14",
+  "scope": "Original compiled decoder callbacks, reached through validated ma_decoder vtables of explicitly played/stopped native sound players. SDL audio is suspended for complete source-rate decoding. An explicit original decoder seek establishes sample zero and its cursor is consumed by inspection; this is an isolated codec observation, not uninterrupted playback or game-state parity. No native body, clock or RNG values are replaced.",
+  "rows": [
+    {
+      "name": "fx_flipperup",
+      "sourceSHA256": "3a29a18ed3674ff29a180e12fb4c1648ab09240444864b170e50a13ac9548e4d",
+      "sourceGranuleFrames": 6301,
+      "chosen": {
+        "kind": "decoder",
+        "ds": 290114584,
+        "vtable": 7661000,
+        "format": 2,
+        "lengthStatus": 0,
+        "cursorStatus": 0,
+        "length": 6301,
+        "cursor": 6144,
+        "callbacks": [
+          {
+            "index": 803,
+            "arguments": 4
+          },
+          {
+            "index": 804,
+            "arguments": 2
+          },
+          {
+            "index": 805,
+            "arguments": 6
+          },
+          {
+            "index": 806,
+            "arguments": 2
+          },
+          {
+            "index": 807,
+            "arguments": 2
+          }
+        ]
+      },
+      "backendVtable": 7661028,
+      "backendCallbacks": [
+        {
+          "slot": 224,
+          "index": 808,
+          "arguments": 8
+        },
+        {
+          "slot": 225,
+          "index": 809,
+          "arguments": 5
+        },
+        {
+          "slot": 226,
+          "index": 810,
+          "arguments": 5
+        },
+        {
+          "slot": 227,
+          "index": 811,
+          "arguments": 6
+        },
+        {
+          "slot": 228,
+          "index": 812,
+          "arguments": 3
+        }
+      ],
+      "allocator": {
+        "mallocName": "13406",
+        "freeName": "13409"
+      },
+      "candidates": [
+        {
+          "kind": "decoder",
+          "ds": 232281208,
+          "vtable": 7661000,
+          "format": 2,
+          "lengthStatus": 0,
+          "cursorStatus": 0,
+          "length": 131013,
+          "cursor": 10240,
+          "callbacks": [
+            {
+              "index": 803,
+              "arguments": 4
+            },
+            {
+              "index": 804,
+              "arguments": 2
+            },
+            {
+              "index": 805,
+              "arguments": 6
+            },
+            {
+              "index": 806,
+              "arguments": 2
+            },
+            {
+              "index": 807,
+              "arguments": 2
+            }
+          ]
+        },
+        {
+          "kind": "decoder",
+          "ds": 238044776,
+          "vtable": 7661000,
+          "format": 2,
+          "lengthStatus": 0,
+          "cursorStatus": 0,
+          "length": 4563,
+          "cursor": 4563,
+          "callbacks": [
+            {
+              "index": 803,
+              "arguments": 4
+            },
+            {
+              "index": 804,
+              "arguments": 2
+            },
+            {
+              "index": 805,
+              "arguments": 6
+            },
+            {
+              "index": 806,
+              "arguments": 2
+            },
+            {
+              "index": 807,
+              "arguments": 2
+            }
+          ]
+        },
+        {
+          "kind": "decoder",
+          "ds": 241505768,
+          "vtable": 7661000,
+          "format": 2,
+          "lengthStatus": 0,
+          "cursorStatus": 0,
+          "length": 36537,
+          "cursor": 12288,
+          "callbacks": [
+            {
+              "index": 803,
+              "arguments": 4
+            },
+            {
+              "index": 804,
+              "arguments": 2
+            },
+            {
+              "index": 805,
+              "arguments": 6
+            },
+            {
+              "index": 806,
+              "arguments": 2
+            },
+            {
+              "index": 807,
+              "arguments": 2
+            }
+          ]
+        },
+        {
+          "kind": "decoder",
+          "ds": 290114584,
+          "vtable": 7661000,
+          "format": 2,
+          "lengthStatus": 0,
+          "cursorStatus": 0,
+          "length": 6301,
+          "cursor": 6144,
+          "callbacks": [
+            {
+              "index": 803,
+              "arguments": 4
+            },
+            {
+              "index": 804,
+              "arguments": 2
+            },
+            {
+              "index": 805,
+              "arguments": 6
+            },
+            {
+              "index": 806,
+              "arguments": 2
+            },
+            {
+              "index": 807,
+              "arguments": 2
+            }
+          ]
+        },
+        {
+          "kind": "decoder",
+          "ds": 427217464,
+          "vtable": 7661000,
+          "format": 2,
+          "lengthStatus": 0,
+          "cursorStatus": 0,
+          "length": 4732,
+          "cursor": 4732,
+          "callbacks": [
+            {
+              "index": 803,
+              "arguments": 4
+            },
+            {
+              "index": 804,
+              "arguments": 2
+            },
+            {
+              "index": 805,
+              "arguments": 6
+            },
+            {
+              "index": 806,
+              "arguments": 2
+            },
+            {
+              "index": 807,
+              "arguments": 2
+            }
+          ]
+        },
+        {
+          "kind": "decoder",
+          "ds": 434642736,
+          "vtable": 7661000,
+          "format": 2,
+          "lengthStatus": 0,
+          "cursorStatus": 0,
+          "length": 4277,
+          "cursor": 4277,
+          "callbacks": [
+            {
+              "index": 803,
+              "arguments": 4
+            },
+            {
+              "index": 804,
+              "arguments": 2
+            },
+            {
+              "index": 805,
+              "arguments": 6
+            },
+            {
+              "index": 806,
+              "arguments": 2
+            },
+            {
+              "index": 807,
+              "arguments": 2
+            }
+          ]
+        },
+        {
+          "kind": "decoder",
+          "ds": 465321288,
+          "vtable": 7661000,
+          "format": 2,
+          "lengthStatus": 0,
+          "cursorStatus": 0,
+          "length": 3975,
+          "cursor": 3975,
+          "callbacks": [
+            {
+              "index": 803,
+              "arguments": 4
+            },
+            {
+              "index": 804,
+              "arguments": 2
+            },
+            {
+              "index": 805,
+              "arguments": 6
+            },
+            {
+              "index": 806,
+              "arguments": 2
+            },
+            {
+              "index": 807,
+              "arguments": 2
+            }
+          ]
+        }
+      ],
+      "frames": 6301,
+      "channels": 1,
+      "sampleRate": 22050,
+      "bytes": 25204,
+      "pcmSHA256": "e1fc54462e8d11a871b95de6e18c973f938b6c389c7049dffd6e1b3c8bf22de4",
+      "lastStatus": -17,
+      "readBlocks": [
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 157,
+          "status": 0
+        },
+        {
+          "count": 0,
+          "status": -17
+        }
+      ],
+      "unchangedPhysicsRNG": true
+    },
+    {
+      "name": "fx_enter",
+      "sourceSHA256": "9b862da0dd158fd6920f395ae30641176bc532e4d5ff959d7b0dac91f645aba5",
+      "sourceGranuleFrames": 15616,
+      "chosen": {
+        "kind": "decoder",
+        "ds": 432863328,
+        "vtable": 7661000,
+        "format": 2,
+        "lengthStatus": 0,
+        "cursorStatus": 0,
+        "length": 15616,
+        "cursor": 6144,
+        "callbacks": [
+          {
+            "index": 803,
+            "arguments": 4
+          },
+          {
+            "index": 804,
+            "arguments": 2
+          },
+          {
+            "index": 805,
+            "arguments": 6
+          },
+          {
+            "index": 806,
+            "arguments": 2
+          },
+          {
+            "index": 807,
+            "arguments": 2
+          }
+        ]
+      },
+      "backendVtable": 7661028,
+      "backendCallbacks": [
+        {
+          "slot": 224,
+          "index": 808,
+          "arguments": 8
+        },
+        {
+          "slot": 225,
+          "index": 809,
+          "arguments": 5
+        },
+        {
+          "slot": 226,
+          "index": 810,
+          "arguments": 5
+        },
+        {
+          "slot": 227,
+          "index": 811,
+          "arguments": 6
+        },
+        {
+          "slot": 228,
+          "index": 812,
+          "arguments": 3
+        }
+      ],
+      "allocator": {
+        "mallocName": "13406",
+        "freeName": "13409"
+      },
+      "candidates": [
+        {
+          "kind": "decoder",
+          "ds": 432863328,
+          "vtable": 7661000,
+          "format": 2,
+          "lengthStatus": 0,
+          "cursorStatus": 0,
+          "length": 15616,
+          "cursor": 6144,
+          "callbacks": [
+            {
+              "index": 803,
+              "arguments": 4
+            },
+            {
+              "index": 804,
+              "arguments": 2
+            },
+            {
+              "index": 805,
+              "arguments": 6
+            },
+            {
+              "index": 806,
+              "arguments": 2
+            },
+            {
+              "index": 807,
+              "arguments": 2
+            }
+          ]
+        }
+      ],
+      "frames": 15616,
+      "channels": 2,
+      "sampleRate": 22050,
+      "bytes": 124928,
+      "pcmSHA256": "c5957d96b77e32a88e38b63748f41b38364b931691f8ee70cbe23d706dcd176b",
+      "lastStatus": -17,
+      "readBlocks": [
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 1280,
+          "status": 0
+        },
+        {
+          "count": 0,
+          "status": -17
+        }
+      ],
+      "unchangedPhysicsRNG": true
+    },
+    {
+      "name": "fx_collide",
+      "sourceSHA256": "eea71191d87d42f3963f56a13175e10c783792f25b4ead356dde58a18705ec74",
+      "sourceGranuleFrames": 3479,
+      "chosen": {
+        "kind": "decoder",
+        "ds": 290171296,
+        "vtable": 7661000,
+        "format": 2,
+        "lengthStatus": 0,
+        "cursorStatus": 0,
+        "length": 3479,
+        "cursor": 3479,
+        "callbacks": [
+          {
+            "index": 803,
+            "arguments": 4
+          },
+          {
+            "index": 804,
+            "arguments": 2
+          },
+          {
+            "index": 805,
+            "arguments": 6
+          },
+          {
+            "index": 806,
+            "arguments": 2
+          },
+          {
+            "index": 807,
+            "arguments": 2
+          }
+        ]
+      },
+      "backendVtable": 7661028,
+      "backendCallbacks": [
+        {
+          "slot": 224,
+          "index": 808,
+          "arguments": 8
+        },
+        {
+          "slot": 225,
+          "index": 809,
+          "arguments": 5
+        },
+        {
+          "slot": 226,
+          "index": 810,
+          "arguments": 5
+        },
+        {
+          "slot": 227,
+          "index": 811,
+          "arguments": 6
+        },
+        {
+          "slot": 228,
+          "index": 812,
+          "arguments": 3
+        }
+      ],
+      "allocator": {
+        "mallocName": "13406",
+        "freeName": "13409"
+      },
+      "candidates": [
+        {
+          "kind": "decoder",
+          "ds": 290171296,
+          "vtable": 7661000,
+          "format": 2,
+          "lengthStatus": 0,
+          "cursorStatus": 0,
+          "length": 3479,
+          "cursor": 3479,
+          "callbacks": [
+            {
+              "index": 803,
+              "arguments": 4
+            },
+            {
+              "index": 804,
+              "arguments": 2
+            },
+            {
+              "index": 805,
+              "arguments": 6
+            },
+            {
+              "index": 806,
+              "arguments": 2
+            },
+            {
+              "index": 807,
+              "arguments": 2
+            }
+          ]
+        }
+      ],
+      "frames": 3479,
+      "channels": 1,
+      "sampleRate": 44100,
+      "bytes": 13916,
+      "pcmSHA256": "7113eeb3fb6acedbb2b9267c61f881dd7d2bb1cc8e96ff8595942a2f0b8e739f",
+      "lastStatus": -17,
+      "readBlocks": [
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 1431,
+          "status": 0
+        },
+        {
+          "count": 0,
+          "status": -17
+        }
+      ],
+      "unchangedPhysicsRNG": true
+    },
+    {
+      "name": "fx_sensor",
+      "sourceSHA256": "82a49121bb209e11d4777061341cf108ea0be6cb0237638ffb6f984f48e023b4",
+      "sourceGranuleFrames": 2080,
+      "chosen": {
+        "kind": "decoder",
+        "ds": 427285736,
+        "vtable": 7661000,
+        "format": 2,
+        "lengthStatus": 0,
+        "cursorStatus": 0,
+        "length": 2080,
+        "cursor": 2080,
+        "callbacks": [
+          {
+            "index": 803,
+            "arguments": 4
+          },
+          {
+            "index": 804,
+            "arguments": 2
+          },
+          {
+            "index": 805,
+            "arguments": 6
+          },
+          {
+            "index": 806,
+            "arguments": 2
+          },
+          {
+            "index": 807,
+            "arguments": 2
+          }
+        ]
+      },
+      "backendVtable": 7661028,
+      "backendCallbacks": [
+        {
+          "slot": 224,
+          "index": 808,
+          "arguments": 8
+        },
+        {
+          "slot": 225,
+          "index": 809,
+          "arguments": 5
+        },
+        {
+          "slot": 226,
+          "index": 810,
+          "arguments": 5
+        },
+        {
+          "slot": 227,
+          "index": 811,
+          "arguments": 6
+        },
+        {
+          "slot": 228,
+          "index": 812,
+          "arguments": 3
+        }
+      ],
+      "allocator": {
+        "mallocName": "13406",
+        "freeName": "13409"
+      },
+      "candidates": [
+        {
+          "kind": "decoder",
+          "ds": 427285736,
+          "vtable": 7661000,
+          "format": 2,
+          "lengthStatus": 0,
+          "cursorStatus": 0,
+          "length": 2080,
+          "cursor": 2080,
+          "callbacks": [
+            {
+              "index": 803,
+              "arguments": 4
+            },
+            {
+              "index": 804,
+              "arguments": 2
+            },
+            {
+              "index": 805,
+              "arguments": 6
+            },
+            {
+              "index": 806,
+              "arguments": 2
+            },
+            {
+              "index": 807,
+              "arguments": 2
+            }
+          ]
+        }
+      ],
+      "frames": 2080,
+      "channels": 1,
+      "sampleRate": 32000,
+      "bytes": 8320,
+      "pcmSHA256": "0968a3ddfa95c76c615b51822f4048277e87d72ab631267c6f5db8aa084dd6a7",
+      "lastStatus": -17,
+      "readBlocks": [
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 32,
+          "status": 0
+        },
+        {
+          "count": 0,
+          "status": -17
+        }
+      ],
+      "unchangedPhysicsRNG": true
+    },
+    {
+      "name": "vo_juggernaut",
+      "sourceSHA256": "9623250aedaddafb3982565838d25b51599d704cec903fb0dcb3e5c4a46de60a",
+      "sourceGranuleFrames": 69888,
+      "chosen": {
+        "kind": "decoder",
+        "ds": 366998888,
+        "vtable": 7661000,
+        "format": 2,
+        "lengthStatus": 0,
+        "cursorStatus": 0,
+        "length": 69888,
+        "cursor": 8192,
+        "callbacks": [
+          {
+            "index": 803,
+            "arguments": 4
+          },
+          {
+            "index": 804,
+            "arguments": 2
+          },
+          {
+            "index": 805,
+            "arguments": 6
+          },
+          {
+            "index": 806,
+            "arguments": 2
+          },
+          {
+            "index": 807,
+            "arguments": 2
+          }
+        ]
+      },
+      "backendVtable": 7661028,
+      "backendCallbacks": [
+        {
+          "slot": 224,
+          "index": 808,
+          "arguments": 8
+        },
+        {
+          "slot": 225,
+          "index": 809,
+          "arguments": 5
+        },
+        {
+          "slot": 226,
+          "index": 810,
+          "arguments": 5
+        },
+        {
+          "slot": 227,
+          "index": 811,
+          "arguments": 6
+        },
+        {
+          "slot": 228,
+          "index": 812,
+          "arguments": 3
+        }
+      ],
+      "allocator": {
+        "mallocName": "13406",
+        "freeName": "13409"
+      },
+      "candidates": [
+        {
+          "kind": "decoder",
+          "ds": 366998888,
+          "vtable": 7661000,
+          "format": 2,
+          "lengthStatus": 0,
+          "cursorStatus": 0,
+          "length": 69888,
+          "cursor": 8192,
+          "callbacks": [
+            {
+              "index": 803,
+              "arguments": 4
+            },
+            {
+              "index": 804,
+              "arguments": 2
+            },
+            {
+              "index": 805,
+              "arguments": 6
+            },
+            {
+              "index": 806,
+              "arguments": 2
+            },
+            {
+              "index": 807,
+              "arguments": 2
+            }
+          ]
+        },
+        {
+          "kind": "vorbis",
+          "ds": 398091456,
+          "vtable": 7660972,
+          "format": 5,
+          "lengthStatus": 0,
+          "cursorStatus": 0,
+          "length": 32000,
+          "cursor": 2048,
+          "callbacks": [
+            {
+              "index": 798,
+              "arguments": 4
+            },
+            {
+              "index": 799,
+              "arguments": 2
+            },
+            {
+              "index": 800,
+              "arguments": 6
+            },
+            {
+              "index": 801,
+              "arguments": 2
+            },
+            {
+              "index": 802,
+              "arguments": 2
+            }
+          ]
+        },
+        {
+          "kind": "decoder",
+          "ds": 431390144,
+          "vtable": 7661000,
+          "format": 5,
+          "lengthStatus": 0,
+          "cursorStatus": 0,
+          "length": 32000,
+          "cursor": 2048,
+          "callbacks": [
+            {
+              "index": 803,
+              "arguments": 4
+            },
+            {
+              "index": 804,
+              "arguments": 2
+            },
+            {
+              "index": 805,
+              "arguments": 6
+            },
+            {
+              "index": 806,
+              "arguments": 2
+            },
+            {
+              "index": 807,
+              "arguments": 2
+            }
+          ]
+        },
+        {
+          "kind": "vorbis",
+          "ds": 465321712,
+          "vtable": 7660972,
+          "format": 5,
+          "lengthStatus": 0,
+          "cursorStatus": 0,
+          "length": 32000,
+          "cursor": 0,
+          "callbacks": [
+            {
+              "index": 798,
+              "arguments": 4
+            },
+            {
+              "index": 799,
+              "arguments": 2
+            },
+            {
+              "index": 800,
+              "arguments": 6
+            },
+            {
+              "index": 801,
+              "arguments": 2
+            },
+            {
+              "index": 802,
+              "arguments": 2
+            }
+          ]
+        },
+        {
+          "kind": "decoder",
+          "ds": 466896184,
+          "vtable": 7661000,
+          "format": 5,
+          "lengthStatus": 0,
+          "cursorStatus": 0,
+          "length": 32000,
+          "cursor": 0,
+          "callbacks": [
+            {
+              "index": 803,
+              "arguments": 4
+            },
+            {
+              "index": 804,
+              "arguments": 2
+            },
+            {
+              "index": 805,
+              "arguments": 6
+            },
+            {
+              "index": 806,
+              "arguments": 2
+            },
+            {
+              "index": 807,
+              "arguments": 2
+            }
+          ]
+        },
+        {
+          "kind": "vorbis",
+          "ds": 467073104,
+          "vtable": 7660972,
+          "format": 5,
+          "lengthStatus": 0,
+          "cursorStatus": 0,
+          "length": 7801601,
+          "cursor": 200704,
+          "callbacks": [
+            {
+              "index": 798,
+              "arguments": 4
+            },
+            {
+              "index": 799,
+              "arguments": 2
+            },
+            {
+              "index": 800,
+              "arguments": 6
+            },
+            {
+              "index": 801,
+              "arguments": 2
+            },
+            {
+              "index": 802,
+              "arguments": 2
+            }
+          ]
+        },
+        {
+          "kind": "decoder",
+          "ds": 467074456,
+          "vtable": 7661000,
+          "format": 5,
+          "lengthStatus": 0,
+          "cursorStatus": 0,
+          "length": 7801601,
+          "cursor": 200704,
+          "callbacks": [
+            {
+              "index": 803,
+              "arguments": 4
+            },
+            {
+              "index": 804,
+              "arguments": 2
+            },
+            {
+              "index": 805,
+              "arguments": 6
+            },
+            {
+              "index": 806,
+              "arguments": 2
+            },
+            {
+              "index": 807,
+              "arguments": 2
+            }
+          ]
+        }
+      ],
+      "frames": 69888,
+      "channels": 2,
+      "sampleRate": 32000,
+      "bytes": 559104,
+      "pcmSHA256": "e1ee1736906574f5507ccfdf6e5c54cb32b6127a884796d1f02dad73ea9c4c8f",
+      "lastStatus": -17,
+      "readBlocks": [
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 256,
+          "status": 0
+        },
+        {
+          "count": 0,
+          "status": -17
+        }
+      ],
+      "unchangedPhysicsRNG": true
+    }
+  ],
+  "errors": []
+}

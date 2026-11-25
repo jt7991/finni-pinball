@@ -1,31 +1,11 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import {createAudio} from '../media.js';
+import test from 'node:test';import assert from 'node:assert/strict';import {withAudio} from './helpers/audio-public-host.js';
 
-// Native AudioPlayer::StopSound stops all matching SoundPlayers; Stop queues
-// stop+seek on each player. Loading a web buffer must not resurrect a stopped
-// playback request. Exercise the real public API with a delayed decoder.
-for(const action of ['named stop','stop all','mute then unmute'])test(`a pending decoded sound cannot survive ${action}`,async()=>{
-  const originals={Audio:globalThis.Audio,AudioContext:globalThis.AudioContext,fetch:globalThis.fetch};
-  const decoding=Promise.withResolvers(),decoded=Promise.withResolvers(),sources=[];
-  const chain={connect(){return this;},disconnect(){}};
-  globalThis.Audio=class{play(){return Promise.resolve();}pause(){}load(){}};
-  globalThis.AudioContext=class{
-    currentTime=0;destination={};resume(){return Promise.resolve();}
-    decodeAudioData(){decoding.resolve();return decoded.promise;}
-    createBufferSource(){const source={...chain,playbackRate:{value:1},start(){source.started=true;},stop(){source.stopped=true;}};sources.push(source);return source;}
-    createGain(){return {...chain,gain:{value:1}};}createStereoPanner(){return {...chain,pan:{value:0}};}
-    createChannelSplitter(){return {...chain};}createChannelMerger(){return {...chain};}
-  };
-  globalThis.fetch=async()=>({ok:true,arrayBuffer:async()=>new ArrayBuffer(4)});
-  try{
-    const audio=createAudio({effect:{file:'effect.m4a',sampleRate:22050}},'/three/');await audio.unlock();
-    const pending=audio.play('effect');await decoding.promise;
-    if(action==='named stop')audio.stop('EFFECT');
-    else if(action==='stop all')audio.stop();
-    else{audio.setMuted(true);audio.setMuted(false);}
-    decoded.resolve({sampleRate:48000,length:480,numberOfChannels:1});await pending;
-    assert.equal(sources.filter(source=>source.started).length,0,'a request cancelled before decode completion must remain silent');
-    await audio.play('effect');assert.equal(sources.filter(source=>source.started).length,1,'a later request can reuse the decoded buffer');audio.stop();
-  }finally{Object.assign(globalThis,originals);}
-});
+for(const action of ['named stop','stop all'])test('a pending decoded sound cannot survive '+action,()=>withAudio(async({audio,nodes,tick,stats,decoded,decoding,buffer})=>{
+ const pending=audio.play('effect');await decoding.promise;if(action==='named stop')audio.stop('EFFECT');else audio.stop();decoded.resolve(buffer());await pending;assert.equal(nodes.length,0,'A request stopped while decoding must not connect an output');
+ await audio.play('effect');await tick(2);assert.equal((await stats()).active,1,'A later request remains playable');
+},{deferred:true}));
+
+test('muting keeps native voice clocks running through loading and resumes the current position',()=>withAudio(async({audio,tick,stats,decoded,decoding,buffer})=>{
+ const pending=audio.play('effect',{loop:-1});await decoding.promise;audio.setMuted(true);decoded.resolve(buffer());await pending;for(let n=0;n<4;n++)assert.ok((await tick()).every(c=>c.every(x=>x===0)));assert.equal((await stats()).active,1);
+ audio.setMuted(false);await tick(2);assert.ok((await tick()).some(c=>c.some(x=>x!==0)));assert.equal((await stats()).players,1);
+},{deferred:true}));

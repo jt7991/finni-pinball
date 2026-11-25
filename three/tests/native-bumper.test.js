@@ -5,7 +5,7 @@ import {execFileSync} from 'node:child_process';
 import {collideNativeBumper} from '../native-bumper.js';
 import {createFullGame} from '../full-game.js';
 import {nativePitchFactor,nativeSoundRate} from '../native-sound.js';
-import {createAudio} from '../media.js';
+import {withAudio} from './helpers/audio-public-host.js';
 
 test('fourteen native bumper recordings retain kicks, clocks, live settings, scores, spin and physics RNG',()=>{
   const reports=JSON.parse(execFileSync(process.execPath,['scripts/compare-vpx-bumpers.mjs','three/tests/fixtures/vpx-bumpers-native-state.json','--check','--json','--report=.work/three-review/bumper-regression-comparison.json'],{cwd:new URL('../../',import.meta.url),encoding:'utf8',maxBuffer:3*1024*1024}));
@@ -46,21 +46,9 @@ test('native pitch consumes two draws in order and rounds COM pitch offsets to e
   assert.equal(nativeSoundRate(22050,11025,1),1.5);assert.equal(nativeSoundRate(100,2.5,1),Math.fround(1.02));assert.equal(nativeSoundRate(100,3.5,1),Math.fround(1.04));
 });
 
-test('WebAudio uses the native source sample rate after device resampling and updates an existing loop',async()=>{
-  const originals={Audio:globalThis.Audio,AudioContext:globalThis.AudioContext,fetch:globalThis.fetch},sources=[];
-  const chain={connect(){return this;},disconnect(){}};
-  globalThis.Audio=class {play(){return Promise.resolve();}pause(){}load(){}};
-  globalThis.AudioContext=class {
-    currentTime=0;destination={};resume(){return Promise.resolve();}
-    decodeAudioData(){return Promise.resolve({sampleRate:48000,length:480,numberOfChannels:1});}
-    createBufferSource(){const source={...chain,playbackRate:{value:1},start(){},stop(){}};sources.push(source);return source;}
-    createGain(){return {...chain,gain:{value:1}};}createStereoPanner(){return {...chain,pan:{value:0}};}
-    createChannelSplitter(){return {...chain};}createChannelMerger(){return {...chain};}
-  };
-  globalThis.fetch=async()=>({ok:true,arrayBuffer:async()=>new ArrayBuffer(4)});
-  try{
-    const audio=createAudio({effect:{file:'effect.m4a',sampleRate:22050}},'/three/');await audio.unlock();
-    await audio.play('effect',{loop:-1,useExisting:true,pitch:11025,pitchFactor:1.05});assert.equal(sources.length,1);assert.equal(sources[0].buffer.sampleRate,48000);assert.ok(Math.abs(sources[0].playbackRate.value-1.575)<2e-7);
-    await audio.play('effect',{loop:-1,useExisting:true,pitch:0,pitchFactor:1});assert.equal(sources.length,1,'update the existing loop');assert.equal(sources[0].playbackRate.value,1);audio.stop();
-  }finally{Object.assign(globalThis,originals);}
-});
+test('shared native audio preserves source rate and updates an existing pitched loop',()=>withAudio(async({audio,tick,stats,requests,responses})=>{
+ await audio.play('effect',{loop:-1,useExisting:true,pitch:11025,pitchFactor:1.05});await tick(2);
+ const first=requests.find(r=>r.type==='play-effect');assert.equal(first.source.rate,22050);assert.equal(first.settings.pitch,11025);assert.equal(first.settings.pitchFactor,1.05);
+ await audio.play('effect',{loop:-1,useExisting:true,pitch:0,pitchFactor:1});await tick(2);assert.equal((await stats()).players,1);
+ const plays=responses.flatMap(r=>r.applied??[]).filter(c=>c.type==='play');assert.equal(plays[0].playerID,plays[1].playerID,'The original player remains attached while pitch changes');
+}));
