@@ -543,6 +543,9 @@ export class Pinball {
       const resolved=ballEvents?[...ballEvents.values()].filter(e=>e.hit.time<=time):event?[event]:[];
       for(const event of resolved){
       if(event.r?.removed)continue;
+      // PhysicsEngine selects the collision ball before Collide, even when
+      // that collider suppresses its optional authored Hit event.
+      if(event.r)this.rules?.setActiveBall?.(event.r.proxy);
       if(event&&!event.f){
         const impactBody=body(event.r);if(!event.trigger&&!event.kicker)this.ballSpin.impact(impactBody,event.hit.gap);
         if(event.other){if(!event.other.removed)collideNativeBalls(state(event.r),state(event.other),event.hit,!!event.other.held,this.ballCollisionSwap,speed=>this.rules?.run('OnBallBallCollision',event.other.proxy,event.r.proxy,speed));}

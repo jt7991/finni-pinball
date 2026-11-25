@@ -34,3 +34,8 @@ scripts/probe-kicker-ownership.mjs text eol=lf
 three/tests/fixtures/vpx-kicker-creation.json -text
 scripts/probe-kicker-creation.mjs text eol=lf
 scripts/kicker-creation-scenario.mjs text eol=lf
+three/tests/fixtures/vpx-active-ball-lifecycle.json -text
+three/tests/fixtures/vpx-active-ball-frame.json -text
+scripts/active-ball-lifecycle-scenario.mjs text eol=lf
+scripts/probe-active-ball-lifecycle.mjs text eol=lf
+scripts/probe-native-active-ball-frame.mjs text eol=lf

@@ -1,0 +1,35 @@
+{
+  "scope": "Original HellHouse_Hit body gains read-only observations around its existing DestroyBall. Two additional balls use authored CreateNewBall; a declared physical approach selects live ID3. No handler outcome, body expectation, RNG, timer deadline or release rescue is supplied. Observes global ActiveBall versus a separately retained dispatch during the real scoop event; this is a controlled multiball component, not natural reachability of the user-reported hold.",
+  "base": "http://127.0.0.1:50835/",
+  "native": true,
+  "provenance": {
+    "metadata": {
+      "engine": "@valknar/vpinball-wasm 0.3.4",
+      "engineSHA256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+      "upstreamCommit": "195f214dd4849b8ef6113fd377258b78d0dec3bf",
+      "sourceCommit": "6f8116d0964429db0e2da41d583566784114fc5f",
+      "sourceSha256": "6160e43c1a74f6dc70fd9852433c3373fe11b3e55d4f3a3fedc435265591b5c5",
+      "controlledSha256": "6160e43c1a74f6dc70fd9852433c3373fe11b3e55d4f3a3fedc435265591b5c5",
+      "controlledOverrides": {},
+      "browserSourceCommit": "6f8116d0964429db0e2da41d583566784114fc5f",
+      "browserAppSHA256": "3608d26828ea120a3a56437746d74054b7f69abe019d9b9ec4f21288b1a4389f",
+      "scope": "Exact committed master VPX and browser snapshot, including its continuous HTML music player. No injected table instrumentation or chooser correction. Engine cache is read only. Individual comparison probes declare any observers or external inputs separately."
+    },
+    "engineBytesVerified": true,
+    "probeSHA256": "e865e7e7a768f40c26289654fe8c160a0cefff5a931fd182013af850486d2137",
+    "scenarioSHA256": "2c92487edc4ef3e0f1c85c22747405d58822ac679f391836f8716c1eeb241fed"
+  },
+  "instrumentation": "Dim ActiveQRetained,ActiveQBefore,ActiveQAfter,ActiveQSaved,ActiveQAfterType,ActiveQSavedType,ActiveQRemaining,ActiveQCaptured\nActiveQCaptured=False\nFunction ActiveQIDs()\n Dim all,ball,result\n result=\"\":all=GetBalls()\n For Each ball In all:result=result&CStr(ball.ID)&\",\":Next\n ActiveQIDs=result\nEnd Function\nSub HellHouse_Hit\r\n    If bSkillShotReady Then ResetSkillShotTimer_Timer\r\n    ' check for modes\r\n    StopCombo\r\n    Addscore 25000\r\n    Set ActiveQRetained=ActiveBall\n    ActiveQBefore=ActiveBall.ID\n    HellHouse.destroyball\n    ActiveQAfter=ActiveBall.ID\n    ActiveQSaved=ActiveQRetained.ID\n    ActiveQAfterType=VarType(ActiveBall.ID)\n    ActiveQSavedType=VarType(ActiveQRetained.X)\n    ActiveQRemaining=ActiveQIDs()\n    ActiveQCaptured=True\r\n    BallsinHole = BallsInHole + 1\r\n    li056.State = 0\r\n    Flashforms flasher012, 800, 50, 0\r\n    ' check modes\r\n    If li041.State Then 'weapon jackpot\r\n        li041.State = 0\r\n        DMD CL(0, \"SUPPLIES JACKPOT\"), CL(1, \"1 MILLION\"), \"\", eNone, eBlink, eNone, 2000, True, \"fanfare\"\r\n        Addscore 1000000\r\n        RelitWeapons\r\n    End If\r\n    If li038.State Then 'extra ball\r\n        li038.State = 0\r\n        AwardExtraBall\r\n    End If\r\n    If li037.State Then 'mystery\r\n        li037.State = 0\r\n        StartMystery\r\n        Exit Sub                  'mystery will kick the ball out after it is finished\r\n    End If\r\n    If bChooseBattle Then Exit Sub 'do nothing if you already are selecing a battle, due to multiball\r\n    If bMechSuitMBSJackpot Then\r\n        SuperJackpot(CurrentPLayer) = MechMBJackpot(CurrentPlayer) * 6\r\n        AwardSuperJackpot\r\n        MechMBJackpot(CurrentPlayer) = MechMBJackpot(CurrentPlayer) + 1000000 'increase by 1 million\r\n        ContinueMechSuitMB\r\n        Exit Sub\r\n    End If\r\n    If bMechSuitMBLight(CurrentPlayer) Then 'Start Mech Suit Multiball\r\n        StartMechSuitMB\r\n        Exit Sub\r\n    End If\r\n    If bBattleReady AND bMechSuitMBStarted = False then\r\n        StartChooseBattle 'choose battle will kick out the ball after choosing a battle\r\n        bBattleReady = False\r\n        Exit Sub\r\n    End If\r\n    If bEndBattleJackpot Then\r\n        bEndBattleJackpot = False\r\n        Jackpot(CurrentPLayer) = 3000000:AwardJackpot\r\n    End If\r\n    ' Nothing left to do, so kick out the ball\r\n    Flashforms li070, 1500, 50, 0\r\n    vpmtimer.addtimer 1500, \"kickBallOut '\"\r\nEnd Sub",
+  "instrumentationSHA256": "f145b37b5d179e930085153c2d2934be4e0771e6f17560031b94000bd27bfddc",
+  "approach": "Dim ActiveQAll,ActiveQBall:ActiveQAll=GetBalls():For Each ActiveQBall In ActiveQAll:If ActiveQBall.ID=3 Then:ActiveQBall.X=293.68433:ActiveQBall.Y=530:ActiveQBall.Z=25:ActiveQBall.VelX=0:ActiveQBall.VelY=-8:ActiveQBall.VelZ=0:End If:Next",
+  "values": {
+    "ActiveQBefore": 3,
+    "ActiveQAfter": 0,
+    "ActiveQSaved": 3,
+    "ActiveQAfterType": 3,
+    "ActiveQSavedType": 4,
+    "ActiveQRemaining": "0,1,2,4,5,",
+    "ActiveQCaptured": true
+  },
+  "errors": []
+}

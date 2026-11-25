@@ -13,6 +13,7 @@ import {createVpmTimer} from './vpm-timer.js';
 
 export const KEY={left:42,right:54,launch:28,start:2,action:57,nudgeLeft:44,nudgeForward:45,nudgeRight:53};
 const empty=()=>{};
+const frameEvents=new Set(['animate','dropped','raised']);
 // Native COM return types for properties read by the authored rules. A
 // numerically integral float is still VT_R4; aliases must retain that type.
 const singleProperties={Flipper:new Set(['x','y','currentangle','startangle','endangle','strength','elasticity','eostorque','eostorqueangle']),Bumper:new Set(['x','y','threshold']),Kicker:new Set(['x','y']),Primitive:new Set(['x','y','z','rotx','roty','rotz']),Flasher:new Set(['rotz']),Light:new Set(['x','y','state']),Trigger:new Set(['x','y']),Plunger:new Set(['x','y']),Gate:new Set(['x','y']),Spinner:new Set(['x','y']),Table:new Set(['width','height','slopemin','slopemax'])};
@@ -265,8 +266,15 @@ export function createRules(source,specs,host={}) {
   for(const collection of specs.collections)if(collection.fire_events||collection.stop_single_events)collection.items.forEach((name,index)=>{
     const key=name.toLowerCase();if(!eventGroups.has(key))eventGroups.set(key,[]);eventGroups.get(key).push({collection,index});
   });
+  function setActiveBall(ball){
+    ball??=null;if(activeBall===ball)return;
+    activeBall=ball;engine.addObject('ActiveBall',ball??{});
+  }
   function hit(name,kind='Hit',ball,...parameters){
-    activeBall=ball;engine.addObject('ActiveBall',ball??{});const groups=eventGroups.get(name.toLowerCase())??[];
+    // Frame callbacks do not select a collision ball. In particular, an
+    // Animate with no ball must not erase the player's current ActiveBall.
+    if(ball!==undefined&&!frameEvents.has(kind.toLowerCase()))setActiveBall(ball);
+    const groups=eventGroups.get(name.toLowerCase())??[];
     // Flipper Collide uses FireVoidEventParm; it does not pass through native
     // collection FireGroupEvent dispatch, and carries the impact speed.
     if(kind==='Collide')return run(`${name}_${kind}`,...parameters);
@@ -290,7 +298,8 @@ export function createRules(source,specs,host={}) {
       if(t.nextMilliseconds===next&&timers.get(key)===t)while(t.nextMilliseconds<=milliseconds+1e-6)t.nextMilliseconds+=interval;
     }
   }
-  return {engine,objects,run,execute,value,tick,hit,schedule,scriptRandom,sequences,lamps,
+  return {engine,objects,run,execute,value,tick,hit,schedule,scriptRandom,sequences,lamps,setActiveBall,
+    ballRemoved(ball,replacement){if(activeBall===ball)setActiveBall(replacement);},
     snapshotRevision(object,keys){
       const info=snapshotObjects.get(object);if(!info)return;
       let live=info.keys.get(keys);if(live===undefined){live=keys.some(key=>info.live?.has(key));info.keys.set(keys,live);}

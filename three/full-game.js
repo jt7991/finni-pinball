@@ -273,7 +273,7 @@ class FullGame extends Pinball {
   remove(name,ball) {
     const rec=[...this.toyRecords,...this.records].find(r=>r.proxy===ball)??this.captures.get(name.toLowerCase());if(!rec)return;
     // Native COM references remain readable after DestroyBall removes a body
-    // from physics. Rules may still hold ActiveBall during the same callback.
+    // from physics. A saved dispatch remains valid when ActiveBall advances.
     rec.lastState=Object.fromEntries(['x','y','z','velx','vely','velz','angmomx','angmomy','angmomz','angvelx','angvely','angvelz'].map(key=>[key,rec.proxy[key]]));
     rec.lastRenderLocked=!!rec.held&&rec.held!=='lane';
     if(this.nativePositionUnits)rec.detachedNative=this.nativeBall(rec.body).detach();
@@ -281,6 +281,7 @@ class FullGame extends Pinball {
     const list=rec.isToy?this.toyRecords:this.records;this.byCollider.delete(rec.collider.handle);list.splice(list.indexOf(rec),1);
     for(const [key,value]of this.captures)if(value===rec)this.captures.delete(key);
     this.world.removeRigidBody(rec.body);this.ball=this.records[0]?.body??this.placeholder;
+    this.rules?.ballRemoved(rec.proxy,this.physicalRecords[0]?.proxy);
   }
 
   // Player::DestroyBall releases physics immediately. FinishFrame removes
