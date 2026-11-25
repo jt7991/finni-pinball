@@ -56,3 +56,8 @@ body.engine-error:not(.playing) .preview-cell{display:none}body.engine-error:not
 @media(max-width:650px), (pointer:coarse) and (max-width:1024px){.toolbar{background:transparent}.toolbar #touch-help,.toolbar #fullscreen{background:var(--surface)}.panel{inset:auto 8px max(8px,env(safe-area-inset-bottom)) 8px;width:auto;max-width:none}.touch button[data-action=action]{background:#111a34ed}}
 
 #initials{font-size:16px;letter-spacing:.05em}.high-scores-link{color:var(--cyan);font-size:14px;text-align:center;padding:8px}
+
+.start-links{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:0 8px}
+.how-to-play-button{display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:8px 20px;border:1px solid var(--cyan);border-radius:3px;background:var(--surface);color:var(--text);font-size:16px;font-weight:700;text-decoration:none}
+.how-to-play-button:hover{background:var(--hover)}
+.how-to-play-button:focus-visible{outline:3px solid var(--focus);outline-offset:3px}

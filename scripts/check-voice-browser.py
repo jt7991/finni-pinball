@@ -1,5 +1,6 @@
 """Headless Edge visual captures and real browser OfflineAudioContext smoke check."""
 import importlib.util
+import os
 from pathlib import Path
 import subprocess
 import tempfile
@@ -7,6 +8,8 @@ import threading
 from http.server import ThreadingHTTPServer
 
 ROOT=Path(__file__).resolve().parents[1]
+if not os.environ.get('VOICE_STUDIO_TEST_PASSWORD'):
+    raise SystemExit('Start a test PocketBase instance and set POCKETBASE_URL and VOICE_STUDIO_TEST_PASSWORD.')
 spec=importlib.util.spec_from_file_location('server', ROOT/'scripts/serve-browser.py')
 module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
 edge=Path('C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe')

@@ -12,52 +12,58 @@
   <link rel="stylesheet" href="/voice.css">
   <script type="module" src="/voice.js"></script>
 </head>
-<body class="voice-page">
+<body class="voice-page voice-workspace">
 <a class="skip-link" href="#recording-desk">Skip to recording</a>
 <header class="studio-header">
   <a class="brand" href="/">Finni’s Big Day</a>
-  <nav aria-label="Voice studio navigation"><a href="#library">Team library</a><a class="back-link" href="/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m10 5-7 7 7 7M3 12h18"/></svg>Play the game</a></nav>
+  <nav aria-label="Voice studio navigation"><a class="back-link" href="/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m10 5-7 7 7 7M3 12h18"/></svg>Play the game</a></nav>
 </header>
 <main>
   <div class="intro"><h1>Voice studio</h1></div>
-  <div class="studio" id="recording-desk">
-    <section class="recording-panel" aria-label="Record a line">
-      <div class="script-fields">
-        <div><label for="role">Recording set</label><select id="role" disabled><option value="">Loading sets…</option></select></div>
-        <div><label for="line">Line</label><select id="line"><option value="">Custom line</option></select></div>
-      </div>
-      <label for="script">Script</label><textarea id="script" rows="2" maxlength="500" placeholder="Write a custom callout…"></textarea>
-      <details class="delivery-notes"><summary>Delivery notes</summary><p id="role-direction" class="direction"></p></details>
-      <div class="record-actions"><button id="record" class="primary">Record a take</button><label class="upload" for="upload">Upload audio<input id="upload" type="file" accept="audio/*"></label></div>
-      <p id="record-status" class="status" role="status">Up to 30 seconds per take.</p>
-    </section>
-    <section class="sound-panel" id="take-panel" aria-labelledby="sound-heading" hidden>
-      <h2 id="sound-heading">Preview your take</h2>
-      <audio id="processed" aria-label="Game-ready preview" controls preload="metadata"></audio>
-      <p id="edit-status" class="status" role="status"></p>
-      <div id="ai-controls">
-        <div class="actions"><button id="ai-enhance" aria-describedby="ai-cost" disabled>Clean up with ElevenLabs</button><button id="ai-reset" hidden disabled>Undo cleanup</button></div>
-        <p id="ai-cost" class="hint"></p>
-        <p id="ai-status" class="status" role="status"></p>
-      </div>
-      <div class="actions"><button id="download" disabled>Download WAV</button><button id="submit" class="primary" disabled>Submit to team</button></div>
-      <p class="sign-in-note" id="sign-in-note"><a href="#login">Sign in</a> to submit a take.</p>
-      <details class="take-options">
-        <summary>Original audio &amp; settings</summary>
-        <audio id="original" aria-label="Original recording" controls preload="metadata"></audio>
-        <label for="preset">Finishing effect</label><select id="preset" aria-describedby="preset-note"><option value="natural">Clean &amp; natural</option></select>
-        <p id="preset-note" class="hint"></p>
-        <label class="trim-toggle"><input id="auto-trim" type="checkbox" checked>Trim silence at the ends</label>
-        <button id="ai-refresh" type="button">Check ElevenLabs connection</button>
-      </details>
-    </section>
+  <div class="studio-session"><span id="signed-in-name"></span><button id="sign-out" type="button">Sign out</button></div>
+  <div class="voice-layout">
+    <div class="catalog-pane" id="callouts">
+      <p id="catalog-status" class="status" role="status">Loading callouts and recordings…</p>
+      <div id="callout-catalog"></div>
+    </div>
+    <div class="studio" id="recording-desk">
+      <section class="recording-panel" aria-labelledby="record-heading">
+        <h2 id="record-heading">Record a callout</h2>
+        <a class="back-to-callouts" href="#callouts">Back to callouts</a>
+        <p id="select-callout" class="hint">Choose a callout from the list to record it.</p>
+        <div id="recording-controls" hidden>
+          <p id="script" class="selected-script"></p>
+          <details>
+            <summary>Delivery notes</summary>
+            <p>Use your natural voice. Keep instructions clear, reactions quick, and celebrations upbeat. Say one line per take, with a brief pause before and after.</p>
+          </details>
+          <div class="record-actions"><button id="record" class="primary">Record a take</button><label class="upload" for="upload">Upload audio<input id="upload" type="file" accept="audio/*"></label></div>
+          <p id="record-status" class="status" role="status">Takes up to 30 seconds are saved to Recordings.</p>
+        </div>
+      </section>
+      <section class="sound-panel" id="take-panel" aria-labelledby="sound-heading" hidden>
+        <h2 id="sound-heading">Preview your take</h2>
+        <audio id="processed" aria-label="Game-ready preview" controls preload="metadata"></audio>
+        <p id="edit-status" class="status" role="status"></p>
+        <div id="ai-controls">
+          <div class="actions"><button id="ai-enhance" aria-describedby="ai-cost" disabled>Clean up with ElevenLabs</button><button id="ai-reset" hidden disabled>Undo cleanup</button></div>
+          <p id="ai-cost" class="hint"></p>
+          <p id="ai-status" class="status" role="status"></p>
+        </div>
+        <details class="take-options">
+          <summary>Original audio &amp; settings</summary>
+          <audio id="original" aria-label="Original recording" controls preload="metadata"></audio>
+          <label for="preset">Finishing effect</label><select id="preset" aria-describedby="preset-note"><option value="natural">Clean &amp; natural</option></select>
+          <p id="preset-note" class="hint"></p>
+          <label class="trim-toggle"><input id="auto-trim" type="checkbox" checked>Trim silence at the ends</label>
+          <div class="actions">
+            <button id="download" type="button" disabled>Download WAV</button>
+            <button id="ai-refresh" type="button">Check ElevenLabs connection</button>
+          </div>
+        </details>
+      </section>
+    </div>
   </div>
-  <section id="library" aria-labelledby="library-heading">
-    <div class="section-heading"><h2 id="library-heading">Team library</h2><button id="refresh">Refresh library</button></div>
-    <form id="login"><p>Sign in with the team account your administrator created.</p><div class="login-fields"><label>Email<input id="email" type="email" autocomplete="username" required></label><label>Password<input id="password" type="password" autocomplete="current-password" required></label><button class="primary" type="submit">Sign in</button></div></form>
-    <div id="account" hidden><span id="identity"></span><button id="logout">Sign out</button></div>
-    <p id="library-status" class="status" role="status">Sign in to hear and share team takes.</p><div id="takes"></div><button id="more" hidden>Load more takes</button>
-  </section>
 </main>
 </body>
 </html>

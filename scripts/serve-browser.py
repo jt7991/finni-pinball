@@ -91,7 +91,7 @@ class Handler(SimpleHTTPRequestHandler):
             self.voice_ai_api()
             return
         routes = {'/api/leaderboard': '/api/finni/leaderboard', '/api/runs': '/api/finni/runs', '/api/scores': '/api/finni/scores'}
-        voice_api = re.fullmatch(r'/api/(?:collections/(?:voice_team/auth-with-password|voice_takes/records)|files/token|files/[a-zA-Z0-9_]+/[a-zA-Z0-9_]+/[a-zA-Z0-9_.-]+)(?:\?[^\r\n]*)?', self.path)
+        voice_api = re.fullmatch(r'/api/(?:collections/(?:voice_team/auth-with-password|voice_takes/records)|voice-login|files/token|files/[a-zA-Z0-9_]+/[a-zA-Z0-9_]+/[a-zA-Z0-9_.-]+)(?:\?[^\r\n]*)?', self.path)
         if self.path not in routes and not voice_api:
             self.send_error(404)
             return
@@ -113,6 +113,8 @@ class Handler(SimpleHTTPRequestHandler):
                 payload = response.read()
                 self.send_response(response.code)
                 self.send_header('Content-Type', response.headers.get('Content-Type', 'application/json'))
+                if response.headers.get('Cache-Control'):
+                    self.send_header('Cache-Control', response.headers['Cache-Control'])
                 if response.headers.get('Content-Disposition'):
                     self.send_header('Content-Disposition', response.headers['Content-Disposition'])
                 self.send_header('Content-Length', str(len(payload)))
@@ -152,12 +154,15 @@ class Handler(SimpleHTTPRequestHandler):
                   '/dmd-animations.json': ROOT / '.work/browser-assets/dmd-animations.json',
                   '/table.vpx': self.table_path,
                   '/chewy.ttf': ROOT / 'assets/fonts/chewy/Chewy-Regular.ttf'}
-        for name in ('high-scores.html', 'high-scores.css', 'high-scores.js', 'voice.html', 'voice.css', 'voice.js', 'voice-audio.js', 'voice-pitch-worker.js', 'vendor/voice-pitch.js', 'vendor/voice-pitch-LICENSES.txt', 'voice-lines.json', 'voice-cast.json'):
+        for name in ('how-to-play.html', 'how-to-play.css', 'high-scores.html', 'high-scores.css', 'high-scores.js', 'voice.html', 'voice.css', 'voice.js', 'voice-audio.js', 'voice-pitch-worker.js', 'vendor/voice-pitch.js', 'vendor/voice-pitch-LICENSES.txt', 'voice-lines.json', 'voice-session.js', 'voice-login.html', 'voice-login.js', 'recordings.js', 'voice-difficulty.json'):
             routes['/' + name] = ROOT / 'browser' / name
         for name in ('PressStart2P-Regular.ttf', 'DMSans.ttf'):
             routes['/fonts/' + name] = ROOT / 'browser/fonts' / name
+        routes['/how-to-play'] = ROOT / 'browser/how-to-play.html'
         routes['/high-scores'] = ROOT / 'browser/high-scores.html'
         routes['/voice'] = ROOT / 'browser/voice.html'
+        routes['/recordings'] = ROOT / 'browser/voice.html'
+        routes['/voice-login'] = ROOT / 'browser/voice-login.html'
         for name in ('manifest.json', 'favicon.png', 'favicon.ico',
                      'icons/icon-192.png', 'icons/icon-512.png',
                      'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png'):
