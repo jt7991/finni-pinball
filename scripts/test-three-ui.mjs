@@ -55,14 +55,49 @@ try{
     assert.equal(await evaluate('testWorker.starts.length'),1,'Start cannot restart an active game');
     assert.equal(await evaluate('testWorker.inputs.some(input=>input.action==="start")'),false,'Start cannot add players during play');
     assert.equal(await evaluate('document.documentElement.scrollWidth<=innerWidth&&document.documentElement.scrollHeight<=innerHeight'),true,`${name} no overflow`);
+    // Desktop CSS can hide touch controls; hidden buttons cannot receive focus.
+    for(const code of await evaluate(`document.querySelector('[data-input=left]').checkVisibility()`)?['Enter','Space']:[]){
+      await evaluate(`document.querySelector('[data-input=left]').focus()`);
+      await call('Input.dispatchKeyEvent',{type:'keyDown',code,key:code==='Space'?' ':'Enter'});
+      assert.equal(await evaluate(`document.querySelector('[data-input=left]').classList.contains('pressed')`),true,'focused semantic button holds until key-up');
+      await wait('testWorker.latest.held.left');
+      const count=await evaluate('testWorker.inputs.length');
+      await call('Input.dispatchKeyEvent',{type:'keyDown',code,key:code==='Space'?' ':'Enter',autoRepeat:true});
+      assert.equal(await evaluate('testWorker.inputs.length'),count,'button key repeat does not add a second press');
+      await call('Input.dispatchKeyEvent',{type:'keyUp',code,key:code==='Space'?' ':'Enter'});
+      await wait('!testWorker.latest.held.left');
+    }
+    await evaluate(`document.getElementById('canvas').focus()`);
     if(name==='phone'||name==='small-phone'){
       const left=await center('#flip-zones [data-input=left]'),right=await center('#flip-zones [data-input=right]');
+      await evaluate(`window.controlPointers={};document.addEventListener('pointerdown',e=>{const b=e.target.closest('[data-input]');if(b)controlPointers[b.dataset.input]=e.pointerId;},true)`);
       await touch([left,right]);assert.equal(await evaluate('document.querySelectorAll("#flip-zones .pressed").length'),2);
       if(await evaluate('!!window.finniThree?.game.workerSimulation')){
         await evaluate('finniThree.game.flush()');assert.equal(await evaluate('finniThree.game.held.left&&finniThree.game.held.right'),true,'both physical flippers held');
       }
+      await evaluate(`document.querySelector('[data-input=left]').dispatchEvent(new PointerEvent('pointercancel',{pointerId:controlPointers.left,pointerType:'touch',bubbles:true}))`);
+      assert.equal(await evaluate(`document.querySelector('[data-input=right]').classList.contains('pressed')`),true,'cancelling one pointer preserves the other flipper');
+      await wait('!testWorker.latest.held.left&&testWorker.latest.held.right');
+      await touch([]);await wait('!testWorker.latest.held.right');
+      await touch([left,right]);
       await call('Input.dispatchTouchEvent',{type:'touchCancel',touchPoints:[]});
       assert.equal(await evaluate('document.querySelectorAll("#flip-zones .pressed").length'),0);
+      await evaluate(`document.getElementById('latch').checked=true;document.getElementById('latch').dispatchEvent(new Event('change'))`);
+      await touch([left,right]);await wait('testWorker.latest.held.left&&testWorker.latest.held.right');
+      await evaluate(`document.querySelector('[data-input=left]').dispatchEvent(new PointerEvent('pointercancel',{pointerId:controlPointers.left,pointerType:'touch',bubbles:true}))`);
+      await wait('!testWorker.latest.held.left&&testWorker.latest.held.right');
+      await touch([]);
+      assert.equal(await evaluate(`document.querySelector('[data-input=right]').classList.contains('pressed')`),true,'normal pointer release preserves the remaining toggle');
+      await evaluate(`document.getElementById('latch').checked=false;document.getElementById('latch').dispatchEvent(new Event('change'))`);
+      await wait('!testWorker.latest.held.left&&!testWorker.latest.held.right');
+      await evaluate(`document.getElementById('latch').checked=true;document.getElementById('latch').dispatchEvent(new Event('change'))`);
+      await touch([{...left,x:left.x-5},{...left,x:left.x+5}]);
+      assert.equal(await evaluate(`document.querySelector('[data-input=left]').classList.contains('pressed')`),false,'two toggle presses leave the flipper released');
+      const releasedCount=await evaluate('testWorker.inputs.length');
+      await evaluate(`document.querySelector('[data-input=left]').dispatchEvent(new PointerEvent('pointercancel',{pointerId:controlPointers.left,pointerType:'touch',bubbles:true}))`);
+      assert.equal(await evaluate('testWorker.inputs.length'),releasedCount,'cancelling an already released toggle does not send a second key-up');
+      await touch([]);
+      await evaluate(`document.getElementById('latch').checked=false;document.getElementById('latch').dispatchEvent(new Event('change'))`);
       if(name==='phone'){
         await touch([left]);
         await wait('testWorker.latest.held.left');

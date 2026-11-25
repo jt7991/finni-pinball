@@ -15,7 +15,7 @@ function musicLog(line){
   const soundtrack=String(line).match(/FINNI_MUSIC\|(mu_[a-z0-9]+)?\|(\d+(?:\.\d+)?)/);
   if(soundtrack){musicTrack=soundtrack[1]??'';musicVolume=Number(soundtrack[2]);syncMusic();}
 }
-const sources=new Map(),swipes=new Map(),buttons=[...document.querySelectorAll('[data-input]')];
+const sources=new Map(),swipes=new Map(),pointers=new Map(),buttons=[...document.querySelectorAll('[data-input]')];
 const selectedPlayers=()=>Number($('player-count')?.value??1);
 const defaultKeys={ShiftLeft:'left',ShiftRight:'right',Enter:'launch',Digit1:'start',Space:'action',KeyZ:'nudgeLeft',KeyX:'nudgeForward',Slash:'nudgeRight'},keys={...defaultKeys};
 const read=(key,fallback)=>{try{return localStorage.getItem(`finni-three-${key}`)||fallback;}catch{return fallback;}};
@@ -72,10 +72,22 @@ function input(action,down,source){
   paint();
 }
 function paint(){for(const b of buttons){const held=[...sources.values()].includes(b.dataset.input);b.classList.toggle('pressed',held);b.classList.toggle('held',held);}}
-function release(){sources.clear();swipes.clear();game?.release();paint();}
+function release(){sources.clear();swipes.clear();pointers.clear();game?.release();paint();}
+function finishPointer(event,cancelled=false){
+  swipes.delete(event.pointerId);
+  const action=pointers.get(event.pointerId);if(!action)return;
+  pointers.delete(event.pointerId);
+  if(cancelled&&$('latch').checked&&['left','right'].includes(action)){
+    if(sources.delete(`latched:${action}`))game?.input(action,false);paint();
+  }else input(action,false,`pointer:${event.pointerId}`);
+}
+window.addEventListener('pointerup',event=>finishPointer(event));
+window.addEventListener('pointercancel',event=>finishPointer(event,true));
 for(const button of buttons){
+  for(const type of ['touchstart','touchend'])button.addEventListener(type,e=>e.preventDefault(),{passive:false});
   button.addEventListener('pointerdown',e=>{
-    if(e.button!==0)return;e.preventDefault();button.setPointerCapture(e.pointerId);
+    if(e.button!==0)return;e.preventDefault();try{button.setPointerCapture(e.pointerId);}catch{}
+    pointers.set(e.pointerId,button.dataset.input);
     audio?.unlock();input(button.dataset.input,true,`pointer:${e.pointerId}`);
     if(['touch','pen'].includes(e.pointerType)&&button.parentElement===$('flip-zones')&&['left','right'].includes(button.dataset.input))swipes.set(e.pointerId,{x:e.clientX,y:e.clientY,nudged:false});
   });
@@ -85,11 +97,10 @@ for(const button of buttons){
     if(Math.abs(dx)<24||Math.abs(dx)<=Math.abs(dy)*1.2)return;
     swipe.nudged=true;const action=dx<0?'nudgeLeft':'nudgeRight',source=`swipe:${e.pointerId}`;input(action,true,source);input(action,false,source);
   });
-  for(const type of ['pointerup','pointercancel','lostpointercapture'])button.addEventListener(type,e=>{
-    swipes.delete(e.pointerId);
-    if(type==='pointerup')input(button.dataset.input,false,`pointer:${e.pointerId}`);
-    else if(sources.has(`pointer:${e.pointerId}`))release();
-  });
+  button.addEventListener('pointerup',event=>finishPointer(event));
+  for(const type of ['pointercancel','lostpointercapture'])button.addEventListener(type,event=>finishPointer(event,true));
+  button.addEventListener('keydown',e=>{if(['Enter','Space'].includes(e.code)){e.preventDefault();if(!e.repeat)input(button.dataset.input,true,`button:${e.code}`);}});
+  button.addEventListener('keyup',e=>{if(['Enter','Space'].includes(e.code)){e.preventDefault();input(button.dataset.input,false,`button:${e.code}`);}});
   // Keyboard and assistive-technology activation of the semantic buttons.
   button.addEventListener('click',e=>{if(e.detail===0){input(button.dataset.input,true,'button');input(button.dataset.input,false,'button');}});
   button.addEventListener('contextmenu',e=>e.preventDefault());
