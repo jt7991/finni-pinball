@@ -6,7 +6,14 @@ import {nativeSoundRate} from './native-sound.js';
 
 export function createNativeAudioWorkerHost(send,{loadCodec,loadMusicSource,pcmBudget=16*1024*1024,musicBudget=24*1024*1024}){
  let manifest,base,engine,sampleRate,codec,codecPromise,disposed=false,currentSource,currentMusic,pcmBytes=0,musicBytes=0,sourceSerial=0;
- const pcm=new Map(),music=new Map(),commands=[];
+ const pcm=new Map(),music=new Map(),commands=[],reservations=new Map();let reservationSerial=0;
+ function cancelReservations(name){for(const[ticket,claim]of reservations)if(name===undefined||claim.name===name){engine.cancel(claim);reservations.delete(ticket);}}
+ function claimFor(message){
+  if(message.reservation===undefined)return engine.reserve(message.name,message.settings);
+  const claim=reservations.get(message.reservation);if(!claim)return null;
+  if(claim.name!==message.name)throw Error('Native sound reservation name differs');
+  reservations.delete(message.reservation);return claim;
+ }
  const touch=(cache,key)=>{const value=cache.get(key);if(value){cache.delete(key);cache.set(key,value);}return value;};
  async function ensureCodec(){
   if(codec)return codec;if(!codecPromise){const task=Promise.resolve().then(loadCodec).then(value=>{if(disposed){value.close();throw Error('Audio worker disposed');}return codec=value;});codecPromise=task;task.catch(()=>{if(codecPromise===task)codecPromise=null;});}return codecPromise;
@@ -44,35 +51,42 @@ export function createNativeAudioWorkerHost(send,{loadCodec,loadMusicSource,pcmB
     if(engine)throw Error('Audio worker already initialized');manifest=message.manifest;base=message.base;sampleRate=message.sampleRate;engine=createNativeSoundEngine({sampleRate,channels:2,createVoice:makeVoice});respond(id,{status:'initialized'});return;
    }
    if(!engine)throw Error('Audio worker not initialized');
+   if(type==='reserve-player'){
+    sound(message.name);if(message.settings?.restart)cancelReservations(message.name);
+    const claim={...engine.reserve(message.name,message.settings),name:message.name},ticket=++reservationSerial;reservations.set(ticket,claim);respond(id,{status:'reserved',reservation:ticket,playerID:claim.id});return;
+   }
+   if(type==='cancel-reservation'){const claim=reservations.get(message.reservation);if(claim){engine.cancel(claim);reservations.delete(message.reservation);}respond(id,{status:'cancelled'});return;}
    if(type==='register-effect'){const source=register(message.source);respond(id,{status:'registered',key:source.key,sourceID:source.id});return;}
    if(type==='play-effect'){
+    if(message.reservation!==undefined&&!reservations.has(message.reservation)){respond(id,{status:'cancelled'});return;}
     const entry=sound(message.name);if(entry.music)throw Error('Music requires original source preparation');const source=message.source?register(message.source):touch(pcm,message.key);
     if(!source){respond(id,{status:'need-source'});return;}
-    commands.push({type:'play',name:message.name,entry,settings:message.settings,source});respond(id,{status:'queued',key:source.key,sourceID:source.id});return;
+    const claim=claimFor(message);commands.push({type:'play',claim,name:message.name,entry,settings:message.settings,source});respond(id,{status:'queued',key:source.key,sourceID:source.id});return;
    }
    if(type==='prepare-music'){await prepareMusic(message.name);respond(id,{status:'prepared'});return;}
    if(type==='prefetch-music'){const failed=[];for(const name of message.names)try{await prepareMusic(name);}catch{failed.push(name);}respond(id,{status:'prefetched',failed});return;}
    if(type==='play-music'){
+    if(message.reservation!==undefined&&!reservations.has(message.reservation)){respond(id,{status:'cancelled'});return;}
     const entry=sound(message.name),source=touch(music,entry.nativeSource?.file);if(!codec||!source){respond(id,{status:'need-source'});return;}
-    commands.push({type:'play',name:message.name,entry,settings:message.settings,source});respond(id,{status:'queued'});return;
+    const claim=claimFor(message);commands.push({type:'play',claim,name:message.name,entry,settings:message.settings,source});respond(id,{status:'queued'});return;
    }
-   if(type==='stop'||type==='mute'){commands.push(message);respond(id,{status:'queued'});return;}
+   if(type==='stop'||type==='mute'){if(type==='stop'){cancelReservations(message.name);engine.noteStop(message.name);}commands.push(message);respond(id,{status:'queued'});return;}
    if(type==='render'){
     const applied=[],warnings=[];
     for(const command of commands.splice(0))try{
-     if(command.type==='stop'){engine.stop(command.name);if(command.name===undefined||command.name===currentMusic)currentMusic=undefined;applied.push({type:'stop',name:command.name});}
+     if(command.type==='stop'){engine.applyStop(command.name);if(command.name===undefined||command.name===currentMusic)currentMusic=undefined;applied.push({type:'stop',name:command.name});}
      else if(command.type==='mute'){engine.setMuted(command.value);applied.push({type:'mute',value:command.value});}
      else{
       currentSource=command.source;
-      if(command.entry.music&&currentMusic&&!(command.settings?.useExisting&&currentMusic===command.name))engine.stop(currentMusic);
-      const playerID=engine.play(command.name,command.entry,command.settings);if(command.entry.music)currentMusic=command.name;
+      if(command.entry.music&&currentMusic&&!(command.settings?.useExisting&&currentMusic===command.name))engine.applyStop(currentMusic);
+      const playerID=engine.playReserved(command.claim,command.entry,command.settings);if(command.entry.music)currentMusic=command.name;
       applied.push({type:'play',name:command.name,playerID,sourceID:command.source.id,key:command.source.key});
      }
-    }catch(error){if(command.entry?.music){musicBytes-=music.get(command.source.key)?.bytes.byteLength??0;music.delete(command.source.key);}warnings.push({name:command.name,error:String(error.message??error)});}
+    }catch(error){if(command.claim)engine.cancel(command.claim);if(command.entry?.music){musicBytes-=music.get(command.source.key)?.bytes.byteLength??0;music.delete(command.source.key);}warnings.push({name:command.name,error:String(error.message??error)});}
     currentSource=undefined;const block=engine.render();respond(id,{status:'pcm',...block,applied,warnings},[block.pcm.buffer]);return;
    }
-   if(type==='stats'){respond(id,{status:'stats',...engine.stats,pcmBytes,musicBytes,queued:commands.length,codecBytes:codec?.memoryBytes??0});return;}
-   if(type==='dispose'){commands.length=0;engine.stop();codec?.close();respond(id,{status:'disposed'});disposed=true;return;}
+   if(type==='stats'){respond(id,{status:'stats',...engine.stats,pcmBytes,musicBytes,queued:commands.length,pendingReservations:reservations.size,codecBytes:codec?.memoryBytes??0});return;}
+   if(type==='dispose'){commands.length=0;cancelReservations();engine.stop();codec?.close();respond(id,{status:'disposed'});disposed=true;return;}
    throw Error('Unknown native audio worker command');
   }catch(error){respond(id,{status:'error',error:String(error.message??error)});}
  }

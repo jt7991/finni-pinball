@@ -6,12 +6,13 @@ const initialCallbacks=Number(process.argv.find(a=>a.startsWith('--initial-callb
 const edge=process.argv.includes('--loop-edge'),volume=Number(process.argv.find(a=>a.startsWith('--volume='))?.slice(9)??.37);assert.ok(volume>0&&volume<=1);const nativeClip=edge?JSON.parse(fs.readFileSync('three/tests/fixtures/vpx-main-vorbis-native.json')).clips.find(c=>c.name===name):null;if(edge)assert.ok(nativeClip);
 const mixCase=option('mix-case'),mixes={
  'pf-trio':[{name:'fx_flipperup',volume:.04,loopCount:-1,pan:0,pitch:0},{name:'fx_flipperdown',volume:.16,loopCount:-1,pan:0,pitch:0},{name:'fx_collide',volume:.09,loopCount:-1,pan:0,pitch:0}],
+ 'pf-interleaved':[{name:'fx_flipperup',volume:.04,loopCount:-1,pan:0,pitch:0,useExisting:false,restart:false},{name:'fx_collide',volume:.09,loopCount:-1,pan:0,pitch:0,useExisting:false,restart:false},{name:'fx_flipperup',volume:.16,loopCount:-1,pan:0,pitch:11025,useExisting:false,restart:false},{name:'fx_collide',volume:.04,loopCount:-1,pan:0,pitch:-5000,useExisting:false,restart:false},{name:'fx_flipperdown',volume:.04,loopCount:-1,pan:0,pitch:0,useExisting:false,restart:false}],
  'cross-high':[{name:'vo_juggernaut',volume:1,loopCount:-1,pan:0,pitch:0},{name:'fx_flipperup',volume:1,loopCount:-1,pan:0,pitch:0},{name:'fx_collide',volume:1,loopCount:-1,pan:0,pitch:0}],
  'cross-saturated':[{name:'vo_juggernaut',volume:1,loopCount:-1,pan:0,pitch:0},{name:'fx_flipperup',volume:1,loopCount:-1,pan:0,pitch:0},{name:'fx_flipperdown',volume:1,loopCount:-1,pan:0,pitch:0},{name:'fx_collide',volume:1,loopCount:-1,pan:0,pitch:0}],
  'cross-rolling':[{name:'vo_juggernaut',volume:1,loopCount:-1,pan:0,pitch:0},{name:'fx_ballrolling7',volume:1,loopCount:-1,pan:0,pitch:0},{name:'fx_ballrolling8',volume:1,loopCount:-1,pan:0,pitch:0},{name:'fx_ballrolling9',volume:1,loopCount:-1,pan:0,pitch:0}]
 };if(mixCase){assert.ok(mixes[mixCase]);assert.equal(name,mixes[mixCase][0].name);assert.equal(process.argv.includes('--restart'),false);}
 const layers=(mixCase?mixes[mixCase]:[{name,volume,loopCount,pan,pitch}]).map(sound=>({...sound,sourceSHA256:manifest[sound.name].sourceSHA256}));
-const startSounds=()=>layers.map(sound=>'PlaySound "'+sound.name+'",'+sound.loopCount+','+sound.volume+','+sound.pan+',0,'+sound.pitch+',1,1').join(':');
+const startSounds=()=>layers.map(sound=>'PlaySound "'+sound.name+'",'+sound.loopCount+','+sound.volume+','+sound.pan+',0,'+sound.pitch+','+Number(sound.useExisting??true)+','+Number(sound.restart??true)).join(':');
 const stopSounds=()=>layers.map(sound=>'StopSound "'+sound.name+'"').join(':');
 const disabledRuleTimers=process.argv.includes('--freeze-rule-timers')?JSON.parse(fs.readFileSync('three/public/objects.json')).objects.filter(o=>o.kind==='Timer').map(o=>o.name):[];
 const disabledElementTimers=process.argv.includes('--freeze-rule-timers')?['swPlungerRest']:[];

@@ -24,7 +24,8 @@ export function createNativeAudioPlayer(context,base,manifest,{loadBuffer,onErro
   if(!initializing){const task=request({type:'audio-init',manifest,sampleRate:context.sampleRate}).then(async()=>{if(muted)await request({type:'mute',value:true});});initializing=task;task.catch(()=>{if(initializing===task)initializing=undefined;});}return initializing;
  }
  function source(name,buffer){return{key:manifest[name].file??name,frames:buffer.length,rate:buffer.sampleRate,channels:Array.from({length:buffer.numberOfChannels},(_,c)=>buffer.getChannelData(c).slice())};}
- function sendSource(type,name,buffer,settings){const data=source(name,buffer);return request({type,name,source:data,settings},data.channels.map(c=>c.buffer));}
+ function sendSource(type,name,buffer,settings,reservation){const data=source(name,buffer);return request({type,name,source:data,settings,reservation},data.channels.map(c=>c.buffer));}
+ async function cancelClaim(claim){if(claim&&!disposed)try{await request({type:'cancel-reservation',reservation:claim.reservation});}catch{}}
  async function pump(){
   if(inFlight||disposed||!node)return;inFlight=true;const generation=outputGeneration;
   try{const block=await request({type:'render'});if(generation!==outputGeneration)return;if(block.status!=='pcm'||block.frames!==2048||block.channels!==2)throw Error('Native audio output format differs');nextBlock=block;for(const warning of block.warnings??[])onError(Error(warning.error));for(const event of block.ended??[])onEnded(event);}
@@ -47,16 +48,20 @@ export function createNativeAudioPlayer(context,base,manifest,{loadBuffer,onErro
   name=String(name).toLowerCase();const entry=manifest[name];if(!entry||disposed)return;
   if(entry.music){
    if(musicName)stop(musicName);const ticket=++musicTicket;musicName=name;
-   try{await ready();await request({type:'prepare-music',name});if(ticket!==musicTicket||disposed)return;const result=await request({type:'play-music',name,settings});if(result.status!=='queued')throw Error('Prepared music source was evicted');output();}catch(error){if(!disposed&&ticket===musicTicket)onError(error);}return;
+   let claim,queued=false;
+   try{await ready();if(ticket!==musicTicket||disposed)return;claim=await request({type:'reserve-player',name,settings});await request({type:'prepare-music',name});if(ticket!==musicTicket||disposed)return;const result=await request({type:'play-music',name,settings,reservation:claim.reservation});if(result.status==='cancelled')return;if(result.status!=='queued')throw Error('Prepared music source was evicted');queued=true;output();}catch(error){if(!disposed&&ticket===musicTicket)onError(error);}finally{if(!queued)await cancelClaim(claim);}return;
   }
   if(settings.restart)stop(name);
   const started=context.currentTime,version=epoch,stopped=stops.get(name)??0,valid=()=>!disposed&&version===epoch&&stopped===(stops.get(name)??0)&&!(context.currentTime-started>2&&(settings.loop??0)>=0);
+  // Allocate in script-call order before asynchronous source loading. A cold
+  // clip must not permanently change the native pool/attachment order.
+  let claim,queued=false;const claimTask=ready().then(async()=>{if(valid())claim=await request({type:'reserve-player',name,settings});});
   try{
-   const [,buffer]=await Promise.all([ready(),loadBuffer(name)]);if(!valid())return;
-   const key=entry.file??name;let result=registered.has(key)?await request({type:'play-effect',name,key,settings}):await sendSource('play-effect',name,buffer,settings);
-   if(result.status==='need-source'){if(!valid())return;result=await sendSource('play-effect',name,buffer,settings);}
-   if(result.status!=='queued')throw Error('Native effect was not queued');registered.add(key);output();
-  }catch(error){if(valid())onError(error);}
+   const [,buffer]=await Promise.all([claimTask,loadBuffer(name)]);if(!claim||!valid())return;
+   const key=entry.file??name,reservation=claim.reservation;let result=registered.has(key)?await request({type:'play-effect',name,key,settings,reservation}):await sendSource('play-effect',name,buffer,settings,reservation);
+   if(result.status==='need-source'){if(!valid())return;result=await sendSource('play-effect',name,buffer,settings,reservation);}
+   if(result.status==='cancelled')return;if(result.status!=='queued')throw Error('Native effect was not queued');queued=true;registered.add(key);output();
+  }catch(error){if(valid())onError(error);}finally{if(!queued){await claimTask.catch(()=>{});await cancelClaim(claim);}}
  }
  function stop(name){
   if(name===undefined){epoch++;musicTicket++;musicName=undefined;}
