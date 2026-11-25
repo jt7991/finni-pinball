@@ -3,6 +3,7 @@
 import {parentPort} from 'node:worker_threads';
 import {createSimulationHost} from '../../simulation-host.js';
 import {nativeRandom} from '../../native-random.js';
+import {drainForTest} from './drain.mjs';
 const host=createSimulationHost(message=>parentPort.postMessage(message),{allowDebug:true});
 let pending=Promise.resolve();
 parentPort.on('message',message=>{pending=pending.then(async()=>{
@@ -14,7 +15,7 @@ parentPort.on('message',message=>{pending=pending.then(async()=>{
     await host.receive({type:'barrier',id:message.id});
   }else if(message.type==='debug'&&message.action==='test-drain'){
     host.game.rules.execute('bBallSaverActive=False:bBallSaverReady=False');
-    for(const rec of [...host.game.records])host.game.rules.hit('Drain','Hit',rec.proxy);
+    drainForTest(host.game);
     await host.receive({type:'barrier',id:message.id});
   }else await host.receive(message);
 });});

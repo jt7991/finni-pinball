@@ -53,7 +53,7 @@ class FullGame extends Pinball {
       scriptProfiler:this.scriptProfiler,
       scriptRandomClock:options.scriptRandomClock,
       scriptTimerSeconds:options.scriptTimerSeconds,
-      createBall:name=>this.spawn(name),destroyBall:(name,ball)=>this.remove(name,ball),
+      createBall:name=>this.spawn(name),destroyBall:name=>this.destroyCapturedBall(name),
       kick:(name,ball,angle,speed,inclination)=>this.kick(name,ball,angle,speed,inclination),
       flipper:(side,down)=>{this.held[side]=down;},plunger:down=>{this.held.launch=down;if(down)this.plunger.pull();else this.launch();},
       plungerPosition:()=>this.plunger.position,
@@ -253,6 +253,15 @@ class FullGame extends Pinball {
     (isToy?this.toyRecords:this.records).push(rec);this.physicalRecords.push(rec);this.renderRecords.push(rec);this.byCollider.set(collider.handle,rec);this.captures.set(key,rec);this.pendingCreate=rec;if(!isToy)this.ball=body;
     const kicker=this.kickers.find(k=>k.key===key);if(kicker){kicker.members.set(this.nativeBall(body).body,1);kicker.captured=rec;}
     return rec.proxy;
+  }
+
+  destroyCapturedBall(name) {
+    // Kicker::DestroyBall owns its captured ball, independently of ActiveBall.
+    // An empty kicker returns zero and must leave unrelated live balls alone.
+    const record=this.captures.get(name.toLowerCase());
+    if(!record)return 0;
+    this.remove(name,record.proxy);
+    return 1;
   }
 
   remove(name,ball) {

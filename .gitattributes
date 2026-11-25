@@ -29,3 +29,5 @@ three/public/native-postprocess/*.glsl -text -whitespace
 three/tests/fixtures/vpx-main-6f8116d-ball-allocation-order.json -text
 three/tests/fixtures/vpx-native-live-ball-identity-*.json -text
 three/tests/fixtures/vpx-native-image-readback-*.json -text
+three/tests/fixtures/vpx-kicker-destroy-ownership.json -text
+scripts/probe-kicker-ownership.mjs text eol=lf

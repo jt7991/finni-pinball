@@ -1,0 +1,65 @@
+{
+  "scope": "Explicit extra held ball created through HellHouse.CreateBall, plus one ordinary keyboard launch of the enrolled player ball. This isolates kicker DestroyBall ownership/return type with an unrelated ActiveBall. No body, clock, RNG, timer deadline or expected result is supplied. It does not establish natural reachability of a user-reported scoop hold.",
+  "base": "http://127.0.0.1:50835/",
+  "native": true,
+  "provenance": {
+    "metadata": {
+      "engine": "@valknar/vpinball-wasm 0.3.4",
+      "engineSHA256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+      "upstreamCommit": "195f214dd4849b8ef6113fd377258b78d0dec3bf",
+      "sourceCommit": "6f8116d0964429db0e2da41d583566784114fc5f",
+      "sourceSha256": "6160e43c1a74f6dc70fd9852433c3373fe11b3e55d4f3a3fedc435265591b5c5",
+      "controlledSha256": "6160e43c1a74f6dc70fd9852433c3373fe11b3e55d4f3a3fedc435265591b5c5",
+      "controlledOverrides": {},
+      "browserSourceCommit": "6f8116d0964429db0e2da41d583566784114fc5f",
+      "browserAppSHA256": "3608d26828ea120a3a56437746d74054b7f69abe019d9b9ec4f21288b1a4389f",
+      "scope": "Exact committed master VPX and browser snapshot, including its continuous HTML music player. No injected table instrumentation or chooser correction. Engine cache is read only. Individual comparison probes declare any observers or external inputs separately."
+    },
+    "probeSHA256": "99fe49d4b033b0ec5a78a96592ca5d854c7acf682e08f92fab44c0cdf44a020a",
+    "engineBytesVerified": true
+  },
+  "before": {
+    "held": 4,
+    "active": 3,
+    "ids": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "first": -99,
+    "second": -99,
+    "firstType": 3,
+    "secondType": 3
+  },
+  "first": {
+    "held": 4,
+    "active": 3,
+    "ids": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "first": 1,
+    "second": -99,
+    "firstType": 3,
+    "secondType": 3
+  },
+  "second": {
+    "held": 4,
+    "active": 3,
+    "ids": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "first": 1,
+    "second": 0,
+    "firstType": 3,
+    "secondType": 3
+  },
+  "errors": []
+}

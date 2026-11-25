@@ -4,6 +4,7 @@ import test from 'node:test';
 import {createFullGame} from '../full-game.js';
 import {STEP,RADIUS} from '../physics.js';
 import {applyReferencePhysics,referenceRandom} from '../../scripts/reference-physics.mjs';
+import {drainForTest} from './helpers/drain.mjs';
 const json=name=>JSON.parse(fs.readFileSync(new URL(`../public/${name}.json`,import.meta.url)));
 const source=fs.readFileSync(new URL('../public/rules.vbs',import.meta.url),'utf8');
 const ticks=(g,s)=>{for(let i=0;i<s/STEP;i++)g.step();};
@@ -68,7 +69,7 @@ test('native bonus, game over and replay complete across three physical drains',
     for(let ball=1;ball<=3;ball++){
       const rec=g.records.find(r=>r.inLane);assert.ok(rec,`ball ${ball} released`);
       g.rules.execute('bBallSaverActive=False:bBallSaverReady=False');
-      g.rules.hit('Drain','Hit',rec.proxy);ticks(g,20);
+      drainForTest(g,[rec]);ticks(g,20);
     }
     assert.equal(g.state,'over');assert.equal(g.records.length,0);
     g.start();ticks(g,1.7);assert.equal(g.state,'playing');assert.equal(g.ballNumber,1);assert.equal(g.records.length,1);
