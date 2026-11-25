@@ -74,6 +74,7 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--native-ball-identity' in sys.argv:runner='probe-native-ball-identity.mjs'
         if '--native-live-ball-identity' in sys.argv:runner='probe-native-live-ball-identity.mjs'
         if '--native-image-encoding' in sys.argv:runner='probe-native-image-encoding.mjs'
+        if '--native-bloom-context' in sys.argv:runner='probe-native-bloom-context.mjs'
         if '--production-lock-contact' in sys.argv:runner='test-production-lock-contact.mjs'
         if '--frame-history-render' in sys.argv:runner='test-native-frame-history.mjs'
         if '--postprocess-history' in sys.argv:runner='test-native-postprocess-history.mjs'
