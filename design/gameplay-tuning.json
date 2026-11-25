@@ -2,8 +2,9 @@
   "lock_ramp": {
     "object": "Ramp010",
     "minimum_entry_speed": 18,
+    "approach_speed": 28,
     "climb_speed": 24,
-    "reason": "Aligned shots were stalling on the climb before the loop into the virtual ball lock. Apply a local horizontal speed floor only to rising entrance shots; preserve aim, geometry, strong shots and rollbacks."
+    "reason": "Near-vertical shots that clear the scoop-side posts can miss the diagonal ramp mouth. Guide those shots toward the climb with enough speed to carry through the loop. Keep the neighboring spinner lane outside the approach window."
   },
   "scoop": {
     "object": "HellHouse",

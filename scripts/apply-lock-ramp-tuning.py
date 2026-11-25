@@ -1,4 +1,4 @@
-"""Give aligned climbing shots a local speed floor at the lock-ramp entrance."""
+"""Guide close shots into the Friendship ramp and help them climb."""
 import json
 import re
 from pathlib import Path
@@ -20,7 +20,24 @@ def ramp_script(source):
     if source.count(anchor) != 1:
         raise ValueError('Expected the original rolling timer ball loop')
     routine = f'''Sub FinniLockRampAssist(ball)
-    Dim speed, factor
+    Dim speed, factor, mouthX, dx, dy
+    ' Guide near-vertical shots that clear the scoop-side posts toward the ramp.
+    ' The approach window stops short of the neighboring spinner lane.
+    If ball.X >=345 And ball.X <=374 And ball.Y >=347 And ball.Y <=395 And ball.Z >=24 And ball.Z <=29 Then
+        If ball.VelY <=-{tuning['minimum_entry_speed']} And Abs(ball.VelX) <= -0.18 * ball.VelY Then
+            mouthX = ball.X + (350 - ball.Y) * ball.VelX / ball.VelY
+            If mouthX >=344 And mouthX <=370 Then
+                dx = 258 - ball.X
+                dy = 306 - ball.Y
+                speed = Sqr(ball.VelX ^2 + ball.VelY ^2)
+                If speed <{tuning['approach_speed']} Then speed = {tuning['approach_speed']}
+                factor = speed / Sqr(dx ^2 + dy ^2)
+                ball.VelX = dx * factor
+                ball.VelY = dy * factor
+                Exit Sub
+            End If
+        End If
+    End If
     ' Only the rising entrance of Ramp010; preserve aim and leave rollbacks alone.
     If ball.X <240 Or ball.X >292 Or ball.Y <290 Or ball.Y >334 Then Exit Sub
     If ball.Z <29 Or ball.Z >60 Then Exit Sub
