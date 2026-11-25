@@ -58,6 +58,37 @@ test('physical mission counter, win and jackpot retain native rendering history 
   });
 });
 
+for(const expected of[
+  {mission:2,sha:'4cfc84bdf9373ba6025b84de018b586cbff3cc3aebecde75209cc46970d14a6e',first:5775,last:25702,completedAt:12197,score:3109000,timerSamples:7,observations:50,variantFields:1700,shots:['scoop','wolverine','cross','ramp']},
+  {mission:3,sha:'ee30d2cd32c8fde521d3de2c45db49b393ab4c58c3aca227d627c1cd4fe4d207',first:5808,last:27636,completedAt:19533,score:4745000,timerSamples:9,observations:70,variantFields:2520,shots:['scoop','Bumper1','Bumper2','Bumper3']},
+])test('physical mission '+expected.mission+' counter, win and jackpot retain exact native history',async()=>{
+  const capture=readCapture('vpx-main-6f8116d-mission'+expected.mission+'-complete-render-digests-native.json.gz',expected.sha);
+  const controller=capture.physicalController.result;
+  assert.equal(capture.physicalController.kind,'physical-mission-completion');
+  assert.equal(capture.physicalController.scenario.mission,expected.mission);
+  assert.equal(capture.physicalController.sourceSHA256,'fd97ecfe4d08cb3734ac3126c6c33a85ea0162183c9878347c11f762a0f4e275');
+  assert.equal(controller.completedAt,expected.completedAt);
+  assert.equal(controller.last.won,1);
+  assert.equal(controller.last['life'+expected.mission],0);
+  assert.equal(controller.last['mission'+expected.mission],1);
+  assert.equal(controller.last.endJackpot,0);
+  assert.equal(controller.last.score,expected.score);
+  assert.deepEqual(capture.imageWindow,{warmupFrames:300,imageFrames:128});
+  assert.equal(capture.frames[300].snapshot.ms,expected.first);
+  assert.equal(capture.frames.at(-1).snapshot.ms,expected.last);
+  assert.equal(capture.frames.reduce((count,frame)=>count+Object.keys(frame.images).length,0),1024);
+  assert.deepEqual(new Set(capture.actions.filter(action=>action.kind==='shot').map(action=>action.shot)),new Set(expected.shots));
+  if(expected.mission===3){
+    assert.equal(controller.last.bumperHits,20);
+    assert.equal(controller.last.balloonState,0);
+  }
+  assert.deepEqual(await compareNativeHistoryState(capture),{
+    framesChecked:428,intervalsChecked:expected.last,ticks:expected.last+1,
+    randomizeClockSamples:2,timerClockSamples:expected.timerSamples,
+    ruleObservationsChecked:expected.observations,ruleVariantFieldsChecked:expected.variantFields,scriptRandomStatesChecked:expected.observations,
+  });
+});
+
 test('Friendship and Disco retain native saver expiry, physical drains, rendering history and exact boundaries',async()=>{
   const capture=readCapture('vpx-main-6f8116d-side-complete-render-digests-native.json.gz','2982164c4b411e4249564211b53e91ab3d02d87861bdecce9d2c1844b0d5f091');
   const controller=capture.physicalController.result;
