@@ -20,3 +20,5 @@ three/public/native-flashers/*.glsl -text -whitespace
 three/public/native-halos/*.glsl -text -whitespace
 three/public/native-classic/*.glsl -text -whitespace
 three/public/native-postprocess/*.glsl -text -whitespace
+# Preserve the hashed original-engine collision observation on every platform.
+three/tests/fixtures/vpx-main-6f8116d-ball-allocation-order.json -text
