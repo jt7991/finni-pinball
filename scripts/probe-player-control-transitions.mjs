@@ -7,8 +7,9 @@ import {createHash} from 'node:crypto';
 import {gunzipSync} from 'node:zlib';
 import {installNativeStartupObserver} from './native-startup-observer.mjs';
 const [debug,base,output]=process.argv.slice(2),native=process.argv.includes('--native-player'),sha=b=>createHash('sha256').update(b).digest('hex');
-const nativeBytes=fs.readFileSync(new URL('../three/tests/fixtures/vpx-native-player-control-transitions-v2.json.gz',import.meta.url)),nativeFixtureSHA256=sha(nativeBytes);
-assert.equal(nativeFixtureSHA256,'2729299f8be4ba380d6ee15228996edfacd0f956abcfe4cae415bdee307f1be4');
+const cameraFocus=process.argv.includes('--camera-focus');
+const nativeBytes=fs.readFileSync(new URL('../three/tests/fixtures/'+(cameraFocus?'vpx-native-player-camera-focus.json.gz':'vpx-native-player-control-transitions-v2.json.gz'),import.meta.url)),nativeFixtureSHA256=sha(nativeBytes);
+assert.equal(nativeFixtureSHA256,cameraFocus?'7abe644197913cbd0bb3ef0e90a2693077c61df1a7a9e8f9a965b4dbc7685452':'2729299f8be4ba380d6ee15228996edfacd0f956abcfe4cae415bdee307f1be4');
 const nativeBaseline=JSON.parse(gunzipSync(nativeBytes)).observation;
 assert.equal(nativeBaseline.native,true);assert.deepEqual(nativeBaseline.errors,[]);assert.ok(nativeBaseline.observations.every(row=>row.pass));
 let reference,engineSHA256,playerSHA256;
@@ -24,12 +25,20 @@ const observations=[];
 const key=(code,down)=>call('Input.dispatchKeyEvent',{type:down?'keyDown':'keyUp',code,key:code==='ShiftLeft'?'Shift':' ',windowsVirtualKeyCode:code==='ShiftLeft'?16:32});
 const held=()=>evaluate('({left:!!controlTransitions.held.left,right:!!controlTransitions.held.right})');
 try{
-  await call('Page.enable');await call('Runtime.enable');await call('Emulation.setFocusEmulationEnabled',{enabled:true});await call('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});
+  await call('Page.enable');await call('Runtime.enable');await call('Emulation.setFocusEmulationEnabled',{enabled:true});await call('Emulation.setDeviceMetricsOverride',{width:cameraFocus?1440:390,height:cameraFocus?900:844,deviceScaleFactor:1,mobile:!cameraFocus});
+  if(process.argv.includes('--touch-emulation'))await call('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:5});
   await call('Page.addScriptToEvaluateOnNewDocument',{source:(native?'('+installNativeStartupObserver.toString()+')(1);':'')+`(()=>{
-    const s=window.controlTransitions={held:{},inputs:[],latest:null,fatal:[]},NativeWorker=window.Worker;
+    const s=window.controlTransitions={held:{},inputs:[],latest:null,fatal:[],fullscreenRequests:[]},NativeWorker=window.Worker;
+    if(${cameraFocus})for(const name of ['requestFullscreen','webkitRequestFullscreen']){const prototype=[Element.prototype,HTMLElement.prototype].find(p=>Object.hasOwn(p,name)),original=prototype?.[name];if(typeof original==='function')prototype[name]=function(...args){s.fullscreenRequests.push({name,args});return original.apply(this,args);};}
     window.Worker=class extends NativeWorker{constructor(...args){super(...args);this.addEventListener('message',({data})=>{if(data.type==='snapshot')s.latest={time:data.snapshot.time,paused:data.paused};if(data.type==='fatal')s.fatal.push(data.message);});}postMessage(message,...args){if(message.type==='input'){s.inputs.push({action:message.action,down:message.down});s.held[message.action]=message.down;}if(message.type==='release')for(const action of Object.keys(s.held))s.held[action]=false;return super.postMessage(message,...args);}};
   })();`});
-  await call('Page.navigate',{url:base});await wait('!!document.getElementById("play")&&!document.getElementById("play").disabled');await evaluate('document.getElementById("play").click()');await wait('document.body.classList.contains("ball-in-plunger")');
+  await call('Page.navigate',{url:base});await wait('!!document.getElementById("play")&&!document.getElementById("play").disabled');
+  if(process.argv.includes('--trusted-start')){
+    const position=await evaluate('(()=>{const r=document.getElementById("play").getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2};})()');
+    for(const type of ['mousePressed','mouseReleased'])await call('Input.dispatchMouseEvent',{type,...position,button:'left',clickCount:1});
+  }else await evaluate('document.getElementById("play").click()');
+  await wait('document.body.classList.contains("ball-in-plunger")');
+  const fullscreenAtStart=await evaluate('({active:!!(document.fullscreenElement||document.webkitFullscreenElement),enabled:document.fullscreenEnabled,note:document.getElementById("screen-message").textContent,noteHidden:document.getElementById("screen-message").hidden})');
   if(native)await evaluate(`(()=>{const s=controlTransitions,engine=finni.engine,ccall=engine.ccall;engine.ccall=function(name,...args){const result=ccall.call(this,name,...args);if(name==='vpinball_wasm_eval_script'){const statement=args[2]?.[0],match=typeof statement==='string'&&statement.match(/^Table1_Key(Down|Up) (LeftFlipperKey|RightFlipperKey|RightTiltKey)$/);if(match){const action={LeftFlipperKey:'left',RightFlipperKey:'right',RightTiltKey:'nudgeRight'}[match[2]],down=match[1]==='Down';s.inputs.push({action,down});s.held[action]=down;}}return result;};})()`);
   const focus=()=>evaluate('document.getElementById("canvas").focus()');
   const clock=()=>evaluate(native?'nativeStartup.read().ms':'controlTransitions.latest.time*1000');
@@ -62,9 +71,25 @@ try{
     latch.checked=false;latch.dispatchEvent(new Event('change'));
   })()`);await delay(50);
   observations.push({name:'sliding a toggle-off press does not nudge a released flipper',pass:await evaluate(`!controlTransitions.inputs.slice(${nudgeStart}).some(row=>row.action==='nudgeRight'&&row.down)`)});
+  let focusClocks;
+  if(cameraFocus){
+    observations.push({name:'Start requests fullscreen',pass:await evaluate('controlTransitions.fullscreenRequests.length>0')});
+    await focus();await key('ShiftLeft',true);await delay(50);assert.equal((await held()).left,true);
+    await evaluate('(()=>{const select=document.getElementById("camera-view");select.focus();select.value="topdown";select.dispatchEvent(new Event("change"));})()');await delay(50);
+    observations.push({name:'camera change releases held flipper',pass:!(await held()).left});
+    observations.push({name:'camera change returns keyboard focus to playfield',pass:await evaluate('document.activeElement===document.getElementById("canvas")')});await key('ShiftLeft',false);
+    await evaluate('document.getElementById("portrait").focus();document.getElementById("portrait").click();new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))');
+    observations.push({name:'portrait rotation returns keyboard focus to playfield',pass:await evaluate('document.activeElement===document.getElementById("canvas")')});
+    await evaluate('window.dispatchEvent(new Event("blur"))');const blurred=await clock();await delay(250);const afterBlur=await clock();
+    await evaluate('window.dispatchEvent(new Event("focus"))');const focused=await clock();await delay(250);const afterFocus=await clock();
+    focusClocks={blur:{beforeMilliseconds:blurred,afterMilliseconds:afterBlur,elapsedMilliseconds:afterBlur-blurred,paused:afterBlur===blurred},focus:{beforeMilliseconds:focused,afterMilliseconds:afterFocus,elapsedMilliseconds:afterFocus-focused,advances:afterFocus>focused}};
+  }
   const traffic=await evaluate('({inputs:controlTransitions.inputs,fatal:controlTransitions.fatal})');
-  const report={scope:'Identical ordinary UI-event sequence. Physical CDP Shift keys, explicit pointer events, normal Help/popover controls and pagehide dispatch are inputs. Original native authored key calls or Three worker packets are observed without changing their arguments/results. Clock/body/RNG/native instructions are never replaced. This is finite player-transition coverage, not a full gameplay trajectory.',native,base,nativeFixtureSHA256,reference,engineSHA256,playerSHA256,observations,traffic,errors};
-  fs.writeFileSync(path.join(output,'player-control-transitions.json'),JSON.stringify(report,null,2),{flag:'wx'});console.log(JSON.stringify({native,observations,errors}));
+  const report={scope:'Identical ordinary UI-event sequence. Physical CDP Shift keys, explicit pointer events, normal Help/popover/camera controls and pagehide/blur/focus dispatch are inputs. Original native authored key calls or Three worker packets and fullscreen API attempts are observed without changing their arguments/results. Clock/body/RNG/native instructions are never replaced. This is finite player-transition coverage, not a full gameplay trajectory.',native,base,cameraFocus,trustedStart:process.argv.includes('--trusted-start'),touchEmulation:process.argv.includes('--touch-emulation'),nativeFixtureSHA256,reference,engineSHA256,playerSHA256,observations,focusClocks,fullscreenAtStart,fullscreenRequests:await evaluate('controlTransitions.fullscreenRequests'),traffic,errors};
+  fs.writeFileSync(path.join(output,'player-control-transitions.json'),JSON.stringify(report,null,2),{flag:'wx'});console.log(JSON.stringify({native,observations,focusClocks,errors}));
   assert.deepEqual(errors,[]);assert.deepEqual(traffic.fatal,[]);
-  if(!process.argv.includes('--observe-only'))assert.deepEqual(observations.map(({name,pass})=>({name,pass})),nativeBaseline.observations.map(({name,pass})=>({name,pass})),'Original main-player transition behavior');
+  if(!process.argv.includes('--observe-only')){
+    assert.deepEqual(observations.map(({name,pass})=>({name,pass})),nativeBaseline.observations.map(({name,pass})=>({name,pass})),'Original main-player transition behavior');
+    if(cameraFocus){assert.equal(focusClocks.blur.paused,nativeBaseline.focusClocks.blur.paused);assert.equal(focusClocks.focus.advances,nativeBaseline.focusClocks.focus.advances);}
+  }
 }finally{socket.close();}

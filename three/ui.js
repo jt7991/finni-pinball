@@ -35,10 +35,6 @@ export function prepareUI({release=()=>{},focusGame=()=>{}}={}){
   };
   byId('dismiss-touch-guide').onclick=()=>{document.body.classList.remove('show-touch-guide');byId('touch-guide').hidden=true;byId('touch-help').setAttribute('aria-pressed','false');focusGame();};
   byId('showTouch').onchange=()=>{byId('release').click();for(const id of ['touch','flip-zones','nudge-zone'])if(byId(id))byId(id).hidden=!byId('showTouch').checked;};
-  let toolbarTimer;
-  const revealToolbar=()=>{document.body.classList.add('toolbar-visible');clearTimeout(toolbarTimer);toolbarTimer=setTimeout(()=>document.body.classList.remove('toolbar-visible'),1600);};
-  document.addEventListener('fullscreenchange',revealToolbar);
-  document.addEventListener('pointermove',event=>{if(document.fullscreenElement&&(document.body.classList.contains('portrait-rotated')?event.clientX>innerWidth-24:event.clientY<24))revealToolbar();});
   const aliases={table:'canvas',overlay:'waiting','load-status':'loading','ball-number':'ball',camera:'camera-view',quality:'graphics','reset-bindings':'reset','binding-status':'message','screen-note':'screen-message',metrics:'status'};
   return id=>byId(aliases[id]??id);
 }

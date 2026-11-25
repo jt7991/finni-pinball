@@ -4,6 +4,7 @@ import {createAudio,createDisplay} from './media.js';
 import {createLeaderboard} from '../browser/leaderboard.js';
 import {createMusic} from '../browser/music.js';
 import {prepareUI} from './ui.js';
+import {createPlayerFullscreen} from './player-fullscreen.js';
 
 const $=prepareUI({release,focusGame});
 let game,view,audio,display,leaderboard,paused=true,frames=0,sampleStart=0;
@@ -39,7 +40,7 @@ function bindings(){
 bindings();
 $('reset-bindings').onclick=()=>{release();for(const code of Object.keys(keys))delete keys[code];Object.assign(keys,defaultKeys);save('bindings','null');$('latch').checked=false;save('latch','false');bindings();};
 $('release').onclick=release;
-function rotateScreen(enabled){release();document.body.classList.toggle('portrait-rotated',enabled);$('portrait').setAttribute('aria-pressed',String(enabled));save('portrait',String(enabled));}
+function rotateScreen(enabled){release();document.body.classList.toggle('portrait-rotated',enabled);$('portrait').setAttribute('aria-pressed',String(enabled));save('portrait',String(enabled));requestAnimationFrame(focusGame);}
 $('portrait').onclick=()=>rotateScreen(!document.body.classList.contains('portrait-rotated'));
 rotateScreen(read('portrait','false')==='true');
 function message(text,seconds=3){$('message').textContent=text;messageUntil=(game?.time||0)+seconds;}
@@ -133,12 +134,14 @@ $('controls-panel').addEventListener('close',focusGame);
 $('controls-panel').addEventListener('toggle',release);
 for(const panel of document.querySelectorAll('.panel'))panel.addEventListener('toggle',e=>{if(e.newState==='closed')focusGame();});
 $('initials-dialog').addEventListener('close',focusGame);
+const fullscreen=createPlayerFullscreen({release,focusGame});
 $('play').onclick=async()=>{
   if($('play').disabled||startingGame)return;
   release();const browserMusic=music.unlock();startingGame=true;
   // Resume the native context in the gesture without draining initialization.
   const activated=audio?.unlock();$('play').disabled=true;$('play').textContent='Starting game…';
   try{
+    void fullscreen.set(true);
     const handoff=browserMusic&&tableSupportsBrowserMusic&&!browserMusicActivated;
     await game.prepareStart(selectedPlayers(),{browserMusic:handoff});if(handoff)browserMusicActivated=true;
     await activated;await audio?.start();startingGame=false;pause(false);
@@ -147,7 +150,8 @@ $('play').onclick=async()=>{
 $('camera').value=read('camera','balanced');$('quality').value=read('quality','auto');
 if($('camera').value==='')$('camera').value='balanced';
 const cameraMode=()=>$('camera').value;
-for(const name of ['camera','quality'])$(name).onchange=()=>{save(name,$(name).value);if(name==='camera')view?.applyPlayerCamera(cameraMode());};
+$('camera').onchange=()=>{release();view?.applyPlayerCamera(cameraMode());save('camera',cameraMode());focusGame();};
+$('quality').onchange=()=>save('quality',$('quality').value);
 $('apply-graphics').onclick=async()=>{release();save('quality',$('quality').value);try{await game?.flush();}catch{}location.reload();};
 $('sound').onclick=async()=>{
   if(!audio)return;
@@ -156,11 +160,6 @@ $('sound').onclick=async()=>{
     $('sound').textContent=audio.muted?'Sound off':'Sound on';$('sound').setAttribute('aria-pressed',String(!audio.muted));
   }catch{message('Audio unavailable in this browser.');}
 };
-$('fullscreen').onclick=async()=>{
-  try{if(document.fullscreenElement)await document.exitFullscreen();else if(document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();else throw Error('unsupported');}
-  catch{message('Full screen unavailable. You can use Add to Home Screen.');$('screen-note').textContent='This browser cannot enter full screen here. On iPhone, use Safari’s Add to Home Screen for a standalone view.';}
-};
-document.addEventListener('fullscreenchange',()=>{release();document.body.classList.toggle('fullscreen-play',!!document.fullscreenElement);$('fullscreen').setAttribute('aria-pressed',String(!!document.fullscreenElement));$('fullscreen').setAttribute('aria-label',document.fullscreenElement?'Exit full screen':'Enter full screen');});
 
 async function frame(now){
   try{await drawFrame(now);}catch(error){

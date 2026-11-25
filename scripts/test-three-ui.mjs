@@ -23,8 +23,22 @@ const evaluate=async expression=>{const r=await call('Runtime.evaluate',{express
 const wait=async expression=>{for(let i=0;i<400;i++){if(await evaluate(expression))return;await new Promise(r=>setTimeout(r,50));}const state=await evaluate('({play:document.getElementById("play")?.textContent,loading:document.getElementById("loading")?.textContent,log:document.getElementById("log")?.textContent?.slice(-1500)})');console.log(JSON.stringify({timeout:expression,state,errors}));throw Error(`Timed out: ${expression}`);};
 const center=selector=>evaluate(`(()=>{const r=document.querySelector(${JSON.stringify(selector)}).getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}})()`);
 const touch=points=>call('Input.dispatchTouchEvent',{type:points.length?'touchStart':'touchEnd',touchPoints:points.map((p,i)=>({...p,id:i+1,radiusX:4,radiusY:4,force:1}))});
+function observeFullscreenAPI(){
+  const stats=window.testFullscreen={requests:[],failures:[],available:false};
+  for(const name of ['requestFullscreen','webkitRequestFullscreen']){
+    const prototype=[Element.prototype,HTMLElement.prototype].find(p=>Object.hasOwn(p,name)),original=prototype?.[name];
+    if(typeof original!=='function')continue;
+    stats.available=true;
+    prototype[name]=function(...args){
+      stats.requests.push({name,args});
+      try{const result=original.apply(this,args);Promise.resolve(result).catch(error=>stats.failures.push(String(error)));return result;}
+      catch(error){stats.failures.push(String(error));throw error;}
+    };
+  }
+}
 try{
   await call('Page.enable');await call('Runtime.enable');await call('Network.enable');await call('Emulation.setFocusEmulationEnabled',{enabled:true});
+  await call('Page.addScriptToEvaluateOnNewDocument',{source:'('+observeFullscreenAPI.toString()+')()'});
   await call('Page.addScriptToEvaluateOnNewDocument',{source:`(()=>{const NativeWorker=window.Worker,s=window.testWorker={starts:[],inputs:[],latest:null,fatal:[],nativeDmd:[]};window.Worker=class extends NativeWorker{constructor(...args){super(...args);this.addEventListener('message',({data})=>{if(data.type==='fatal')s.fatal.push(data.message);if(data.type==='ready')s.nativeDmd=data.description.objects.filter(([name])=>/^digit(?:\\d{3}|grid)$/.test(name)).map(([name,state])=>({name,visible:state.visible}));if(data.type==='snapshot')s.latest={time:data.snapshot.time,tilted:data.snapshot.tilted,held:data.snapshot.held,paused:data.paused,ticks:data.stats.ticks,scriptStats:data.snapshot.scriptStats};});}postMessage(message,...args){if(message.type==='start')s.starts.push(message.players);if(message.type==='input')s.inputs.push({action:message.action,down:message.down});return super.postMessage(message,...args);}};})()`});
   await call('Target.setAutoAttach',{autoAttach:true,waitForDebuggerOnStart:true,flatten:true});
   await call('Network.setCacheDisabled',{cacheDisabled});
@@ -47,9 +61,30 @@ try{
     assert.equal(await evaluate('testWorker.nativeDmd.every(row=>row.visible===false)'),true,'native table digits remain hidden beneath the shared DMD');
     assert.equal(await evaluate('testWorker.latest.scriptStats.videoSyncMode'),2,'production uses the native synchronization policy');
     assert.equal(await evaluate('testWorker.latest.scriptStats.budgetMicroseconds'),5000,'automatic script budget reaches the production worker');
-    await evaluate(`document.getElementById('player-count').value='${name==='phone'?4:1}';document.getElementById('play').click()`);
+    await evaluate(`document.getElementById('player-count').value='${name==='phone'?4:1}'`);
+    const playPosition=await center('#play');
+    for(const type of ['mousePressed','mouseReleased'])await call('Input.dispatchMouseEvent',{type,...playPosition,button:'left',clickCount:1});
     await wait('document.body.classList.contains("ball-in-plunger")');
     assert.equal(await evaluate('testWorker.starts.at(-1)'),name==='phone'?4:1,'main player selector reaches the simulation worker');
+    await wait('!!document.fullscreenElement||testFullscreen.failures.length>0||!document.getElementById("screen-message").hidden');
+    measurement.fullscreen=await evaluate('({...testFullscreen,active:!!document.fullscreenElement,note:document.getElementById("screen-message").textContent,noteHidden:document.getElementById("screen-message").hidden})');
+    assert.ok(!measurement.fullscreen.available||measurement.fullscreen.requests.length>0,'Start attempts the available fullscreen API like main');
+    if(measurement.fullscreen.active){
+      assert.equal(await evaluate('document.getElementById("fullscreen").getAttribute("aria-pressed")'),'true');
+      for(const fullscreen of [false,true]){
+        await evaluate('document.getElementById("fullscreen").focus()');
+        await wait('document.getElementById("fullscreen").getBoundingClientRect().top>=0');
+        const position=await center('#fullscreen');for(const type of ['mousePressed','mouseReleased'])await call('Input.dispatchMouseEvent',{type,...position,button:'left',clickCount:1});
+        await wait(`!!document.fullscreenElement===${fullscreen}&&document.getElementById("fullscreen").getAttribute("aria-pressed")==="${fullscreen}"`);
+        assert.equal(await evaluate('document.body.classList.contains("fullscreen-play")'),fullscreen);
+      }
+      assert.equal(await evaluate('document.activeElement===document.getElementById("canvas")'),true,'fullscreen toggle returns keyboard focus to playfield');
+    }else{
+      assert.ok(!measurement.fullscreen.available||measurement.fullscreen.failures.length>0,'fullscreen fallback follows an actual browser rejection');
+      assert.equal(measurement.fullscreen.noteHidden,false,'main fullscreen fallback is visible');
+      assert.match(measurement.fullscreen.note,/^(?:Could not (?:enter|change) full screen\.|This browser does not support full screen for games\.)/);
+    }
+    console.log('FULLSCREEN',JSON.stringify({viewport:name,...measurement.fullscreen}));
     await call('Input.dispatchKeyEvent',{type:'keyDown',code:'Digit1',key:'1'});
     await call('Input.dispatchKeyEvent',{type:'keyUp',code:'Digit1',key:'1'});
     assert.equal(await evaluate('testWorker.starts.length'),1,'Start cannot restart an active game');
