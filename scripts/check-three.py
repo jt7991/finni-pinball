@@ -94,6 +94,7 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--production-tilt' in sys.argv:runner='test-tilt-production.mjs'
         if '--main-player' in sys.argv:runner='test-main-player-production.mjs'
         if '--production-lifecycle' in sys.argv:runner='test-automatic-budget-gameplay.mjs'
+        if '--music-readiness' in sys.argv:runner='test-music-readiness-production.mjs'
         if '--high-scores' in sys.argv:runner='test-high-scores-browser.mjs'
         if '--native-startup' in sys.argv:runner='probe-native-startup.mjs'
         if '--native-scene-startup' in sys.argv:runner='probe-native-scene-startup.mjs'

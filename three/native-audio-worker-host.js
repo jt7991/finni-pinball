@@ -8,7 +8,7 @@ import {createAuthoredFLACSource,createFLACFrameCache} from './flac-source.js';
 export function createNativeAudioWorkerHost(send,{loadCodec,loadMusicSource,pcmBudget=16*1024*1024,musicBudget=24*1024*1024}){
  let manifest,base,engine,sampleRate,codec,codecPromise,disposed=false,currentSource,currentMusic,pcmBytes=0,encodedBytes=0,musicBytes=0,sourceSerial=0;
  const frameCache=createFLACFrameCache();
- const pcm=new Map(),music=new Map(),commands=[],reservations=new Map();let reservationSerial=0;
+ const pcm=new Map(),music=new Map(),musicLoading=new Map(),commands=[],reservations=new Map();let reservationSerial=0;
  function cancelReservations(name){for(const[ticket,claim]of reservations)if(name===undefined||claim.name===name){engine.cancel(claim);reservations.delete(ticket);}}
  function claimFor(message){
   if(message.reservation===undefined)return engine.reserve(message.name,message.settings);
@@ -23,11 +23,14 @@ export function createNativeAudioWorkerHost(send,{loadCodec,loadMusicSource,pcmB
  function sound(name){const entry=manifest?.[name];if(!entry)throw Error('Unknown authored sound: '+name);return entry;}
  async function prepareMusic(name){
   const entry=sound(name);if(!entry.music||!entry.nativeSource)throw Error('Original music source unavailable');const key=entry.nativeSource.file,cached=touch(music,key);
-  const [,bytes]=await Promise.all([ensureCodec(),cached?cached.bytes:loadMusicSource(new URL(key,base).href)]);if(disposed)throw Error('Audio worker disposed');
-  if(cached)return cached;if(bytes.byteLength>musicBudget)throw Error('Music source exceeds compressed cache budget');
-  const existing=touch(music,key);if(existing)return existing;
-  while(musicBytes+bytes.byteLength>musicBudget&&music.size){const oldest=music.keys().next().value;musicBytes-=music.get(oldest).bytes.byteLength;music.delete(oldest);}
-  const result={key,bytes};music.set(key,result);musicBytes+=bytes.byteLength;return result;
+  if(cached)return cached;if(musicLoading.has(key))return musicLoading.get(key);
+  const task=(async()=>{
+   const [,bytes]=await Promise.all([ensureCodec(),loadMusicSource(new URL(key,base).href)]);if(disposed)throw Error('Audio worker disposed');
+   if(bytes.byteLength>musicBudget)throw Error('Music source exceeds compressed cache budget');
+   while(musicBytes+bytes.byteLength>musicBudget&&music.size){const oldest=music.keys().next().value;musicBytes-=music.get(oldest).bytes.byteLength;music.delete(oldest);}
+   const result={key,bytes};music.set(key,result);musicBytes+=bytes.byteLength;return result;
+  })();
+  musicLoading.set(key,task);const clear=()=>{if(musicLoading.get(key)===task)musicLoading.delete(key);};task.then(clear,clear);return task;
  }
  function register(data){
   const existing=touch(pcm,data.key);if(existing)return existing;

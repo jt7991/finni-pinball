@@ -165,7 +165,7 @@ async function boot(){
     const manifest=await load('audio.json');
     audio=createAudio(manifest,base,{deferInitialization:true,sourceBank:true});
     // Register the flipper sources alongside loading without activating audio.
-    // The complete encoded effect bank is awaited below before enabling Start.
+    // All encoded effect and music sources are awaited below before Start.
     void audio.prepare(['fx_flipperup','fx_flipperdown']);
     game=await createRuntimeGame(base,event,audio);
     leaderboard=createLeaderboard(statement=>game.rules.execute(statement),release);

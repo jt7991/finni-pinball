@@ -10,10 +10,18 @@ import {openEffectBank} from './effect-bank.js';
 export function createAudio(manifest,base,options={}) {
   let context,decodeEffect,player,unlocked=false,starting=false,muted=false,disposed=false,initialEvents=[],initialReady=Promise.resolve(),initialPlayback,stopEpoch=0;
   const stopped=new Map();
-  let bankReady;
-  function prepareSources(){
+  let bankReady,sourcesReady;
+  function prepareEffectSources(){
     if(!options.sourceBank)return Promise.resolve();
     if(!bankReady){const task=(async()=>{const url=new URL('native-audio/effects.json',new URL(base,globalThis.location?.href??'http://localhost/')),metadata=await fetch(url);if(!metadata.ok)throw Error('Metadata unavailable');const index=await metadata.json(),response=await fetch(new URL(index.file,url));if(!response.ok)throw Error('Source data unavailable');return openEffectBank(manifest,index,await response.arrayBuffer());})().catch(cause=>{throw Error('Table sounds could not be loaded. Retry loading the game.',{cause});});bankReady=task;task.catch(()=>{if(bankReady===task)bankReady=undefined;});}return bankReady;
+  }
+  function prepareSources(){
+    if(!options.sourceBank)return Promise.resolve();
+    if(!sourcesReady){
+      const task=Promise.all([prepareEffectSources(),nativePlayer().prepareMusicSources()]).then(()=>undefined).catch(cause=>{throw Error('Table sounds could not be loaded. Retry loading the game.',{cause});});
+      sourcesReady=task;task.catch(()=>{if(sourcesReady===task)sourcesReady=undefined;});
+    }
+    return sourcesReady;
   }
   const sources=new Map();
   for(const[name,entry]of Object.entries(manifest))if(!entry.music&&!sources.has(entry.file??name))sources.set(entry.file??name,{name,entry});
@@ -24,7 +32,7 @@ export function createAudio(manifest,base,options={}) {
   });
   function nativePlayer(){
     context??=new AudioContext();
-    if(!player){player=createNativeAudioPlayer(context,base,manifest,{...options,loadBuffer:name=>options.sourceBank?prepareSources().then(bank=>bank.get(name)):buffers.get(manifest[name].file??name)});player.setMuted(muted);}
+    if(!player){player=createNativeAudioPlayer(context,base,manifest,{...options,loadBuffer:name=>options.sourceBank?prepareEffectSources().then(bank=>bank.get(name)):buffers.get(manifest[name].file??name)});player.setMuted(muted);}
     return player;
   }
   async function unlock(start=false){
