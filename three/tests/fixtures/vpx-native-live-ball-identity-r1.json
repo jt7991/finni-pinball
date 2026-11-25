@@ -1,0 +1,2927 @@
+{
+  "engineSHA256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+  "reference": {
+    "engine": "@valknar/vpinball-wasm 0.3.4",
+    "engineSHA256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+    "upstreamCommit": "195f214dd4849b8ef6113fd377258b78d0dec3bf",
+    "sourceCommit": "6f8116d0964429db0e2da41d583566784114fc5f",
+    "sourceSha256": "6160e43c1a74f6dc70fd9852433c3373fe11b3e55d4f3a3fedc435265591b5c5",
+    "controlledSha256": "6160e43c1a74f6dc70fd9852433c3373fe11b3e55d4f3a3fedc435265591b5c5",
+    "controlledOverrides": {},
+    "browserSourceCommit": "6f8116d0964429db0e2da41d583566784114fc5f",
+    "browserAppSHA256": "3608d26828ea120a3a56437746d74054b7f69abe019d9b9ec4f21288b1a4389f",
+    "scope": "Exact committed master VPX and browser snapshot, including its continuous HTML music player. No injected table instrumentation or chooser correction. Engine cache is read only. Individual comparison probes declare any observers or external inputs separately."
+  },
+  "inputs": [
+    {
+      "p": [
+        540.0999755859375,
+        1698.6160888671875,
+        25.005931854248047
+      ],
+      "v": [
+        5.241272449493408,
+        -7.171041011810303,
+        0.0000016391277313232422
+      ]
+    },
+    {
+      "p": [
+        502.62554931640625,
+        1664.804443359375,
+        25.014907836914062
+      ],
+      "v": [
+        2.363985061645508,
+        18.868452072143555,
+        -0.0000013262033462524414
+      ]
+    }
+  ],
+  "initial": {
+    "ms": 1923,
+    "seconds": 1.9249999999999998,
+    "player": 187549896,
+    "lastAnimationMilliseconds": 1920,
+    "physicsClock": {
+      "gravity": [
+        0,
+        0.17098337411880493,
+        -1.626798152923584
+      ],
+      "start": "1914000",
+      "current": "3838000",
+      "next": "3839000"
+    },
+    "random": [
+      2000756790,
+      1018615501
+    ],
+    "balls": [
+      {
+        "id": 0,
+        "owner": 470684512,
+        "address": 470684800,
+        "position": [
+          67.19137573242188,
+          2059.924072265625,
+          27.809711456298828
+        ],
+        "velocity": [
+          0.021168217062950134,
+          -0.020558876916766167,
+          0.1641981601715088
+        ],
+        "momentum": [
+          0.04243335872888565,
+          0.07866059988737106,
+          -0.0409252755343914
+        ],
+        "orientation": [
+          0.9961194396018982,
+          -0.07412192970514297,
+          0.04745646193623543,
+          0.07670385390520096,
+          0.9955294132232666,
+          -0.05511671304702759,
+          -0.04315894842147827,
+          0.058542922139167786,
+          0.9973515272140503
+        ],
+        "locked": false
+      },
+      {
+        "id": 1,
+        "owner": 472563488,
+        "address": 472563776,
+        "position": [
+          152.3680419921875,
+          2059.921142578125,
+          27.832338333129883
+        ],
+        "velocity": [
+          -0.015839600935578346,
+          -0.01964249275624752,
+          0.16381622850894928
+        ],
+        "momentum": [
+          0.008545709773898125,
+          0.015186769887804985,
+          -0.032786838710308075
+        ],
+        "orientation": [
+          0.9992331862449646,
+          0.03426789492368698,
+          -0.018942605704069138,
+          -0.034581903368234634,
+          0.9992656707763672,
+          -0.01650562323629856,
+          0.01836307905614376,
+          0.017148038372397423,
+          0.9996843934059143
+        ],
+        "locked": false
+      },
+      {
+        "id": 2,
+        "owner": 470687216,
+        "address": 470687504,
+        "position": [
+          237.52853393554688,
+          2059.919921875,
+          27.820791244506836
+        ],
+        "velocity": [
+          0.002855526050552726,
+          -0.02403976581990719,
+          0.16347245872020721
+        ],
+        "momentum": [
+          -0.2560260593891144,
+          0.11667101085186005,
+          0.0255717895925045
+        ],
+        "orientation": [
+          0.9988601803779602,
+          0.04334897920489311,
+          -0.019981419667601585,
+          -0.0435173436999321,
+          0.9990201592445374,
+          -0.008069522678852081,
+          0.019612032920122147,
+          0.008929863572120667,
+          0.9997678399085999
+        ],
+        "locked": false
+      },
+      {
+        "id": 3,
+        "owner": 267071928,
+        "address": 267072216,
+        "position": [
+          901.4613037109375,
+          1893.751220703125,
+          25.005456924438477
+        ],
+        "velocity": [
+          2.0459258556365967,
+          0.1334526687860489,
+          0.16267982125282288
+        ],
+        "momentum": [
+          -29.806989669799805,
+          5.17152738571167,
+          3.1272308826446533
+        ],
+        "orientation": [
+          -0.814599335193634,
+          -0.3738403022289276,
+          0.4434766173362732,
+          0.19135455787181854,
+          -0.8949878811836243,
+          -0.4029642939567566,
+          0.5475504398345947,
+          -0.2433931529521942,
+          0.8005924820899963
+        ],
+        "locked": false
+      }
+    ]
+  },
+  "after": {
+    "ms": 1923,
+    "seconds": 1.9249999999999998,
+    "player": 187549896,
+    "lastAnimationMilliseconds": 1920,
+    "physicsClock": {
+      "gravity": [
+        0,
+        0.17098337411880493,
+        -1.626798152923584
+      ],
+      "start": "1914000",
+      "current": "3838000",
+      "next": "3839000"
+    },
+    "random": [
+      2000756790,
+      1018615501
+    ],
+    "balls": [
+      {
+        "id": 0,
+        "owner": 470684512,
+        "address": 470684800,
+        "position": [
+          67.19137573242188,
+          2059.924072265625,
+          27.809711456298828
+        ],
+        "velocity": [
+          0.021168217062950134,
+          -0.020558876916766167,
+          0.1641981601715088
+        ],
+        "momentum": [
+          0.04243335872888565,
+          0.07866059988737106,
+          -0.0409252755343914
+        ],
+        "orientation": [
+          0.9961194396018982,
+          -0.07412192970514297,
+          0.04745646193623543,
+          0.07670385390520096,
+          0.9955294132232666,
+          -0.05511671304702759,
+          -0.04315894842147827,
+          0.058542922139167786,
+          0.9973515272140503
+        ],
+        "locked": false
+      },
+      {
+        "id": 1,
+        "owner": 472563488,
+        "address": 472563776,
+        "position": [
+          152.3680419921875,
+          2059.921142578125,
+          27.832338333129883
+        ],
+        "velocity": [
+          -0.015839600935578346,
+          -0.01964249275624752,
+          0.16381622850894928
+        ],
+        "momentum": [
+          0.008545709773898125,
+          0.015186769887804985,
+          -0.032786838710308075
+        ],
+        "orientation": [
+          0.9992331862449646,
+          0.03426789492368698,
+          -0.018942605704069138,
+          -0.034581903368234634,
+          0.9992656707763672,
+          -0.01650562323629856,
+          0.01836307905614376,
+          0.017148038372397423,
+          0.9996843934059143
+        ],
+        "locked": false
+      },
+      {
+        "id": 2,
+        "owner": 470687216,
+        "address": 470687504,
+        "position": [
+          237.52853393554688,
+          2059.919921875,
+          27.820791244506836
+        ],
+        "velocity": [
+          0.002855526050552726,
+          -0.02403976581990719,
+          0.16347245872020721
+        ],
+        "momentum": [
+          -0.2560260593891144,
+          0.11667101085186005,
+          0.0255717895925045
+        ],
+        "orientation": [
+          0.9988601803779602,
+          0.04334897920489311,
+          -0.019981419667601585,
+          -0.0435173436999321,
+          0.9990201592445374,
+          -0.008069522678852081,
+          0.019612032920122147,
+          0.008929863572120667,
+          0.9997678399085999
+        ],
+        "locked": false
+      },
+      {
+        "id": 3,
+        "owner": 267071928,
+        "address": 267072216,
+        "position": [
+          901.4613037109375,
+          1893.751220703125,
+          25.005456924438477
+        ],
+        "velocity": [
+          2.0459258556365967,
+          0.1334526687860489,
+          0.16267982125282288
+        ],
+        "momentum": [
+          -29.806989669799805,
+          5.17152738571167,
+          3.1272308826446533
+        ],
+        "orientation": [
+          -0.814599335193634,
+          -0.3738403022289276,
+          0.4434766173362732,
+          0.19135455787181854,
+          -0.8949878811836243,
+          -0.4029642939567566,
+          0.5475504398345947,
+          -0.2433931529521942,
+          0.8005924820899963
+        ],
+        "locked": false
+      },
+      {
+        "id": 4,
+        "owner": 290142360,
+        "address": 290142648,
+        "position": [
+          540.2635498046875,
+          1698.3922119140625,
+          25.005931854248047
+        ],
+        "velocity": [
+          15.530765533447266,
+          2.3587470054626465,
+          -0.0024688511621207
+        ],
+        "momentum": [
+          0,
+          0,
+          0
+        ],
+        "orientation": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "locked": false
+      },
+      {
+        "id": 5,
+        "owner": 438648016,
+        "address": 438648304,
+        "position": [
+          502.6993408203125,
+          1665.393310546875,
+          25.014907836914062
+        ],
+        "velocity": [
+          -7.925508499145508,
+          9.338664054870605,
+          0.0024691640865057707
+        ],
+        "momentum": [
+          0,
+          0,
+          0
+        ],
+        "orientation": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "locked": false
+      },
+      {
+        "id": 6,
+        "owner": 438787352,
+        "address": 438787640,
+        "position": [
+          540.2635498046875,
+          1698.3922119140625,
+          25.005931854248047
+        ],
+        "velocity": [
+          15.530765533447266,
+          2.3587470054626465,
+          -0.0024688511621207
+        ],
+        "momentum": [
+          0,
+          0,
+          0
+        ],
+        "orientation": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "locked": false
+      },
+      {
+        "id": 7,
+        "owner": 438819216,
+        "address": 438819504,
+        "position": [
+          502.6993408203125,
+          1665.393310546875,
+          25.014907836914062
+        ],
+        "velocity": [
+          -7.925508499145508,
+          9.338664054870605,
+          0.0024691640865057707
+        ],
+        "momentum": [
+          0,
+          0,
+          0
+        ],
+        "orientation": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "locked": false
+      },
+      {
+        "id": 8,
+        "owner": 438851128,
+        "address": 438851416,
+        "position": [
+          540.2635498046875,
+          1698.3922119140625,
+          25.005931854248047
+        ],
+        "velocity": [
+          15.530765533447266,
+          2.3587470054626465,
+          -0.0024688511621207
+        ],
+        "momentum": [
+          0,
+          0,
+          0
+        ],
+        "orientation": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "locked": false
+      },
+      {
+        "id": 9,
+        "owner": 438882992,
+        "address": 438883280,
+        "position": [
+          502.6993408203125,
+          1665.393310546875,
+          25.014907836914062
+        ],
+        "velocity": [
+          -7.925508499145508,
+          9.338664054870605,
+          0.0024691640865057707
+        ],
+        "momentum": [
+          0,
+          0,
+          0
+        ],
+        "orientation": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "locked": false
+      },
+      {
+        "id": 10,
+        "owner": 438581344,
+        "address": 438581632,
+        "position": [
+          540.2635498046875,
+          1698.3922119140625,
+          25.005931854248047
+        ],
+        "velocity": [
+          15.53076171875,
+          2.358736515045166,
+          -0.0024688481353223324
+        ],
+        "momentum": [
+          0,
+          0,
+          0
+        ],
+        "orientation": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "locked": false
+      },
+      {
+        "id": 11,
+        "owner": 438546376,
+        "address": 438546664,
+        "position": [
+          502.6993408203125,
+          1665.393310546875,
+          25.014907836914062
+        ],
+        "velocity": [
+          -7.925504684448242,
+          9.338674545288086,
+          0.002469161059707403
+        ],
+        "momentum": [
+          0,
+          0,
+          0
+        ],
+        "orientation": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "locked": false
+      },
+      {
+        "id": 12,
+        "owner": 305527128,
+        "address": 305527416,
+        "position": [
+          540.2635498046875,
+          1698.3922119140625,
+          25.005931854248047
+        ],
+        "velocity": [
+          15.530765533447266,
+          2.3587470054626465,
+          -0.0024688511621207
+        ],
+        "momentum": [
+          0,
+          0,
+          0
+        ],
+        "orientation": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "locked": false
+      },
+      {
+        "id": 13,
+        "owner": 438613184,
+        "address": 438613472,
+        "position": [
+          502.6993408203125,
+          1665.393310546875,
+          25.014907836914062
+        ],
+        "velocity": [
+          -7.925508499145508,
+          9.338664054870605,
+          0.0024691640865057707
+        ],
+        "momentum": [
+          0,
+          0,
+          0
+        ],
+        "orientation": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "locked": false
+      },
+      {
+        "id": 14,
+        "owner": 438227584,
+        "address": 438227872,
+        "position": [
+          540.2635498046875,
+          1698.3922119140625,
+          25.005931854248047
+        ],
+        "velocity": [
+          15.53076171875,
+          2.358736515045166,
+          -0.0024688481353223324
+        ],
+        "momentum": [
+          0,
+          0,
+          0
+        ],
+        "orientation": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "locked": false
+      },
+      {
+        "id": 15,
+        "owner": 438225704,
+        "address": 438225992,
+        "position": [
+          502.6993408203125,
+          1665.393310546875,
+          25.014907836914062
+        ],
+        "velocity": [
+          -7.925504684448242,
+          9.338674545288086,
+          0.002469161059707403
+        ],
+        "momentum": [
+          0,
+          0,
+          0
+        ],
+        "orientation": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "locked": false
+      },
+      {
+        "id": 16,
+        "owner": 452368632,
+        "address": 452368920,
+        "position": [
+          540.2635498046875,
+          1698.3922119140625,
+          25.005931854248047
+        ],
+        "velocity": [
+          15.53076171875,
+          2.358736515045166,
+          -0.0024688481353223324
+        ],
+        "momentum": [
+          0,
+          0,
+          0
+        ],
+        "orientation": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "locked": false
+      },
+      {
+        "id": 17,
+        "owner": 238342992,
+        "address": 238343280,
+        "position": [
+          502.6993408203125,
+          1665.393310546875,
+          25.014907836914062
+        ],
+        "velocity": [
+          -7.925504684448242,
+          9.338674545288086,
+          0.002469161059707403
+        ],
+        "momentum": [
+          0,
+          0,
+          0
+        ],
+        "orientation": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "locked": false
+      },
+      {
+        "id": 18,
+        "owner": 365760272,
+        "address": 365760560,
+        "position": [
+          540.2635498046875,
+          1698.3922119140625,
+          25.005931854248047
+        ],
+        "velocity": [
+          15.530765533447266,
+          2.3587470054626465,
+          -0.0024688511621207
+        ],
+        "momentum": [
+          0,
+          0,
+          0
+        ],
+        "orientation": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "locked": false
+      },
+      {
+        "id": 19,
+        "owner": 469368144,
+        "address": 469368432,
+        "position": [
+          502.6993408203125,
+          1665.393310546875,
+          25.014907836914062
+        ],
+        "velocity": [
+          -7.925508499145508,
+          9.338664054870605,
+          0.0024691640865057707
+        ],
+        "momentum": [
+          0,
+          0,
+          0
+        ],
+        "orientation": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "locked": false
+      },
+      {
+        "id": 20,
+        "owner": 365748888,
+        "address": 365749176,
+        "position": [
+          540.2635498046875,
+          1698.3922119140625,
+          25.005931854248047
+        ],
+        "velocity": [
+          15.53076171875,
+          2.358736515045166,
+          -0.0024688481353223324
+        ],
+        "momentum": [
+          0,
+          0,
+          0
+        ],
+        "orientation": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "locked": false
+      },
+      {
+        "id": 21,
+        "owner": 271462448,
+        "address": 271462736,
+        "position": [
+          502.6993408203125,
+          1665.393310546875,
+          25.014907836914062
+        ],
+        "velocity": [
+          -7.925504684448242,
+          9.338674545288086,
+          0.002469161059707403
+        ],
+        "momentum": [
+          0,
+          0,
+          0
+        ],
+        "orientation": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "locked": false
+      },
+      {
+        "id": 22,
+        "owner": 283699880,
+        "address": 283700168,
+        "position": [
+          540.2635498046875,
+          1698.3922119140625,
+          25.005931854248047
+        ],
+        "velocity": [
+          15.530765533447266,
+          2.3587470054626465,
+          -0.0024688511621207
+        ],
+        "momentum": [
+          0,
+          0,
+          0
+        ],
+        "orientation": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "locked": false
+      },
+      {
+        "id": 23,
+        "owner": 365574064,
+        "address": 365574352,
+        "position": [
+          502.6993408203125,
+          1665.393310546875,
+          25.014907836914062
+        ],
+        "velocity": [
+          -7.925508499145508,
+          9.338664054870605,
+          0.0024691640865057707
+        ],
+        "momentum": [
+          0,
+          0,
+          0
+        ],
+        "orientation": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "locked": false
+      },
+      {
+        "id": 24,
+        "owner": 268269192,
+        "address": 268269480,
+        "position": [
+          540.2635498046875,
+          1698.3922119140625,
+          25.005931854248047
+        ],
+        "velocity": [
+          15.530765533447266,
+          2.3587470054626465,
+          -0.0024688511621207
+        ],
+        "momentum": [
+          0,
+          0,
+          0
+        ],
+        "orientation": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "locked": false
+      },
+      {
+        "id": 25,
+        "owner": 268269888,
+        "address": 268270176,
+        "position": [
+          502.6993408203125,
+          1665.393310546875,
+          25.014907836914062
+        ],
+        "velocity": [
+          -7.925508499145508,
+          9.338664054870605,
+          0.0024691640865057707
+        ],
+        "momentum": [
+          0,
+          0,
+          0
+        ],
+        "orientation": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "locked": false
+      },
+      {
+        "id": 26,
+        "owner": 437450112,
+        "address": 437450400,
+        "position": [
+          540.2635498046875,
+          1698.3922119140625,
+          25.005931854248047
+        ],
+        "velocity": [
+          15.530765533447266,
+          2.3587470054626465,
+          -0.0024688511621207
+        ],
+        "momentum": [
+          0,
+          0,
+          0
+        ],
+        "orientation": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "locked": false
+      },
+      {
+        "id": 27,
+        "owner": 437451216,
+        "address": 437451504,
+        "position": [
+          502.6993408203125,
+          1665.393310546875,
+          25.014907836914062
+        ],
+        "velocity": [
+          -7.925508499145508,
+          9.338664054870605,
+          0.0024691640865057707
+        ],
+        "momentum": [
+          0,
+          0,
+          0
+        ],
+        "orientation": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          1
+        ],
+        "locked": false
+      }
+    ]
+  },
+  "scripts": [
+    {
+      "ms": 1923,
+      "script": "Dim RefIdentityA,RefIdentityB"
+    },
+    {
+      "ms": 1923,
+      "script": "Set RefIdentityA=HellHouse.CreateBall:HellHouse.Kick 0,0:Set RefIdentityB=HellHouse.CreateBall:HellHouse.Kick 0,0"
+    },
+    {
+      "ms": 1923,
+      "script": "RefIdentityA.X=540.0999755859375:RefIdentityA.Y=1698.6160888671875:RefIdentityA.Z=25.005931854248047:RefIdentityA.VelX=5.241272449493408:RefIdentityA.VelY=-7.171041011810303:RefIdentityA.VelZ=0.0000016391277313232422:RefIdentityA.AngMomX=0:RefIdentityA.AngMomY=0:RefIdentityA.AngMomZ=0:RefIdentityB.X=502.62554931640625:RefIdentityB.Y=1664.804443359375:RefIdentityB.Z=25.014907836914062:RefIdentityB.VelX=2.363985061645508:RefIdentityB.VelY=18.868452072143555:RefIdentityB.VelZ=-0.0000013262033462524414:RefIdentityB.AngMomX=0:RefIdentityB.AngMomY=0:RefIdentityB.AngMomZ=0"
+    },
+    {
+      "ms": 1923,
+      "script": "RefIdentityA.X=540.2635498046875:RefIdentityA.Y=1698.3922119140625:RefIdentityA.Z=25.005931854248047:RefIdentityB.X=502.6993408203125:RefIdentityB.Y=1665.393310546875:RefIdentityB.Z=25.014907836914062"
+    },
+    {
+      "ms": 1923,
+      "script": "Set RefIdentityA=HellHouse.CreateBall:HellHouse.Kick 0,0:Set RefIdentityB=HellHouse.CreateBall:HellHouse.Kick 0,0"
+    },
+    {
+      "ms": 1923,
+      "script": "RefIdentityA.X=540.0999755859375:RefIdentityA.Y=1698.6160888671875:RefIdentityA.Z=25.005931854248047:RefIdentityA.VelX=5.241272449493408:RefIdentityA.VelY=-7.171041011810303:RefIdentityA.VelZ=0.0000016391277313232422:RefIdentityA.AngMomX=0:RefIdentityA.AngMomY=0:RefIdentityA.AngMomZ=0:RefIdentityB.X=502.62554931640625:RefIdentityB.Y=1664.804443359375:RefIdentityB.Z=25.014907836914062:RefIdentityB.VelX=2.363985061645508:RefIdentityB.VelY=18.868452072143555:RefIdentityB.VelZ=-0.0000013262033462524414:RefIdentityB.AngMomX=0:RefIdentityB.AngMomY=0:RefIdentityB.AngMomZ=0"
+    },
+    {
+      "ms": 1923,
+      "script": "RefIdentityA.X=540.2635498046875:RefIdentityA.Y=1698.3922119140625:RefIdentityA.Z=25.005931854248047:RefIdentityB.X=502.6993408203125:RefIdentityB.Y=1665.393310546875:RefIdentityB.Z=25.014907836914062"
+    },
+    {
+      "ms": 1923,
+      "script": "Set RefIdentityA=HellHouse.CreateBall:HellHouse.Kick 0,0:Set RefIdentityB=HellHouse.CreateBall:HellHouse.Kick 0,0"
+    },
+    {
+      "ms": 1923,
+      "script": "RefIdentityA.X=540.0999755859375:RefIdentityA.Y=1698.6160888671875:RefIdentityA.Z=25.005931854248047:RefIdentityA.VelX=5.241272449493408:RefIdentityA.VelY=-7.171041011810303:RefIdentityA.VelZ=0.0000016391277313232422:RefIdentityA.AngMomX=0:RefIdentityA.AngMomY=0:RefIdentityA.AngMomZ=0:RefIdentityB.X=502.62554931640625:RefIdentityB.Y=1664.804443359375:RefIdentityB.Z=25.014907836914062:RefIdentityB.VelX=2.363985061645508:RefIdentityB.VelY=18.868452072143555:RefIdentityB.VelZ=-0.0000013262033462524414:RefIdentityB.AngMomX=0:RefIdentityB.AngMomY=0:RefIdentityB.AngMomZ=0"
+    },
+    {
+      "ms": 1923,
+      "script": "RefIdentityA.X=540.2635498046875:RefIdentityA.Y=1698.3922119140625:RefIdentityA.Z=25.005931854248047:RefIdentityB.X=502.6993408203125:RefIdentityB.Y=1665.393310546875:RefIdentityB.Z=25.014907836914062"
+    },
+    {
+      "ms": 1923,
+      "script": "Set RefIdentityA=HellHouse.CreateBall:HellHouse.Kick 0,0:Set RefIdentityB=HellHouse.CreateBall:HellHouse.Kick 0,0"
+    },
+    {
+      "ms": 1923,
+      "script": "RefIdentityA.X=540.0999755859375:RefIdentityA.Y=1698.6160888671875:RefIdentityA.Z=25.005931854248047:RefIdentityA.VelX=5.241272449493408:RefIdentityA.VelY=-7.171041011810303:RefIdentityA.VelZ=0.0000016391277313232422:RefIdentityA.AngMomX=0:RefIdentityA.AngMomY=0:RefIdentityA.AngMomZ=0:RefIdentityB.X=502.62554931640625:RefIdentityB.Y=1664.804443359375:RefIdentityB.Z=25.014907836914062:RefIdentityB.VelX=2.363985061645508:RefIdentityB.VelY=18.868452072143555:RefIdentityB.VelZ=-0.0000013262033462524414:RefIdentityB.AngMomX=0:RefIdentityB.AngMomY=0:RefIdentityB.AngMomZ=0"
+    },
+    {
+      "ms": 1923,
+      "script": "RefIdentityA.X=540.2635498046875:RefIdentityA.Y=1698.3922119140625:RefIdentityA.Z=25.005931854248047:RefIdentityB.X=502.6993408203125:RefIdentityB.Y=1665.393310546875:RefIdentityB.Z=25.014907836914062"
+    },
+    {
+      "ms": 1923,
+      "script": "Set RefIdentityA=HellHouse.CreateBall:HellHouse.Kick 0,0:Set RefIdentityB=HellHouse.CreateBall:HellHouse.Kick 0,0"
+    },
+    {
+      "ms": 1923,
+      "script": "RefIdentityA.X=540.0999755859375:RefIdentityA.Y=1698.6160888671875:RefIdentityA.Z=25.005931854248047:RefIdentityA.VelX=5.241272449493408:RefIdentityA.VelY=-7.171041011810303:RefIdentityA.VelZ=0.0000016391277313232422:RefIdentityA.AngMomX=0:RefIdentityA.AngMomY=0:RefIdentityA.AngMomZ=0:RefIdentityB.X=502.62554931640625:RefIdentityB.Y=1664.804443359375:RefIdentityB.Z=25.014907836914062:RefIdentityB.VelX=2.363985061645508:RefIdentityB.VelY=18.868452072143555:RefIdentityB.VelZ=-0.0000013262033462524414:RefIdentityB.AngMomX=0:RefIdentityB.AngMomY=0:RefIdentityB.AngMomZ=0"
+    },
+    {
+      "ms": 1923,
+      "script": "RefIdentityA.X=540.2635498046875:RefIdentityA.Y=1698.3922119140625:RefIdentityA.Z=25.005931854248047:RefIdentityB.X=502.6993408203125:RefIdentityB.Y=1665.393310546875:RefIdentityB.Z=25.014907836914062"
+    },
+    {
+      "ms": 1923,
+      "script": "Set RefIdentityA=HellHouse.CreateBall:HellHouse.Kick 0,0:Set RefIdentityB=HellHouse.CreateBall:HellHouse.Kick 0,0"
+    },
+    {
+      "ms": 1923,
+      "script": "RefIdentityA.X=540.0999755859375:RefIdentityA.Y=1698.6160888671875:RefIdentityA.Z=25.005931854248047:RefIdentityA.VelX=5.241272449493408:RefIdentityA.VelY=-7.171041011810303:RefIdentityA.VelZ=0.0000016391277313232422:RefIdentityA.AngMomX=0:RefIdentityA.AngMomY=0:RefIdentityA.AngMomZ=0:RefIdentityB.X=502.62554931640625:RefIdentityB.Y=1664.804443359375:RefIdentityB.Z=25.014907836914062:RefIdentityB.VelX=2.363985061645508:RefIdentityB.VelY=18.868452072143555:RefIdentityB.VelZ=-0.0000013262033462524414:RefIdentityB.AngMomX=0:RefIdentityB.AngMomY=0:RefIdentityB.AngMomZ=0"
+    },
+    {
+      "ms": 1923,
+      "script": "RefIdentityA.X=540.2635498046875:RefIdentityA.Y=1698.3922119140625:RefIdentityA.Z=25.005931854248047:RefIdentityB.X=502.6993408203125:RefIdentityB.Y=1665.393310546875:RefIdentityB.Z=25.014907836914062"
+    },
+    {
+      "ms": 1923,
+      "script": "Set RefIdentityA=HellHouse.CreateBall:HellHouse.Kick 0,0:Set RefIdentityB=HellHouse.CreateBall:HellHouse.Kick 0,0"
+    },
+    {
+      "ms": 1923,
+      "script": "RefIdentityA.X=540.0999755859375:RefIdentityA.Y=1698.6160888671875:RefIdentityA.Z=25.005931854248047:RefIdentityA.VelX=5.241272449493408:RefIdentityA.VelY=-7.171041011810303:RefIdentityA.VelZ=0.0000016391277313232422:RefIdentityA.AngMomX=0:RefIdentityA.AngMomY=0:RefIdentityA.AngMomZ=0:RefIdentityB.X=502.62554931640625:RefIdentityB.Y=1664.804443359375:RefIdentityB.Z=25.014907836914062:RefIdentityB.VelX=2.363985061645508:RefIdentityB.VelY=18.868452072143555:RefIdentityB.VelZ=-0.0000013262033462524414:RefIdentityB.AngMomX=0:RefIdentityB.AngMomY=0:RefIdentityB.AngMomZ=0"
+    },
+    {
+      "ms": 1923,
+      "script": "RefIdentityA.X=540.2635498046875:RefIdentityA.Y=1698.3922119140625:RefIdentityA.Z=25.005931854248047:RefIdentityB.X=502.6993408203125:RefIdentityB.Y=1665.393310546875:RefIdentityB.Z=25.014907836914062"
+    },
+    {
+      "ms": 1923,
+      "script": "Set RefIdentityA=HellHouse.CreateBall:HellHouse.Kick 0,0:Set RefIdentityB=HellHouse.CreateBall:HellHouse.Kick 0,0"
+    },
+    {
+      "ms": 1923,
+      "script": "RefIdentityA.X=540.0999755859375:RefIdentityA.Y=1698.6160888671875:RefIdentityA.Z=25.005931854248047:RefIdentityA.VelX=5.241272449493408:RefIdentityA.VelY=-7.171041011810303:RefIdentityA.VelZ=0.0000016391277313232422:RefIdentityA.AngMomX=0:RefIdentityA.AngMomY=0:RefIdentityA.AngMomZ=0:RefIdentityB.X=502.62554931640625:RefIdentityB.Y=1664.804443359375:RefIdentityB.Z=25.014907836914062:RefIdentityB.VelX=2.363985061645508:RefIdentityB.VelY=18.868452072143555:RefIdentityB.VelZ=-0.0000013262033462524414:RefIdentityB.AngMomX=0:RefIdentityB.AngMomY=0:RefIdentityB.AngMomZ=0"
+    },
+    {
+      "ms": 1923,
+      "script": "RefIdentityA.X=540.2635498046875:RefIdentityA.Y=1698.3922119140625:RefIdentityA.Z=25.005931854248047:RefIdentityB.X=502.6993408203125:RefIdentityB.Y=1665.393310546875:RefIdentityB.Z=25.014907836914062"
+    },
+    {
+      "ms": 1923,
+      "script": "Set RefIdentityA=HellHouse.CreateBall:HellHouse.Kick 0,0:Set RefIdentityB=HellHouse.CreateBall:HellHouse.Kick 0,0"
+    },
+    {
+      "ms": 1923,
+      "script": "RefIdentityA.X=540.0999755859375:RefIdentityA.Y=1698.6160888671875:RefIdentityA.Z=25.005931854248047:RefIdentityA.VelX=5.241272449493408:RefIdentityA.VelY=-7.171041011810303:RefIdentityA.VelZ=0.0000016391277313232422:RefIdentityA.AngMomX=0:RefIdentityA.AngMomY=0:RefIdentityA.AngMomZ=0:RefIdentityB.X=502.62554931640625:RefIdentityB.Y=1664.804443359375:RefIdentityB.Z=25.014907836914062:RefIdentityB.VelX=2.363985061645508:RefIdentityB.VelY=18.868452072143555:RefIdentityB.VelZ=-0.0000013262033462524414:RefIdentityB.AngMomX=0:RefIdentityB.AngMomY=0:RefIdentityB.AngMomZ=0"
+    },
+    {
+      "ms": 1923,
+      "script": "RefIdentityA.X=540.2635498046875:RefIdentityA.Y=1698.3922119140625:RefIdentityA.Z=25.005931854248047:RefIdentityB.X=502.6993408203125:RefIdentityB.Y=1665.393310546875:RefIdentityB.Z=25.014907836914062"
+    },
+    {
+      "ms": 1923,
+      "script": "Set RefIdentityA=HellHouse.CreateBall:HellHouse.Kick 0,0:Set RefIdentityB=HellHouse.CreateBall:HellHouse.Kick 0,0"
+    },
+    {
+      "ms": 1923,
+      "script": "RefIdentityA.X=540.0999755859375:RefIdentityA.Y=1698.6160888671875:RefIdentityA.Z=25.005931854248047:RefIdentityA.VelX=5.241272449493408:RefIdentityA.VelY=-7.171041011810303:RefIdentityA.VelZ=0.0000016391277313232422:RefIdentityA.AngMomX=0:RefIdentityA.AngMomY=0:RefIdentityA.AngMomZ=0:RefIdentityB.X=502.62554931640625:RefIdentityB.Y=1664.804443359375:RefIdentityB.Z=25.014907836914062:RefIdentityB.VelX=2.363985061645508:RefIdentityB.VelY=18.868452072143555:RefIdentityB.VelZ=-0.0000013262033462524414:RefIdentityB.AngMomX=0:RefIdentityB.AngMomY=0:RefIdentityB.AngMomZ=0"
+    },
+    {
+      "ms": 1923,
+      "script": "RefIdentityA.X=540.2635498046875:RefIdentityA.Y=1698.3922119140625:RefIdentityA.Z=25.005931854248047:RefIdentityB.X=502.6993408203125:RefIdentityB.Y=1665.393310546875:RefIdentityB.Z=25.014907836914062"
+    },
+    {
+      "ms": 1923,
+      "script": "Set RefIdentityA=HellHouse.CreateBall:HellHouse.Kick 0,0:Set RefIdentityB=HellHouse.CreateBall:HellHouse.Kick 0,0"
+    },
+    {
+      "ms": 1923,
+      "script": "RefIdentityA.X=540.0999755859375:RefIdentityA.Y=1698.6160888671875:RefIdentityA.Z=25.005931854248047:RefIdentityA.VelX=5.241272449493408:RefIdentityA.VelY=-7.171041011810303:RefIdentityA.VelZ=0.0000016391277313232422:RefIdentityA.AngMomX=0:RefIdentityA.AngMomY=0:RefIdentityA.AngMomZ=0:RefIdentityB.X=502.62554931640625:RefIdentityB.Y=1664.804443359375:RefIdentityB.Z=25.014907836914062:RefIdentityB.VelX=2.363985061645508:RefIdentityB.VelY=18.868452072143555:RefIdentityB.VelZ=-0.0000013262033462524414:RefIdentityB.AngMomX=0:RefIdentityB.AngMomY=0:RefIdentityB.AngMomZ=0"
+    },
+    {
+      "ms": 1923,
+      "script": "RefIdentityA.X=540.2635498046875:RefIdentityA.Y=1698.3922119140625:RefIdentityA.Z=25.005931854248047:RefIdentityB.X=502.6993408203125:RefIdentityB.Y=1665.393310546875:RefIdentityB.Z=25.014907836914062"
+    },
+    {
+      "ms": 1923,
+      "script": "Set RefIdentityA=HellHouse.CreateBall:HellHouse.Kick 0,0:Set RefIdentityB=HellHouse.CreateBall:HellHouse.Kick 0,0"
+    },
+    {
+      "ms": 1923,
+      "script": "RefIdentityA.X=540.0999755859375:RefIdentityA.Y=1698.6160888671875:RefIdentityA.Z=25.005931854248047:RefIdentityA.VelX=5.241272449493408:RefIdentityA.VelY=-7.171041011810303:RefIdentityA.VelZ=0.0000016391277313232422:RefIdentityA.AngMomX=0:RefIdentityA.AngMomY=0:RefIdentityA.AngMomZ=0:RefIdentityB.X=502.62554931640625:RefIdentityB.Y=1664.804443359375:RefIdentityB.Z=25.014907836914062:RefIdentityB.VelX=2.363985061645508:RefIdentityB.VelY=18.868452072143555:RefIdentityB.VelZ=-0.0000013262033462524414:RefIdentityB.AngMomX=0:RefIdentityB.AngMomY=0:RefIdentityB.AngMomZ=0"
+    },
+    {
+      "ms": 1923,
+      "script": "RefIdentityA.X=540.2635498046875:RefIdentityA.Y=1698.3922119140625:RefIdentityA.Z=25.005931854248047:RefIdentityB.X=502.6993408203125:RefIdentityB.Y=1665.393310546875:RefIdentityB.Z=25.014907836914062"
+    }
+  ],
+  "rows": [
+    {
+      "index": 0,
+      "ids": [
+        4,
+        5
+      ],
+      "addresses": [
+        290142648,
+        438648304
+      ],
+      "swapped": false,
+      "queries": [
+        {
+          "time": 0.031211312860250473,
+          "gap": 0.473358154296875,
+          "normal": [
+            0.7336727976799011,
+            0.6795029044151306,
+            -0.00017615346587263048
+          ]
+        },
+        {
+          "time": 0.031211312860250473,
+          "gap": 0.473358154296875,
+          "normal": [
+            -0.733672559261322,
+            -0.6795032024383545,
+            0.00017615355318412185
+          ]
+        }
+      ],
+      "stages": [
+        [
+          {
+            "p": [
+              540.2635498046875,
+              1698.3922119140625,
+              25.005931854248047
+            ],
+            "v": [
+              5.241272449493408,
+              -7.171041011810303,
+              0.0000016391277313232422
+            ]
+          },
+          {
+            "p": [
+              502.6993408203125,
+              1665.393310546875,
+              25.014907836914062
+            ],
+            "v": [
+              2.363985061645508,
+              18.868452072143555,
+              -0.0000013262033462524414
+            ]
+          }
+        ],
+        [
+          {
+            "p": [
+              540.2635498046875,
+              1698.3922119140625,
+              25.005931854248047
+            ],
+            "v": [
+              5.241272449493408,
+              -7.171041011810303,
+              0.0000016391277313232422
+            ]
+          },
+          {
+            "p": [
+              502.6993408203125,
+              1665.393310546875,
+              25.014907836914062
+            ],
+            "v": [
+              2.363985061645508,
+              18.868452072143555,
+              -0.0000013262033462524414
+            ]
+          }
+        ],
+        [
+          {
+            "p": [
+              540.2635498046875,
+              1698.3922119140625,
+              25.005931854248047
+            ],
+            "v": [
+              15.530765533447266,
+              2.3587470054626465,
+              -0.0024688511621207
+            ]
+          },
+          {
+            "p": [
+              502.6993408203125,
+              1665.393310546875,
+              25.014907836914062
+            ],
+            "v": [
+              -7.925508499145508,
+              9.338664054870605,
+              0.0024691640865057707
+            ]
+          }
+        ]
+      ],
+      "outputs": [
+        {
+          "p": [
+            540.2635498046875,
+            1698.3922119140625,
+            25.005931854248047
+          ],
+          "v": [
+            15.530765533447266,
+            2.3587470054626465,
+            -0.0024688511621207
+          ]
+        },
+        {
+          "p": [
+            502.6993408203125,
+            1665.393310546875,
+            25.014907836914062
+          ],
+          "v": [
+            -7.925508499145508,
+            9.338664054870605,
+            0.0024691640865057707
+          ]
+        }
+      ]
+    },
+    {
+      "index": 1,
+      "ids": [
+        6,
+        7
+      ],
+      "addresses": [
+        438787640,
+        438819504
+      ],
+      "swapped": false,
+      "queries": [
+        {
+          "time": 0.031211312860250473,
+          "gap": 0.473358154296875,
+          "normal": [
+            0.7336727976799011,
+            0.6795029044151306,
+            -0.00017615346587263048
+          ]
+        },
+        {
+          "time": 0.031211312860250473,
+          "gap": 0.473358154296875,
+          "normal": [
+            -0.733672559261322,
+            -0.6795032024383545,
+            0.00017615355318412185
+          ]
+        }
+      ],
+      "stages": [
+        [
+          {
+            "p": [
+              540.2635498046875,
+              1698.3922119140625,
+              25.005931854248047
+            ],
+            "v": [
+              5.241272449493408,
+              -7.171041011810303,
+              0.0000016391277313232422
+            ]
+          },
+          {
+            "p": [
+              502.6993408203125,
+              1665.393310546875,
+              25.014907836914062
+            ],
+            "v": [
+              2.363985061645508,
+              18.868452072143555,
+              -0.0000013262033462524414
+            ]
+          }
+        ],
+        [
+          {
+            "p": [
+              540.2635498046875,
+              1698.3922119140625,
+              25.005931854248047
+            ],
+            "v": [
+              5.241272449493408,
+              -7.171041011810303,
+              0.0000016391277313232422
+            ]
+          },
+          {
+            "p": [
+              502.6993408203125,
+              1665.393310546875,
+              25.014907836914062
+            ],
+            "v": [
+              2.363985061645508,
+              18.868452072143555,
+              -0.0000013262033462524414
+            ]
+          }
+        ],
+        [
+          {
+            "p": [
+              540.2635498046875,
+              1698.3922119140625,
+              25.005931854248047
+            ],
+            "v": [
+              15.530765533447266,
+              2.3587470054626465,
+              -0.0024688511621207
+            ]
+          },
+          {
+            "p": [
+              502.6993408203125,
+              1665.393310546875,
+              25.014907836914062
+            ],
+            "v": [
+              -7.925508499145508,
+              9.338664054870605,
+              0.0024691640865057707
+            ]
+          }
+        ]
+      ],
+      "outputs": [
+        {
+          "p": [
+            540.2635498046875,
+            1698.3922119140625,
+            25.005931854248047
+          ],
+          "v": [
+            15.530765533447266,
+            2.3587470054626465,
+            -0.0024688511621207
+          ]
+        },
+        {
+          "p": [
+            502.6993408203125,
+            1665.393310546875,
+            25.014907836914062
+          ],
+          "v": [
+            -7.925508499145508,
+            9.338664054870605,
+            0.0024691640865057707
+          ]
+        }
+      ]
+    },
+    {
+      "index": 2,
+      "ids": [
+        8,
+        9
+      ],
+      "addresses": [
+        438851416,
+        438883280
+      ],
+      "swapped": false,
+      "queries": [
+        {
+          "time": 0.031211312860250473,
+          "gap": 0.473358154296875,
+          "normal": [
+            0.7336727976799011,
+            0.6795029044151306,
+            -0.00017615346587263048
+          ]
+        },
+        {
+          "time": 0.031211312860250473,
+          "gap": 0.473358154296875,
+          "normal": [
+            -0.733672559261322,
+            -0.6795032024383545,
+            0.00017615355318412185
+          ]
+        }
+      ],
+      "stages": [
+        [
+          {
+            "p": [
+              540.2635498046875,
+              1698.3922119140625,
+              25.005931854248047
+            ],
+            "v": [
+              5.241272449493408,
+              -7.171041011810303,
+              0.0000016391277313232422
+            ]
+          },
+          {
+            "p": [
+              502.6993408203125,
+              1665.393310546875,
+              25.014907836914062
+            ],
+            "v": [
+              2.363985061645508,
+              18.868452072143555,
+              -0.0000013262033462524414
+            ]
+          }
+        ],
+        [
+          {
+            "p": [
+              540.2635498046875,
+              1698.3922119140625,
+              25.005931854248047
+            ],
+            "v": [
+              5.241272449493408,
+              -7.171041011810303,
+              0.0000016391277313232422
+            ]
+          },
+          {
+            "p": [
+              502.6993408203125,
+              1665.393310546875,
+              25.014907836914062
+            ],
+            "v": [
+              2.363985061645508,
+              18.868452072143555,
+              -0.0000013262033462524414
+            ]
+          }
+        ],
+        [
+          {
+            "p": [
+              540.2635498046875,
+              1698.3922119140625,
+              25.005931854248047
+            ],
+            "v": [
+              15.530765533447266,
+              2.3587470054626465,
+              -0.0024688511621207
+            ]
+          },
+          {
+            "p": [
+              502.6993408203125,
+              1665.393310546875,
+              25.014907836914062
+            ],
+            "v": [
+              -7.925508499145508,
+              9.338664054870605,
+              0.0024691640865057707
+            ]
+          }
+        ]
+      ],
+      "outputs": [
+        {
+          "p": [
+            540.2635498046875,
+            1698.3922119140625,
+            25.005931854248047
+          ],
+          "v": [
+            15.530765533447266,
+            2.3587470054626465,
+            -0.0024688511621207
+          ]
+        },
+        {
+          "p": [
+            502.6993408203125,
+            1665.393310546875,
+            25.014907836914062
+          ],
+          "v": [
+            -7.925508499145508,
+            9.338664054870605,
+            0.0024691640865057707
+          ]
+        }
+      ]
+    },
+    {
+      "index": 3,
+      "ids": [
+        10,
+        11
+      ],
+      "addresses": [
+        438581632,
+        438546664
+      ],
+      "swapped": false,
+      "queries": [
+        {
+          "time": 0.031211312860250473,
+          "gap": 0.473358154296875,
+          "normal": [
+            0.7336727976799011,
+            0.6795029044151306,
+            -0.00017615346587263048
+          ]
+        },
+        {
+          "time": 0.031211312860250473,
+          "gap": 0.473358154296875,
+          "normal": [
+            -0.733672559261322,
+            -0.6795032024383545,
+            0.00017615355318412185
+          ]
+        }
+      ],
+      "stages": [
+        [
+          {
+            "p": [
+              540.2635498046875,
+              1698.3922119140625,
+              25.005931854248047
+            ],
+            "v": [
+              5.241272449493408,
+              -7.171041011810303,
+              0.0000016391277313232422
+            ]
+          },
+          {
+            "p": [
+              502.6993408203125,
+              1665.393310546875,
+              25.014907836914062
+            ],
+            "v": [
+              2.363985061645508,
+              18.868452072143555,
+              -0.0000013262033462524414
+            ]
+          }
+        ],
+        [
+          {
+            "p": [
+              540.2635498046875,
+              1698.3922119140625,
+              25.005931854248047
+            ],
+            "v": [
+              15.53076171875,
+              2.358736515045166,
+              -0.0024688481353223324
+            ]
+          },
+          {
+            "p": [
+              502.6993408203125,
+              1665.393310546875,
+              25.014907836914062
+            ],
+            "v": [
+              -7.925504684448242,
+              9.338674545288086,
+              0.002469161059707403
+            ]
+          }
+        ],
+        [
+          {
+            "p": [
+              540.2635498046875,
+              1698.3922119140625,
+              25.005931854248047
+            ],
+            "v": [
+              15.53076171875,
+              2.358736515045166,
+              -0.0024688481353223324
+            ]
+          },
+          {
+            "p": [
+              502.6993408203125,
+              1665.393310546875,
+              25.014907836914062
+            ],
+            "v": [
+              -7.925504684448242,
+              9.338674545288086,
+              0.002469161059707403
+            ]
+          }
+        ]
+      ],
+      "outputs": [
+        {
+          "p": [
+            540.2635498046875,
+            1698.3922119140625,
+            25.005931854248047
+          ],
+          "v": [
+            15.53076171875,
+            2.358736515045166,
+            -0.0024688481353223324
+          ]
+        },
+        {
+          "p": [
+            502.6993408203125,
+            1665.393310546875,
+            25.014907836914062
+          ],
+          "v": [
+            -7.925504684448242,
+            9.338674545288086,
+            0.002469161059707403
+          ]
+        }
+      ]
+    },
+    {
+      "index": 4,
+      "ids": [
+        12,
+        13
+      ],
+      "addresses": [
+        305527416,
+        438613472
+      ],
+      "swapped": false,
+      "queries": [
+        {
+          "time": 0.031211312860250473,
+          "gap": 0.473358154296875,
+          "normal": [
+            0.7336727976799011,
+            0.6795029044151306,
+            -0.00017615346587263048
+          ]
+        },
+        {
+          "time": 0.031211312860250473,
+          "gap": 0.473358154296875,
+          "normal": [
+            -0.733672559261322,
+            -0.6795032024383545,
+            0.00017615355318412185
+          ]
+        }
+      ],
+      "stages": [
+        [
+          {
+            "p": [
+              540.2635498046875,
+              1698.3922119140625,
+              25.005931854248047
+            ],
+            "v": [
+              5.241272449493408,
+              -7.171041011810303,
+              0.0000016391277313232422
+            ]
+          },
+          {
+            "p": [
+              502.6993408203125,
+              1665.393310546875,
+              25.014907836914062
+            ],
+            "v": [
+              2.363985061645508,
+              18.868452072143555,
+              -0.0000013262033462524414
+            ]
+          }
+        ],
+        [
+          {
+            "p": [
+              540.2635498046875,
+              1698.3922119140625,
+              25.005931854248047
+            ],
+            "v": [
+              5.241272449493408,
+              -7.171041011810303,
+              0.0000016391277313232422
+            ]
+          },
+          {
+            "p": [
+              502.6993408203125,
+              1665.393310546875,
+              25.014907836914062
+            ],
+            "v": [
+              2.363985061645508,
+              18.868452072143555,
+              -0.0000013262033462524414
+            ]
+          }
+        ],
+        [
+          {
+            "p": [
+              540.2635498046875,
+              1698.3922119140625,
+              25.005931854248047
+            ],
+            "v": [
+              15.530765533447266,
+              2.3587470054626465,
+              -0.0024688511621207
+            ]
+          },
+          {
+            "p": [
+              502.6993408203125,
+              1665.393310546875,
+              25.014907836914062
+            ],
+            "v": [
+              -7.925508499145508,
+              9.338664054870605,
+              0.0024691640865057707
+            ]
+          }
+        ]
+      ],
+      "outputs": [
+        {
+          "p": [
+            540.2635498046875,
+            1698.3922119140625,
+            25.005931854248047
+          ],
+          "v": [
+            15.530765533447266,
+            2.3587470054626465,
+            -0.0024688511621207
+          ]
+        },
+        {
+          "p": [
+            502.6993408203125,
+            1665.393310546875,
+            25.014907836914062
+          ],
+          "v": [
+            -7.925508499145508,
+            9.338664054870605,
+            0.0024691640865057707
+          ]
+        }
+      ]
+    },
+    {
+      "index": 5,
+      "ids": [
+        14,
+        15
+      ],
+      "addresses": [
+        438227872,
+        438225992
+      ],
+      "swapped": false,
+      "queries": [
+        {
+          "time": 0.031211312860250473,
+          "gap": 0.473358154296875,
+          "normal": [
+            0.7336727976799011,
+            0.6795029044151306,
+            -0.00017615346587263048
+          ]
+        },
+        {
+          "time": 0.031211312860250473,
+          "gap": 0.473358154296875,
+          "normal": [
+            -0.733672559261322,
+            -0.6795032024383545,
+            0.00017615355318412185
+          ]
+        }
+      ],
+      "stages": [
+        [
+          {
+            "p": [
+              540.2635498046875,
+              1698.3922119140625,
+              25.005931854248047
+            ],
+            "v": [
+              5.241272449493408,
+              -7.171041011810303,
+              0.0000016391277313232422
+            ]
+          },
+          {
+            "p": [
+              502.6993408203125,
+              1665.393310546875,
+              25.014907836914062
+            ],
+            "v": [
+              2.363985061645508,
+              18.868452072143555,
+              -0.0000013262033462524414
+            ]
+          }
+        ],
+        [
+          {
+            "p": [
+              540.2635498046875,
+              1698.3922119140625,
+              25.005931854248047
+            ],
+            "v": [
+              15.53076171875,
+              2.358736515045166,
+              -0.0024688481353223324
+            ]
+          },
+          {
+            "p": [
+              502.6993408203125,
+              1665.393310546875,
+              25.014907836914062
+            ],
+            "v": [
+              -7.925504684448242,
+              9.338674545288086,
+              0.002469161059707403
+            ]
+          }
+        ],
+        [
+          {
+            "p": [
+              540.2635498046875,
+              1698.3922119140625,
+              25.005931854248047
+            ],
+            "v": [
+              15.53076171875,
+              2.358736515045166,
+              -0.0024688481353223324
+            ]
+          },
+          {
+            "p": [
+              502.6993408203125,
+              1665.393310546875,
+              25.014907836914062
+            ],
+            "v": [
+              -7.925504684448242,
+              9.338674545288086,
+              0.002469161059707403
+            ]
+          }
+        ]
+      ],
+      "outputs": [
+        {
+          "p": [
+            540.2635498046875,
+            1698.3922119140625,
+            25.005931854248047
+          ],
+          "v": [
+            15.53076171875,
+            2.358736515045166,
+            -0.0024688481353223324
+          ]
+        },
+        {
+          "p": [
+            502.6993408203125,
+            1665.393310546875,
+            25.014907836914062
+          ],
+          "v": [
+            -7.925504684448242,
+            9.338674545288086,
+            0.002469161059707403
+          ]
+        }
+      ]
+    },
+    {
+      "index": 6,
+      "ids": [
+        16,
+        17
+      ],
+      "addresses": [
+        452368920,
+        238343280
+      ],
+      "swapped": false,
+      "queries": [
+        {
+          "time": 0.031211312860250473,
+          "gap": 0.473358154296875,
+          "normal": [
+            0.7336727976799011,
+            0.6795029044151306,
+            -0.00017615346587263048
+          ]
+        },
+        {
+          "time": 0.031211312860250473,
+          "gap": 0.473358154296875,
+          "normal": [
+            -0.733672559261322,
+            -0.6795032024383545,
+            0.00017615355318412185
+          ]
+        }
+      ],
+      "stages": [
+        [
+          {
+            "p": [
+              540.2635498046875,
+              1698.3922119140625,
+              25.005931854248047
+            ],
+            "v": [
+              5.241272449493408,
+              -7.171041011810303,
+              0.0000016391277313232422
+            ]
+          },
+          {
+            "p": [
+              502.6993408203125,
+              1665.393310546875,
+              25.014907836914062
+            ],
+            "v": [
+              2.363985061645508,
+              18.868452072143555,
+              -0.0000013262033462524414
+            ]
+          }
+        ],
+        [
+          {
+            "p": [
+              540.2635498046875,
+              1698.3922119140625,
+              25.005931854248047
+            ],
+            "v": [
+              15.53076171875,
+              2.358736515045166,
+              -0.0024688481353223324
+            ]
+          },
+          {
+            "p": [
+              502.6993408203125,
+              1665.393310546875,
+              25.014907836914062
+            ],
+            "v": [
+              -7.925504684448242,
+              9.338674545288086,
+              0.002469161059707403
+            ]
+          }
+        ],
+        [
+          {
+            "p": [
+              540.2635498046875,
+              1698.3922119140625,
+              25.005931854248047
+            ],
+            "v": [
+              15.53076171875,
+              2.358736515045166,
+              -0.0024688481353223324
+            ]
+          },
+          {
+            "p": [
+              502.6993408203125,
+              1665.393310546875,
+              25.014907836914062
+            ],
+            "v": [
+              -7.925504684448242,
+              9.338674545288086,
+              0.002469161059707403
+            ]
+          }
+        ]
+      ],
+      "outputs": [
+        {
+          "p": [
+            540.2635498046875,
+            1698.3922119140625,
+            25.005931854248047
+          ],
+          "v": [
+            15.53076171875,
+            2.358736515045166,
+            -0.0024688481353223324
+          ]
+        },
+        {
+          "p": [
+            502.6993408203125,
+            1665.393310546875,
+            25.014907836914062
+          ],
+          "v": [
+            -7.925504684448242,
+            9.338674545288086,
+            0.002469161059707403
+          ]
+        }
+      ]
+    },
+    {
+      "index": 7,
+      "ids": [
+        18,
+        19
+      ],
+      "addresses": [
+        365760560,
+        469368432
+      ],
+      "swapped": false,
+      "queries": [
+        {
+          "time": 0.031211312860250473,
+          "gap": 0.473358154296875,
+          "normal": [
+            0.7336727976799011,
+            0.6795029044151306,
+            -0.00017615346587263048
+          ]
+        },
+        {
+          "time": 0.031211312860250473,
+          "gap": 0.473358154296875,
+          "normal": [
+            -0.733672559261322,
+            -0.6795032024383545,
+            0.00017615355318412185
+          ]
+        }
+      ],
+      "stages": [
+        [
+          {
+            "p": [
+              540.2635498046875,
+              1698.3922119140625,
+              25.005931854248047
+            ],
+            "v": [
+              5.241272449493408,
+              -7.171041011810303,
+              0.0000016391277313232422
+            ]
+          },
+          {
+            "p": [
+              502.6993408203125,
+              1665.393310546875,
+              25.014907836914062
+            ],
+            "v": [
+              2.363985061645508,
+              18.868452072143555,
+              -0.0000013262033462524414
+            ]
+          }
+        ],
+        [
+          {
+            "p": [
+              540.2635498046875,
+              1698.3922119140625,
+              25.005931854248047
+            ],
+            "v": [
+              5.241272449493408,
+              -7.171041011810303,
+              0.0000016391277313232422
+            ]
+          },
+          {
+            "p": [
+              502.6993408203125,
+              1665.393310546875,
+              25.014907836914062
+            ],
+            "v": [
+              2.363985061645508,
+              18.868452072143555,
+              -0.0000013262033462524414
+            ]
+          }
+        ],
+        [
+          {
+            "p": [
+              540.2635498046875,
+              1698.3922119140625,
+              25.005931854248047
+            ],
+            "v": [
+              15.530765533447266,
+              2.3587470054626465,
+              -0.0024688511621207
+            ]
+          },
+          {
+            "p": [
+              502.6993408203125,
+              1665.393310546875,
+              25.014907836914062
+            ],
+            "v": [
+              -7.925508499145508,
+              9.338664054870605,
+              0.0024691640865057707
+            ]
+          }
+        ]
+      ],
+      "outputs": [
+        {
+          "p": [
+            540.2635498046875,
+            1698.3922119140625,
+            25.005931854248047
+          ],
+          "v": [
+            15.530765533447266,
+            2.3587470054626465,
+            -0.0024688511621207
+          ]
+        },
+        {
+          "p": [
+            502.6993408203125,
+            1665.393310546875,
+            25.014907836914062
+          ],
+          "v": [
+            -7.925508499145508,
+            9.338664054870605,
+            0.0024691640865057707
+          ]
+        }
+      ]
+    },
+    {
+      "index": 8,
+      "ids": [
+        20,
+        21
+      ],
+      "addresses": [
+        365749176,
+        271462736
+      ],
+      "swapped": false,
+      "queries": [
+        {
+          "time": 0.031211312860250473,
+          "gap": 0.473358154296875,
+          "normal": [
+            0.7336727976799011,
+            0.6795029044151306,
+            -0.00017615346587263048
+          ]
+        },
+        {
+          "time": 0.031211312860250473,
+          "gap": 0.473358154296875,
+          "normal": [
+            -0.733672559261322,
+            -0.6795032024383545,
+            0.00017615355318412185
+          ]
+        }
+      ],
+      "stages": [
+        [
+          {
+            "p": [
+              540.2635498046875,
+              1698.3922119140625,
+              25.005931854248047
+            ],
+            "v": [
+              5.241272449493408,
+              -7.171041011810303,
+              0.0000016391277313232422
+            ]
+          },
+          {
+            "p": [
+              502.6993408203125,
+              1665.393310546875,
+              25.014907836914062
+            ],
+            "v": [
+              2.363985061645508,
+              18.868452072143555,
+              -0.0000013262033462524414
+            ]
+          }
+        ],
+        [
+          {
+            "p": [
+              540.2635498046875,
+              1698.3922119140625,
+              25.005931854248047
+            ],
+            "v": [
+              15.53076171875,
+              2.358736515045166,
+              -0.0024688481353223324
+            ]
+          },
+          {
+            "p": [
+              502.6993408203125,
+              1665.393310546875,
+              25.014907836914062
+            ],
+            "v": [
+              -7.925504684448242,
+              9.338674545288086,
+              0.002469161059707403
+            ]
+          }
+        ],
+        [
+          {
+            "p": [
+              540.2635498046875,
+              1698.3922119140625,
+              25.005931854248047
+            ],
+            "v": [
+              15.53076171875,
+              2.358736515045166,
+              -0.0024688481353223324
+            ]
+          },
+          {
+            "p": [
+              502.6993408203125,
+              1665.393310546875,
+              25.014907836914062
+            ],
+            "v": [
+              -7.925504684448242,
+              9.338674545288086,
+              0.002469161059707403
+            ]
+          }
+        ]
+      ],
+      "outputs": [
+        {
+          "p": [
+            540.2635498046875,
+            1698.3922119140625,
+            25.005931854248047
+          ],
+          "v": [
+            15.53076171875,
+            2.358736515045166,
+            -0.0024688481353223324
+          ]
+        },
+        {
+          "p": [
+            502.6993408203125,
+            1665.393310546875,
+            25.014907836914062
+          ],
+          "v": [
+            -7.925504684448242,
+            9.338674545288086,
+            0.002469161059707403
+          ]
+        }
+      ]
+    },
+    {
+      "index": 9,
+      "ids": [
+        22,
+        23
+      ],
+      "addresses": [
+        283700168,
+        365574352
+      ],
+      "swapped": false,
+      "queries": [
+        {
+          "time": 0.031211312860250473,
+          "gap": 0.473358154296875,
+          "normal": [
+            0.7336727976799011,
+            0.6795029044151306,
+            -0.00017615346587263048
+          ]
+        },
+        {
+          "time": 0.031211312860250473,
+          "gap": 0.473358154296875,
+          "normal": [
+            -0.733672559261322,
+            -0.6795032024383545,
+            0.00017615355318412185
+          ]
+        }
+      ],
+      "stages": [
+        [
+          {
+            "p": [
+              540.2635498046875,
+              1698.3922119140625,
+              25.005931854248047
+            ],
+            "v": [
+              5.241272449493408,
+              -7.171041011810303,
+              0.0000016391277313232422
+            ]
+          },
+          {
+            "p": [
+              502.6993408203125,
+              1665.393310546875,
+              25.014907836914062
+            ],
+            "v": [
+              2.363985061645508,
+              18.868452072143555,
+              -0.0000013262033462524414
+            ]
+          }
+        ],
+        [
+          {
+            "p": [
+              540.2635498046875,
+              1698.3922119140625,
+              25.005931854248047
+            ],
+            "v": [
+              5.241272449493408,
+              -7.171041011810303,
+              0.0000016391277313232422
+            ]
+          },
+          {
+            "p": [
+              502.6993408203125,
+              1665.393310546875,
+              25.014907836914062
+            ],
+            "v": [
+              2.363985061645508,
+              18.868452072143555,
+              -0.0000013262033462524414
+            ]
+          }
+        ],
+        [
+          {
+            "p": [
+              540.2635498046875,
+              1698.3922119140625,
+              25.005931854248047
+            ],
+            "v": [
+              15.530765533447266,
+              2.3587470054626465,
+              -0.0024688511621207
+            ]
+          },
+          {
+            "p": [
+              502.6993408203125,
+              1665.393310546875,
+              25.014907836914062
+            ],
+            "v": [
+              -7.925508499145508,
+              9.338664054870605,
+              0.0024691640865057707
+            ]
+          }
+        ]
+      ],
+      "outputs": [
+        {
+          "p": [
+            540.2635498046875,
+            1698.3922119140625,
+            25.005931854248047
+          ],
+          "v": [
+            15.530765533447266,
+            2.3587470054626465,
+            -0.0024688511621207
+          ]
+        },
+        {
+          "p": [
+            502.6993408203125,
+            1665.393310546875,
+            25.014907836914062
+          ],
+          "v": [
+            -7.925508499145508,
+            9.338664054870605,
+            0.0024691640865057707
+          ]
+        }
+      ]
+    },
+    {
+      "index": 10,
+      "ids": [
+        24,
+        25
+      ],
+      "addresses": [
+        268269480,
+        268270176
+      ],
+      "swapped": false,
+      "queries": [
+        {
+          "time": 0.031211312860250473,
+          "gap": 0.473358154296875,
+          "normal": [
+            0.7336727976799011,
+            0.6795029044151306,
+            -0.00017615346587263048
+          ]
+        },
+        {
+          "time": 0.031211312860250473,
+          "gap": 0.473358154296875,
+          "normal": [
+            -0.733672559261322,
+            -0.6795032024383545,
+            0.00017615355318412185
+          ]
+        }
+      ],
+      "stages": [
+        [
+          {
+            "p": [
+              540.2635498046875,
+              1698.3922119140625,
+              25.005931854248047
+            ],
+            "v": [
+              5.241272449493408,
+              -7.171041011810303,
+              0.0000016391277313232422
+            ]
+          },
+          {
+            "p": [
+              502.6993408203125,
+              1665.393310546875,
+              25.014907836914062
+            ],
+            "v": [
+              2.363985061645508,
+              18.868452072143555,
+              -0.0000013262033462524414
+            ]
+          }
+        ],
+        [
+          {
+            "p": [
+              540.2635498046875,
+              1698.3922119140625,
+              25.005931854248047
+            ],
+            "v": [
+              5.241272449493408,
+              -7.171041011810303,
+              0.0000016391277313232422
+            ]
+          },
+          {
+            "p": [
+              502.6993408203125,
+              1665.393310546875,
+              25.014907836914062
+            ],
+            "v": [
+              2.363985061645508,
+              18.868452072143555,
+              -0.0000013262033462524414
+            ]
+          }
+        ],
+        [
+          {
+            "p": [
+              540.2635498046875,
+              1698.3922119140625,
+              25.005931854248047
+            ],
+            "v": [
+              15.530765533447266,
+              2.3587470054626465,
+              -0.0024688511621207
+            ]
+          },
+          {
+            "p": [
+              502.6993408203125,
+              1665.393310546875,
+              25.014907836914062
+            ],
+            "v": [
+              -7.925508499145508,
+              9.338664054870605,
+              0.0024691640865057707
+            ]
+          }
+        ]
+      ],
+      "outputs": [
+        {
+          "p": [
+            540.2635498046875,
+            1698.3922119140625,
+            25.005931854248047
+          ],
+          "v": [
+            15.530765533447266,
+            2.3587470054626465,
+            -0.0024688511621207
+          ]
+        },
+        {
+          "p": [
+            502.6993408203125,
+            1665.393310546875,
+            25.014907836914062
+          ],
+          "v": [
+            -7.925508499145508,
+            9.338664054870605,
+            0.0024691640865057707
+          ]
+        }
+      ]
+    },
+    {
+      "index": 11,
+      "ids": [
+        26,
+        27
+      ],
+      "addresses": [
+        437450400,
+        437451504
+      ],
+      "swapped": false,
+      "queries": [
+        {
+          "time": 0.031211312860250473,
+          "gap": 0.473358154296875,
+          "normal": [
+            0.7336727976799011,
+            0.6795029044151306,
+            -0.00017615346587263048
+          ]
+        },
+        {
+          "time": 0.031211312860250473,
+          "gap": 0.473358154296875,
+          "normal": [
+            -0.733672559261322,
+            -0.6795032024383545,
+            0.00017615355318412185
+          ]
+        }
+      ],
+      "stages": [
+        [
+          {
+            "p": [
+              540.2635498046875,
+              1698.3922119140625,
+              25.005931854248047
+            ],
+            "v": [
+              5.241272449493408,
+              -7.171041011810303,
+              0.0000016391277313232422
+            ]
+          },
+          {
+            "p": [
+              502.6993408203125,
+              1665.393310546875,
+              25.014907836914062
+            ],
+            "v": [
+              2.363985061645508,
+              18.868452072143555,
+              -0.0000013262033462524414
+            ]
+          }
+        ],
+        [
+          {
+            "p": [
+              540.2635498046875,
+              1698.3922119140625,
+              25.005931854248047
+            ],
+            "v": [
+              5.241272449493408,
+              -7.171041011810303,
+              0.0000016391277313232422
+            ]
+          },
+          {
+            "p": [
+              502.6993408203125,
+              1665.393310546875,
+              25.014907836914062
+            ],
+            "v": [
+              2.363985061645508,
+              18.868452072143555,
+              -0.0000013262033462524414
+            ]
+          }
+        ],
+        [
+          {
+            "p": [
+              540.2635498046875,
+              1698.3922119140625,
+              25.005931854248047
+            ],
+            "v": [
+              15.530765533447266,
+              2.3587470054626465,
+              -0.0024688511621207
+            ]
+          },
+          {
+            "p": [
+              502.6993408203125,
+              1665.393310546875,
+              25.014907836914062
+            ],
+            "v": [
+              -7.925508499145508,
+              9.338664054870605,
+              0.0024691640865057707
+            ]
+          }
+        ]
+      ],
+      "outputs": [
+        {
+          "p": [
+            540.2635498046875,
+            1698.3922119140625,
+            25.005931854248047
+          ],
+          "v": [
+            15.530765533447266,
+            2.3587470054626465,
+            -0.0024688511621207
+          ]
+        },
+        {
+          "p": [
+            502.6993408203125,
+            1665.393310546875,
+            25.014907836914062
+          ],
+          "v": [
+            -7.925508499145508,
+            9.338664054870605,
+            0.0024691640865057707
+          ]
+        }
+      ]
+    }
+  ],
+  "abi": {
+    "hitTest": 4455,
+    "collide": 4456,
+    "ballState": 128,
+    "collision": 72,
+    "normal": 88
+  },
+  "observerMemoryWrites": 0,
+  "errors": [],
+  "scope": "Twelve normally created native live-ball pairs under unchanged original functions. Normal UI focus loss pauses physics; declared VBS component inputs set pose/velocity and move to the solved contact. The observer performs no WASM memory writes, address assignment or outcome restoration. Original HitTest/Collide mutate only the created component balls. This is component/allocator evidence, not uninterrupted gameplay."
+}

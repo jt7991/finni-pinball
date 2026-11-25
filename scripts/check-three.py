@@ -72,6 +72,7 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--native-frame-history' in sys.argv:runner='probe-native-frame-history.mjs'
         if '--native-gameplay-history' in sys.argv:runner='probe-native-gameplay-history.mjs'
         if '--native-ball-identity' in sys.argv:runner='probe-native-ball-identity.mjs'
+        if '--native-live-ball-identity' in sys.argv:runner='probe-native-live-ball-identity.mjs'
         if '--production-lock-contact' in sys.argv:runner='test-production-lock-contact.mjs'
         if '--frame-history-render' in sys.argv:runner='test-native-frame-history.mjs'
         if '--postprocess-history' in sys.argv:runner='test-native-postprocess-history.mjs'
