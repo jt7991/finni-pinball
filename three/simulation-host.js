@@ -73,6 +73,7 @@ export function createSimulationHost(send,{allowDebug=false,now=()=>performance.
     const scriptTimerSeconds=timerClocks===undefined?undefined:()=>{if(timerClockIndex>=timerClocks.length)throw Error('Missing observed Timer clock');return timerClocks[timerClockIndex++];};
     game=await createFullGame(assets.layout,assets.specs,assets.source,event=>effects.push({type:'event',event}),{
       play:(name,settings)=>effects.push({type:'play',name,settings}),stop:name=>effects.push({type:'stop',name}),
+      log:text=>effects.push({type:'log',text}),
     },{storage,frameAnimations:true,protectPartyChooser:message.protectPartyChooser===true,playerSettings:message.playerSettings,ballSettings:message.ballSettings,sceneSettings:message.sceneSettings,scriptBudget:message.scriptBudget,scriptClock,scriptRandomClock,scriptTimerSeconds});
     // Native startup prepares its renderer after Table1_Init and before
     // starting physics. That frame clears initialization's script cost.
@@ -107,7 +108,7 @@ export function createSimulationHost(send,{allowDebug=false,now=()=>performance.
       else{
         if(!game||disposed||fatal)throw Error('Simulation is unavailable');
         switch(message.type){
-          case 'start':game.start(message.players);break;
+          case 'start':if(message.browserMusic)game.rules.execute('FinniUseBrowserMusic');game.start(message.players);break;
           case 'input':game.input(message.action,message.down);break;
           case 'release':game.release();break;
           case 'pause':pause(message.value);break;

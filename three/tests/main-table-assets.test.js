@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import {createHash} from 'node:crypto';
 import {readReferenceFixture} from '../../scripts/reference-physics.mjs';
 import {decodeNativeGeometry} from '../native-geometry-codec.js';
+import {nativeSourceAssets} from '../../scripts/native-source-assets.mjs';
 
 const read=name=>JSON.parse(fs.readFileSync(new URL('../public/'+name,import.meta.url)));
 const expected=readReferenceFixture(new URL('fixtures/source-main-99eff88-render.json.gz',import.meta.url));
@@ -18,7 +19,8 @@ test('merged main keeps its authored appearance and observed native lighting',()
     for(const [key,value]of Object.entries(properties))assert.deepEqual(object[key],value,name+' '+key);
   }
   assert.equal(table.sourceTableSHA256,expected.sourceSha256);
-  assert.equal(read('source-table.json').sourceTableSHA256,expected.sourceSha256);
+  assert.equal(nativeSourceAssets(expected.sourceSha256).metadata.sourceTableSHA256,expected.sourceSha256);
+  assert.deepEqual(read('objects.json'),nativeSourceAssets(expected.sourceSha256).json('objects.json'),'Current source imports exactly the same authored appearance');
   const lighting=read('native-lighting.json');
   assert.deepEqual(lighting.globals.envScaleWidth,expected.globals.fenvEmissionScale_TexWidth);
   assert.deepEqual(lighting.globals.ambientRange,expected.globals.cAmbient_LightRange);

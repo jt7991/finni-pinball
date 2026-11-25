@@ -6,6 +6,7 @@ import assert from 'node:assert/strict';
 import {createFullGame} from '../three/full-game.js';
 import {nativeScriptClockInputs} from './native-script-clock-inputs.mjs';
 import {readNativeHistoryCapture} from './native-history-pages.mjs';
+import {nativeSourceAssets} from './native-source-assets.mjs';
 // References are consumed in physical/frame order. Retain only the current
 // group so long recordings do not need a second copy of every native body.
 function orderedRows(rows,key,{last=true}={}){
@@ -16,13 +17,13 @@ function orderedRows(rows,key,{last=true}={}){
  }};
 }
 export async function compareNativeHistoryState(fixture,{write=()=>{},observeObjects=[],contactAudit,soundAudit}={}){
-const load=name=>JSON.parse(fs.readFileSync(new URL('../three/public/'+name,import.meta.url)));
+const assets=nativeSourceAssets(fixture.reference.sourceSha256),load=name=>assets.json(name);
 const clocks=fixture.randomizeClocks?.timerRecords?nativeScriptClockInputs(fixture.randomizeClocks,{lastFrame:fixture.frames.at(-1).frameIndex,lastMilliseconds:fixture.frames.at(-1).snapshot.ms}):null;let randomizeIndex=0,timerIndex=0;
 const scriptRandomClock=clocks?()=>{assert.ok(randomizeIndex<clocks.observedRandomizeClocks.length);return clocks.observedRandomizeClocks[randomizeIndex++];}:undefined,scriptTimerSeconds=clocks?()=>{assert.ok(timerIndex<clocks.observedTimerSeconds.length);return clocks.observedTimerSeconds[timerIndex++];}:undefined;
 const soundCalls=fixture.soundTimeline?[]:null;
 let game;const soundClock=()=>Math.round((game?.time??0)*1000);
 const media=soundCalls?{play:(name,settings)=>soundCalls.push({type:'play',ms:soundClock(),name:String(name).toLowerCase(),settings}),stop:name=>soundCalls.push({type:'stop',ms:soundClock(),name:String(name??'').toLowerCase()})}:undefined;
-game=await createFullGame(load('layout.json'),load('objects.json'),fs.readFileSync(new URL('../three/public/rules.vbs',import.meta.url),'utf8'),()=>{},media,{frameAnimations:true,scriptBudget:{videoSyncMode:2},scriptRandomClock,scriptTimerSeconds});
+game=await createFullGame(load('layout.json'),load('objects.json'),assets.text('rules.vbs'),()=>{},media,{frameAnimations:true,scriptBudget:{videoSyncMode:2},scriptRandomClock,scriptTimerSeconds});
 if(contactAudit){const hit=game.rules.hit.bind(game.rules);game.rules.hit=(name,kind,ball,...parameters)=>{if(kind==='Collide'&&/^(Left|Right)Flipper$/i.test(name))contactAudit.push({ms:Math.round(game.time*1000),name,speed:parameters[0]});return hit(name,kind,ball,...parameters);};}
 const timers=new Set(fixture.timers.events.filter(row=>row.interval>=0).map(row=>row.ms));
 let ticks=0,inputIndex=0,intervalsChecked=0,framesChecked=0,ruleObservationsChecked=0,ruleVariantFieldsChecked=0,scriptRandomStatesChecked=0;

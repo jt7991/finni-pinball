@@ -9,6 +9,7 @@ const tabs=await(await fetch(debug+'/json/list')).json(),socket=new WebSocket(ta
 socket.addEventListener('message',event=>{const d=JSON.parse(event.data);if(d.id){const p=pending.get(d.id);pending.delete(d.id);d.error?p.reject(Error(d.error.message)):p.resolve(d.result);}if(d.method==='Runtime.exceptionThrown')errors.push(d.params);});
 const call=(method,params={})=>new Promise((resolve,reject)=>{const id=++serial;pending.set(id,{resolve,reject});socket.send(JSON.stringify({id,method,params}));}),evaluate=async expression=>{const r=await call('Runtime.evaluate',{expression,awaitPromise:true,returnByValue:true,userGesture:true});assert.ok(!r.exceptionDetails,JSON.stringify(r.exceptionDetails));return r.result.value;},wait=async expression=>{for(let i=0;i<1200;i++){if(await evaluate(expression))return;await new Promise(r=>setTimeout(r,30));}throw Error('Native Vorbis wait: '+expression);},execute=statement=>evaluate('finni.evaluate('+JSON.stringify(statement)+')');
 const wave=process.argv.includes('--wave');
+const sourceDirectory=option('source-dir')??'.work/main-99eff88-assets/sounds';
 const rows=[],network=[];
 socket.addEventListener('message',event=>{const d=JSON.parse(event.data);if(d.method==='Network.requestWillBeSent')network.push({url:d.params.request.url});if(d.method==='Network.loadingFailed')network.push({failed:d.params.errorText,requestId:d.params.requestId});});
 try{
@@ -17,7 +18,7 @@ try{
  await call('Page.navigate',{url:base});await wait('!!window.finni&&document.getElementById("play")?.textContent==="Start game"');await evaluate('document.getElementById("play").click()');await wait('document.body.classList.contains("ball-in-plunger")');await evaluate('Promise.all(nativeVorbisQA.contexts.map(c=>c.resume()))');await execute('RollingTimer.Enabled=False:DMDFlush');
  const all=Object.keys(manifest);for(let i=0;i<all.length;i+=40)await execute(all.slice(i,i+40).map(n=>'StopSound "'+n+'"').join(':'));
  for(const name of names){
-  const source=fs.readFileSync('.work/main-99eff88-assets/sounds/'+name+(wave?'.wav':'.ogg'));assert.equal(createHash('sha256').update(source).digest('hex'),manifest[name].sourceSHA256);const info=wave?{sampleRate:manifest[name].sampleRate,channels:manifest[name].outputTarget==='backglass'?2:1,granuleFrames:manifest[name].frames}:readOggVorbis(source);
+  const source=fs.readFileSync(sourceDirectory+'/'+name+(wave?'.wav':'.ogg'));assert.equal(createHash('sha256').update(source).digest('hex'),manifest[name].sourceSHA256);const info=wave?{sampleRate:manifest[name].sampleRate,channels:manifest[name].outputTarget==='backglass'?2:1,granuleFrames:manifest[name].frames}:readOggVorbis(source);
   await execute('PlaySound "'+name+'",0,0.0001369,0.03125,0,0,1,1');await new Promise(r=>setTimeout(r,220));await execute('StopSound "'+name+'"');await new Promise(r=>setTimeout(r,220));await evaluate('Promise.all(nativeVorbisQA.contexts.map(c=>c.suspend()))');
   const result=await evaluate(`(async()=>{
    const memory=nativeVorbisQA.memories.find(m=>m.buffer.byteLength>7661272),table=nativeVorbisQA.tables.find(t=>t.length>1000),words=new Uint32Array(memory.buffer),view=new DataView(memory.buffer),candidates=[],scratch=finni.engine._SDL_malloc(64),sourceRate=${info.sampleRate},sourceChannels=${info.channels};

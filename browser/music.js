@@ -1,8 +1,8 @@
 // A one-sample silent WAV lets the Start gesture authorize the shared player.
 const silence = 'data:audio/wav;base64,UklGRiYAAABXQVZFZm10IBAAAAABAAEAQB8AAIA+AAACABAAZGF0YQIAAAAAAA==';
-const musicUrl = track => `/music/${track}.mp3`;
 
-export function createMusic(report) {
+export function createMusic(report, {base = '/music/'} = {}) {
+  const musicUrl = track => `${base}${track}.mp3`;
   const sources = new Map();
   const positions = new Map();
   let audio, context, gain, loading, seekOnPlay;

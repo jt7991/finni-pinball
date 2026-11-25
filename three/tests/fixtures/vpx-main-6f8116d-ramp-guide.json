@@ -1,0 +1,568 @@
+{
+  "reference": {
+    "engine": "@valknar/vpinball-wasm 0.3.4",
+    "engineSHA256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+    "upstreamCommit": "195f214dd4849b8ef6113fd377258b78d0dec3bf",
+    "sourceCommit": "6f8116d0964429db0e2da41d583566784114fc5f",
+    "sourceSha256": "6160e43c1a74f6dc70fd9852433c3373fe11b3e55d4f3a3fedc435265591b5c5",
+    "controlledSha256": "6160e43c1a74f6dc70fd9852433c3373fe11b3e55d4f3a3fedc435265591b5c5",
+    "controlledOverrides": {},
+    "browserSourceCommit": "6f8116d0964429db0e2da41d583566784114fc5f",
+    "browserAppSHA256": "3608d26828ea120a3a56437746d74054b7f69abe019d9b9ec4f21288b1a4389f",
+    "scope": "Exact committed master VPX and browser snapshot, including its continuous HTML music player. No injected table instrumentation or chooser correction. Engine cache is read only. Individual comparison probes declare any observers or external inputs separately."
+  },
+  "engineSHA256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+  "scope": "One synchronous ordinary native script call supplies declared positions and velocities to an existing GetBalls body, then calls the unchanged authored FinniLockRampAssist for each case. Original COM outputs are observed through CStr(CDbl()) and cast back to Single. No physics, RNG or helper code is replaced. This is a helper/dispatch boundary comparison, not a natural shot trajectory.",
+  "cases": [
+    {
+      "name": "center",
+      "x": 355,
+      "y": 380,
+      "z": 25,
+      "vx": 0,
+      "vy": -40,
+      "vz": 0
+    },
+    {
+      "name": "x-before",
+      "x": 344.9999694824219,
+      "y": 380,
+      "z": 25,
+      "vx": 0,
+      "vy": -40,
+      "vz": 0
+    },
+    {
+      "name": "x-min",
+      "x": 345,
+      "y": 380,
+      "z": 25,
+      "vx": 0,
+      "vy": -40,
+      "vz": 0
+    },
+    {
+      "name": "x-max",
+      "x": 374,
+      "y": 380,
+      "z": 25,
+      "vx": 0,
+      "vy": -40,
+      "vz": 0
+    },
+    {
+      "name": "x-after",
+      "x": 374.0000305175781,
+      "y": 380,
+      "z": 25,
+      "vx": 0,
+      "vy": -40,
+      "vz": 0
+    },
+    {
+      "name": "y-before",
+      "x": 355,
+      "y": 346.9999694824219,
+      "z": 25,
+      "vx": 0,
+      "vy": -40,
+      "vz": 0
+    },
+    {
+      "name": "y-min",
+      "x": 355,
+      "y": 347,
+      "z": 25,
+      "vx": 0,
+      "vy": -40,
+      "vz": 0
+    },
+    {
+      "name": "y-max",
+      "x": 355,
+      "y": 395,
+      "z": 25,
+      "vx": 0,
+      "vy": -40,
+      "vz": 0
+    },
+    {
+      "name": "y-after",
+      "x": 355,
+      "y": 395.0000305175781,
+      "z": 25,
+      "vx": 0,
+      "vy": -40,
+      "vz": 0
+    },
+    {
+      "name": "z-before",
+      "x": 355,
+      "y": 380,
+      "z": 23.999998092651367,
+      "vx": 0,
+      "vy": -40,
+      "vz": 0
+    },
+    {
+      "name": "z-min",
+      "x": 355,
+      "y": 380,
+      "z": 24,
+      "vx": 0,
+      "vy": -40,
+      "vz": 0
+    },
+    {
+      "name": "z-max",
+      "x": 355,
+      "y": 380,
+      "z": 29,
+      "vx": 0,
+      "vy": -40,
+      "vz": 0
+    },
+    {
+      "name": "z-after",
+      "x": 355,
+      "y": 380,
+      "z": 29.000001907348633,
+      "vx": 0,
+      "vy": -40,
+      "vz": 0
+    },
+    {
+      "name": "right-angle-in",
+      "x": 355,
+      "y": 380,
+      "z": 25,
+      "vx": 7.199999809265137,
+      "vy": -40,
+      "vz": 0
+    },
+    {
+      "name": "right-angle-out",
+      "x": 355,
+      "y": 380,
+      "z": 25,
+      "vx": 7.200000286102295,
+      "vy": -40,
+      "vz": 0
+    },
+    {
+      "name": "left-angle-in",
+      "x": 355,
+      "y": 380,
+      "z": 25,
+      "vx": -7.199999809265137,
+      "vy": -40,
+      "vz": 0
+    },
+    {
+      "name": "left-angle-out",
+      "x": 355,
+      "y": 380,
+      "z": 25,
+      "vx": -7.200000286102295,
+      "vy": -40,
+      "vz": 0
+    },
+    {
+      "name": "downward",
+      "x": 355,
+      "y": 380,
+      "z": 25,
+      "vx": 0,
+      "vy": 40,
+      "vz": 0
+    },
+    {
+      "name": "slow-up",
+      "x": 355,
+      "y": 380,
+      "z": 25,
+      "vx": 0,
+      "vy": -1,
+      "vz": 0
+    },
+    {
+      "name": "mouth-left",
+      "x": 345,
+      "y": 380,
+      "z": 25,
+      "vx": -7.199999809265137,
+      "vy": -40,
+      "vz": 0
+    },
+    {
+      "name": "mouth-right",
+      "x": 370,
+      "y": 380,
+      "z": 25,
+      "vx": 7.199999809265137,
+      "vy": -40,
+      "vz": 0
+    },
+    {
+      "name": "vertical-preserved",
+      "x": 355,
+      "y": 380,
+      "z": 25,
+      "vx": 0,
+      "vy": -40,
+      "vz": 5
+    },
+    {
+      "name": "old-mouth",
+      "x": 260,
+      "y": 310,
+      "z": 35,
+      "vx": 0,
+      "vy": -12,
+      "vz": 0
+    },
+    {
+      "name": "old-fast",
+      "x": 260,
+      "y": 310,
+      "z": 35,
+      "vx": 2,
+      "vy": -60,
+      "vz": 0
+    },
+    {
+      "name": "old-downward",
+      "x": 260,
+      "y": 310,
+      "z": 35,
+      "vx": 0,
+      "vy": 12,
+      "vz": 0
+    },
+    {
+      "name": "diagonal-fractional",
+      "x": 351.125,
+      "y": 381.375,
+      "z": 25.125,
+      "vx": 1.125,
+      "vy": -30.375,
+      "vz": -0.125
+    }
+  ],
+  "inputScript": "Dim RefGuideBalls, RefGuideBall:RefGuideBalls=GetBalls:Set RefGuideBall=RefGuideBalls(0):RefGuideBall.X=355:RefGuideBall.Y=380:RefGuideBall.Z=25:RefGuideBall.VelX=0:RefGuideBall.VelY=-40:RefGuideBall.VelZ=0:FinniLockRampAssist RefGuideBall:Debug.Print \"REF_GUIDE|0|\" & Replace(CStr(CDbl(RefGuideBall.X)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Y)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Z)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelX)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelY)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelZ)),\",\",\".\"):RefGuideBall.X=344.9999694824219:RefGuideBall.Y=380:RefGuideBall.Z=25:RefGuideBall.VelX=0:RefGuideBall.VelY=-40:RefGuideBall.VelZ=0:FinniLockRampAssist RefGuideBall:Debug.Print \"REF_GUIDE|1|\" & Replace(CStr(CDbl(RefGuideBall.X)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Y)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Z)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelX)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelY)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelZ)),\",\",\".\"):RefGuideBall.X=345:RefGuideBall.Y=380:RefGuideBall.Z=25:RefGuideBall.VelX=0:RefGuideBall.VelY=-40:RefGuideBall.VelZ=0:FinniLockRampAssist RefGuideBall:Debug.Print \"REF_GUIDE|2|\" & Replace(CStr(CDbl(RefGuideBall.X)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Y)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Z)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelX)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelY)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelZ)),\",\",\".\"):RefGuideBall.X=374:RefGuideBall.Y=380:RefGuideBall.Z=25:RefGuideBall.VelX=0:RefGuideBall.VelY=-40:RefGuideBall.VelZ=0:FinniLockRampAssist RefGuideBall:Debug.Print \"REF_GUIDE|3|\" & Replace(CStr(CDbl(RefGuideBall.X)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Y)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Z)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelX)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelY)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelZ)),\",\",\".\"):RefGuideBall.X=374.0000305175781:RefGuideBall.Y=380:RefGuideBall.Z=25:RefGuideBall.VelX=0:RefGuideBall.VelY=-40:RefGuideBall.VelZ=0:FinniLockRampAssist RefGuideBall:Debug.Print \"REF_GUIDE|4|\" & Replace(CStr(CDbl(RefGuideBall.X)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Y)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Z)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelX)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelY)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelZ)),\",\",\".\"):RefGuideBall.X=355:RefGuideBall.Y=346.9999694824219:RefGuideBall.Z=25:RefGuideBall.VelX=0:RefGuideBall.VelY=-40:RefGuideBall.VelZ=0:FinniLockRampAssist RefGuideBall:Debug.Print \"REF_GUIDE|5|\" & Replace(CStr(CDbl(RefGuideBall.X)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Y)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Z)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelX)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelY)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelZ)),\",\",\".\"):RefGuideBall.X=355:RefGuideBall.Y=347:RefGuideBall.Z=25:RefGuideBall.VelX=0:RefGuideBall.VelY=-40:RefGuideBall.VelZ=0:FinniLockRampAssist RefGuideBall:Debug.Print \"REF_GUIDE|6|\" & Replace(CStr(CDbl(RefGuideBall.X)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Y)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Z)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelX)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelY)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelZ)),\",\",\".\"):RefGuideBall.X=355:RefGuideBall.Y=395:RefGuideBall.Z=25:RefGuideBall.VelX=0:RefGuideBall.VelY=-40:RefGuideBall.VelZ=0:FinniLockRampAssist RefGuideBall:Debug.Print \"REF_GUIDE|7|\" & Replace(CStr(CDbl(RefGuideBall.X)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Y)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Z)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelX)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelY)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelZ)),\",\",\".\"):RefGuideBall.X=355:RefGuideBall.Y=395.0000305175781:RefGuideBall.Z=25:RefGuideBall.VelX=0:RefGuideBall.VelY=-40:RefGuideBall.VelZ=0:FinniLockRampAssist RefGuideBall:Debug.Print \"REF_GUIDE|8|\" & Replace(CStr(CDbl(RefGuideBall.X)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Y)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Z)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelX)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelY)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelZ)),\",\",\".\"):RefGuideBall.X=355:RefGuideBall.Y=380:RefGuideBall.Z=23.999998092651367:RefGuideBall.VelX=0:RefGuideBall.VelY=-40:RefGuideBall.VelZ=0:FinniLockRampAssist RefGuideBall:Debug.Print \"REF_GUIDE|9|\" & Replace(CStr(CDbl(RefGuideBall.X)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Y)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Z)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelX)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelY)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelZ)),\",\",\".\"):RefGuideBall.X=355:RefGuideBall.Y=380:RefGuideBall.Z=24:RefGuideBall.VelX=0:RefGuideBall.VelY=-40:RefGuideBall.VelZ=0:FinniLockRampAssist RefGuideBall:Debug.Print \"REF_GUIDE|10|\" & Replace(CStr(CDbl(RefGuideBall.X)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Y)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Z)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelX)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelY)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelZ)),\",\",\".\"):RefGuideBall.X=355:RefGuideBall.Y=380:RefGuideBall.Z=29:RefGuideBall.VelX=0:RefGuideBall.VelY=-40:RefGuideBall.VelZ=0:FinniLockRampAssist RefGuideBall:Debug.Print \"REF_GUIDE|11|\" & Replace(CStr(CDbl(RefGuideBall.X)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Y)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Z)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelX)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelY)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelZ)),\",\",\".\"):RefGuideBall.X=355:RefGuideBall.Y=380:RefGuideBall.Z=29.000001907348633:RefGuideBall.VelX=0:RefGuideBall.VelY=-40:RefGuideBall.VelZ=0:FinniLockRampAssist RefGuideBall:Debug.Print \"REF_GUIDE|12|\" & Replace(CStr(CDbl(RefGuideBall.X)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Y)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Z)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelX)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelY)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelZ)),\",\",\".\"):RefGuideBall.X=355:RefGuideBall.Y=380:RefGuideBall.Z=25:RefGuideBall.VelX=7.199999809265137:RefGuideBall.VelY=-40:RefGuideBall.VelZ=0:FinniLockRampAssist RefGuideBall:Debug.Print \"REF_GUIDE|13|\" & Replace(CStr(CDbl(RefGuideBall.X)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Y)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Z)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelX)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelY)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelZ)),\",\",\".\"):RefGuideBall.X=355:RefGuideBall.Y=380:RefGuideBall.Z=25:RefGuideBall.VelX=7.200000286102295:RefGuideBall.VelY=-40:RefGuideBall.VelZ=0:FinniLockRampAssist RefGuideBall:Debug.Print \"REF_GUIDE|14|\" & Replace(CStr(CDbl(RefGuideBall.X)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Y)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Z)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelX)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelY)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelZ)),\",\",\".\"):RefGuideBall.X=355:RefGuideBall.Y=380:RefGuideBall.Z=25:RefGuideBall.VelX=-7.199999809265137:RefGuideBall.VelY=-40:RefGuideBall.VelZ=0:FinniLockRampAssist RefGuideBall:Debug.Print \"REF_GUIDE|15|\" & Replace(CStr(CDbl(RefGuideBall.X)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Y)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Z)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelX)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelY)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelZ)),\",\",\".\"):RefGuideBall.X=355:RefGuideBall.Y=380:RefGuideBall.Z=25:RefGuideBall.VelX=-7.200000286102295:RefGuideBall.VelY=-40:RefGuideBall.VelZ=0:FinniLockRampAssist RefGuideBall:Debug.Print \"REF_GUIDE|16|\" & Replace(CStr(CDbl(RefGuideBall.X)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Y)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Z)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelX)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelY)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelZ)),\",\",\".\"):RefGuideBall.X=355:RefGuideBall.Y=380:RefGuideBall.Z=25:RefGuideBall.VelX=0:RefGuideBall.VelY=40:RefGuideBall.VelZ=0:FinniLockRampAssist RefGuideBall:Debug.Print \"REF_GUIDE|17|\" & Replace(CStr(CDbl(RefGuideBall.X)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Y)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Z)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelX)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelY)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelZ)),\",\",\".\"):RefGuideBall.X=355:RefGuideBall.Y=380:RefGuideBall.Z=25:RefGuideBall.VelX=0:RefGuideBall.VelY=-1:RefGuideBall.VelZ=0:FinniLockRampAssist RefGuideBall:Debug.Print \"REF_GUIDE|18|\" & Replace(CStr(CDbl(RefGuideBall.X)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Y)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Z)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelX)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelY)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelZ)),\",\",\".\"):RefGuideBall.X=345:RefGuideBall.Y=380:RefGuideBall.Z=25:RefGuideBall.VelX=-7.199999809265137:RefGuideBall.VelY=-40:RefGuideBall.VelZ=0:FinniLockRampAssist RefGuideBall:Debug.Print \"REF_GUIDE|19|\" & Replace(CStr(CDbl(RefGuideBall.X)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Y)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Z)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelX)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelY)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelZ)),\",\",\".\"):RefGuideBall.X=370:RefGuideBall.Y=380:RefGuideBall.Z=25:RefGuideBall.VelX=7.199999809265137:RefGuideBall.VelY=-40:RefGuideBall.VelZ=0:FinniLockRampAssist RefGuideBall:Debug.Print \"REF_GUIDE|20|\" & Replace(CStr(CDbl(RefGuideBall.X)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Y)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Z)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelX)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelY)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelZ)),\",\",\".\"):RefGuideBall.X=355:RefGuideBall.Y=380:RefGuideBall.Z=25:RefGuideBall.VelX=0:RefGuideBall.VelY=-40:RefGuideBall.VelZ=5:FinniLockRampAssist RefGuideBall:Debug.Print \"REF_GUIDE|21|\" & Replace(CStr(CDbl(RefGuideBall.X)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Y)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Z)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelX)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelY)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelZ)),\",\",\".\"):RefGuideBall.X=260:RefGuideBall.Y=310:RefGuideBall.Z=35:RefGuideBall.VelX=0:RefGuideBall.VelY=-12:RefGuideBall.VelZ=0:FinniLockRampAssist RefGuideBall:Debug.Print \"REF_GUIDE|22|\" & Replace(CStr(CDbl(RefGuideBall.X)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Y)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Z)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelX)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelY)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelZ)),\",\",\".\"):RefGuideBall.X=260:RefGuideBall.Y=310:RefGuideBall.Z=35:RefGuideBall.VelX=2:RefGuideBall.VelY=-60:RefGuideBall.VelZ=0:FinniLockRampAssist RefGuideBall:Debug.Print \"REF_GUIDE|23|\" & Replace(CStr(CDbl(RefGuideBall.X)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Y)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Z)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelX)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelY)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelZ)),\",\",\".\"):RefGuideBall.X=260:RefGuideBall.Y=310:RefGuideBall.Z=35:RefGuideBall.VelX=0:RefGuideBall.VelY=12:RefGuideBall.VelZ=0:FinniLockRampAssist RefGuideBall:Debug.Print \"REF_GUIDE|24|\" & Replace(CStr(CDbl(RefGuideBall.X)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Y)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Z)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelX)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelY)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelZ)),\",\",\".\"):RefGuideBall.X=351.125:RefGuideBall.Y=381.375:RefGuideBall.Z=25.125:RefGuideBall.VelX=1.125:RefGuideBall.VelY=-30.375:RefGuideBall.VelZ=-0.125:FinniLockRampAssist RefGuideBall:Debug.Print \"REF_GUIDE|25|\" & Replace(CStr(CDbl(RefGuideBall.X)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Y)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.Z)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelX)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelY)),\",\",\".\") & \"|\" & Replace(CStr(CDbl(RefGuideBall.VelZ)),\",\",\".\")",
+  "rows": [
+    {
+      "index": 0,
+      "values": [
+        355,
+        380,
+        25,
+        -31.802209854125977,
+        -24.2614803314209,
+        0
+      ],
+      "line": "REF_GUIDE|0|355|380|25|-31.802209854126|-24.2614803314209|0"
+    },
+    {
+      "index": 1,
+      "values": [
+        344.9999694824219,
+        380,
+        25,
+        0,
+        -40,
+        0
+      ],
+      "line": "REF_GUIDE|1|344.999969482422|380|25|0|-40|0"
+    },
+    {
+      "index": 2,
+      "values": [
+        345,
+        380,
+        25,
+        -30.468929290771484,
+        -25.916101455688477,
+        0
+      ],
+      "line": "REF_GUIDE|2|345|380|25|-30.4689292907715|-25.9161014556885|0"
+    },
+    {
+      "index": 3,
+      "values": [
+        374,
+        380,
+        25,
+        0,
+        -40,
+        0
+      ],
+      "line": "REF_GUIDE|3|374|380|25|0|-40|0"
+    },
+    {
+      "index": 4,
+      "values": [
+        374.0000305175781,
+        380,
+        25,
+        0,
+        -40,
+        0
+      ],
+      "line": "REF_GUIDE|4|374.000030517578|380|25|0|-40|0"
+    },
+    {
+      "index": 5,
+      "values": [
+        355,
+        346.9999694824219,
+        25,
+        0,
+        -40,
+        0
+      ],
+      "line": "REF_GUIDE|5|355|346.999969482422|25|0|-40|0"
+    },
+    {
+      "index": 6,
+      "values": [
+        355,
+        347,
+        25,
+        -36.843929290771484,
+        -15.57320785522461,
+        0
+      ],
+      "line": "REF_GUIDE|6|355|347|25|-36.8439292907715|-15.5732078552246|0"
+    },
+    {
+      "index": 7,
+      "values": [
+        355,
+        395,
+        25,
+        -29.473548889160156,
+        -27.042741775512695,
+        0
+      ],
+      "line": "REF_GUIDE|7|355|395|25|-29.4735488891602|-27.0427417755127|0"
+    },
+    {
+      "index": 8,
+      "values": [
+        355,
+        395.0000305175781,
+        25,
+        0,
+        -40,
+        0
+      ],
+      "line": "REF_GUIDE|8|355|395.000030517578|25|0|-40|0"
+    },
+    {
+      "index": 9,
+      "values": [
+        355,
+        380,
+        23.999998092651367,
+        0,
+        -40,
+        0
+      ],
+      "line": "REF_GUIDE|9|355|380|23.9999980926514|0|-40|0"
+    },
+    {
+      "index": 10,
+      "values": [
+        355,
+        380,
+        24,
+        -31.802209854125977,
+        -24.2614803314209,
+        0
+      ],
+      "line": "REF_GUIDE|10|355|380|24|-31.802209854126|-24.2614803314209|0"
+    },
+    {
+      "index": 11,
+      "values": [
+        355,
+        380,
+        29,
+        -31.802209854125977,
+        -24.2614803314209,
+        0
+      ],
+      "line": "REF_GUIDE|11|355|380|29|-31.802209854126|-24.2614803314209|0"
+    },
+    {
+      "index": 12,
+      "values": [
+        355,
+        380,
+        29.000001907348633,
+        0,
+        -40,
+        0
+      ],
+      "line": "REF_GUIDE|12|355|380|29.0000019073486|0|-40|0"
+    },
+    {
+      "index": 13,
+      "values": [
+        355,
+        380,
+        25,
+        -32.31330108642578,
+        -24.651382446289062,
+        0
+      ],
+      "line": "REF_GUIDE|13|355|380|25|-32.3133010864258|-24.6513824462891|0"
+    },
+    {
+      "index": 14,
+      "values": [
+        355,
+        380,
+        25,
+        7.200000286102295,
+        -40,
+        0
+      ],
+      "line": "REF_GUIDE|14|355|380|25|7.20000028610229|-40|0"
+    },
+    {
+      "index": 15,
+      "values": [
+        355,
+        380,
+        25,
+        -32.31330108642578,
+        -24.651382446289062,
+        0
+      ],
+      "line": "REF_GUIDE|15|355|380|25|-32.3133010864258|-24.6513824462891|0"
+    },
+    {
+      "index": 16,
+      "values": [
+        355,
+        380,
+        25,
+        -7.200000286102295,
+        -40,
+        0
+      ],
+      "line": "REF_GUIDE|16|355|380|25|-7.20000028610229|-40|0"
+    },
+    {
+      "index": 17,
+      "values": [
+        355,
+        380,
+        25,
+        0,
+        40,
+        0
+      ],
+      "line": "REF_GUIDE|17|355|380|25|0|40|0"
+    },
+    {
+      "index": 18,
+      "values": [
+        355,
+        380,
+        25,
+        0,
+        -1,
+        0
+      ],
+      "line": "REF_GUIDE|18|355|380|25|0|-1|0"
+    },
+    {
+      "index": 19,
+      "values": [
+        345,
+        380,
+        25,
+        -7.199999809265137,
+        -40,
+        0
+      ],
+      "line": "REF_GUIDE|19|345|380|25|-7.19999980926514|-40|0"
+    },
+    {
+      "index": 20,
+      "values": [
+        370,
+        380,
+        25,
+        7.199999809265137,
+        -40,
+        0
+      ],
+      "line": "REF_GUIDE|20|370|380|25|7.19999980926514|-40|0"
+    },
+    {
+      "index": 21,
+      "values": [
+        355,
+        380,
+        25,
+        -31.802209854125977,
+        -24.2614803314209,
+        5
+      ],
+      "line": "REF_GUIDE|21|355|380|25|-31.802209854126|-24.2614803314209|5"
+    },
+    {
+      "index": 22,
+      "values": [
+        260,
+        310,
+        35,
+        0,
+        -12,
+        0
+      ],
+      "line": "REF_GUIDE|22|260|310|35|0|-12|0"
+    },
+    {
+      "index": 23,
+      "values": [
+        260,
+        310,
+        35,
+        2,
+        -60,
+        0
+      ],
+      "line": "REF_GUIDE|23|260|310|35|2|-60|0"
+    },
+    {
+      "index": 24,
+      "values": [
+        260,
+        310,
+        35,
+        0,
+        12,
+        0
+      ],
+      "line": "REF_GUIDE|24|260|310|35|0|12|0"
+    },
+    {
+      "index": 25,
+      "values": [
+        351.125,
+        381.375,
+        25.125,
+        -23.626476287841797,
+        -19.1231746673584,
+        -0.125
+      ],
+      "line": "REF_GUIDE|25|351.125|381.375|25.125|-23.6264762878418|-19.1231746673584|-0.125"
+    }
+  ],
+  "errors": []
+}

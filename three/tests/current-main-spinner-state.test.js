@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {execFileSync} from 'node:child_process';
 import {readReferenceFixture} from '../../scripts/reference-physics.mjs';
+import {nativeSourceAssets} from '../../scripts/native-source-assets.mjs';
 
 const root=new URL('../../',import.meta.url);
-const source=JSON.parse(fs.readFileSync(new URL('../public/source-table.json',import.meta.url)));
 const cases=[
   ['spinner001-reverse',3,2768],
   ['spinner001-fast',9,2969],
@@ -15,6 +15,7 @@ const cases=[
 for(const [name,spins,recordedFrames]of cases)test(`current main ${name}: isolated native strike preserves every body, score and random state`,()=>{
   const file=`three/tests/fixtures/vpx-main-99eff88-${name}.json.gz`;
   const fixture=readReferenceFixture(new URL('../../'+file,import.meta.url));
+  const source=nativeSourceAssets(fixture.sourceSha256).metadata;
   assert.equal(fixture.sourceSha256,source.sourceTableSHA256,'recorded authored table matches replay assets');
   assert.equal(fixture.controlledSha256,fixture.sourceSha256,'original VPX bytes, including source scatter');
   assert.deepEqual(fixture.controlledOverrides,{});

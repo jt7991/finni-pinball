@@ -152,6 +152,7 @@ Sub Table1_Init()
     ChangeGiIntensity 1
     GiOff
     StartAttractMode
+    Debug.Print "FINNI_MUSIC_READY"
 End Sub
 
 ' Realtime LILDP animations
@@ -549,20 +550,29 @@ End Sub
 ' in VPX 10.7 you may use also mp3 or ogg
 '*****************************************
 
-Dim Song
+Dim Song, FinniSongVolume, FinniMusicPaused, FinniBrowserMusic
 Song = ""
 
-Sub PlaySong(name)
-    ' Task selection and saved-ball launches must not interrupt multiballs.
-    If name = "mu_shooterlane" Then
-        If FinniMultiballSong() <> "" Then name = FinniMultiballSong()
-    End If
-    If bMusicOn Then
-        If Song <> name Then
-            StopSound Song
-            Song = name
-            PlaySound Song, -1, SongVolume
-        End If
+Sub FinniUseBrowserMusic()
+    If Song <> "" Then StopSound Song
+    FinniBrowserMusic = True
+    FinniSendMusic
+End Sub
+
+Sub FinniSendMusic()
+    Debug.Print "FINNI_MUSIC|" & Song & "|" & Replace(CStr(CDbl(SongVolume)), ",", ".")
+End Sub
+
+Sub PlaySong(ByVal name)
+    If Not bMusicOn Then name = ""
+    If Song = name And FinniSongVolume = SongVolume Then Exit Sub
+    If Not FinniBrowserMusic And Song <> name And Song <> "" Then StopSound Song
+    Song = name
+    FinniSongVolume = SongVolume
+    If FinniBrowserMusic Then
+        FinniSendMusic
+    ElseIf Song <> "" Then
+        PlaySound Song, -1, SongVolume, 0, 0, 0, 1, 0
     End If
 End Sub
 
@@ -578,62 +588,23 @@ Function FinniMultiballSong()
 End Function
 
 Sub ChangeSong
-    Dim a
-    a = FinniMultiballSong()
-    If a <> "" Then
-        PlaySong a
-        Exit Sub
-    End If
-    Select Case Battle(CurrentPlayer, 0)
-        Case 0 'no battle active so play the standard songs or the multiball songs
-            If bDiscoMBEnabled Then
-                PlaySong "mu_discomb"
+    Dim track
+    track = ""
+    If bGameInPlay And Not FinniMusicPaused Then
+        track = FinniMultiballSong()
+        If track = "" Then
+            If Battle(CurrentPlayer, 0) > 0 Then
+                track = "mu_juggernaut" 'All seven tasks share a single track.
+            ElseIf bDiscoMBEnabled Then
+                track = "mu_discomb"
             ElseIf bDiscoLoopsEnabled Then
-                PlaySong "mu_discoloops"
-            ElseIf bMechSuitMBStarted Then
-                PlaySong "mu_mechsuitmb"
-            ElseIf bBerserker Then
-                PlaySong "mu_beserkerrage"
-            Else 'play the regular-play track on every ball
-                PlaySong "mu_hellhouse1"
+                track = "mu_discoloops"
+            Else
+                track = "mu_hellhouse1"
             End If
-        Case 1 'Juggernaut
-            PlaySong "mu_juggernaut"
-        Case 2 'Mystique
-            PlaySong "mu_mystique"
-        Case 3 'Sabretooth
-            PlaySong "mu_sabretooth"
-        Case 4 'T-Rex
-            PlaySong "mu_trex"
-        Case 5 'Megalodon
-            PlaySong "mu_megalodon"
-        Case 6 'Sauron
-            PlaySong "mu_sauronmb"
-        Case 7 'MrSinister
-            PlaySong "mu_mrsinister"
-    End Select
-End Sub
-
-Sub RandomTitleTrack
-    dim b
-    b = RndNbr(5)
-    Select Case b
-        Case 1:PlaySong "mu_gameover"
-        case 2:PlaySong "mu_SexyMF"
-        case 3:PlaySong "mu_XforceSM"
-        case 4:PlaySong "mu_boom-dp-rap"
-        case 5:PlaySong "mu_hellhouse5"
-    End Select
-End Sub
-
-'********************
-' Play random quotes
-'********************
-
-Sub PlayQuote
-    Dim tmp
-    tmp = RndNbr(42)
-    PlaySound "quote" &tmp
+        End If
+    End If
+    PlaySong track
 End Sub
 
 Sub PlaySfx
@@ -871,7 +842,24 @@ End Sub
 
 ' Finni lock-ramp entrance assist
 Sub FinniLockRampAssist(ball)
-    Dim speed, factor
+    Dim speed, factor, mouthX, dx, dy
+    ' Guide near-vertical shots that clear the scoop-side posts toward the ramp.
+    ' The approach window stops short of the neighboring spinner lane.
+    If ball.X >=345 And ball.X <=374 And ball.Y >=347 And ball.Y <=395 And ball.Z >=24 And ball.Z <=29 Then
+        If ball.VelY <=-18 And Abs(ball.VelX) <= -0.18 * ball.VelY Then
+            mouthX = ball.X + (350 - ball.Y) * ball.VelX / ball.VelY
+            If mouthX >=344 And mouthX <=370 Then
+                dx = 258 - ball.X
+                dy = 306 - ball.Y
+                speed = Sqr(ball.VelX ^2 + ball.VelY ^2)
+                If speed <28 Then speed = 28
+                factor = speed / Sqr(dx ^2 + dy ^2)
+                ball.VelX = dx * factor
+                ball.VelY = dy * factor
+                Exit Sub
+            End If
+        End If
+    End If
     ' Only the rising entrance of Ramp010; preserve aim and leave rollbacks alone.
     If ball.X <240 Or ball.X >292 Or ball.Y <290 Or ball.Y >334 Then Exit Sub
     If ball.Z <29 Or ball.Z >60 Then Exit Sub
@@ -1008,7 +996,8 @@ Sub ResetForNewGame()
     ' initialise Game variables
     Game_Init()
 
-    ' you may wish to start some music, play a sound, do whatever at this point
+    FinniMusicPaused = False
+    ChangeSong
 
     vpmtimer.addtimer 1500, "FirstBall '"
 End Sub
@@ -1116,8 +1105,9 @@ Sub EndOfBall()
     ' only process any of this if the table is not tilted.
     '(the tilt recovery mechanism will handle any extra balls or end of game)
 
+    FinniMusicPaused = True
+    ChangeSong
     If NOT Tilted Then
-        PLaySong "mu_bonuscount"
         'Count the bonus. This table uses several bonus
         DMD CL(0, "BONUS"), "", "d_finni_bonus", eBlink, eNone, eNone, 1000, True, ""
 
@@ -1386,7 +1376,8 @@ Sub swPlungerRest_Hit()
     End If
     'Start the Selection of the skillshot if ready
     If bSkillShotReady Then
-        PlaySong "mu_shooterlane"
+        FinniMusicPaused = False
+        ChangeSong
         UpdateSkillshot()
         ' show the message to shoot the ball in case the player has fallen sleep
         SwPlungerCount = 0
@@ -2866,7 +2857,7 @@ Sub StartAttractMode
     StartLightSeq
     DMDFlush
     ShowTableInfo
-    RandomTitleTrack
+    ChangeSong
 End Sub
 
 Sub StopAttractMode
@@ -4105,10 +4096,6 @@ Sub Trigger012_Hit 'left ramp
     LastSwitchHit = "Trigger012"
 End Sub
 
-Sub Trigger016_Hit 'just a quote trigger
-    Playquote
-End Sub
-
 Sub Trigger013_Hit 'right ramp
     PlaySoundAt "fx_sensor", Trigger013
     If Tilted Then Exit Sub
@@ -4860,7 +4847,6 @@ Sub HellHouse_Hit
     If bBattleReady AND bMechSuitMBStarted = False then
         StartChooseBattle 'choose battle will kick out the ball after choosing a battle
         bBattleReady = False
-        PlaySong "mu_shooterlane"
         Exit Sub
     End If
     If bEndBattleJackpot Then
@@ -6009,12 +5995,7 @@ Sub Table1_OptionEvent(ByVal eventId)
 
     ' Music Volume
     SongVolume = Table1.Option("Music Volume", 0, 1, 0.1, 0.2, 0)
-    If bMusicOn Then
-        ChangeSong
-    Else
-        StopSound Song
-        Song = ""
-    End If
+    ChangeSong
 
     ' Table's Slope
     x = Table1.Option("Table's Slope", 0, 10, 0.1, 6, 1)

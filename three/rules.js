@@ -210,7 +210,7 @@ export function createRules(source,specs,host={}) {
     RGBf:(r,g,b)=>Math.round(r*255)+Math.round(g*255)*256+Math.round(b*255)*65536,
     Nudge:(angle,strength)=>host.nudge?.(angle,strength),
     BallCount:()=>host.balls?.().length??0,BallAt:index=>host.balls?.()[index],
-    Debug: {Print:empty},MsgBox:text=>host.message?.(text),
+    Debug: {Print:text=>host.log?.(String(text))},MsgBox:text=>host.message?.(text),
     GetTextFile:()=>'',Controller:{Stop:empty},
     LeftFlipperKey:KEY.left,RightFlipperKey:KEY.right,PlungerKey:KEY.launch,StartGameKey:KEY.start,
     LeftTiltKey:KEY.nudgeLeft,RightTiltKey:KEY.nudgeRight,CenterTiltKey:KEY.nudgeForward,

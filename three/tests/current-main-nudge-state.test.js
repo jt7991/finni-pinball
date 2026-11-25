@@ -4,11 +4,12 @@ import assert from 'node:assert/strict';
 import {execFileSync} from 'node:child_process';
 import {readReferenceFixture} from '../../scripts/reference-physics.mjs';
 import {mainPlayerSettings} from '../player-settings.js';
+import {nativeSourceAssets} from '../../scripts/native-source-assets.mjs';
 
 test('current main mixed nudges retain disabled tilt penalties and every native body and game-state field',()=>{
   const path='three/tests/fixtures/vpx-main-99eff88-mixed-nudges-30000-native.json.gz';
   const fixture=readReferenceFixture(new URL('../../'+path,import.meta.url)),c=fixture.cases[0];
-  const source=JSON.parse(fs.readFileSync(new URL('../public/source-table.json',import.meta.url)));
+  const source=nativeSourceAssets(fixture.sourceSha256).metadata;
   assert.equal(fixture.sourceSha256,source.sourceTableSHA256);
   assert.equal(fixture.controlledSha256,fixture.sourceSha256);
   assert.deepEqual(fixture.controlledOverrides,{});assert.deepEqual(fixture.runtimeOverrides,{});

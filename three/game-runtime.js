@@ -17,6 +17,8 @@ export async function createRuntimeGame(base,emit,media){
 export function connectSimulation(worker,init,emit=()=>{},media){
   let next=0,initialized=false,resolveReady,rejectReady,paused=true,subscriptionsQueued=false;
   let preparingFrame=false,closing=false,frameHold;
+  let stagingInitialization=false;
+  const initializationEffects=[];
   const pending=new Map(),bodies=new Map(),names=new Set(),queries=new Set(['bChooseBattle']),values=new Map();
   const ready=new Promise((resolve,reject)=>{resolveReady=resolve;rejectReady=reject;});
   const game={workerSimulation:true,nativeDisplacements:true,error:null,records:[],targetMotions:new Map(),runtimeStats:{},time:0};
@@ -73,13 +75,14 @@ export function connectSimulation(worker,init,emit=()=>{},media){
         game.visualMotions=new Map(visualMotions);
       }else if(data.type==='snapshot'){
         apply(data.snapshot);game.runtimeStats=data.stats;game.simulationPaused=data.paused;game.presentationClock=data.presentationClock;
-        const initialAudio=!initialized&&typeof media?.initialize==='function';
-        if(initialAudio)media.initialize(data.effects);
+        const initialAudio=(!initialized||stagingInitialization)&&typeof media?.initialize==='function';
+        if(initialAudio){initializationEffects.push(...data.effects.filter(effect=>effect.type==='play'||effect.type==='stop'));media.initialize(initializationEffects);}
         // Publish the resulting score and state before delivering lifecycle events.
         for(const effect of data.effects){
           if(effect.type==='event')emit(effect.event);
           else if(effect.type==='play'&&!initialAudio)media?.play(effect.name,effect.settings);
           else if(effect.type==='stop'&&!initialAudio)media?.stop(effect.name);
+          else if(effect.type==='log')media?.log?.(effect.text);
           else if(effect.type==='storage')try{localStorage.setItem(`finni-three-rule-${effect.key}`,JSON.stringify(effect.value));}catch{}
         }
         if(!initialized){initialized=true;resolveReady(game);}
@@ -94,6 +97,13 @@ export function connectSimulation(worker,init,emit=()=>{},media){
   worker.onerror=event=>fail(Error(event.message||'Simulation worker failed'));
   worker.onmessageerror=()=>fail(Error('Simulation data could not be read'));
   game.start=(players=1)=>post({type:'start',players});game.input=(action,down)=>post({type:'input',action,down});game.release=()=>{if(!game.error)post({type:'release'});};
+  game.prepareStart=async(players=1,{browserMusic=false}={})=>{
+    if(stagingInitialization)throw Error('A Start is already pending');
+    // SDL's first callback follows initialization and the ordinary Start key.
+    // Stage that complete ordered command group before creating device output.
+    stagingInitialization=game.state==='ready';
+    try{await request({type:'start',players,browserMusic});}finally{stagingInitialization=false;}
+  };
   game.setPaused=value=>{if(paused!==value){paused=value;if(!game.error)post({type:'pause',value});}};
   game.flush=()=>request({type:'barrier'});
   game.prepareFrame=()=>request({type:'frame'});

@@ -2,10 +2,19 @@ import {createRuntimeGame} from './game-runtime.js';
 import {createView} from './scene.js';
 import {createAudio,createDisplay} from './media.js';
 import {createLeaderboard} from '../browser/leaderboard.js';
+import {createMusic} from '../browser/music.js';
 import {prepareUI} from './ui.js';
 
 const $=prepareUI();
 let game,view,audio,display,leaderboard,paused=true,frames=0,sampleStart=0;
+let tableSupportsBrowserMusic=false,browserMusicActivated=false,startingGame=false,musicTrack='',musicVolume=0;
+const music=createMusic(error=>message(`Soundtrack: ${error}`),{base:import.meta.env.BASE_URL+'music/'});
+function syncMusic(){music.select(musicTrack,audio?.muted?0:musicVolume);}
+function musicLog(line){
+  if(String(line).includes('FINNI_MUSIC_READY')){tableSupportsBrowserMusic=true;return;}
+  const soundtrack=String(line).match(/FINNI_MUSIC\|(mu_[a-z0-9]+)?\|(\d+(?:\.\d+)?)/);
+  if(soundtrack){musicTrack=soundtrack[1]??'';musicVolume=Number(soundtrack[2]);syncMusic();}
+}
 const sources=new Map(),swipes=new Map(),buttons=[...document.querySelectorAll('[data-input]')];
 const selectedPlayers=()=>Number($('player-count')?.value??1);
 const defaultKeys={ShiftLeft:'left',ShiftRight:'right',Enter:'launch',Digit1:'start',Space:'action',KeyZ:'nudgeLeft',KeyX:'nudgeForward',Slash:'nudgeRight'},keys={...defaultKeys};
@@ -39,7 +48,7 @@ function event(e){
   const lines={start:'Hold Launch, then release.',tilt:'Tilt · flippers disabled',over:'Game over'};
   if(lines[e.type])message(lines[e.type]);
   if(e.type==='message')message(e.text);
-  if(e.type==='start'){pause(false);$('overlay').hidden=true;$('play').disabled=false;$('player-count').disabled=true;document.body.classList.add('playing');$('table').focus({preventScroll:true});}
+  if(e.type==='start'){if(!startingGame)pause(false);$('overlay').hidden=true;$('play').disabled=false;$('player-count').disabled=true;document.body.classList.add('playing');$('table').focus({preventScroll:true});}
   if(e.type==='over'){
     $('player-count').disabled=false;$('play').disabled=false;
     release();document.body.classList.remove('playing');$('overlay').hidden=false;
@@ -107,7 +116,17 @@ $('settings').onclick=()=>{release();pause(true);};
 $('controls-panel').addEventListener('close',()=>{pause(document.hidden);$('table').focus({preventScroll:true});});
 $('controls-panel').addEventListener('toggle',()=>{release();pause($('controls-panel').open||document.hidden);});
 $('initials-dialog').addEventListener('close',()=>$('table').focus({preventScroll:true}));
-$('play').onclick=()=>{release();audio?.start();$('play').disabled=true;$('play').textContent='Starting game…';game?.start(selectedPlayers());};
+$('play').onclick=async()=>{
+  if($('play').disabled||startingGame)return;
+  release();const browserMusic=music.unlock();startingGame=true;
+  // Resume the native context in the gesture without draining initialization.
+  const activated=audio?.unlock();$('play').disabled=true;$('play').textContent='Starting game…';
+  try{
+    const handoff=browserMusic&&tableSupportsBrowserMusic&&!browserMusicActivated;
+    await game.prepareStart(selectedPlayers(),{browserMusic:handoff});if(handoff)browserMusicActivated=true;
+    await activated;await audio?.start();startingGame=false;pause(false);
+  }catch(error){startingGame=false;music.select('');$('load-status').textContent=`Unable to start: ${error.message}`;$('play').disabled=false;$('play').textContent='Reload game';$('play').onclick=()=>location.reload();}
+};
 $('camera').value=read('camera','balanced');$('quality').value=read('quality','auto');
 if($('camera').value==='')$('camera').value='balanced';
 const cameraMode=()=>$('camera').value;
@@ -116,7 +135,7 @@ $('apply-graphics').onclick=async()=>{release();save('quality',$('quality').valu
 $('sound').onclick=async()=>{
   if(!audio)return;
   try{
-    await audio?.unlock();audio?.setMuted(!audio.muted);
+    await audio?.unlock();audio?.setMuted(!audio.muted);syncMusic();
     $('sound').textContent=audio.muted?'Sound off':'Sound on';$('sound').setAttribute('aria-pressed',String(!audio.muted));
   }catch{message('Audio unavailable in this browser.');}
 };
@@ -128,7 +147,7 @@ document.addEventListener('fullscreenchange',()=>{release();document.body.classL
 
 async function frame(now){
   try{await drawFrame(now);}catch(error){
-    console.error(error);try{release();pause(true);}catch{}paused=true;
+    console.error(error);music.select('');try{release();pause(true);}catch{}paused=true;
     $('overlay').hidden=false;$('load-status').textContent='The game stopped. Reload to restart.';
     $('play').disabled=false;$('play').textContent='Reload game';$('play').onclick=()=>location.reload();message('Game stopped');
   }
@@ -163,11 +182,14 @@ async function boot(){
     const base=import.meta.env.BASE_URL;
     const load=async(name,json=true)=>{const response=await fetch(`${base}${name}`);if(!response.ok)throw Error(`${name} could not be loaded.`);return json?response.json():response.text();};
     const manifest=await load('audio.json');
-    audio=createAudio(manifest,base,{deferInitialization:true,sourceBank:true});
+    const browserMusicSupported=!!document.createElement('audio').canPlayType('audio/mpeg');
+    audio=createAudio(manifest,base,{deferInitialization:true,sourceBank:true,prepareAllMusic:!browserMusicSupported});
     // Register the flipper sources alongside loading without activating audio.
-    // All encoded effect and music sources are awaited below before Start.
+    // Effects are ready before Start; native music is also ready for browsers
+    // that cannot use main's continuous MPEG player.
     void audio.prepare(['fx_flipperup','fx_flipperdown']);
-    game=await createRuntimeGame(base,event,audio);
+    game=await createRuntimeGame(base,event,{...audio,log:musicLog});
+    music.preload();
     leaderboard=createLeaderboard(statement=>game.rules.execute(statement),release);
     $('load-status').textContent='Loading artwork and table model…';
     const quality=$('quality').value==='auto'?(matchMedia('(max-width:650px), (pointer:coarse) and (max-width:1024px)').matches?'performance':'detailed'):$('quality').value;
@@ -180,7 +202,7 @@ async function boot(){
     $('table').addEventListener('webglcontextlost',e=>{e.preventDefault();pause(true);release();$('load-status').textContent='Graphics were interrupted. Reload to restart.';$('overlay').hidden=false;$('play').textContent='Reload game';$('play').onclick=()=>location.reload();});
     requestAnimationFrame(frame);
   }catch(error){
-    console.error(error);$('load-status').textContent=`Unable to load: ${error.message}`;
+    console.error(error);music.select('');$('load-status').textContent=`Unable to load: ${error.message}`;
     $('play').disabled=false;$('play').textContent='Retry';$('play').onclick=()=>location.reload();message('Game unavailable');
   }
 }

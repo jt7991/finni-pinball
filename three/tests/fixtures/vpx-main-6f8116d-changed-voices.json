@@ -1,0 +1,1152 @@
+{
+  "engineSHA256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+  "sourceTableSHA256": "6160e43c1a74f6dc70fd9852433c3373fe11b3e55d4f3a3fedc435265591b5c5",
+  "scope": "Original compiled decoder callbacks, reached through validated ma_decoder vtables of explicitly played/stopped native sound players. SDL audio is suspended for complete source-rate decoding. An explicit original decoder seek establishes sample zero and its cursor is consumed by inspection; this is an isolated codec observation, not uninterrupted playback or game-state parity. No native body, clock or RNG values are replaced.",
+  "rows": [
+    {
+      "name": "vo_wolverineteamup",
+      "sourceSHA256": "14cf1c39b87a62de6895aec34616874bde802d8249013e1a8b712221de9b0699",
+      "sourceGranuleFrames": 139776,
+      "chosen": {
+        "kind": "decoder",
+        "ds": 366398656,
+        "vtable": 7661000,
+        "format": 2,
+        "lengthStatus": 0,
+        "cursorStatus": 0,
+        "length": 139776,
+        "cursor": 8192,
+        "callbacks": [
+          {
+            "index": 803,
+            "arguments": 4
+          },
+          {
+            "index": 804,
+            "arguments": 2
+          },
+          {
+            "index": 805,
+            "arguments": 6
+          },
+          {
+            "index": 806,
+            "arguments": 2
+          },
+          {
+            "index": 807,
+            "arguments": 2
+          }
+        ]
+      },
+      "backendVtable": 7661028,
+      "backendCallbacks": [
+        {
+          "slot": 224,
+          "index": 808,
+          "arguments": 8
+        },
+        {
+          "slot": 225,
+          "index": 809,
+          "arguments": 5
+        },
+        {
+          "slot": 226,
+          "index": 810,
+          "arguments": 5
+        },
+        {
+          "slot": 227,
+          "index": 811,
+          "arguments": 6
+        },
+        {
+          "slot": 228,
+          "index": 812,
+          "arguments": 3
+        }
+      ],
+      "allocator": {
+        "mallocName": "13406",
+        "freeName": "13409"
+      },
+      "candidates": [
+        {
+          "kind": "decoder",
+          "ds": 366398656,
+          "vtable": 7661000,
+          "format": 2,
+          "lengthStatus": 0,
+          "cursorStatus": 0,
+          "length": 139776,
+          "cursor": 8192,
+          "callbacks": [
+            {
+              "index": 803,
+              "arguments": 4
+            },
+            {
+              "index": 804,
+              "arguments": 2
+            },
+            {
+              "index": 805,
+              "arguments": 6
+            },
+            {
+              "index": 806,
+              "arguments": 2
+            },
+            {
+              "index": 807,
+              "arguments": 2
+            }
+          ]
+        }
+      ],
+      "frames": 139776,
+      "channels": 2,
+      "sampleRate": 32000,
+      "bytes": 1118208,
+      "pcmSHA256": "fa9c7b26b9aeb138789f84bacbb0dac00e82ab0c643abef59d02b36b01171d6c",
+      "lastStatus": -17,
+      "readBlocks": [
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 512,
+          "status": 0
+        },
+        {
+          "count": 0,
+          "status": -17
+        }
+      ],
+      "unchangedPhysicsRNG": true
+    },
+    {
+      "name": "vo_caketimefinish",
+      "sourceSHA256": "ef006abfee1c54f08c452618fd6a672c1a60b38fabedfb17371d29f976893b82",
+      "sourceGranuleFrames": 69120,
+      "chosen": {
+        "kind": "decoder",
+        "ds": 366292488,
+        "vtable": 7661000,
+        "format": 2,
+        "lengthStatus": 0,
+        "cursorStatus": 0,
+        "length": 69120,
+        "cursor": 8192,
+        "callbacks": [
+          {
+            "index": 803,
+            "arguments": 4
+          },
+          {
+            "index": 804,
+            "arguments": 2
+          },
+          {
+            "index": 805,
+            "arguments": 6
+          },
+          {
+            "index": 806,
+            "arguments": 2
+          },
+          {
+            "index": 807,
+            "arguments": 2
+          }
+        ]
+      },
+      "backendVtable": 7661028,
+      "backendCallbacks": [
+        {
+          "slot": 224,
+          "index": 808,
+          "arguments": 8
+        },
+        {
+          "slot": 225,
+          "index": 809,
+          "arguments": 5
+        },
+        {
+          "slot": 226,
+          "index": 810,
+          "arguments": 5
+        },
+        {
+          "slot": 227,
+          "index": 811,
+          "arguments": 6
+        },
+        {
+          "slot": 228,
+          "index": 812,
+          "arguments": 3
+        }
+      ],
+      "allocator": {
+        "mallocName": "13406",
+        "freeName": "13409"
+      },
+      "candidates": [
+        {
+          "kind": "decoder",
+          "ds": 366292488,
+          "vtable": 7661000,
+          "format": 2,
+          "lengthStatus": 0,
+          "cursorStatus": 0,
+          "length": 69120,
+          "cursor": 8192,
+          "callbacks": [
+            {
+              "index": 803,
+              "arguments": 4
+            },
+            {
+              "index": 804,
+              "arguments": 2
+            },
+            {
+              "index": 805,
+              "arguments": 6
+            },
+            {
+              "index": 806,
+              "arguments": 2
+            },
+            {
+              "index": 807,
+              "arguments": 2
+            }
+          ]
+        },
+        {
+          "kind": "decoder",
+          "ds": 366398656,
+          "vtable": 7661000,
+          "format": 2,
+          "lengthStatus": 0,
+          "cursorStatus": 0,
+          "length": 139776,
+          "cursor": 139776,
+          "callbacks": [
+            {
+              "index": 803,
+              "arguments": 4
+            },
+            {
+              "index": 804,
+              "arguments": 2
+            },
+            {
+              "index": 805,
+              "arguments": 6
+            },
+            {
+              "index": 806,
+              "arguments": 2
+            },
+            {
+              "index": 807,
+              "arguments": 2
+            }
+          ]
+        }
+      ],
+      "frames": 69120,
+      "channels": 2,
+      "sampleRate": 32000,
+      "bytes": 552960,
+      "pcmSHA256": "15510f80aa1ab399d4120460230b4552d9e8df12d55a10dda38d5d971e66dcf9",
+      "lastStatus": -17,
+      "readBlocks": [
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 1536,
+          "status": 0
+        },
+        {
+          "count": 0,
+          "status": -17
+        }
+      ],
+      "unchangedPhysicsRNG": true
+    },
+    {
+      "name": "vo_dazzlerteamup",
+      "sourceSHA256": "174f12b16edea5523d0316a40dd79620b793f1d8b9a24ea5dfbd97a8a34cff79",
+      "sourceGranuleFrames": 146688,
+      "chosen": {
+        "kind": "decoder",
+        "ds": 241232144,
+        "vtable": 7661000,
+        "format": 2,
+        "lengthStatus": 0,
+        "cursorStatus": 0,
+        "length": 146688,
+        "cursor": 8192,
+        "callbacks": [
+          {
+            "index": 803,
+            "arguments": 4
+          },
+          {
+            "index": 804,
+            "arguments": 2
+          },
+          {
+            "index": 805,
+            "arguments": 6
+          },
+          {
+            "index": 806,
+            "arguments": 2
+          },
+          {
+            "index": 807,
+            "arguments": 2
+          }
+        ]
+      },
+      "backendVtable": 7661028,
+      "backendCallbacks": [
+        {
+          "slot": 224,
+          "index": 808,
+          "arguments": 8
+        },
+        {
+          "slot": 225,
+          "index": 809,
+          "arguments": 5
+        },
+        {
+          "slot": 226,
+          "index": 810,
+          "arguments": 5
+        },
+        {
+          "slot": 227,
+          "index": 811,
+          "arguments": 6
+        },
+        {
+          "slot": 228,
+          "index": 812,
+          "arguments": 3
+        }
+      ],
+      "allocator": {
+        "mallocName": "13406",
+        "freeName": "13409"
+      },
+      "candidates": [
+        {
+          "kind": "decoder",
+          "ds": 241232144,
+          "vtable": 7661000,
+          "format": 2,
+          "lengthStatus": 0,
+          "cursorStatus": 0,
+          "length": 146688,
+          "cursor": 8192,
+          "callbacks": [
+            {
+              "index": 803,
+              "arguments": 4
+            },
+            {
+              "index": 804,
+              "arguments": 2
+            },
+            {
+              "index": 805,
+              "arguments": 6
+            },
+            {
+              "index": 806,
+              "arguments": 2
+            },
+            {
+              "index": 807,
+              "arguments": 2
+            }
+          ]
+        },
+        {
+          "kind": "decoder",
+          "ds": 366292488,
+          "vtable": 7661000,
+          "format": 2,
+          "lengthStatus": 0,
+          "cursorStatus": 0,
+          "length": 69120,
+          "cursor": 69120,
+          "callbacks": [
+            {
+              "index": 803,
+              "arguments": 4
+            },
+            {
+              "index": 804,
+              "arguments": 2
+            },
+            {
+              "index": 805,
+              "arguments": 6
+            },
+            {
+              "index": 806,
+              "arguments": 2
+            },
+            {
+              "index": 807,
+              "arguments": 2
+            }
+          ]
+        },
+        {
+          "kind": "decoder",
+          "ds": 366398656,
+          "vtable": 7661000,
+          "format": 2,
+          "lengthStatus": 0,
+          "cursorStatus": 0,
+          "length": 139776,
+          "cursor": 139776,
+          "callbacks": [
+            {
+              "index": 803,
+              "arguments": 4
+            },
+            {
+              "index": 804,
+              "arguments": 2
+            },
+            {
+              "index": 805,
+              "arguments": 6
+            },
+            {
+              "index": 806,
+              "arguments": 2
+            },
+            {
+              "index": 807,
+              "arguments": 2
+            }
+          ]
+        }
+      ],
+      "frames": 146688,
+      "channels": 2,
+      "sampleRate": 32000,
+      "bytes": 1173504,
+      "pcmSHA256": "5de03869edf87a7891138becf99d694291e7354abcf43951c2ec8edca1c8a3d1",
+      "lastStatus": -17,
+      "readBlocks": [
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 1280,
+          "status": 0
+        },
+        {
+          "count": 0,
+          "status": -17
+        }
+      ],
+      "unchangedPhysicsRNG": true
+    }
+  ],
+  "errors": []
+}

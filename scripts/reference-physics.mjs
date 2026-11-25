@@ -2,6 +2,7 @@ import {nativeRandom} from '../three/native-random.js';
 import fs from 'node:fs';
 import {gunzipSync} from 'node:zlib';
 import {expandNativePackedFrames} from './native-packed-frames.mjs';
+import {nativeSourceAssets} from './native-source-assets.mjs';
 // Dense native memory recordings are stored losslessly compressed. Older
 // plain JSON recordings keep the same parser and replay behavior.
 export function readReferenceFixture(path){
@@ -24,6 +25,9 @@ export function readReferenceAssets(fixture){
     originalTableAssets??=readReferenceFixture(new URL('../three/tests/fixtures/source-table-6300.json.gz',import.meta.url));
     if(originalTableAssets.sourceSha256!==originalSHA)throw Error('Reference table source mismatch');
     const {layout,objects,source}=structuredClone(originalTableAssets);return {layout,objects,source};
+  }
+  if(fixture.sourceSha256==='3ae17f498f745efa19076ca33e08f96f66d766367fc984e37aacf50774a35e14'){
+    const assets=nativeSourceAssets(fixture.sourceSha256);return{layout:assets.json('layout.json'),objects:assets.json('objects.json'),source:assets.text('rules.vbs')};
   }
   return {layout:JSON.parse(fs.readFileSync('three/public/layout.json')),objects:JSON.parse(fs.readFileSync('three/public/objects.json')),source:fs.readFileSync('three/public/rules.vbs','utf8')};
 }

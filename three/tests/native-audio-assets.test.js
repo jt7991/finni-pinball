@@ -3,8 +3,9 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {createHash} from 'node:crypto';
 import {decodePCM16Wave} from '../audio-pcm.js';
+import {nativeSourceAssets} from '../../scripts/native-source-assets.mjs';
 const fixture=JSON.parse(fs.readFileSync(new URL('fixtures/vpx-main-pcm16-audio.json',import.meta.url)));
-const manifest=JSON.parse(fs.readFileSync(new URL('../public/audio.json',import.meta.url)));
+const manifest=nativeSourceAssets(fixture.sourceTableSHA256).json('audio.json');
 const sha=b=>createHash('sha256').update(b).digest('hex');
 test('every authored effect retains original source identity, exact fallback samples and lossless format',()=>{
  assert.equal(fixture.sourceTableSHA256,'3ae17f498f745efa19076ca33e08f96f66d766367fc984e37aacf50774a35e14');assert.equal(fixture.clips.length,352);

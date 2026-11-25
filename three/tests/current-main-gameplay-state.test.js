@@ -3,11 +3,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {execFileSync} from 'node:child_process';
 import {readReferenceFixture} from '../../scripts/reference-physics.mjs';
+import {nativeSourceAssets} from '../../scripts/native-source-assets.mjs';
 
 test('current main retains thirty seconds of native heel impacts, scored flipper contacts and ball lifecycle',()=>{
   const file='three/tests/fixtures/vpx-main-99eff88-alternating-30000-native.json.gz';
   const fixture=readReferenceFixture(new URL('../../'+file,import.meta.url));
-  const source=JSON.parse(fs.readFileSync(new URL('../public/source-table.json',import.meta.url)));
+  const source=nativeSourceAssets(fixture.sourceSha256).metadata;
   assert.equal(fixture.sourceSha256,source.sourceTableSHA256);
   assert.equal(fixture.controlledSha256,fixture.sourceSha256);
   assert.equal(fixture.nativeRandom.engineSha256,source.engineSHA256);

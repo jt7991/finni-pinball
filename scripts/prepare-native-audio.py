@@ -20,6 +20,8 @@ parser.add_argument('--source-dir', type=Path, required=True)
 parser.add_argument('--output-dir', type=Path, required=True)
 parser.add_argument('--ffmpeg', type=Path, required=True)
 parser.add_argument('--settings-vpx', type=Path, default=ROOT/'runtime/Finni-Big-Day.vpx')
+parser.add_argument('--refresh-sources', action='store_true', help='Accept changed sources only when verified against the selected VPX.')
+parser.add_argument('--reuse-existing', action='store_true', help='Reuse verified lossless bytes for unchanged sources.')
 args = parser.parse_args()
 manifest = json.loads((ROOT/'three/public/audio.json').read_text())
 settings = table_sound_settings(args.settings_vpx)
@@ -50,18 +52,27 @@ def wave(data):
     return {'channels':fmt[1], 'sampleRate':fmt[2], 'frames':len(pcm)//fmt[4], 'pcm16SHA256':sha(pcm)}, pcm
 
 # Check every named entry against both the current manifest and serialized VPX.
-sources, unique = {}, {}
+sources, unique, updated = {}, {}, {}
 for name, entry in manifest.items():
     file = args.source_dir/'sounds'/(name+('.ogg' if entry['music'] else '.wav'))
     data = file.read_bytes()
-    if sha(data) != entry['sourceSHA256'] or sha(data) != settings[name]['sourceSHA256']:
+    if sha(data) != settings[name]['sourceSHA256'] or (not args.refresh_sources and sha(data) != entry['sourceSHA256']):
         raise RuntimeError('Source differs from current table: '+name)
+    updated[name] = {**entry, **settings[name]}
     sources[name] = data
     if not entry['music']: unique.setdefault(sha(data), (file, data))
 
 def encode(item):
     source_hash, (source, data) = item
     metadata, pcm = wave(data)
+    previous = next((entry for entry in manifest.values() if not entry['music'] and entry['sourceSHA256'] == source_hash), None)
+    if args.reuse_existing and previous and previous.get('encoding') == 'flac-pcm24':
+        encoded = (ROOT/'three/public/audio'/previous['file']).read_bytes()
+        fallback = (ROOT/'three/public/audio'/previous['fallbackFile']).read_bytes()
+        if sha(encoded) != previous['encodedSHA256'] or fallback != data or any(previous[key] != value for key, value in metadata.items()):
+            raise RuntimeError('Existing lossless source differs: '+str(source))
+        return source_hash, {**metadata, 'encoding':'flac-pcm24', 'file':store(encoded, '.flac'),
+                             'encodedSHA256':sha(encoded), 'fallbackFile':store(data, '.wav')}
     with tempfile.TemporaryDirectory(prefix='native-audio-', dir=args.output_dir) as temporary:
         target = Path(temporary)/'effect.flac'
         subprocess.run([str(args.ffmpeg), '-hide_banner', '-loglevel', 'error', '-i', str(source),
@@ -78,7 +89,7 @@ def encode(item):
 with ThreadPoolExecutor(max_workers=4) as pool:
     effects = dict(pool.map(encode, unique.items()))
 result = {}
-for name, entry in manifest.items():
+for name, entry in updated.items():
     if entry['music']:
         data = (ROOT/'three/public/audio'/entry['file']).read_bytes()
         filename = store(data, '.m4a')

@@ -6,13 +6,14 @@ import {readReferenceFixture} from '../../scripts/reference-physics.mjs';
 import {computeNativeCamera} from '../native-camera.js';
 import {nativeReflectionCamera} from '../native-reflection.js';
 import {nativeBallMatrices,nativeBallLightState} from '../native-ball-render-state.js';
+import {nativeSourceAssets} from '../../scripts/native-source-assets.mjs';
 
 const read=name=>JSON.parse(fs.readFileSync(new URL('../public/'+name,import.meta.url)));
 const fixture=readReferenceFixture(new URL('fixtures/vpx-main-99eff88-ball-render-native.json.gz',import.meta.url));
 const metadata=read('native-ball/native-ball.json'),lighting=read('native-lighting.json');
 
 test('current native ball packets retain exact camera, lighting, global settings and decal uploads',()=>{
-  assert.equal(fixture.sourceSha256,read('source-table.json').sourceTableSHA256);
+  assert.equal(fixture.sourceSha256,nativeSourceAssets(fixture.sourceSha256).metadata.sourceTableSHA256);
   assert.equal(fixture.engineSHA256,metadata.engineSHA256);assert.equal(fixture.references.length,8);
   const camera=computeNativeCamera(read('camera-bounds.json'),fixture.viewport.width/fixture.viewport.height);
   let matrixFields=0,lightFields=0,empty=0;

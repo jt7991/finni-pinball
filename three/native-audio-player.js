@@ -1,7 +1,7 @@
 // Shared browser device output. A single prepared block keeps effects and
 // music on the same native timeline while controls enter the following block.
 import {createNativeAudioLocalTransport} from './native-audio-local-transport.js';
-export function createNativeAudioPlayer(context,base,manifest,{loadBuffer,onError=error=>console.warn(error.message),onEnded=()=>{},workerFactory}={}){
+export function createNativeAudioPlayer(context,base,manifest,{loadBuffer,onError=error=>console.warn(error.message),onEnded=()=>{},workerFactory,prepareMusicOnEffects=true}={}){
  base=new URL(base,globalThis.location?.href??'http://localhost/').href;
  const factory=workerFactory??(()=>createNativeAudioLocalTransport(base));
  let worker,initializing,node,nextBlock,inFlight=false,serial=0,epoch=0,musicTicket=0,musicName,muted=false,disposed=false,prefetching,outputGeneration=0;
@@ -73,7 +73,7 @@ export function createNativeAudioPlayer(context,base,manifest,{loadBuffer,onErro
  }
  function prepare(names){
   const effects=names.map(n=>String(n).toLowerCase()).filter(n=>manifest[n]&&!manifest[n].music).map(async name=>{const [,buffer]=await Promise.all([ready(),loadBuffer(name)]),result=await sendSource('register-effect',name,buffer);if(result.status!=='registered')throw Error('Native effect preparation failed');registered.add(result.key);return result;});
-  const initial=songs.filter(name=>manifest[name].nativeSource.nativeFrames===32000).map(async name=>{await ready();return request({type:'prepare-music',name});});return Promise.allSettled([...effects,...initial]);
+  const initial=prepareMusicOnEffects?songs.filter(name=>manifest[name].nativeSource.nativeFrames===32000).map(async name=>{await ready();return request({type:'prepare-music',name});}):[];return Promise.allSettled([...effects,...initial]);
  }
  function prefetchMusic(){if(!songs.length||prefetching)return;prefetching=ready().then(()=>request({type:'prefetch-music',names:songs}));prefetching.catch(()=>{prefetching=undefined;});}
  const prepareMusic=names=>Promise.allSettled(names.map(async name=>{await ready();return request({type:'prepare-music',name:String(name).toLowerCase()});}));

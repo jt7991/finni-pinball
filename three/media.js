@@ -18,7 +18,7 @@ export function createAudio(manifest,base,options={}) {
   function prepareSources(){
     if(!options.sourceBank)return Promise.resolve();
     if(!sourcesReady){
-      const task=Promise.all([prepareEffectSources(),nativePlayer().prepareMusicSources()]).then(()=>undefined).catch(cause=>{throw Error('Table sounds could not be loaded. Retry loading the game.',{cause});});
+      const task=Promise.all([prepareEffectSources(),options.prepareAllMusic===false?undefined:nativePlayer().prepareMusicSources()]).then(()=>undefined).catch(cause=>{throw Error('Table sounds could not be loaded. Retry loading the game.',{cause});});
       sourcesReady=task;task.catch(()=>{if(sourcesReady===task)sourcesReady=undefined;});
     }
     return sourcesReady;
@@ -32,7 +32,7 @@ export function createAudio(manifest,base,options={}) {
   });
   function nativePlayer(){
     context??=new AudioContext();
-    if(!player){player=createNativeAudioPlayer(context,base,manifest,{...options,loadBuffer:name=>options.sourceBank?prepareEffectSources().then(bank=>bank.get(name)):buffers.get(manifest[name].file??name)});player.setMuted(muted);}
+    if(!player){player=createNativeAudioPlayer(context,base,manifest,{...options,prepareMusicOnEffects:options.prepareAllMusic!==false,loadBuffer:name=>options.sourceBank?prepareEffectSources().then(bank=>bank.get(name)):buffers.get(manifest[name].file??name)});player.setMuted(muted);}
     return player;
   }
   async function unlock(start=false){
@@ -42,7 +42,7 @@ export function createAudio(manifest,base,options={}) {
     if(options.deferInitialization&&!starting){await resumed;return;}
     unlocked=true;const active=nativePlayer();
     if(!initialPlayback)initialPlayback=(async()=>{await initialReady;for(const event of initialEvents){if(disposed)break;if(event.type==='stop')active.stop(event.name);else if(event.epoch===stopEpoch&&event.stopped===(stopped.get(event.name)??0))await active.play(event.name,event.settings);}initialEvents=[];if(!disposed)await active.activate();})();
-    active.prefetchMusic();await Promise.all([resumed,initialPlayback]);
+    if(options.prepareAllMusic!==false)active.prefetchMusic();await Promise.all([resumed,initialPlayback]);
   }
   return {
     prepare:names=>nativePlayer().prepare(names),

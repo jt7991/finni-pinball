@@ -1,19 +1,20 @@
 import fs from'node:fs';import{gunzipSync}from'node:zlib';import{createHash}from'node:crypto';import test from'node:test';import assert from'node:assert/strict';
 import{indexAuthoredFLAC,decodeAuthoredFLAC,createAuthoredFLACSource,createFLACFrameCache}from'../flac-source.js';import{decodePCM16Wave}from'../audio-pcm.js';import{createNativePCMVoice}from'../native-pcm-voice.js';import{createNativeSoundEngine}from'../native-sound-engine.js';
+import{nativeSourceAssets}from'../../scripts/native-source-assets.mjs';
 const root=new URL('../public/',import.meta.url),manifest=JSON.parse(fs.readFileSync(new URL('audio.json',root))),sha=bytes=>createHash('sha256').update(bytes).digest('hex'),read=file=>fs.readFileSync(new URL(file,root)),indices=new Map();
 const context={createBuffer(numberOfChannels,length,sampleRate){const data=Array.from({length:numberOfChannels},()=>new Float32Array(length));return{numberOfChannels,length,sampleRate,getChannelData:c=>data[c]};}};
-function indexed(name,cache){const entry=manifest[name],bytes=read('audio/'+entry.file);if(!indices.has(entry.file))indices.set(entry.file,indexAuthoredFLAC(bytes,entry));return createAuthoredFLACSource(bytes,entry,indices.get(entry.file),cache);}
+function indexed(name,cache,catalogue=manifest){const entry=catalogue[name],bytes=read('audio/'+entry.file);if(!indices.has(entry.file))indices.set(entry.file,indexAuthoredFLAC(bytes,entry));return createAuthoredFLACSource(bytes,entry,indices.get(entry.file),cache);}
 
-test('every authored lossless source decodes and seeks to exact native-scaled PCM within a shared frame budget',()=>{
- const unique=new Map(),cache=createFLACFrameCache(262144);for(const[name,entry]of Object.entries(manifest))if(!entry.music&&!unique.has(entry.file))unique.set(entry.file,{name,entry});let samples=0;
+for(const version of [{name:'99eff88',catalogue:nativeSourceAssets('3ae17f498f745efa19076ca33e08f96f66d766367fc984e37aacf50774a35e14').json('audio.json'),samples:37184512},{name:'6f8116d',catalogue:manifest,samples:37144576}])test('every '+version.name+' lossless source decodes and seeks to exact native-scaled PCM within a shared frame budget',()=>{
+ const unique=new Map(),cache=createFLACFrameCache(262144);for(const[name,entry]of Object.entries(version.catalogue))if(!entry.music&&!unique.has(entry.file))unique.set(entry.file,{name,entry});let samples=0;
  for(const{name,entry}of unique.values()){
   const encoded=read('audio/'+entry.file),raw=read('audio/'+entry.fallbackFile);assert.equal(sha(encoded),entry.encodedSHA256);assert.equal(sha(raw),entry.sourceSHA256);
-  const source=indexed(name,cache),expected=decodePCM16Wave(context,raw.buffer.slice(raw.byteOffset,raw.byteOffset+raw.byteLength)),actualHash=createHash('sha256'),expectedHash=createHash('sha256');
+  const source=indexed(name,cache,version.catalogue),expected=decodePCM16Wave(context,raw.buffer.slice(raw.byteOffset,raw.byteOffset+raw.byteLength)),actualHash=createHash('sha256'),expectedHash=createHash('sha256');
   const compare=(at,count)=>{const actual=source.readInterleaved(at,count,entry.channels),want=new Float32Array(count*entry.channels);for(let c=0;c<entry.channels;c++)for(let i=0;i<count;i++)want[i*entry.channels+c]=expected.getChannelData(c)[at+i];assert.equal(sha(actual),sha(want),name+' source range '+at+'+'+count);return{actual,want};};
   for(let at=0;at<entry.frames;at+=4096){const count=Math.min(4096,entry.frames-at),range=compare(at,count);actualHash.update(range.actual);expectedHash.update(range.want);samples+=count*entry.channels;assert.ok(cache.stats.retainedBytes<=cache.stats.limit);}
   assert.equal(actualHash.digest('hex'),expectedHash.digest('hex'));for(const at of [0,Math.floor(entry.frames/2),Math.max(0,entry.frames-127)])compare(at,Math.min(127,entry.frames-at));
  }
- assert.equal(unique.size,322);assert.equal(samples,37184512);cache.clear();assert.equal(cache.stats.retainedBytes,0);
+ assert.equal(unique.size,322);assert.equal(samples,version.samples);cache.clear();assert.equal(cache.stats.retainedBytes,0);
 });
 
 test('indexed lossless pulls retain every original device sample for native mixed and overlapping voices',()=>{

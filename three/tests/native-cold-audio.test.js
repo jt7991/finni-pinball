@@ -1,6 +1,7 @@
 import fs from 'node:fs';import assert from 'node:assert/strict';import test from 'node:test';import {gunzipSync} from 'node:zlib';import {createHash} from 'node:crypto';
 import {createFullGame} from '../full-game.js';import {createAudio} from '../media.js';
-const root=new URL('../public/',import.meta.url),load=name=>JSON.parse(fs.readFileSync(new URL(name,root))),manifest=load('audio.json'),packed=fs.readFileSync(new URL('fixtures/vpx-main-cold-start-audio-native.json.gz',import.meta.url));
+import {nativeSourceAssets} from '../../scripts/native-source-assets.mjs';
+const root=new URL('../public/',import.meta.url),assets=nativeSourceAssets('3ae17f498f745efa19076ca33e08f96f66d766367fc984e37aacf50774a35e14'),load=name=>assets.json(name),manifest=load('audio.json'),packed=fs.readFileSync(new URL('fixtures/vpx-main-cold-start-audio-native.json.gz',import.meta.url));
 assert.equal(createHash('sha256').update(packed).digest('hex'),'83f6d938736d1460ae3e880256fbc8a57bf4bedbb9e31ec8a8d781da84a95418');const fixture=JSON.parse(gunzipSync(packed));
 
 async function renderStartup(includeInitialization,sourceBank=false){
@@ -10,8 +11,8 @@ async function renderStartup(includeInitialization,sourceBank=false){
   createBuffer(numberOfChannels,length,sampleRate){const channels=Array.from({length:numberOfChannels},()=>new Float32Array(length));return{numberOfChannels,length,sampleRate,getChannelData:c=>channels[c]};}
   createScriptProcessor(...args){const node={args,connect(){},disconnect(){}};outputs.push(node);return node;}
  };
- globalThis.fetch=async url=>{const file=new URL(new URL(String(url),'http://test/').pathname.slice('/three/'.length),root),bytes=fs.readFileSync(file);return{ok:true,json:async()=>JSON.parse(bytes),arrayBuffer:async()=>bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength)};};
- const audio=createAudio(manifest,'http://test/three/',{deferInitialization:true,sourceBank,onError:e=>errors.push(e.message)}),game=await createFullGame(load('layout.json'),load('objects.json'),fs.readFileSync(new URL('rules.vbs',root),'utf8'),()=>{},{play:(name,settings)=>live?playing.push(audio.play(name,settings)):initial.push({type:'play',name,settings}),stop:name=>live?audio.stop(name):initial.push({type:'stop',name})});
+ globalThis.fetch=async url=>{const name=new URL(String(url),'http://test/').pathname.slice('/three/'.length),bytes=name==='native-audio/effects.json'?assets.bytes(name):fs.readFileSync(new URL(name,root));return{ok:true,json:async()=>JSON.parse(bytes),arrayBuffer:async()=>bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength)};};
+ const audio=createAudio(manifest,'http://test/three/',{deferInitialization:true,sourceBank,onError:e=>errors.push(e.message)}),game=await createFullGame(load('layout.json'),load('objects.json'),assets.text('rules.vbs'),()=>{},{play:(name,settings)=>live?playing.push(audio.play(name,settings)):initial.push({type:'play',name,settings}),stop:name=>live?audio.stop(name):initial.push({type:'stop',name})});
  try{
   assert.equal(game.rules.value('Song'),'mu_hellhouse1');assert.equal(game.rules.value('VarType(SongVolume)'),4);assert.equal(game.rules.value('SongVolume'),Math.fround(.2));assert.equal(game.rules.value('VarType(TableWidth)'),4);assert.equal(game.rules.value('VarType(li036.X)'),4);assert.equal(game.rules.value('Pan(li036)'),-1.549814724435988e-28);
   const title=initial.find(e=>e.type==='play'&&manifest[e.name.toLowerCase()].music);assert.equal(title.settings.volume,0,'An explicit Empty volume is coerced to zero before options are initialized');
