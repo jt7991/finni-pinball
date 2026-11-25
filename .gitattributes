@@ -7,6 +7,7 @@ browser/fonts/*-OFL.txt -whitespace
 runtime/*.vpx filter=lfs diff=lfs merge=lfs -text
 runtime/music/*.mp3 filter=lfs diff=lfs merge=lfs -text
 three/public/music/*.mp3 filter=lfs diff=lfs merge=lfs -text
+three/tests/fixtures/vpx-main-6f8116d-party-victory-render-digests-native.json.gz filter=lfs diff=lfs merge=lfs -text
 three/public/*.bin binary
 three/public/arcade-background.svg -text
 three/public/fonts/** -text
@@ -23,3 +24,4 @@ three/public/native-postprocess/*.glsl -text -whitespace
 # Preserve the hashed original-engine collision observation on every platform.
 three/tests/fixtures/vpx-main-6f8116d-ball-allocation-order.json -text
 three/tests/fixtures/vpx-native-live-ball-identity-*.json -text
+three/tests/fixtures/vpx-native-image-readback-*.json -text

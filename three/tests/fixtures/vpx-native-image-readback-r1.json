@@ -1,0 +1,653 @@
+{
+  "engineSHA256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+  "reference": {
+    "engine": "@valknar/vpinball-wasm 0.3.4",
+    "engineSHA256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+    "upstreamCommit": "195f214dd4849b8ef6113fd377258b78d0dec3bf",
+    "sourceCommit": "6f8116d0964429db0e2da41d583566784114fc5f",
+    "sourceSha256": "6160e43c1a74f6dc70fd9852433c3373fe11b3e55d4f3a3fedc435265591b5c5",
+    "controlledSha256": "6160e43c1a74f6dc70fd9852433c3373fe11b3e55d4f3a3fedc435265591b5c5",
+    "controlledOverrides": {},
+    "browserSourceCommit": "6f8116d0964429db0e2da41d583566784114fc5f",
+    "browserAppSHA256": "3608d26828ea120a3a56437746d74054b7f69abe019d9b9ec4f21288b1a4389f",
+    "scope": "Exact committed master VPX and browser snapshot, including its continuous HTML music player. No injected table instrumentation or chooser correction. Engine cache is read only. Individual comparison probes declare any observers or external inputs separately."
+  },
+  "initial": {
+    "ms": 2272,
+    "seconds": 2.274,
+    "player": 47779224,
+    "lastAnimationMilliseconds": 2269,
+    "physicsClock": {
+      "gravity": [
+        0,
+        0.17098337411880493,
+        -1.626798152923584
+      ],
+      "start": "1972000",
+      "current": "4245000",
+      "next": "4246000"
+    },
+    "random": [
+      3286959918,
+      1715108487
+    ],
+    "balls": [
+      {
+        "id": 0,
+        "owner": 616734240,
+        "address": 616734528,
+        "position": [
+          67.20316314697266,
+          2059.921630859375,
+          27.842418670654297
+        ],
+        "velocity": [
+          0.011098883114755154,
+          -0.027148030698299408,
+          0.163478821516037
+        ],
+        "momentum": [
+          -0.011455414816737175,
+          0.048685576766729355,
+          -0.016326604411005974
+        ],
+        "orientation": [
+          0.9961658120155334,
+          -0.07349273562431335,
+          0.04746204614639282,
+          0.07553227990865707,
+          0.9962282776832581,
+          -0.042710624635219574,
+          -0.04414411634206772,
+          0.04613178223371506,
+          0.9979594945907593
+        ],
+        "locked": false
+      },
+      {
+        "id": 1,
+        "owner": 618613216,
+        "address": 618613504,
+        "position": [
+          152.3488006591797,
+          2059.9208984375,
+          27.80779457092285
+        ],
+        "velocity": [
+          0.007162482477724552,
+          -0.01603882387280464,
+          0.16272909939289093
+        ],
+        "momentum": [
+          -0.0558999702334404,
+          -0.004604344721883535,
+          -0.02291070856153965
+        ],
+        "orientation": [
+          0.9990578889846802,
+          0.039044901728630066,
+          -0.01894337311387062,
+          -0.03913266956806183,
+          0.999224841594696,
+          -0.004284495487809181,
+          0.018761401996016502,
+          0.00502176396548748,
+          0.9998113512992859
+        ],
+        "locked": false
+      },
+      {
+        "id": 2,
+        "owner": 616736944,
+        "address": 616737232,
+        "position": [
+          237.52395629882812,
+          2059.923828125,
+          27.855676651000977
+        ],
+        "velocity": [
+          0.0022320158313959837,
+          -0.024026324972510338,
+          0.16494064033031464
+        ],
+        "momentum": [
+          -0.22578930854797363,
+          0.0819459781050682,
+          -0.029314158484339714
+        ],
+        "orientation": [
+          0.9985206723213196,
+          0.0498088002204895,
+          -0.02180820144712925,
+          -0.049817025661468506,
+          0.9987583756446838,
+          0.0001661506830714643,
+          0.021789399906992912,
+          0.0009205148089677095,
+          0.9997621774673462
+        ],
+        "locked": false
+      },
+      {
+        "id": 3,
+        "owner": 618548096,
+        "address": 618548384,
+        "position": [
+          904.9805297851562,
+          1896.8948974609375,
+          25.04629135131836
+        ],
+        "velocity": [
+          0.03497806191444397,
+          0.07376712560653687,
+          0.16267982125282288
+        ],
+        "momentum": [
+          -1.1815462112426758,
+          0.7575685381889343,
+          -0.45248177647590637
+        ],
+        "orientation": [
+          -0.732344388961792,
+          -0.36053985357284546,
+          0.5776528120040894,
+          0.3297255039215088,
+          -0.929998517036438,
+          -0.16243131458759308,
+          0.5957792401313782,
+          0.07151120156049728,
+          0.7999582886695862
+        ],
+        "locked": false
+      }
+    ]
+  },
+  "after": {
+    "ms": 2272,
+    "seconds": 2.274,
+    "player": 47779224,
+    "lastAnimationMilliseconds": 2269,
+    "physicsClock": {
+      "gravity": [
+        0,
+        0.17098337411880493,
+        -1.626798152923584
+      ],
+      "start": "1972000",
+      "current": "4245000",
+      "next": "4246000"
+    },
+    "random": [
+      3286959918,
+      1715108487
+    ],
+    "balls": [
+      {
+        "id": 0,
+        "owner": 616734240,
+        "address": 616734528,
+        "position": [
+          67.20316314697266,
+          2059.921630859375,
+          27.842418670654297
+        ],
+        "velocity": [
+          0.011098883114755154,
+          -0.027148030698299408,
+          0.163478821516037
+        ],
+        "momentum": [
+          -0.011455414816737175,
+          0.048685576766729355,
+          -0.016326604411005974
+        ],
+        "orientation": [
+          0.9961658120155334,
+          -0.07349273562431335,
+          0.04746204614639282,
+          0.07553227990865707,
+          0.9962282776832581,
+          -0.042710624635219574,
+          -0.04414411634206772,
+          0.04613178223371506,
+          0.9979594945907593
+        ],
+        "locked": false
+      },
+      {
+        "id": 1,
+        "owner": 618613216,
+        "address": 618613504,
+        "position": [
+          152.3488006591797,
+          2059.9208984375,
+          27.80779457092285
+        ],
+        "velocity": [
+          0.007162482477724552,
+          -0.01603882387280464,
+          0.16272909939289093
+        ],
+        "momentum": [
+          -0.0558999702334404,
+          -0.004604344721883535,
+          -0.02291070856153965
+        ],
+        "orientation": [
+          0.9990578889846802,
+          0.039044901728630066,
+          -0.01894337311387062,
+          -0.03913266956806183,
+          0.999224841594696,
+          -0.004284495487809181,
+          0.018761401996016502,
+          0.00502176396548748,
+          0.9998113512992859
+        ],
+        "locked": false
+      },
+      {
+        "id": 2,
+        "owner": 616736944,
+        "address": 616737232,
+        "position": [
+          237.52395629882812,
+          2059.923828125,
+          27.855676651000977
+        ],
+        "velocity": [
+          0.0022320158313959837,
+          -0.024026324972510338,
+          0.16494064033031464
+        ],
+        "momentum": [
+          -0.22578930854797363,
+          0.0819459781050682,
+          -0.029314158484339714
+        ],
+        "orientation": [
+          0.9985206723213196,
+          0.0498088002204895,
+          -0.02180820144712925,
+          -0.049817025661468506,
+          0.9987583756446838,
+          0.0001661506830714643,
+          0.021789399906992912,
+          0.0009205148089677095,
+          0.9997621774673462
+        ],
+        "locked": false
+      },
+      {
+        "id": 3,
+        "owner": 618548096,
+        "address": 618548384,
+        "position": [
+          904.9805297851562,
+          1896.8948974609375,
+          25.04629135131836
+        ],
+        "velocity": [
+          0.03497806191444397,
+          0.07376712560653687,
+          0.16267982125282288
+        ],
+        "momentum": [
+          -1.1815462112426758,
+          0.7575685381889343,
+          -0.45248177647590637
+        ],
+        "orientation": [
+          -0.732344388961792,
+          -0.36053985357284546,
+          0.5776528120040894,
+          0.3297255039215088,
+          -0.929998517036438,
+          -0.16243131458759308,
+          0.5957792401313782,
+          0.07151120156049728,
+          0.7999582886695862
+        ],
+        "locked": false
+      }
+    ]
+  },
+  "priorErrors": [
+    1280
+  ],
+  "retired": [
+    {
+      "id": 11,
+      "depth": false
+    },
+    {
+      "id": 12,
+      "depth": true
+    },
+    {
+      "id": 57,
+      "depth": false
+    },
+    {
+      "id": 58,
+      "depth": true
+    },
+    {
+      "id": 59,
+      "depth": false
+    },
+    {
+      "id": 60,
+      "depth": true
+    },
+    {
+      "id": 63,
+      "depth": false
+    },
+    {
+      "id": 64,
+      "depth": true
+    },
+    {
+      "id": 65,
+      "depth": false
+    },
+    {
+      "id": 66,
+      "depth": true
+    },
+    {
+      "id": 70,
+      "depth": false
+    },
+    {
+      "id": 71,
+      "depth": true
+    },
+    {
+      "id": 72,
+      "depth": false
+    },
+    {
+      "id": 73,
+      "depth": true
+    }
+  ],
+  "start": {
+    "reads": 0,
+    "deferred": 0,
+    "encodes": 0,
+    "queued": 0,
+    "completed": 0
+  },
+  "captured": {
+    "reads": 22,
+    "deferred": 11,
+    "encodes": 11,
+    "queued": 11,
+    "completed": 0
+  },
+  "savedBefore": {
+    "reads": 23,
+    "deferred": 12,
+    "encodes": 11,
+    "queued": 12,
+    "completed": 0
+  },
+  "afterReadbacks": {
+    "reads": 23,
+    "deferred": 12,
+    "encodes": 11,
+    "queued": 12,
+    "completed": 12
+  },
+  "afterEncoding": {
+    "reads": 24,
+    "deferred": 12,
+    "encodes": 24,
+    "queued": 12,
+    "completed": 12
+  },
+  "rows": [
+    {
+      "id": 1,
+      "depth": false,
+      "eager": {
+        "id": 1,
+        "width": 230,
+        "height": 424,
+        "arrayType": "Float32Array",
+        "file": "target-0-eager.bin",
+        "sha256": "72ff82ca21bc3738acdef930fb6c5ddb1a4786bb7ab97057f8783090e3c3f162"
+      },
+      "deferred": {
+        "id": 1,
+        "width": 230,
+        "height": 424,
+        "arrayType": "Float32Array",
+        "file": "target-0-deferred.bin",
+        "sha256": "72ff82ca21bc3738acdef930fb6c5ddb1a4786bb7ab97057f8783090e3c3f162"
+      }
+    },
+    {
+      "id": 2,
+      "depth": true,
+      "eager": {
+        "id": 2,
+        "width": 230,
+        "height": 424,
+        "arrayType": "Float32Array",
+        "file": "target-1-eager.bin",
+        "sha256": "4b1a19d89df7aea7e86acc053d1b96855dded844576518c949fe49fc6115db4c"
+      },
+      "deferred": {
+        "id": 2,
+        "width": 230,
+        "height": 424,
+        "arrayType": "Float32Array",
+        "file": "target-1-deferred.bin",
+        "sha256": "4b1a19d89df7aea7e86acc053d1b96855dded844576518c949fe49fc6115db4c"
+      }
+    },
+    {
+      "id": 3,
+      "depth": false,
+      "eager": {
+        "id": 3,
+        "width": 230,
+        "height": 424,
+        "arrayType": "Float32Array",
+        "file": "target-2-eager.bin",
+        "sha256": "72ff82ca21bc3738acdef930fb6c5ddb1a4786bb7ab97057f8783090e3c3f162"
+      },
+      "deferred": {
+        "id": 3,
+        "width": 230,
+        "height": 424,
+        "arrayType": "Float32Array",
+        "file": "target-2-deferred.bin",
+        "sha256": "72ff82ca21bc3738acdef930fb6c5ddb1a4786bb7ab97057f8783090e3c3f162"
+      }
+    },
+    {
+      "id": 4,
+      "depth": true,
+      "eager": {
+        "id": 4,
+        "width": 230,
+        "height": 424,
+        "arrayType": "Float32Array",
+        "file": "target-3-eager.bin",
+        "sha256": "4b1a19d89df7aea7e86acc053d1b96855dded844576518c949fe49fc6115db4c"
+      },
+      "deferred": {
+        "id": 4,
+        "width": 230,
+        "height": 424,
+        "arrayType": "Float32Array",
+        "file": "target-3-deferred.bin",
+        "sha256": "4b1a19d89df7aea7e86acc053d1b96855dded844576518c949fe49fc6115db4c"
+      }
+    },
+    {
+      "id": 44,
+      "depth": false,
+      "eager": {
+        "id": 44,
+        "width": 230,
+        "height": 424,
+        "arrayType": "Float32Array",
+        "file": "target-4-eager.bin",
+        "sha256": "6120a6c3d35ac555f63b5b15fec17fe9aba6bdbaa031433eea301f9620212418"
+      },
+      "deferred": {
+        "id": 44,
+        "width": 230,
+        "height": 424,
+        "arrayType": "Float32Array",
+        "file": "target-4-deferred.bin",
+        "sha256": "6120a6c3d35ac555f63b5b15fec17fe9aba6bdbaa031433eea301f9620212418"
+      }
+    },
+    {
+      "id": 45,
+      "depth": true,
+      "eager": {
+        "id": 45,
+        "width": 230,
+        "height": 424,
+        "arrayType": "Float32Array",
+        "file": "target-5-eager.bin",
+        "sha256": "5a429873302d6d6a3b6350f243145287a3cf959b58d6ce7f2a19719a04ecd5e0"
+      },
+      "deferred": {
+        "id": 45,
+        "width": 230,
+        "height": 424,
+        "arrayType": "Float32Array",
+        "file": "target-5-deferred.bin",
+        "sha256": "5a429873302d6d6a3b6350f243145287a3cf959b58d6ce7f2a19719a04ecd5e0"
+      }
+    },
+    {
+      "id": 61,
+      "depth": false,
+      "eager": {
+        "id": 61,
+        "width": 230,
+        "height": 424,
+        "arrayType": "Float32Array",
+        "file": "target-6-eager.bin",
+        "sha256": "996e85661e6be5e4ab5e4b1bba0c133057f9929b3b87b7ca9666dac152c3b934"
+      },
+      "deferred": {
+        "id": 61,
+        "width": 230,
+        "height": 424,
+        "arrayType": "Float32Array",
+        "file": "target-6-deferred.bin",
+        "sha256": "996e85661e6be5e4ab5e4b1bba0c133057f9929b3b87b7ca9666dac152c3b934"
+      }
+    },
+    {
+      "id": 62,
+      "depth": true,
+      "eager": {
+        "id": 62,
+        "width": 230,
+        "height": 424,
+        "arrayType": "Float32Array",
+        "file": "target-7-eager.bin",
+        "sha256": "16fc183ef8c6ef80fcb608c55c66a6d5a5b24fa998899de612cda832acfb044c"
+      },
+      "deferred": {
+        "id": 62,
+        "width": 230,
+        "height": 424,
+        "arrayType": "Float32Array",
+        "file": "target-7-deferred.bin",
+        "sha256": "16fc183ef8c6ef80fcb608c55c66a6d5a5b24fa998899de612cda832acfb044c"
+      }
+    },
+    {
+      "id": 68,
+      "depth": false,
+      "eager": {
+        "id": 68,
+        "width": 230,
+        "height": 424,
+        "arrayType": "Float32Array",
+        "file": "target-8-eager.bin",
+        "sha256": "d353c0c960cfc6506223cca0a425de0e039cdc314264beeb6e9a9018f5095ad5"
+      },
+      "deferred": {
+        "id": 68,
+        "width": 230,
+        "height": 424,
+        "arrayType": "Float32Array",
+        "file": "target-8-deferred.bin",
+        "sha256": "d353c0c960cfc6506223cca0a425de0e039cdc314264beeb6e9a9018f5095ad5"
+      }
+    },
+    {
+      "id": 69,
+      "depth": true,
+      "eager": {
+        "id": 69,
+        "width": 230,
+        "height": 424,
+        "arrayType": "Float32Array",
+        "file": "target-9-eager.bin",
+        "sha256": "0a3470779d744d445dfd8755baa9901cbfb80960898641f2de207271b600d44f"
+      },
+      "deferred": {
+        "id": 69,
+        "width": 230,
+        "height": 424,
+        "arrayType": "Float32Array",
+        "file": "target-9-deferred.bin",
+        "sha256": "0a3470779d744d445dfd8755baa9901cbfb80960898641f2de207271b600d44f"
+      }
+    },
+    {
+      "id": null,
+      "depth": false,
+      "eager": {
+        "id": null,
+        "width": 230,
+        "height": 424,
+        "arrayType": "Uint8Array",
+        "file": "target-10-eager.bin",
+        "sha256": "98f7edc90aedf1ddec2d54d72063e87b2bfbb9b996f81668332965c2e2d7bdc2"
+      },
+      "deferred": {
+        "id": null,
+        "width": 230,
+        "height": 424,
+        "arrayType": "Uint8Array",
+        "file": "target-10-deferred.bin",
+        "sha256": "98f7edc90aedf1ddec2d54d72063e87b2bfbb9b996f81668332965c2e2d7bdc2"
+      }
+    }
+  ],
+  "owned": {
+    "saved": {
+      "id": 74,
+      "width": 4,
+      "height": 4,
+      "arrayType": "Float32Array",
+      "bytes": "AAAAPgAAgD4AAAA/AABAPwAAAD4AAIA+AAAAPwAAQD8AAAA+AACAPgAAAD8AAEA/AAAAPgAAgD4AAAA/AABAPwAAAD4AAIA+AAAAPwAAQD8AAAA+AACAPgAAAD8AAEA/AAAAPgAAgD4AAAA/AABAPwAAAD4AAIA+AAAAPwAAQD8AAAA+AACAPgAAAD8AAEA/AAAAPgAAgD4AAAA/AABAPwAAAD4AAIA+AAAAPwAAQD8AAAA+AACAPgAAAD8AAEA/AAAAPgAAgD4AAAA/AABAPwAAAD4AAIA+AAAAPwAAQD8AAAA+AACAPgAAAD8AAEA/AAAAPgAAgD4AAAA/AABAPw=="
+    },
+    "current": {
+      "id": 74,
+      "width": 4,
+      "height": 4,
+      "arrayType": "Float32Array",
+      "bytes": "AACAPwAAAAAAAAAAAACAPwAAgD8AAAAAAAAAAAAAgD8AAIA/AAAAAAAAAAAAAIA/AACAPwAAAAAAAAAAAACAPwAAgD8AAAAAAAAAAAAAgD8AAIA/AAAAAAAAAAAAAIA/AACAPwAAAAAAAAAAAACAPwAAgD8AAAAAAAAAAAAAgD8AAIA/AAAAAAAAAAAAAIA/AACAPwAAAAAAAAAAAACAPwAAgD8AAAAAAAAAAAAAgD8AAIA/AAAAAAAAAAAAAIA/AACAPwAAAAAAAAAAAACAPwAAgD8AAAAAAAAAAAAAgD8AAIA/AAAAAAAAAAAAAIA/AACAPwAAAAAAAAAAAACAPw=="
+    }
+  },
+  "glError": 0,
+  "ownedError": 0,
+  "errors": [],
+  "scope": "Paused original native game, actual color/depth/default-framebuffer reads with eager and deferred encoding. Raw native pixels and GL state unchanged. A separate probe-owned context changes its texture after snapshot creation to verify immutable pixel ownership. No native body/clock/RNG/texture writes."
+}
