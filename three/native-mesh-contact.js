@@ -25,6 +25,9 @@ export function nativeBoundsOverlap(box,query,sphereOnly=false){
   return f(f(f(dx*dx)+f(dy*dy))+f(dz*dz))<=query.radiusSquared;
 }
 const valid=(t,dt)=>Number.isFinite(t)&&t>=0&&!Object.is(t,-0)&&t<=dt;
+// Preserve sub() then dot() rounding without allocating the difference vector
+// for every candidate shape in the collision tree.
+const dotDifference=(a,b,n)=>f(f(f(f(a.x-b.x)*n.x)+f(f(a.y-b.y)*n.y))+f(f(a.z-b.z)*n.z));
 const transform=(m,v)=>({x:dot(m[0],v),y:dot(m[1],v),z:dot(m[2],v)});
 export function nativeTriangleIsDegenerate(points){
   const [a,b,c]=points.map(position),normal=cross(sub(b,a),sub(c,a));
@@ -81,7 +84,7 @@ export function nativeShapeHit(s,query){
   let time=0,contact=false,gap,vn,normal=s.n;
   if(['triangle','polygon','wall','plane'].includes(s.kind)){
     vn=dot(v,normal);if(vn>f(s.kind==='triangle'||s.kind==='plane'?.099:.0001))return null;
-    const nearest=sub(p,mul(normal,r)),difference=s.kind==='plane'?dot(p,normal):s.kind==='wall'?dot(sub(p,s.a),normal):dot(sub(nearest,s.a),normal);
+    const nearest={x:f(p.x-f(normal.x*r)),y:f(p.y-f(normal.y*r)),z:f(p.z-f(normal.z*r))},difference=s.kind==='plane'?dot(p,normal):s.kind==='wall'?dotDifference(p,s.a,normal):dotDifference(nearest,s.a,normal);
     gap=s.kind==='plane'?f(f(difference-r)-s.d):s.kind==='wall'?f(difference-r):difference;
     if(gap< -f(s.kind==='plane'?r*2:r)||s.kind==='wall'&&difference<0)return null;
     if(s.kind==='plane'){
@@ -93,7 +96,7 @@ export function nativeShapeHit(s,query){
       else time=gap<=0||Math.abs(vn)>f(.099)?0:f(f(gap*10)+f(.5));
     }else if(Math.abs(vn)>f(.0001))time=f(gap/-vn);else return null;
     if(!valid(time,dt))return null;
-    const at=add(nearest,mul(v,time));
+    const at={x:f(nearest.x+f(v.x*time)),y:f(nearest.y+f(v.y*time)),z:f(nearest.z+f(v.z*time))};
     if(s.kind==='wall'){
       const d=sub(p,s.a),along=f(f(f(d.x*normal.y)-f(d.y*normal.x))+f(f(f(v.x*normal.y)-f(v.y*normal.x))*time)),z=f(p.z+f(v.z*time));
       if(along<0||along>s.length||f(z+f(r*.5))<s.low||f(z-f(r*.5))>s.high)return null;
@@ -112,10 +115,10 @@ export function nativeShapeHit(s,query){
       if(!crossings)return null;
     }
   }else{
-    let d=sub(p,s.a),dv=v,localP,localV;const total=f(r+s.radius);
-    if(s.vertical){d={...d,z:0};dv={...v,z:0};}
-    else if(s.matrix){localP=transform(s.matrix,p);localV=transform(s.matrix,v);d={x:f(localP.x-s.xy.x),y:f(localP.y-s.xy.y),z:0};dv={...localV,z:0};}
-    else if(s.axis){d=sub(d,mul(s.axis,dot(d,s.axis)));dv=sub(v,mul(s.axis,dot(v,s.axis)));}
+    let d,dv=v,localP,localV;const total=f(r+s.radius);
+    if(s.vertical){d={x:f(p.x-s.a.x),y:f(p.y-s.a.y),z:0};dv={x:v.x,y:v.y,z:0};}
+    else if(s.matrix){localP=transform(s.matrix,p);localV=transform(s.matrix,v);d={x:f(localP.x-s.xy.x),y:f(localP.y-s.xy.y),z:0};dv={x:localV.x,y:localV.y,z:0};}
+    else{d=sub(p,s.a);if(s.axis){d=sub(d,mul(s.axis,dot(d,s.axis)));dv=sub(v,mul(s.axis,dot(v,s.axis)));}}
     const squared=dot(d,d),distance=f(Math.sqrt(squared));if(distance<=f(1e-6))return null;
     const b=dot(d,dv);vn=f(b/distance);gap=f(distance-total);if(vn>f(s.kind==='circle'?.0001:.099)||s.kind==='circle'&&gap< -r)return null;
     if(gap<f(.05)){if(Math.abs(vn)<=f(.099))contact=true;else time=(s.axis||s.vertical)&&s.kind!=='circle'?f(-gap/vn):Math.max(0,f(-gap/vn));}
@@ -133,7 +136,7 @@ export function nativeShapeHit(s,query){
     // low bits in Float32, especially at playfield seams far from the origin.
     if(s.matrix)normal=unit({x:f(f(localP.x+f(localV.x*time))-s.xy.x),y:f(f(localP.y+f(localV.y*time))-s.xy.y),z:0});
     else if(s.kind==='circle'||s.vertical)normal=unit({x:f(f(p.x+f(v.x*time))-s.a.x),y:f(f(p.y+f(v.y*time))-s.a.y),z:0});
-    else normal=unit(sub(add(p,mul(v,time)),s.a));
+    else normal=unit({x:f(f(p.x+f(v.x*time))-s.a.x),y:f(f(p.y+f(v.y*time))-s.a.y),z:f(f(p.z+f(v.z*time))-s.a.z)});
     if(s.matrix)normal={x:f(f(f(s.matrix[0].x*normal.x)+f(s.matrix[1].x*normal.y))+f(s.matrix[2].x*normal.z)),y:f(f(f(s.matrix[0].y*normal.x)+f(s.matrix[1].y*normal.y))+f(s.matrix[2].y*normal.z)),z:f(f(f(s.matrix[0].z*normal.x)+f(s.matrix[1].z*normal.y))+f(s.matrix[2].z*normal.z))};
   }
   return {time:time*.01,gap:gap*.01,vn,contact,normal:{x:normal.x,y:-normal.y,z:normal.z}};
