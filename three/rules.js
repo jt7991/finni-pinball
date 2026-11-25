@@ -177,7 +177,7 @@ export function createRules(source,specs,host={}) {
   for(const name of extras)if(!objects.has(name.toLowerCase()))object({name,...(name==='Table1'?{kind:'Table'}:{})});
   const impulsePlunger=createImpulsePlunger({
     random:()=>host.scriptRandom?.()??scriptRandom.rnd(),
-    sound:name=>{if(name)host.sound?.(name,{});},
+    sound:name=>{if(name)natives.PlaySound(name);},
     initTimer:(trigger,update)=>generatedEvents.set(`${trigger.name}_timer`.toLowerCase(),update),
     createEvents:(trigger,add,remove)=>{
       generatedEvents.set(`${trigger.name}_hit`.toLowerCase(),()=>add(activeBall));
@@ -193,7 +193,15 @@ export function createRules(source,specs,host={}) {
   if(pulseTimer){generatedEvents.set('pulsetimer_timer',()=>vpmTimer.update());pulseTimer.interval=40;pulseTimer.enabled=true;}
   const natives={
     LoadEM:empty,DOF:empty,SoundFXDOF:name=>name,SoundFX:name=>name,
-    PlaySound:function(name,loop=0,volume=1,pan=0,randomPitch=0,pitch=0,useExisting=false,restart=false,frontRearFade=0){if(arguments.length>=3&&arguments[2]===undefined)volume=0;return host.sound?.(name,{loop,volume,pan,randomPitch,pitch,useExisting,restart,frontRearFade});},StopSound:name=>host.stopSound?.(name),
+    PlaySound:function(name,loop=1,volume=1,pan=0,randomPitch=0,pitch=0,useExisting=false,restart=true,frontRearFade=0){
+      // Match the native COM signature before sound RNG and DSP see arguments.
+      // In particular, pitch/loop are Long (banker's rounding), and omitted
+      // restart defaults to true. Explicit Empty volume converts to zero.
+      if(arguments.length>=3&&arguments[2]===undefined)volume=0;
+      const argument=value=>({type:typeof value==='boolean'?'Boolean':'Double',value:value??0});
+      const convert=(type,value)=>engine._getContext().functionRegistry.call(type,[argument(value)]).value;
+      return host.sound?.(name,{loop:convert('CLng',loop),volume:convert('CSng',volume),pan:convert('CSng',pan),randomPitch:convert('CSng',randomPitch),pitch:convert('CLng',pitch),useExisting:!!useExisting,restart:!!restart,frontRearFade:convert('CSng',frontRearFade)});
+    },StopSound:name=>host.stopSound?.(name),
     PlayMusic:name=>host.sound?.(name,{music:true}),EndMusic:()=>host.stopSound?.(),
     // Both native storage backends expose VT_BSTR, including saved numbers.
     // Existing JSON data remains readable; convert with VB's text semantics.

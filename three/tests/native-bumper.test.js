@@ -31,7 +31,7 @@ test('authored sound pitch shares physics randomness, and live bumper properties
   try{
     let draws=0;game.random=()=>{draws++;return draws%2?.5:.25;};
     game.rules.execute('PlaySound "fx_bumper",0,0.8,0.1,0.2,100,True,False,0.3');
-    assert.equal(draws,2);const [name,settings]=sounds.at(-1);assert.equal(name,'fx_bumper');assert.equal(settings.pitch,100);assert.equal(settings.randomPitch,.2);assert.equal(settings.useExisting,true);assert.equal(settings.frontRearFade,.3);
+    assert.equal(draws,2);const [name,settings]=sounds.at(-1);assert.equal(name,'fx_bumper');assert.equal(settings.pitch,100);assert.equal(settings.randomPitch,Math.fround(.2));assert.equal(settings.useExisting,true);assert.equal(settings.frontRearFade,Math.fround(.3));
     assert.ok(Math.abs(settings.pitchFactor-1.04375)<1e-7);
     game.rules.execute('PlaySound "unknown-native-sound",0,1,0,0.2:PlaySound "fx_bumper",0,1,0,0');assert.equal(draws,2,'missing sounds and zero variation do not draw');
     game.rules.execute('Bumper1.Threshold=100:Bumper1.Force=4:Bumper1.HasHitEvent=False:Bumper1.Collidable=False');

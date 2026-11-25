@@ -15,11 +15,14 @@ function orderedRows(rows,key,{last=true}={}){
   return current&&key(current)===wanted?current:undefined;
  }};
 }
-export async function compareNativeHistoryState(fixture,{write=()=>{},observeObjects=[],contactAudit}={}){
+export async function compareNativeHistoryState(fixture,{write=()=>{},observeObjects=[],contactAudit,soundAudit}={}){
 const load=name=>JSON.parse(fs.readFileSync(new URL('../three/public/'+name,import.meta.url)));
 const clocks=fixture.randomizeClocks?.timerRecords?nativeScriptClockInputs(fixture.randomizeClocks,{lastFrame:fixture.frames.at(-1).frameIndex,lastMilliseconds:fixture.frames.at(-1).snapshot.ms}):null;let randomizeIndex=0,timerIndex=0;
 const scriptRandomClock=clocks?()=>{assert.ok(randomizeIndex<clocks.observedRandomizeClocks.length);return clocks.observedRandomizeClocks[randomizeIndex++];}:undefined,scriptTimerSeconds=clocks?()=>{assert.ok(timerIndex<clocks.observedTimerSeconds.length);return clocks.observedTimerSeconds[timerIndex++];}:undefined;
-const game=await createFullGame(load('layout.json'),load('objects.json'),fs.readFileSync(new URL('../three/public/rules.vbs',import.meta.url),'utf8'),()=>{},undefined,{frameAnimations:true,scriptBudget:{videoSyncMode:2},scriptRandomClock,scriptTimerSeconds});
+const soundCalls=fixture.soundTimeline?[]:null;
+let game;const soundClock=()=>Math.round((game?.time??0)*1000);
+const media=soundCalls?{play:(name,settings)=>soundCalls.push({type:'play',ms:soundClock(),name:String(name).toLowerCase(),settings}),stop:name=>soundCalls.push({type:'stop',ms:soundClock(),name:String(name??'').toLowerCase()})}:undefined;
+game=await createFullGame(load('layout.json'),load('objects.json'),fs.readFileSync(new URL('../three/public/rules.vbs',import.meta.url),'utf8'),()=>{},media,{frameAnimations:true,scriptBudget:{videoSyncMode:2},scriptRandomClock,scriptTimerSeconds});
 if(contactAudit){const hit=game.rules.hit.bind(game.rules);game.rules.hit=(name,kind,ball,...parameters)=>{if(kind==='Collide'&&/^(Left|Right)Flipper$/i.test(name))contactAudit.push({ms:Math.round(game.time*1000),name,speed:parameters[0]});return hit(name,kind,ball,...parameters);};}
 const timers=new Set(fixture.timers.events.filter(row=>row.interval>=0).map(row=>row.ms));
 let ticks=0,inputIndex=0,intervalsChecked=0,framesChecked=0,ruleObservationsChecked=0,ruleVariantFieldsChecked=0,scriptRandomStatesChecked=0;
@@ -91,7 +94,19 @@ try{
  }
  if(clocks){assert.equal(randomizeIndex,clocks.observedRandomizeClocks.length);assert.equal(timerIndex,clocks.observedTimerSeconds.length);}
  assert.equal(pendingAnimationBoundaries.size,0,'Every native physical boundary is checked');
- return {framesChecked,intervalsChecked,ticks,randomizeClockSamples:randomizeIndex,timerClockSamples:timerIndex,...(ruleObservationsChecked?{ruleObservationsChecked}:{}),...(ruleVariantFieldsChecked?{ruleVariantFieldsChecked}:{}),...(scriptRandomStatesChecked?{scriptRandomStatesChecked}:{}),...(moverStatesChecked?{moverStatesChecked,moverFieldsChecked}:{})};
+ if(soundCalls){
+  const expected=fixture.soundTimeline.events;assert.equal(soundCalls.length,expected.length,'Every native authored sound call is retained');
+  for(let i=0;i<expected.length;i++){
+   const actual=soundCalls[i],native=expected[i];assert.equal(actual.type,native.type,'Native sound call kind '+i);assert.equal(actual.name,native.name,'Native sound name '+i);
+   assert.equal(actual.ms,native.before.ms,'Native sound time '+i+' '+native.name);
+   if(actual.type==='play'){
+    const s=actual.settings,settings={loop:s.loop??0,volume:Math.fround(s.volume??1),pan:Math.fround(s.pan??0),randomPitch:Math.fround(s.randomPitch??0),pitch:s.pitch??0,useExisting:!!s.useExisting,restart:!!s.restart,frontRearFade:Math.fround(s.frontRearFade??0)};
+    assert.deepEqual(settings,native.settings,'Native sound parameters '+i+' '+native.name+' at '+native.before.ms+'ms');
+   }
+  }
+  if(soundAudit)soundAudit.push(...soundCalls);
+ }
+ return {framesChecked,intervalsChecked,ticks,randomizeClockSamples:randomizeIndex,timerClockSamples:timerIndex,...(soundCalls?{soundCallsChecked:soundCalls.length}:{}),...(ruleObservationsChecked?{ruleObservationsChecked}:{}),...(ruleVariantFieldsChecked?{ruleVariantFieldsChecked}:{}),...(scriptRandomStatesChecked?{scriptRandomStatesChecked}:{}),...(moverStatesChecked?{moverStatesChecked,moverFieldsChecked}:{})};
 }finally{game.dispose();}
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){const result=await compareNativeHistoryState(readNativeHistoryCapture(process.argv[2]),{write:row=>console.log(JSON.stringify(row)),observeObjects:process.argv.filter(arg=>arg.startsWith('--observe=')).map(arg=>arg.slice(10))});console.log(JSON.stringify({result}));}

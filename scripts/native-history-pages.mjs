@@ -2,6 +2,7 @@
 // consumed without materializing a multi-gigabyte JSON string or body array.
 import fs from'node:fs';import path from'node:path';import assert from'node:assert/strict';import{gzipSync,gunzipSync}from'node:zlib';import{createHash}from'node:crypto';
 import{packNativeHistoryState,unpackNativeHistoryState}from'./native-history-state-package.mjs';
+import{unpackNativeHistoryAudio}from'./native-history-audio-package.mjs';
 export const nativeHistoryArrayPaths=[['frames'],['actions'],['startup','boundaries'],['clock','frames'],['clock','animationFrames'],['clock','preparedFrames'],['timers','events'],['timers','budgetTransitions'],['playerInputs'],['playerStateObserver','observations']];
 const sha=b=>createHash('sha256').update(b).digest('hex'),get=(root,keys)=>keys.reduce((r,k)=>r?.[k],root),set=(root,keys,value)=>{get(root,keys.slice(0,-1))[keys.at(-1)]=value;};
 export class NativeHistoryPageWriter{
@@ -47,6 +48,6 @@ export function writeNativeHistoryBundle(manifestFile,file){
  const bundle={format:'native-history-bundle-v1',manifest,pages};verifyNativeHistory(hydrateNativeHistoryBundle(bundle),manifest);const bytes=gzipSync(JSON.stringify(bundle));fs.writeFileSync(file,bytes,{flag:'wx'});return{file,bytes:bytes.length,sha256:sha(bytes),sourceBytes:manifest.logicalJSONBytes,sourceSHA256:manifest.logicalJSONSHA256,pages:Object.keys(pages).length};
 }
 export function readNativeHistoryCapture(file,{verify=true}={}){
- const bytes=fs.readFileSync(file),document=JSON.parse(bytes[0]===31&&bytes[1]===139?gunzipSync(bytes):bytes);if(document.format==='native-history-state-xor-v1')return unpackNativeHistoryState(document);
+ const bytes=fs.readFileSync(file),document=JSON.parse(bytes[0]===31&&bytes[1]===139?gunzipSync(bytes):bytes);if(document.format==='native-history-audio-v1')return unpackNativeHistoryAudio(document);if(document.format==='native-history-state-xor-v1')return unpackNativeHistoryState(document);
  const bundled=document.format==='native-history-bundle-v1',manifest=bundled?document.manifest:document;if(manifest.format!=='native-history-paged-v1')return manifest;const result=bundled?hydrateNativeHistoryBundle(document):hydrateNativeHistoryPages(manifest,path.dirname(file));if(verify)verifyNativeHistory(result,manifest);return result;
 }

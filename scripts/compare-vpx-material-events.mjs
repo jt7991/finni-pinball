@@ -45,7 +45,11 @@ if(process.argv.includes('--check'))for(const report of reports){
   assert.equal(report.sounds.length,soundName?report.expectedEvents.length:0,report.name+' authored collection sounds');
   report.sounds.forEach((sound,index)=>{
     const [,ms,,vx,vy]=report.expectedEvents[index],speed=Math.sqrt(vx*vx+vy*vy);assert.equal(sound.ms,ms);assert.equal(sound.name,soundName);assert.equal(sound.settings.randomPitch,0);
-    assert.ok(Math.abs(sound.settings.volume-Math.fround(speed*speed/2000))<1e-9,report.name+' sound volume after response');assert.ok(Math.abs(sound.settings.pitch-speed*200)<.000001,report.name+' sound pitch after response');
+    assert.ok(Math.abs(sound.settings.volume-Math.fround(speed*speed/2000))<1e-9,report.name+' sound volume after response');
+    // This observation is now after COM conversion, rather than the script's
+    // unconverted Double expression. PlaySound's pitch parameter is a LONG.
+    const pitch=speed*200,whole=Math.floor(pitch),nativePitch=pitch-whole===.5?whole+whole%2:Math.round(pitch);
+    assert.equal(sound.settings.pitch,nativePitch,report.name+' native LONG sound pitch after response');
   });
   assert.equal(report.physicsStats.substepBudgetExceeded,0);
 }
