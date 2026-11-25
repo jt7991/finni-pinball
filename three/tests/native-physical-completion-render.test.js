@@ -61,6 +61,9 @@ test('physical mission counter, win and jackpot retain native rendering history 
 for(const expected of[
   {mission:2,sha:'4cfc84bdf9373ba6025b84de018b586cbff3cc3aebecde75209cc46970d14a6e',first:5775,last:25702,completedAt:12197,score:3109000,timerSamples:7,observations:50,variantFields:1700,shots:['scoop','wolverine','cross','ramp']},
   {mission:3,sha:'ee30d2cd32c8fde521d3de2c45db49b393ab4c58c3aca227d627c1cd4fe4d207',first:5808,last:27636,completedAt:19533,score:4745000,timerSamples:9,observations:70,variantFields:2520,shots:['scoop','Bumper1','Bumper2','Bumper3']},
+  {mission:4,sha:'ec6044a25d2e0423844d3ec94a0a452461b7a66480c9d7636d7aeb51687e21eb',warmup:2500,frames:2628,won:4,images:1024,maxBalls:5,first:42496,last:62738,completedAt:54502,score:14063770,timerSamples:27,observations:435,variantFields:18705},
+  {mission:5,sha:'498184e70af8e6b5168c56f325656581490c2abafb5f0f4e1a58fce30055c766',warmup:3100,frames:3228,won:5,images:1021,maxBalls:5,first:52574,last:73155,completedAt:66973,score:18429110,timerSamples:39,observations:547,variantFields:25162},
+  {mission:6,sha:'1cde1847b3d724a2bc345498b386cc2e094009df56a63bdf7cf21a5138b27c03',warmup:3900,frames:4028,won:6,images:1015,maxBalls:7,first:65873,last:87851,completedAt:82010,score:21951330,timerSamples:42,observations:670,variantFields:33500},
 ])test('physical mission '+expected.mission+' counter, win and jackpot retain exact native history',async()=>{
   const capture=readCapture('vpx-main-6f8116d-mission'+expected.mission+'-complete-render-digests-native.json.gz',expected.sha);
   const controller=capture.physicalController.result;
@@ -68,22 +71,37 @@ for(const expected of[
   assert.equal(capture.physicalController.scenario.mission,expected.mission);
   assert.equal(capture.physicalController.sourceSHA256,'fd97ecfe4d08cb3734ac3126c6c33a85ea0162183c9878347c11f762a0f4e275');
   assert.equal(controller.completedAt,expected.completedAt);
-  assert.equal(controller.last.won,1);
+  assert.equal(controller.last.won,expected.won??1);
   assert.equal(controller.last['life'+expected.mission],0);
   assert.equal(controller.last['mission'+expected.mission],1);
   assert.equal(controller.last.endJackpot,0);
   assert.equal(controller.last.score,expected.score);
-  assert.deepEqual(capture.imageWindow,{warmupFrames:300,imageFrames:128});
-  assert.equal(capture.frames[300].snapshot.ms,expected.first);
+  assert.deepEqual(capture.imageWindow,{warmupFrames:expected.warmup??300,imageFrames:128});
+  assert.equal(capture.frames[capture.imageWindow.warmupFrames].snapshot.ms,expected.first);
   assert.equal(capture.frames.at(-1).snapshot.ms,expected.last);
-  assert.equal(capture.frames.reduce((count,frame)=>count+Object.keys(frame.images).length,0),1024);
-  assert.deepEqual(new Set(capture.actions.filter(action=>action.kind==='shot').map(action=>action.shot)),new Set(expected.shots));
+  assert.equal(capture.frames.reduce((count,frame)=>count+Object.keys(frame.images).length,0),expected.images??1024);
+  if(expected.shots)assert.deepEqual(new Set(capture.actions.filter(action=>action.kind==='shot').map(action=>action.shot)),new Set(expected.shots));
+  if(expected.maxBalls)assert.equal(Math.max(...capture.frames.map(frame=>frame.snapshot.balls.length)),expected.maxBalls);
+  if(expected.mission>=4){
+    assert.deepEqual(controller.completions.map(row=>row.mission),Array.from({length:expected.mission},(_,index)=>index+1));
+    assert.deepEqual(controller.completions.map(row=>row.won),Array.from({length:expected.mission},(_,index)=>index+1));
+    for(let mission=1;mission<=expected.mission;mission++){
+      assert.equal(controller.last['life'+mission],0);
+      assert.equal(controller.last['mission'+mission],1);
+    }
+  }
   if(expected.mission===3){
     assert.equal(controller.last.bumperHits,20);
     assert.equal(controller.last.balloonState,0);
   }
+  if(expected.mission===6){
+    assert.equal(controller.last.multi,1);
+    assert.equal(controller.last.onPlayfield,2);
+    assert.equal(controller.last.queued,0);
+    assert.equal(controller.last.pinataSuper,2);
+  }
   assert.deepEqual(await compareNativeHistoryState(capture),{
-    framesChecked:428,intervalsChecked:expected.last,ticks:expected.last+1,
+    framesChecked:expected.frames??428,intervalsChecked:expected.last,ticks:expected.last+1,
     randomizeClockSamples:2,timerClockSamples:expected.timerSamples,
     ruleObservationsChecked:expected.observations,ruleVariantFieldsChecked:expected.variantFields,scriptRandomStatesChecked:expected.observations,
   });
