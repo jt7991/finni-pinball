@@ -37,14 +37,15 @@ export function partyFinaleScenario(objects){
  return{...scenario,finale:true,fields:{...scenario.fields,firstBattle:'Abs(CLng(bFirstBattle(CurrentPlayer)))',finaleEnabled:'Abs(CLng(MrSinisterTimer.Enabled))',finaleInterval:'MrSinisterTimer.Interval',dazzler:'dazzlerValue'},scope:scenario.scope+' After six actual wins and scoop jackpots, physically qualify the next chooser and select mission 7. Observe its original timer and round reset without supplying a seventh win, progress, timer or RNG result. This is finale entry/exit coverage, not a claim of mission-7 victory.'};
 }
 
-export function partyFinaleVictoryScenario(objects){
- const scenario=partyFinaleScenario(objects),fast=(name)=>{const shot=scenario.shots[name],speed=Math.hypot(shot.vx,shot.vy);return{...shot,vx:shot.vx/speed*128,vy:shot.vy/speed*128};};
+export function partyFinaleVictoryScenario(objects,approachSpeed=128){
+ if(!Number.isFinite(approachSpeed)||approachSpeed<128||approachSpeed>512)throw Error('Finale approach speed must be between 128 and 512');
+ const scenario=partyFinaleScenario(objects),fast=(name)=>{const shot=scenario.shots[name],speed=Math.hypot(shot.vx,shot.vy);return{...shot,vx:shot.vx/speed*approachSpeed,vy:shot.vy/speed*approachSpeed};};
  return{...scenario,completeFinale:true,shots:{...scenario.shots,finaleLoop:fast('loop'),finaleWolverine:fast('wolverine'),finaleColossus:fast('colossus'),finaleOuterLoop:fast('outerLoop')},fields:{...scenario.fields,special:'li039.State'},scope:scenario.scope.replace('Observe its original timer and round reset without supplying a seventh win, progress, timer or RNG result. This is finale entry/exit coverage, not a claim of mission-7 victory.','Within the unchanged120ms timer, declare fast physical approaches to the currently lit shots. Observe the seventh win, original round reset, Special light and physical scoop jackpot without supplying progress, completion callbacks, timer values or RNG results. These explicit pose/velocity inputs are controlled collision coverage, not natural player completion.')};
 }
 
-export function partyNextRoundScenario(objects,throughMission=1){
+export function partyNextRoundScenario(objects,throughMission=1,finaleApproachSpeed=128){
  if(!Number.isInteger(throughMission)||throughMission<1||throughMission>6)throw Error('Next-round counter coverage supports missions 1 through 6');
- const scenario=partyFinaleVictoryScenario(objects);
+ const scenario=partyFinaleVictoryScenario(objects,finaleApproachSpeed);
  return{...scenario,continueRound:true,...(throughMission>1?{nextRoundThrough:throughMission}:{}),fields:{...scenario.fields,credits:'Credits'},scope:scenario.scope+' After the seventh win, physically collect Special at the Colossus loop, collect the scoop jackpot, qualify a fresh chooser and complete '+(throughMission===1?'mission1':'missions 1 through '+throughMission)+' again at the authored reduced attack power. Observe credits, counters and the '+(7+throughMission)+' earned wins without supplying their values.'};
 }
 
