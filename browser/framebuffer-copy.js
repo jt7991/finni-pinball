@@ -3,7 +3,7 @@ const installed=new WeakSet();
 // Restore the cached scene, replacing only empty far-depth pixels with the
 // arcade backdrop. The shader copy also avoids Android's combined HDR/depth
 // blit corruption without redrawing static meshes. Other blits stay native.
-export function installFramebufferCopy(gl){
+export function installFramebufferCopy(gl,onRendered){
   if(!gl||installed.has(gl))return;
   const program=gl.createProgram(),shaders=[];
   try{
@@ -115,6 +115,7 @@ export function installFramebufferCopy(gl){
       this.colorMask(true,true,true,true);this.viewport(0,0,dw,dh);
       this.useProgram(program);this.uniform1i(depthLocation,0);this.uniform1i(colorLocation,1);
       this.bindVertexArray(vao);this.drawArrays(this.TRIANGLES,0,3);
+      onRendered?.();
     }finally{
       this.bindVertexArray(state.vao);this.useProgram(state.program);this.viewport(...state.viewport);
       this.colorMask(...state.colors);this.depthMask(state.depthWrite);this.depthFunc(state.depthFunc);
