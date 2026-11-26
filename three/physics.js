@@ -84,7 +84,7 @@ export class Pinball {
     this.events = new RAPIER.EventQueue(!this.nativeFlipperContacts);
     this.physicsStats={maxSubsteps:0,substepBudgetExceeded:0};
     this.ballSpin=new BallSpin();
-    this.nativePositionUnits=physics.native_position_units!==false;this.nativeBallStates=new WeakMap();
+    this.nativePositionUnits=physics.native_position_units!==false;this.nativeBallStates=new WeakMap();this.nativeBallStorage=new Set();
     this.tags = new Map();
     this.colliderLabels = new Map();
     this.contactMaterials=new Map();this.changedMaterials=new Set();this.queryBall=new RAPIER.Ball(RADIUS);
@@ -357,7 +357,15 @@ export class Pinball {
   }
 
   nativeBall(body){
-    let state=this.nativeBallStates.get(body);if(!state){state=new NativeBall(body);state.order=nativeBallStorageOrder(body.handle);this.nativeBallStates.set(body,state);}return state;
+    let state=this.nativeBallStates.get(body);
+    if(!state){
+      // Native displacement never steps Rapier. Cache its backing vectors only
+      // in that mode; raw setters invalidate them and fallback reads stay live.
+      state=new NativeBall(body,{cacheStorage:!!this.nativeDisplacements,onStorageRelease:storage=>this.nativeBallStorage.delete(storage)});
+      if(this.nativeDisplacements)this.nativeBallStorage.add(state.storage);
+      state.order=nativeBallStorageOrder(body.handle);this.nativeBallStates.set(body,state);
+    }
+    return state;
   }
 
   stepPhysics(records,preparedNudge){
@@ -777,5 +785,5 @@ export class Pinball {
     }
   }
 
-  dispose(){this.events.free();this.world.free();}
+  dispose(){for(const storage of this.nativeBallStorage)storage.release();this.events.free();this.world.free();}
 }

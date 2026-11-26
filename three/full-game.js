@@ -380,7 +380,11 @@ class FullGame extends Pinball {
     const nudge=this.cabinetNudge.step(this.nativePositionUnits?this.nativeIncline:this.incline);
     this.tiltBob.step(this.cabinetNudge.acceleration);
     const physicalRecords=this.physicalRecords;
-    for(const rec of physicalRecords){rec.previous={...rec.body.translation()};rec.previousVelocity={...rec.body.linvel()};}
+    for(const rec of physicalRecords){
+      rec.previous={...rec.body.translation()};
+      // Previous velocity is consumed only by backend collision callbacks.
+      if(!this.nativeDisplacements)rec.previousVelocity={...rec.body.linvel()};
+    }
     this.driveFlippers();
     for(const f of this.flippers){
       const state=this.rules.objects.get(f.side==='left'?'leftflipper':'rightflipper');

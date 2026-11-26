@@ -3,9 +3,11 @@
 // 195f214dd4849b8ef6113fd377258b78d0dec3bf. See licenses/VPX-Physics-NOTICE.txt.
 const f=Math.fround;
 import {NativeOrientation} from './native-orientation.js';
+import {NativeBodyStorage} from './native-body-storage.js';
 export class NativeBall {
-  constructor(body){
+  constructor(body,{cacheStorage=false,onStorageRelease}={}){
     this.rapier=body;this.position=null;this.lastWorld=null;
+    this.storage=cacheStorage?new NativeBodyStorage(body,onStorageRelease):body;
     this.radius=25;
     this.orientation=new NativeOrientation();
     this.eventPosition={x:-10000,y:-10000,z:-10000};this.eventDistance=0;
@@ -29,38 +31,40 @@ export class NativeBall {
     // Release Rapier without leaving those references pointing into freed WASM.
     this.sync();this.syncAngular();
     const copy=v=>({x:f(v.x),y:f(v.y),z:f(v.z)});
-    let position=copy(this.rapier.translation()),velocity=copy(this.velocity()),angular=copy(this.rapier.angvel());
+    let position=copy(this.storage.translation()),velocity=copy(this.velocity()),angular=copy(this.storage.angvel());
     const mass=this.rapier.mass();
+    if(this.storage instanceof NativeBodyStorage)this.storage.release();
     this.rapier={
       translation:()=>({...position}),setTranslation:p=>{position=copy(p);},
       linvel:()=>({...velocity}),setLinvel:v=>{velocity=copy(v);},
       angvel:()=>({...angular}),setAngvel:w=>{angular=copy(w);},mass:()=>mass,
     };
+    this.storage=this.rapier;
     return this;
   }
   sync(){
-    const p=this.rapier.translation(),old=this.lastWorld;
+    const p=this.storage.translation(),old=this.lastWorld;
     if(!old||p.x!==old.x||p.y!==old.y||p.z!==old.z){this.position={x:f(p.x*100),y:f(2115-p.y*100),z:f(p.z*100)};this.lastWorld=p;}
     return this.position;
   }
   velocity(){
-    const actual=this.rapier.linvel(),raw=this.lastVelocity;
+    const actual=this.storage.linvel(),raw=this.lastVelocity;
     if(!raw||!Object.is(actual.x,raw.x)||!Object.is(actual.y,raw.y)||!Object.is(actual.z,raw.z)){
       this.lastVelocity={...actual};this.linearVelocity={...actual};
     }
     // Rapier skips numerically equal writes, so +0/-0 cannot be its native
     // velocity authority. Preserve our Float32 input while backing values
     // remain unchanged; adopt genuine backend integration/impulse changes.
-    Object.assign(actual,this.linearVelocity);return actual;
+    return {...actual,...this.linearVelocity};
   }
   setVelocity(v,wake=true){
     const value={x:f(v.x),y:f(v.y),z:f(v.z)};
-    this.rapier.setLinvel(value,wake);this.linearVelocity=value;this.lastVelocity=this.rapier.linvel();
+    this.rapier.setLinvel(value,wake);this.linearVelocity=value;this.lastVelocity=this.storage.linvel();
   }
   translation(){const p=this.sync();return {x:p.x*.01,y:(2115-p.y)*.01,z:p.z*.01};}
   setTranslation(p,wake){this.position={x:f(p.x*100),y:f(2115-p.y*100),z:f(p.z*100)};this.publish(wake);}
   setPosition(axis,value,wake=true){this.sync();this.position={...this.position,[axis]:f(value)};this.publish(wake);}
-  publish(wake=true){const p=this.position;this.rapier.setTranslation({x:p.x*.01,y:(2115-p.y)*.01,z:p.z*.01},wake);this.lastWorld=this.rapier.translation();}
+  publish(wake=true){const p=this.position;this.rapier.setTranslation({x:p.x*.01,y:(2115-p.y)*.01,z:p.z*.01},wake);this.lastWorld=this.storage.translation();}
   displace(start,v,duration){
     this.orientation.advance(this.angularMomentum,this.inertia,duration);
     const dt=f(duration*100);
@@ -80,7 +84,7 @@ export class NativeBall {
     this.position={x:f(p.x+f(v.x*dt)),y:f(p.y+f(-v.y*dt)),z:f(p.z+f(v.z*dt))};this.publish();
   }
   syncAngular(){
-    const w=this.rapier.angvel(),old=this.lastAngular;
+    const w=this.storage.angvel(),old=this.lastAngular;
     // HitBall::Inertia multiplies radius twice before mass. Reassociating
     // these float operations changes the result for nonstandard parameters.
     this.inertia=f(f(f(f(.4)*this.radius)*this.radius)*f(this.body.mass()));
@@ -97,7 +101,7 @@ export class NativeBall {
     // Native setters change the inertia without changing angular momentum.
     // Keep Rapier's backing velocity consistent so a later sync cannot
     // reinterpret the unchanged momentum using the former inertia.
-    const m=this.angularMomentum,i=this.inertia;this.rapier.setAngvel({x:-f(m.x/i)*100,y:f(m.y/i)*100,z:-f(m.z/i)*100},true);this.lastAngular=this.rapier.angvel();
+    const m=this.angularMomentum,i=this.inertia;this.rapier.setAngvel({x:-f(m.x/i)*100,y:f(m.y/i)*100,z:-f(m.z/i)*100},true);this.lastAngular=this.storage.angvel();
   }
   angularVelocity(){
     this.syncAngular();const m=this.angularMomentum,i=this.inertia;
@@ -107,24 +111,24 @@ export class NativeBall {
     // Rapier's orientation integration can perturb angular velocity by a few
     // ULPs even for an isolated sphere. Native momentum changes only on an
     // impulse or an authored setter; don't adopt that integrator drift.
-    const w=this.rapier.angvel(),old=this.lastAngular;
+    const w=this.storage.angvel(),old=this.lastAngular;
     if(old&&w.x===old.x&&w.y===old.y&&w.z===old.z)return;
     const m=this.angularMomentum,i=this.inertia;
-    this.rapier.setAngvel({x:-f(m.x/i)*100,y:f(m.y/i)*100,z:-f(m.z/i)*100},true);this.lastAngular=this.rapier.angvel();
+    this.rapier.setAngvel({x:-f(m.x/i)*100,y:f(m.y/i)*100,z:-f(m.z/i)*100},true);this.lastAngular=this.storage.angvel();
   }
   angularImpulse(impulse){
     this.syncAngular();const m=this.angularMomentum;
     this.angularMomentum={x:f(m.x+f(-impulse.x*100)),y:f(m.y+f(impulse.y*100)),z:f(m.z+f(-impulse.z*100))};
     const p=this.angularMomentum,i=this.inertia;
-    this.rapier.setAngvel({x:-f(p.x/i)*100,y:f(p.y/i)*100,z:-f(p.z/i)*100},true);this.lastAngular=this.rapier.angvel();
+    this.rapier.setAngvel({x:-f(p.x/i)*100,y:f(p.y/i)*100,z:-f(p.z/i)*100},true);this.lastAngular=this.storage.angvel();
   }
   dampAngular(factor){
     this.syncAngular();const m=this.angularMomentum;this.angularMomentum={x:f(m.x*factor),y:f(m.y*factor),z:f(m.z*factor)};
-    const p=this.angularMomentum,i=this.inertia;this.rapier.setAngvel({x:-f(p.x/i)*100,y:f(p.y/i)*100,z:-f(p.z/i)*100},true);this.lastAngular=this.rapier.angvel();
+    const p=this.angularMomentum,i=this.inertia;this.rapier.setAngvel({x:-f(p.x/i)*100,y:f(p.y/i)*100,z:-f(p.z/i)*100},true);this.lastAngular=this.storage.angvel();
   }
   setAngularMomentum(axis,value){
     this.syncAngular();this.angularMomentum[axis]=f(value);
-    const p=this.angularMomentum,i=this.inertia;this.rapier.setAngvel({x:-f(p.x/i)*100,y:f(p.y/i)*100,z:-f(p.z/i)*100},true);this.lastAngular=this.rapier.angvel();
+    const p=this.angularMomentum,i=this.inertia;this.rapier.setAngvel({x:-f(p.x/i)*100,y:f(p.y/i)*100,z:-f(p.z/i)*100},true);this.lastAngular=this.storage.angvel();
   }
   snapshot(){
     this.syncAngular();const v=this.velocity();
@@ -133,6 +137,6 @@ export class NativeBall {
   commit(ball){
     const p=this.position;if(!Object.is(p.x,ball.p.x)||!Object.is(p.y,ball.p.y)||!Object.is(p.z,ball.p.z)){this.position=ball.p;this.publish();}this.angularMomentum=ball.m;
     this.setVelocity({x:ball.v.x,y:-ball.v.y,z:ball.v.z},true);
-    const m=ball.m,i=this.inertia;this.rapier.setAngvel({x:-f(m.x/i)*100,y:f(m.y/i)*100,z:-f(m.z/i)*100},true);this.lastAngular=this.rapier.angvel();
+    const m=ball.m,i=this.inertia;this.rapier.setAngvel({x:-f(m.x/i)*100,y:f(m.y/i)*100,z:-f(m.z/i)*100},true);this.lastAngular=this.storage.angvel();
   }
 }
