@@ -173,7 +173,10 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--native-gameplay-history' in sys.argv and '--paged-history' in sys.argv:
             through_ms=next((int(arg.split('=',1)[1]) for arg in sys.argv if arg.startswith('--through-ms=')),30000)
             timeout=max(timeout,through_ms/1000*2+120)
-        if '--production-lifecycle' in sys.argv:timeout=260
+        if '--production-lifecycle' in sys.argv:
+            player_count=next((int(arg.split('=',1)[1]) for arg in sys.argv if arg.startswith('--players=')),1)
+            if player_count not in range(1,5):raise ValueError('Production lifecycle needs one to four players')
+            timeout=220*player_count+40
         if '--native-frame-history' in sys.argv:
             frame_count=next((int(arg.split('=',1)[1]) for arg in sys.argv if arg.startswith('--frames=')),6)
             timeout=max(timeout,60+frame_count*4)

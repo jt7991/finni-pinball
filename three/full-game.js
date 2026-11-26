@@ -346,7 +346,7 @@ class FullGame extends Pinball {
     this.state=playing?'playing':old==='playing'?'over':old;
     this.player=Number(this.rules.value('CurrentPlayer'))||1;
     this.score=Number(this.rules.value(`Score(${this.player})`))||0;
-    this.ballNumber=playing?4-Number(this.rules.value(`BallsRemaining(${this.player})`)):0;
+    this.ballNumber=Number(this.rules.value('Balls'))||0;
     this.tilted=!!this.rules.value('Tilted');
     this.inLane=this.records.some(r=>r.inLane);
     this.gameState={playing,entering:!!this.rules.value('hsbModeActive'),player:this.player,
