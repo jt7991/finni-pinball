@@ -1,7 +1,7 @@
 // Small local production server. No VPX initialization or table unpacking.
 import http from 'node:http';
-import {createReadStream,openSync,writeSync} from 'node:fs';
-import {readFile,stat} from 'node:fs/promises';
+import {openSync,writeSync} from 'node:fs';
+import {stat} from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {gzipSync} from 'node:zlib';
@@ -45,7 +45,7 @@ const server=http.createServer(async(req,res)=>{
     const file=voice.get(url.pathname)??path.resolve(directory,relative||'index.html');
     if(!voice.has(url.pathname)&&!file.startsWith(directory+path.sep)){res.writeHead(404);res.end();return;}
     let info=await stat(file,{bigint:true});if(!info.isFile()){res.writeHead(404);res.end();return;}
-    const validated=await validateAsset(file,info),{etag,legacyETag}=validated;info=validated.info;
+    const {etag,body}=await validateAsset(file,info);
     const ext=path.extname(file),headers={'Content-Type':mime[ext]||'application/octet-stream','X-Content-Type-Options':'nosniff','Cache-Control':'no-cache',Vary:'Accept-Encoding',ETag:etag};
     if(staticAudit!==undefined){
       const started=Date.now();
@@ -53,15 +53,16 @@ const server=http.createServer(async(req,res)=>{
     }
     // RFC 9110 section 13.1.2 uses weak comparison for GET/HEAD validation.
     const condition=req.headers['if-none-match'];
-    if(condition&&(condition.trim()==='*'||condition.split(',').some(value=>[etag.slice(2),legacyETag.slice(2)].includes(value.trim().replace(/^W\//,''))))){
+    const matches=condition&&(condition.trim()==='*'||condition.split(',').some(value=>value.trim().replace(/^W\//,'')===etag.slice(2)));
+    if(matches){
       res.writeHead(304,headers);res.end();return;
     }
-    if(/gzip/.test(req.headers['accept-encoding']||'')&&['.js','.css','.json','.vbs','.glsl','.glb','.wasm','.html','.bin','.ttf','.svg','.wav'].includes(ext)&&info.size<32n*1024n*1024n){
+    if(/gzip/.test(req.headers['accept-encoding']||'')&&['.js','.css','.json','.vbs','.glsl','.glb','.wasm','.html','.bin','.ttf','.svg','.wav'].includes(ext)&&body.length<32*1024*1024){
       const previous=compressed.get(file);let data=previous?.etag===etag?previous.data:null;
-      if(!data){data=gzipSync(await readFile(file));compressed.set(file,{data,etag});}
+      if(!data){data=gzipSync(body);compressed.set(file,{data,etag});}
       res.writeHead(200,{...headers,'Content-Encoding':'gzip','Content-Length':data.length});res.end(req.method==='HEAD'?undefined:data);
     }else{
-      res.writeHead(200,{...headers,'Content-Length':info.size.toString()});if(req.method==='HEAD')res.end();else createReadStream(file).pipe(res);
+      res.writeHead(200,{...headers,'Content-Length':body.length});res.end(req.method==='HEAD'?undefined:body);
     }
   }catch(error){if(!res.headersSent)res.writeHead(error.code==='ENOENT'?404:503,{'Content-Type':'text/plain'});res.end('Unavailable.');}
 });

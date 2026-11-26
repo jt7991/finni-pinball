@@ -10,7 +10,7 @@ async function withServer(run,{audit=false}={}){
  fs.writeFileSync(path.join(directory,'index.html'),'<!doctype html><title>Cache probe</title>');
  const file=path.join(directory,'geometry.bin'),original=Buffer.from('native geometry A\n'.repeat(1024));fs.writeFileSync(file,original);fs.utimesSync(file,1700000000,1700000000);
  const auditFile=path.join(directory,'responses.ndjson');
- const child=spawn(process.execPath,['scripts/serve-three.mjs','--directory',directory,'--host','127.0.0.1','--port','0',...audit?['--static-audit-log',auditFile]:[]],{cwd:root,stdio:['ignore','pipe','pipe']});
+ const child=spawn(process.execPath,['scripts/serve-three.mjs','--directory',directory,'--host','127.0.0.1','--port','0',...audit?['--static-audit-log',auditFile]:[]],{cwd:root,windowsHide:true,stdio:['ignore','pipe','pipe']});
  let stdout='',stderr='';const ready=Promise.withResolvers();
  child.stdout.on('data',data=>{stdout+=data;const match=/Finni Three\.js: (http:\/\/127\.0\.0\.1:\d+\/three\/)/.exec(stdout);if(match)ready.resolve(match[1]);});
  child.stderr.on('data',data=>{stderr+=data;});child.once('error',ready.reject);child.once('exit',code=>ready.reject(Error('Static server exited '+code+': '+stderr)));
@@ -97,11 +97,29 @@ test('identical replacements and timestamp changes do not force the same body to
  });
 });
 
-test('previous stat-based validators migrate without retransmission and cannot hide a later edit',async()=>{
+test('previous stat-based validators refetch current bytes before migrating to content validation',async()=>{
  await withServer(async({base,file,original})=>{
   const info=fs.statSync(file,{bigint:true}),version=[info.dev,info.ino,info.size,info.mtimeNs,info.ctimeNs].join(':'),legacy='W/"'+createHash('sha256').update(version).digest('base64url')+'"';
-  const migrated=await request(base,'geometry.bin',{headers:{'If-None-Match':legacy}});assert.equal(migrated.status,304);assert.equal(migrated.body.length,0);assert.notEqual(migrated.headers.etag,legacy);
+  // The stamp alone cannot prove what bytes the browser has cached. Refresh
+  // that representation once rather than accepting a possibly colliding tag.
+  const migrated=await request(base,'geometry.bin',{headers:{'If-None-Match':legacy}});assert.equal(migrated.status,200);assert.deepEqual(migrated.body,original);assert.notEqual(migrated.headers.etag,legacy);
   const changed=Buffer.from(original.toString().replaceAll('geometry A','geometry E'));fs.writeFileSync(file,changed);fs.utimesSync(file,1700000000,1700000000);
   const fresh=await request(base,'geometry.bin',{headers:{'If-None-Match':legacy}});assert.equal(fresh.status,200);assert.deepEqual(fresh.body,changed);assert.notEqual(fresh.headers.etag,migrated.headers.etag);
+ });
+});
+
+test('concurrent static responses keep their exact body and content tag through replacements',async()=>{
+ await withServer(async({base,directory,file,original})=>{
+  const variants=[original,...['B','C'].map(letter=>Buffer.from(original.toString().replaceAll('geometry A','geometry '+letter)))];
+  const responses=Promise.all(Array.from({length:32},(_,i)=>request(base,'geometry.bin',{headers:{'Accept-Encoding':i%2?'gzip':'identity'}})));
+  for(let i=0;i<16;i++){
+   await new Promise(resolve=>setImmediate(resolve));
+   const replacement=path.join(directory,'replacement-'+i+'.bin');fs.writeFileSync(replacement,variants[1+i%2]);fs.utimesSync(replacement,1700000000,1700000000);await afterFileRelease(()=>fs.renameSync(replacement,file));
+  }
+  for(const response of await responses){
+   assert.equal(response.status,200);const body=response.headers['content-encoding']==='gzip'?gunzipSync(response.body):response.body;
+   assert.ok(variants.some(bytes=>bytes.equals(body)),'Serve one complete immutable file generation');
+   assert.equal(response.headers.etag,'W/"'+createHash('sha256').update(body).digest('base64url')+'"','The header describes the actual selected response body');
+  }
  });
 });
