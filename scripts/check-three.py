@@ -84,6 +84,7 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--native-bloom-context' in sys.argv:runner='probe-native-bloom-context.mjs'
         if '--production-lock-contact' in sys.argv:runner='test-production-lock-contact.mjs'
         if '--frame-history-render' in sys.argv:runner='test-native-frame-history.mjs'
+        if '--opaque-cache' in sys.argv:runner='test-opaque-cache-browser.mjs'
         if '--postprocess-history' in sys.argv:runner='test-native-postprocess-history.mjs'
         if '--bloom-frame-component' in sys.argv:runner='test-native-bloom-frame-browser.mjs'
         if '--bloom-coordinates' in sys.argv:runner='probe-bloom-coordinates.mjs'
