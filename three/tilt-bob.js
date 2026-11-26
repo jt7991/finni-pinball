@@ -3,6 +3,7 @@
 // See public/licenses/VPX-Physics-NOTICE.txt.
 import {f,add,sub,mul,div,dot,cross,length} from './native-vector.js';
 import {meshAtan2 as atan2} from './flipper-float-math.js';
+import {nativeAngleSin,nativeAngleCos} from './native-angle-math.js';
 export class TiltBob {
   constructor(onChange=()=>{},{enabled=true,damping=1,thresholdDegrees=1}={}){
     this.enabled=enabled;this.pole=f(.1);this.damping0=f(f(1.25)*f(damping));this.damping1=f(f(.75)*f(damping));this.threshold=f(f(thresholdDegrees)*f(Math.PI/180));
@@ -19,8 +20,8 @@ export class TiltBob {
     this.position=size>f(1e-8)?mul(this.position,f(this.pole/size)):{x:0,y:0,z:-this.pole};axis=div(this.position,this.pole);this.omega=sub(this.omega,mul(axis,dot(this.omega,axis)));
     const psi=atan2(f(Math.sqrt(f(f(this.position.x*this.position.x)+f(this.position.y*this.position.y)))),-this.position.z);this.percent=f(f(100*psi)/this.threshold);const high=this.percent>100;
     if(high){
-      const limit=f(this.threshold-f(.001)),xy=f(this.pole*f(Math.sin(limit))),theta=atan2(this.position.x,this.position.y);
-      this.position={x:f(xy*f(Math.sin(theta))),y:f(xy*f(Math.cos(theta))),z:f(-this.pole*f(Math.cos(limit)))};
+      const limit=f(this.threshold-f(.001)),xy=f(this.pole*nativeAngleSin(limit)),theta=atan2(this.position.x,this.position.y);
+      this.position={x:f(xy*nativeAngleSin(theta)),y:f(xy*nativeAngleCos(theta)),z:f(-this.pole*nativeAngleCos(limit))};
       const velocity=cross(this.omega,this.position),reflected=sub(velocity,mul(axis,f(2*dot(velocity,axis))));this.omega=mul(div(cross(this.position,reflected),square),f(.8));
     }
     if(high!==this.high){this.high=high;if(high)this.index++;this.onChange(high);}

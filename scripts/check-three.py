@@ -120,6 +120,7 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--production-dmd-animation' in sys.argv:runner='test-dmd-animation-production.mjs'
         if '--dmd-atlas-conformance' in sys.argv:runner='test-dmd-atlas-browser.mjs'
         if '--native-tilt-bob' in sys.argv:runner='probe-native-tilt-bob.mjs'
+        if '--native-tilt-precision' in sys.argv:runner='probe-native-tilt-precision.mjs'
         if '--production-tilt' in sys.argv:runner='test-tilt-production.mjs'
         if '--main-player' in sys.argv:runner='test-main-player-production.mjs'
         if '--production-lifecycle' in sys.argv:runner='test-automatic-budget-gameplay.mjs'
