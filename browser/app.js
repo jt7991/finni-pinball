@@ -106,6 +106,7 @@ for(const [id,name] of actions){
   (id.startsWith('nudge')?$('nudges'):$('touch')).append(button);
 }
 const phoneLayout=matchMedia('(max-width:650px), (pointer:coarse) and (max-width:1024px)');
+const phoneFullscreen=matchMedia('(pointer:coarse) and (max-width:1024px)');
 let graphics='auto';
 try{const saved=localStorage.getItem('finni-graphics-v1');if(['auto','performance','detailed'].includes(saved))graphics=saved;}catch{}
 const automaticGraphicsKey='finni-automatic-graphics-v1';
@@ -301,7 +302,7 @@ function paintBeforeStarting(){
 async function replay(){
   if($('play').disabled||$('initials-dialog').open)return;
   showStartingGame();
-  await setFullscreen(true);
+  if(phoneFullscreen.matches)await setFullscreen(true);
   await paintBeforeStarting();
   if(!connected)return;
   release();
@@ -463,7 +464,7 @@ async function boot(){
       try{
         if(!tablePrepared)await paintBeforeStarting();
         if(document.body.classList.contains('engine-error'))return;
-        void setFullscreen(true);
+        if(phoneFullscreen.matches)void setFullscreen(true);
         if(!tablePrepared)prepareTable();
         if(browserMusic&&tableSupportsBrowserMusic)evaluate('FinniUseBrowserMusic');
         $('play').removeAttribute('aria-busy');

@@ -3,6 +3,8 @@ export function createViews(evaluate, ready, release=()=>{}){
   const picker=select.closest('label');
   const desktopAnchor=document.createComment('camera picker');picker.before(desktopAnchor);
   const phone=matchMedia('(max-width:650px), (pointer:coarse) and (max-width:1024px)');
+  const portraitLayout=matchMedia('(orientation:portrait)');
+  const tallPortrait=matchMedia('(max-aspect-ratio:2/3)');
   function placePicker(){
     if(phone.matches){document.getElementById('camera-controls').append(picker);picker.classList.add('in-controls');}
     else{desktopAnchor.after(picker);picker.classList.remove('in-controls');}
@@ -38,27 +40,49 @@ export function createViews(evaluate, ready, release=()=>{}){
   portrait.onclick=()=>rotate(!document.body.classList.contains('portrait-rotated'));
   try{if(!phone.matches&&localStorage.getItem('finni-portrait-v1')==='true')rotate(true);}catch{}
   phone.addEventListener('change',()=>{if(phone.matches)rotate(false);});
-  new ResizeObserver(fitCanvas).observe(screen);
   // Old preferences belonged to the non-refreshing camera implementation.
   const preferenceKey='finni-camera-v2';
   let revision=0;
+  let appliedOffsetY;
+  let appliedScale;
+  let appliedPlungerVisible;
   try{const saved=localStorage.getItem(preferenceKey);if(presets[saved])select.value=saved;}catch{}
-  function apply(){
+  function apply({force=true}={}){
     if(!ready())return;
     fitCanvas();
     const [inclination,fov,layback,y,z,scale]=presets[select.value]||presets.classic;
+    // Fill tall stages, then ease off the lift and zoom as the stage gets wider.
+    const stageAspect=screen.clientWidth/Math.max(1,screen.clientHeight);
+    const portraitPerspective=phone.matches&&tallPortrait.matches&&inclination>0;
+    const portraitLift=Math.round(Math.max(70,130-900*Math.max(0,stageAspect-.525)));
+    const offsetY=portraitPerspective?y-portraitLift:y;
+    const cameraScale=portraitPerspective&&select.value==='balanced'
+      ? Math.round(1000*Math.max(.84,1.045-1.1*Math.max(0,stageAspect-.5)))/1000
+      : scale;
+    // The native rod extends past the apron in portrait framing. Hide its mesh
+    // while leaving the plunger's pullback, collision, and fire behavior active.
+    const plungerVisible=!(phone.matches&&portraitLayout.matches);
+    if(!force&&offsetY===appliedOffsetY&&cameraScale===appliedScale&&plungerVisible===appliedPlungerVisible)return;
+    appliedOffsetY=offsetY;
+    appliedScale=cameraScale;
+    appliedPlungerVisible=plungerVisible;
     const current=++revision;
     // These legacy setters only update stored values. Toggling the static
     // prepass invalidates the cached camera; render two dynamic frames before
     // restoring it so the newly selected projection is actually displayed.
-    evaluate(`Table1.Inclination=${inclination}:Table1.FieldOfView=${fov}:Table1.Layback=${layback}:Table1.ScaleX=${scale}:Table1.ScaleY=${scale}:Table1.Xlatex=0:Table1.Xlatey=${y}:Table1.Xlatez=${z}:DisableStaticPrerendering=False:DisableStaticPrerendering=True`);
+    evaluate(`Table1.Inclination=${inclination}:Table1.FieldOfView=${fov}:Table1.Layback=${layback}:Table1.ScaleX=${cameraScale}:Table1.ScaleY=${cameraScale}:Table1.Xlatex=0:Table1.Xlatey=${offsetY}:Table1.Xlatez=${z}:Plunger.Visible=${plungerVisible?'True':'False'}:DisableStaticPrerendering=False:DisableStaticPrerendering=True`);
     requestAnimationFrame(()=>requestAnimationFrame(()=>{
       if(current===revision&&ready())evaluate('DisableStaticPrerendering=False');
     }));
-    try{localStorage.setItem(preferenceKey,select.value);}catch{}
   }
+  const refreshLayout=()=>apply({force:false});
+  new ResizeObserver(refreshLayout).observe(screen);
+  portraitLayout.addEventListener('change',refreshLayout);
+  tallPortrait.addEventListener('change',refreshLayout);
+  phone.addEventListener('change',refreshLayout);
   select.onchange=()=>{
     release();apply();
+    if(ready())try{localStorage.setItem(preferenceKey,select.value);}catch{}
     if(ready()&&!document.querySelector('.panel:popover-open'))canvas.focus({preventScroll:true});
   };
   return {apply};
