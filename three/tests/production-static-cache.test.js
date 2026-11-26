@@ -2,6 +2,7 @@ import test from 'node:test';import assert from 'node:assert/strict';
 import fs from 'node:fs';import path from 'node:path';import http from 'node:http';
 import {spawn} from 'node:child_process';import {once} from 'node:events';import {gunzipSync} from 'node:zlib';
 import {fileURLToPath} from 'node:url';
+import {createHash} from 'node:crypto';
 
 const root=path.resolve(fileURLToPath(new URL('../../',import.meta.url))),work=path.join(root,'.work');
 async function withServer(run,{audit=false}={}){
@@ -68,5 +69,39 @@ test('replaced, removed and unsupported static requests cannot reuse an obsolete
   const post=await request(base,'geometry.bin',{method:'POST',headers:{'If-None-Match':'*'}});assert.equal(post.status,404);
   await afterFileRelease(()=>fs.unlinkSync(file));const missing=await request(base,'geometry.bin',{headers:{'If-None-Match':'*'}});assert.equal(missing.status,404);
   const absent=await request(base,'missing.bin',{headers:{'If-None-Match':first.headers.etag}});assert.equal(absent.status,404);
+ });
+});
+
+test('identical rebuilt assets keep their validator across independent server directories',async()=>{
+ await withServer(async first=>{
+  const original=await request(first.base,'geometry.bin',{headers:{'Accept-Encoding':'gzip'}});
+  await withServer(async second=>{
+   assert.notEqual(fs.statSync(first.file,{bigint:true}).ino,fs.statSync(second.file,{bigint:true}).ino);
+   for(const method of ['GET','HEAD']){
+    const reused=await request(second.base,'geometry.bin',{method,headers:{'If-None-Match':original.headers.etag,'Accept-Encoding':'gzip'}});
+    assert.equal(reused.status,304);assert.equal(reused.body.length,0);assert.equal(reused.headers.etag,original.headers.etag);
+   }
+   const changed=Buffer.from(second.original.toString().replaceAll('geometry A','geometry D'));fs.writeFileSync(second.file,changed);fs.utimesSync(second.file,1700000000,1700000000);
+   const fresh=await request(second.base,'geometry.bin',{headers:{'If-None-Match':original.headers.etag}});assert.equal(fresh.status,200);assert.deepEqual(fresh.body,changed);assert.notEqual(fresh.headers.etag,original.headers.etag);
+   const unchanged=await request(first.base,'geometry.bin',{headers:{'If-None-Match':original.headers.etag}});assert.equal(unchanged.status,304);
+  });
+ });
+});
+
+test('identical replacements and timestamp changes do not force the same body to download again',async()=>{
+ await withServer(async({base,directory,file,original})=>{
+  const initial=await request(base,'geometry.bin'),replacement=path.join(directory,'same.bin');fs.writeFileSync(replacement,original);await afterFileRelease(()=>fs.renameSync(replacement,file));
+  const replaced=await request(base,'geometry.bin',{headers:{'If-None-Match':initial.headers.etag}});assert.equal(replaced.status,304);assert.equal(replaced.body.length,0);
+  fs.utimesSync(file,1800000000,1800000000);
+  const touched=await request(base,'geometry.bin',{headers:{'If-None-Match':initial.headers.etag,'Accept-Encoding':'gzip'}});assert.equal(touched.status,304);assert.equal(touched.body.length,0);
+ });
+});
+
+test('previous stat-based validators migrate without retransmission and cannot hide a later edit',async()=>{
+ await withServer(async({base,file,original})=>{
+  const info=fs.statSync(file,{bigint:true}),version=[info.dev,info.ino,info.size,info.mtimeNs,info.ctimeNs].join(':'),legacy='W/"'+createHash('sha256').update(version).digest('base64url')+'"';
+  const migrated=await request(base,'geometry.bin',{headers:{'If-None-Match':legacy}});assert.equal(migrated.status,304);assert.equal(migrated.body.length,0);assert.notEqual(migrated.headers.etag,legacy);
+  const changed=Buffer.from(original.toString().replaceAll('geometry A','geometry E'));fs.writeFileSync(file,changed);fs.utimesSync(file,1700000000,1700000000);
+  const fresh=await request(base,'geometry.bin',{headers:{'If-None-Match':legacy}});assert.equal(fresh.status,200);assert.deepEqual(fresh.body,changed);assert.notEqual(fresh.headers.etag,migrated.headers.etag);
  });
 });

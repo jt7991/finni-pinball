@@ -5,9 +5,9 @@ import {readFile,stat} from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {gzipSync} from 'node:zlib';
-import {createHash} from 'node:crypto';
 import {parseArgs} from 'node:util';
 import {sharedBrowserFiles} from './shared-browser-files.mjs';
+import {createStaticAssetValidator} from './static-asset-validator.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const {values}=parseArgs({options:{host:{type:'string',default:'127.0.0.1'},port:{type:'string',default:'5174'},directory:{type:'string',default:'browser/three'},build:{type:'boolean',default:false},'static-audit-log':{type:'string'}}});
@@ -16,6 +16,7 @@ if(values.build){const {build}=await import('vite');await build({root:path.join(
 await stat(path.join(directory,'index.html'));
 const staticAudit=values['static-audit-log']?openSync(values['static-audit-log'],'wx'):undefined;
 const compressed=new Map();
+const validateAsset=createStaticAssetValidator();
 const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.vbs':'text/plain','.glsl':'text/plain','.wasm':'application/wasm','.glb':'model/gltf-binary','.webp':'image/webp','.png':'image/png','.ico':'image/x-icon','.txt':'text/plain','.m4a':'audio/mp4','.flac':'audio/flac','.wav':'audio/wav','.ttf':'font/ttf'};
 mime['.mp3']='audio/mpeg';
 const api={'/api/leaderboard':'/api/finni/leaderboard','/api/runs':'/api/finni/runs','/api/scores':'/api/finni/scores'};
@@ -43,11 +44,8 @@ const server=http.createServer(async(req,res)=>{
     const relative=decodeURIComponent(url.pathname.slice('/three/'.length));
     const file=voice.get(url.pathname)??path.resolve(directory,relative||'index.html');
     if(!voice.has(url.pathname)&&!file.startsWith(directory+path.sep)){res.writeHead(404);res.end();return;}
-    const info=await stat(file,{bigint:true});if(!info.isFile()){res.writeHead(404);res.end();return;}
-    // Include file identity and change time as well as size/mtime: replacing an
-    // asset or preserving its exported mtime must invalidate a previous body.
-    const version=[info.dev,info.ino,info.size,info.mtimeNs,info.ctimeNs].join(':');
-    const etag=`W/"${createHash('sha256').update(version).digest('base64url')}"`;
+    let info=await stat(file,{bigint:true});if(!info.isFile()){res.writeHead(404);res.end();return;}
+    const validated=await validateAsset(file,info),{etag,legacyETag}=validated;info=validated.info;
     const ext=path.extname(file),headers={'Content-Type':mime[ext]||'application/octet-stream','X-Content-Type-Options':'nosniff','Cache-Control':'no-cache',Vary:'Accept-Encoding',ETag:etag};
     if(staticAudit!==undefined){
       const started=Date.now();
@@ -55,7 +53,7 @@ const server=http.createServer(async(req,res)=>{
     }
     // RFC 9110 section 13.1.2 uses weak comparison for GET/HEAD validation.
     const condition=req.headers['if-none-match'];
-    if(condition&&(condition.trim()==='*'||condition.split(',').some(value=>value.trim().replace(/^W\//,'')===etag.slice(2)))){
+    if(condition&&(condition.trim()==='*'||condition.split(',').some(value=>[etag.slice(2),legacyETag.slice(2)].includes(value.trim().replace(/^W\//,''))))){
       res.writeHead(304,headers);res.end();return;
     }
     if(/gzip/.test(req.headers['accept-encoding']||'')&&['.js','.css','.json','.vbs','.glsl','.glb','.wasm','.html','.bin','.ttf','.svg','.wav'].includes(ext)&&info.size<32n*1024n*1024n){

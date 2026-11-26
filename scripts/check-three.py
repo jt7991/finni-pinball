@@ -107,6 +107,7 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--production-worker-performance' in sys.argv:runner='benchmark-production-worker-browser.mjs'
         if '--worker-throttle-coverage' in sys.argv:runner='probe-worker-throttle-browser.mjs'
         if '--startup-resource-audit' in sys.argv:runner='audit-production-startup-browser.mjs'
+        if '--static-rebuild-cache' in sys.argv:runner='test-static-rebuild-cache-browser.mjs'
         if '--static-batch-benchmark' in sys.argv:runner='benchmark-native-static-batches.mjs'
         if '--startup-profile' in sys.argv:runner='profile-production-startup-browser.mjs'
         if '--dmd-decode-performance' in sys.argv:runner='benchmark-dmd-decode-browser.mjs'
