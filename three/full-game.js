@@ -396,7 +396,8 @@ class FullGame extends Pinball {
       const state=this.rules.objects.get(`${f.side}flipper`);
       state.currentangle=f.nativeAngle!==undefined?Math.fround(f.nativeAngle*Math.fround(180/Math.PI)):Math.abs(f.angle-f.raised)<.0001?state.endangle:Math.abs(f.angle-f.rest)<.0001?state.startangle:90-f.angle*180/Math.PI;
     }
-    this.events.drainCollisionEvents((a,b,started)=>{
+    // Native collision callbacks ran above. Only fallback stepping fills this queue.
+    if(!this.nativeDisplacements)this.events.drainCollisionEvents((a,b,started)=>{
       const rec=this.byCollider.get(a)??this.byCollider.get(b);if(!rec||rec.held)return;
       const other=this.byCollider.get(a)===rec?this.byCollider.get(b):this.byCollider.get(a);
       if(other){if(started&&!this.nativeBallContacts){const u=rec.body.linvel(),v=other.body.linvel();this.rules.run('OnBallBallCollision',rec.proxy,other.proxy,Math.hypot(u.x-v.x,u.y-v.y,u.z-v.z));}return;}
