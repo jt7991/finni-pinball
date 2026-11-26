@@ -1,0 +1,11 @@
+{
+  "sounds": 376,
+  "effects": 352,
+  "uniqueEffects": 281,
+  "allSourceFilesVerified": true,
+  "allPCM16RoundTripsExact": true,
+  "ffmpegSHA256": "3256173f3f8bffd7df12227c68adf68025edb1832273a9530688a7bb1ed8edec",
+  "sourceTableSHA256": "1e3d738c10398afc89691dcf585ce3c2330ab200dd038daec64ba111faba1997",
+  "deliveryFiles": 663,
+  "deliveryBytes": 105111269
+}

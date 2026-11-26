@@ -7,6 +7,7 @@ import {fileURLToPath} from 'node:url';
 import {gzipSync} from 'node:zlib';
 import {createHash} from 'node:crypto';
 import {parseArgs} from 'node:util';
+import {sharedBrowserFiles} from './shared-browser-files.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const {values}=parseArgs({options:{host:{type:'string',default:'127.0.0.1'},port:{type:'string',default:'5174'},directory:{type:'string',default:'browser/three'},build:{type:'boolean',default:false},'static-audit-log':{type:'string'}}});
@@ -18,11 +19,7 @@ const compressed=new Map();
 const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.json':'application/json','.vbs':'text/plain','.glsl':'text/plain','.wasm':'application/wasm','.glb':'model/gltf-binary','.webp':'image/webp','.png':'image/png','.ico':'image/x-icon','.txt':'text/plain','.m4a':'audio/mp4','.flac':'audio/flac','.wav':'audio/wav','.ttf':'font/ttf'};
 mime['.mp3']='audio/mpeg';
 const api={'/api/leaderboard':'/api/finni/leaderboard','/api/runs':'/api/finni/runs','/api/scores':'/api/finni/scores'};
-const voice=new Map(['/voice','/voice.html','/voice.css','/voice.js','/voice-audio.js','/voice-lines.json','/voice-cast.json','/voice-pitch-worker.js','/vendor/voice-pitch.js','/favicon.ico','/favicon.png'].map(route=>[route,path.join(root,'browser',route==='/voice'?'voice.html':route.slice(1))]));
-voice.set('/chewy.ttf',path.join(root,'assets/fonts/chewy/Chewy-Regular.ttf'));
-voice.set('/vendor/voice-pitch-LICENSES.txt',path.join(root,'browser/vendor/voice-pitch-LICENSES.txt'));
-for(const name of ['high-scores.html','high-scores.css','high-scores.js','fonts/PressStart2P-Regular.ttf','fonts/DMSans.ttf'])voice.set('/'+name,path.join(root,'browser',name));
-voice.set('/high-scores',path.join(root,'browser/high-scores.html'));
+const voice=sharedBrowserFiles(root);
 const server=http.createServer(async(req,res)=>{
   try{
     const url=new URL(req.url,'http://localhost');
@@ -30,7 +27,7 @@ const server=http.createServer(async(req,res)=>{
       if(url.pathname.startsWith('/api/voice-ai/')){res.writeHead(503,{'Content-Type':'application/json'});res.end(JSON.stringify({message:'ElevenLabs is available locally when the native server is started with --voice-ai.'}));return;}
       if(!['GET','POST'].includes(req.method)){res.writeHead(405);res.end();return;}
       if(req.method==='POST'&&req.headers.origin&&req.headers.origin!==`http://${req.headers.host}`){res.writeHead(403);res.end();return;}
-      const allowed=api[url.pathname]||/^\/api\/(?:collections\/(?:voice_team\/auth-with-password|voice_takes\/records)|files\/)/.test(url.pathname);
+      const allowed=api[url.pathname]||url.pathname==='/api/voice-login'||/^\/api\/(?:collections\/(?:voice_team\/auth-with-password|voice_takes\/records)|files\/)/.test(url.pathname);
       if(!allowed){res.writeHead(404);res.end();return;}
       const chunks=[];let bytes=0;
       for await(const chunk of req){bytes+=chunk.length;if(bytes>(api[url.pathname]?4096:8500000)){res.writeHead(413);res.end();return;}chunks.push(chunk);}
@@ -38,7 +35,7 @@ const server=http.createServer(async(req,res)=>{
         method:req.method,headers:{'Content-Type':req.headers['content-type']||'application/json','X-Real-IP':req.socket.remoteAddress,...req.headers.authorization?{Authorization:req.headers.authorization}:{}},
         body:req.method==='POST'?Buffer.concat(chunks):undefined,signal:AbortSignal.timeout(10000),
       });
-      res.writeHead(response.status,{'Content-Type':response.headers.get('content-type')||'application/json'});res.end(Buffer.from(await response.arrayBuffer()));return;
+      res.writeHead(response.status,{'Content-Type':response.headers.get('content-type')||'application/json',...response.headers.has('cache-control')?{'Cache-Control':response.headers.get('cache-control')}:{},...response.headers.has('content-disposition')?{'Content-Disposition':response.headers.get('content-disposition')}:{}});res.end(Buffer.from(await response.arrayBuffer()));return;
     }
     if(url.pathname==='/'){res.writeHead(302,{Location:'/three/'});res.end();return;}
     if(url.pathname==='/vpx'){res.writeHead(302,{Location:`http://${req.headers.host.split(':')[0]}:8765/`});res.end();return;}

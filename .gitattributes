@@ -42,3 +42,5 @@ scripts/probe-native-active-ball-frame.mjs text eol=lf
 three/tests/fixtures/vpx-earned-multiball-scoop.json -text
 scripts/earned-multiball-scoop-scenario.mjs text eol=lf
 scripts/probe-earned-multiball-scoop.mjs text eol=lf
+three/tests/fixtures/vpx-main-cc6f04f-changed-voices.json -text
+three/tests/fixtures/vpx-earned-multiball-scoop-cc6f04f.json -text

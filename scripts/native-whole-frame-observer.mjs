@@ -54,7 +54,8 @@ export function installNativeWholeFrameObserver(options={}){
    const {name}=info;
    if(!capturesImages()&&!name.startsWith('fb_rhtonemap'))return;
    const warmColor=options.captureFlasherGeometry&&!capturedWarmFlasher&&name==='noLight'?uniform(gl,program,'staticColor_Alpha'):null;
-   const captureWarm=warmColor?.[3]===3.75&&warmColor[0]===.9215686917304993;
+   const auditColor=options.flasherAuditColor;
+   const captureWarm=auditColor?warmColor?.every((value,i)=>value===(i===3?Math.fround(auditColor[i]/100):Math.fround(Math.fround(auditColor[i])*Math.fround(1/255)))):warmColor?.[3]===3.75&&warmColor[0]===.9215686917304993;
    const geometryFrame=options.geometryFrames?.includes(window.nativeStartup.frameIndex())||captureWarm;
    // The history capture needs postprocess inputs/outputs, not thousands of
    // static-prepass matrix readbacks. The existing detailed capture retains

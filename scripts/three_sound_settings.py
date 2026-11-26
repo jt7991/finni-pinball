@@ -11,8 +11,9 @@ def sound_settings(data, offset):
     return {'outputTarget': 'backglass' if target == 1 else 'playfield',
             'volumePercent': volume, 'panPercent': pan, 'frontRearFadePercent': fade}
 
-def table_sound_settings(path):
-    sounds = {}
+def table_sound_sources(path):
+    """Yield named source bytes and mixer settings from the serialized table."""
+    names_seen = set()
     with olefile.OleFileIO(path) as table:
         version, = struct.unpack('<I', table.openstream(['GameStg', 'Version']).read())
         if version != 1080:
@@ -42,8 +43,11 @@ def table_sound_settings(path):
                 payload = (b'RIFF'+struct.pack('<I', 4+8+18+8+size)+b'WAVEfmt '+
                            struct.pack('<I', 18)+wave_format+b'data'+struct.pack('<I', size)+payload)
             name = names[0].lower()
-            if name in sounds:
+            if name in names_seen:
                 raise ValueError('Duplicate sound '+name)
-            sounds[name] = {'sourceSHA256': hashlib.sha256(payload).hexdigest(),
-                            **sound_settings(data, offset+size)}
-    return sounds
+            names_seen.add(name)
+            yield name, payload, sound_settings(data, offset+size)
+
+def table_sound_settings(path):
+    return {name: {'sourceSHA256': hashlib.sha256(payload).hexdigest(), **settings}
+            for name, payload, settings in table_sound_sources(path)}

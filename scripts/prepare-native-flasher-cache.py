@@ -10,6 +10,7 @@ p.add_argument('--table',type=Path,required=True);p.add_argument('--capture',typ
 p.add_argument('--output',type=Path,required=True);p.add_argument('--fixture',type=Path,required=True)
 p.add_argument('--pydeps',type=Path,action='append',default=[]);p.add_argument('--getter-layout',type=Path)
 p.add_argument('--framebuffer-capture',type=Path)
+p.add_argument('--image-names',help='Comma-separated embedded source names; omit to export every audited image')
 args=p.parse_args();sys.path[:0]=[str(path) for path in args.pydeps]
 import olefile
 from PIL import Image
@@ -21,12 +22,14 @@ assert capture['reference']['controlledOverrides']=={} and capture['errors']==[]
 getter=audit.get('layout') or json.loads(args.getter_layout.read_text())
 assert getter['indices']==[4790] and getter['originalBody']=='0020002903200b'
 objects={row['name'].lower():row for row in audit['textureObjects']};images={}
+image_names=set(args.image_names.lower().split(',')) if args.image_names else None
 with olefile.OleFileIO(args.table) as table:
  for path in table.listdir():
   if len(path)!=2 or path[0]!='GameStg' or not path[1].startswith('Image'):continue
   data=table.openstream(path).read();assert data[4:8]==b'NAME'
   n=struct.unpack_from('<I',data,8)[0];name=data[12:12+n].decode('utf-8').lower()
   if name not in objects:continue
+  if image_names is not None and name not in image_names:continue
   start=data.find(b'RIFF');assert start>=0
   size=struct.unpack_from('<I',data,start+4)[0]+8;encoded=data[start:start+size]
   bitmap=Image.open(io.BytesIO(encoded)).convert('RGBA')
@@ -41,9 +44,12 @@ assert sha(base64.b64decode(draw['flasherTextureA']['bytes']))==images[selected]
 for name in members:
  row=objects[name];assert row['getter']==4790
  assert int(row['liveHash'])==row['object']^row['pinBinary']^(images[name]['width']<<16)^(images[name]['height']<<32)
-assert re.fullmatch('[a-z0-9-]+',selected);filename='cache-'+selected+'.webp';image=images[selected]
+assert re.fullmatch('[a-z0-9_-]+',selected);filename='cache-'+selected+'.webp';image=images[selected]
 metadata={'engineSHA256':capture['engineSHA256'],'sourceTableSHA256':capture['reference']['sourceSha256'],'aliases':{name:selected for name in members if name!=selected},'images':{selected:{'width':image['width'],'height':image['height'],'format':35907,'pixelFormat':6408,'pixelType':5121,'encoding':'webp-source','generatedMipmaps':True,'levels':[{'file':filename,'bytes':len(image['encoded']),'sha256':image['encodedSHA256'],'sourceBytes':image['width']*image['height']*4,'sourceSHA256':image['rgbaSHA256']}]}},'provenance':{'captureSHA256':sha(args.capture.read_bytes()),'textureCacheKey':key,'members':[objects[name]['name'] for name in members],'selectedSourceImage':selected,'scope':'The pinned full-table texture manager caches by GetLiveHash. The independently observed key group contains '+str(len(members))+' image object(s); the first actual upload uses embedded '+selected+' pixels. This file retains that source-specific resource binding, using the original embedded encoded image, without a rendered reference image, body, rules or clock override.'}}
 fixture={'engineSHA256':capture['engineSHA256'],'sourceTableSHA256':metadata['sourceTableSHA256'],'captureSHA256':sha(args.capture.read_bytes()),'getter':getter,'objects':audit['textureObjects'],'uploads':audit['uploads'],'warmFrame':frame['frameIndex'],'warmDraw':draw,'embeddedImages':{name:{**{k:v for k,v in image.items() if k!='encoded'},'encodedBase64':base64.b64encode(image['encoded']).decode()} for name,image in images.items()},'scope':metadata['provenance']['scope']}
+if capture.get('scenario'):
+    fixture['scenario']=capture['scenario']
+    metadata['provenance']['declaredInputs']=capture['scenario']['inputs']
 if args.framebuffer_capture:
  context=json.loads(args.framebuffer_capture.read_text());assert context['engineSHA256']==capture['engineSHA256'] and context['reference']['sourceSha256']==metadata['sourceTableSHA256']
  fixture['framebuffer']={'captureSHA256':sha(args.framebuffer_capture.read_bytes()),'attributes':context['frames'][0]['canvas']['attributes']}

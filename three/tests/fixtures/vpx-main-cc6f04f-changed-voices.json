@@ -1,0 +1,576 @@
+{
+  "engineSHA256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+  "sourceTableSHA256": "1e3d738c10398afc89691dcf585ce3c2330ab200dd038daec64ba111faba1997",
+  "scope": "Original compiled decoder callbacks, reached through validated ma_decoder vtables of explicitly played/stopped native sound players. SDL audio is suspended for complete source-rate decoding. An explicit original decoder seek establishes sample zero and its cursor is consumed by inspection; this is an isolated codec observation, not uninterrupted playback or game-state parity. No native body, clock or RNG values are replaced.",
+  "rows": [
+    {
+      "name": "vo_lildp1",
+      "sourceSHA256": "1ccfb4307d5866a2fe5ed979c4f8c8c05899d4a4a12459cd24f1077b0161fdce",
+      "sourceGranuleFrames": 29760,
+      "chosen": {
+        "kind": "decoder",
+        "ds": 295435568,
+        "vtable": 7661000,
+        "format": 2,
+        "lengthStatus": 0,
+        "cursorStatus": 0,
+        "length": 29760,
+        "cursor": 8192,
+        "callbacks": [
+          {
+            "index": 803,
+            "arguments": 4
+          },
+          {
+            "index": 804,
+            "arguments": 2
+          },
+          {
+            "index": 805,
+            "arguments": 6
+          },
+          {
+            "index": 806,
+            "arguments": 2
+          },
+          {
+            "index": 807,
+            "arguments": 2
+          }
+        ]
+      },
+      "backendVtable": 7661028,
+      "backendCallbacks": [
+        {
+          "slot": 224,
+          "index": 808,
+          "arguments": 8
+        },
+        {
+          "slot": 225,
+          "index": 809,
+          "arguments": 5
+        },
+        {
+          "slot": 226,
+          "index": 810,
+          "arguments": 5
+        },
+        {
+          "slot": 227,
+          "index": 811,
+          "arguments": 6
+        },
+        {
+          "slot": 228,
+          "index": 812,
+          "arguments": 3
+        }
+      ],
+      "allocator": {
+        "mallocName": "13406",
+        "freeName": "13409"
+      },
+      "candidates": [
+        {
+          "kind": "decoder",
+          "ds": 295435568,
+          "vtable": 7661000,
+          "format": 2,
+          "lengthStatus": 0,
+          "cursorStatus": 0,
+          "length": 29760,
+          "cursor": 8192,
+          "callbacks": [
+            {
+              "index": 803,
+              "arguments": 4
+            },
+            {
+              "index": 804,
+              "arguments": 2
+            },
+            {
+              "index": 805,
+              "arguments": 6
+            },
+            {
+              "index": 806,
+              "arguments": 2
+            },
+            {
+              "index": 807,
+              "arguments": 2
+            }
+          ]
+        }
+      ],
+      "frames": 29760,
+      "channels": 2,
+      "sampleRate": 32000,
+      "bytes": 238080,
+      "pcmSHA256": "0c7b0d4db42459bb5a50b00b6a226513603f02963fab8535ceaf7b90d73052f2",
+      "lastStatus": -17,
+      "readBlocks": [
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 1088,
+          "status": 0
+        },
+        {
+          "count": 0,
+          "status": -17
+        }
+      ],
+      "unchangedPhysicsRNG": true
+    },
+    {
+      "name": "vo_lildp2",
+      "sourceSHA256": "57dffbfaf15139ace3e48fd3d4bac627f2711ed3c2f776415c2ccbf7eefa126b",
+      "sourceGranuleFrames": 15840,
+      "chosen": {
+        "kind": "decoder",
+        "ds": 354522376,
+        "vtable": 7661000,
+        "format": 2,
+        "lengthStatus": 0,
+        "cursorStatus": 0,
+        "length": 15840,
+        "cursor": 8192,
+        "callbacks": [
+          {
+            "index": 803,
+            "arguments": 4
+          },
+          {
+            "index": 804,
+            "arguments": 2
+          },
+          {
+            "index": 805,
+            "arguments": 6
+          },
+          {
+            "index": 806,
+            "arguments": 2
+          },
+          {
+            "index": 807,
+            "arguments": 2
+          }
+        ]
+      },
+      "backendVtable": 7661028,
+      "backendCallbacks": [
+        {
+          "slot": 224,
+          "index": 808,
+          "arguments": 8
+        },
+        {
+          "slot": 225,
+          "index": 809,
+          "arguments": 5
+        },
+        {
+          "slot": 226,
+          "index": 810,
+          "arguments": 5
+        },
+        {
+          "slot": 227,
+          "index": 811,
+          "arguments": 6
+        },
+        {
+          "slot": 228,
+          "index": 812,
+          "arguments": 3
+        }
+      ],
+      "allocator": {
+        "mallocName": "13406",
+        "freeName": "13409"
+      },
+      "candidates": [
+        {
+          "kind": "decoder",
+          "ds": 295435568,
+          "vtable": 7661000,
+          "format": 2,
+          "lengthStatus": 0,
+          "cursorStatus": 0,
+          "length": 29760,
+          "cursor": 29760,
+          "callbacks": [
+            {
+              "index": 803,
+              "arguments": 4
+            },
+            {
+              "index": 804,
+              "arguments": 2
+            },
+            {
+              "index": 805,
+              "arguments": 6
+            },
+            {
+              "index": 806,
+              "arguments": 2
+            },
+            {
+              "index": 807,
+              "arguments": 2
+            }
+          ]
+        },
+        {
+          "kind": "decoder",
+          "ds": 354522376,
+          "vtable": 7661000,
+          "format": 2,
+          "lengthStatus": 0,
+          "cursorStatus": 0,
+          "length": 15840,
+          "cursor": 8192,
+          "callbacks": [
+            {
+              "index": 803,
+              "arguments": 4
+            },
+            {
+              "index": 804,
+              "arguments": 2
+            },
+            {
+              "index": 805,
+              "arguments": 6
+            },
+            {
+              "index": 806,
+              "arguments": 2
+            },
+            {
+              "index": 807,
+              "arguments": 2
+            }
+          ]
+        }
+      ],
+      "frames": 15840,
+      "channels": 2,
+      "sampleRate": 32000,
+      "bytes": 126720,
+      "pcmSHA256": "5d4fcb5db4ca8f4586e6d03ded3bc1dd5c4dbd3342f30074485fcf536384907f",
+      "lastStatus": -17,
+      "readBlocks": [
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 1504,
+          "status": 0
+        },
+        {
+          "count": 0,
+          "status": -17
+        }
+      ],
+      "unchangedPhysicsRNG": true
+    },
+    {
+      "name": "vo_lildp3",
+      "sourceSHA256": "3849d6b4b1e75cb0937e851ac7fc3e12cfb4bfe2069956e10d9414ab9207c7dd",
+      "sourceGranuleFrames": 15976,
+      "chosen": {
+        "kind": "decoder",
+        "ds": 426157824,
+        "vtable": 7661000,
+        "format": 2,
+        "lengthStatus": 0,
+        "cursorStatus": 0,
+        "length": 15976,
+        "cursor": 8192,
+        "callbacks": [
+          {
+            "index": 803,
+            "arguments": 4
+          },
+          {
+            "index": 804,
+            "arguments": 2
+          },
+          {
+            "index": 805,
+            "arguments": 6
+          },
+          {
+            "index": 806,
+            "arguments": 2
+          },
+          {
+            "index": 807,
+            "arguments": 2
+          }
+        ]
+      },
+      "backendVtable": 7661028,
+      "backendCallbacks": [
+        {
+          "slot": 224,
+          "index": 808,
+          "arguments": 8
+        },
+        {
+          "slot": 225,
+          "index": 809,
+          "arguments": 5
+        },
+        {
+          "slot": 226,
+          "index": 810,
+          "arguments": 5
+        },
+        {
+          "slot": 227,
+          "index": 811,
+          "arguments": 6
+        },
+        {
+          "slot": 228,
+          "index": 812,
+          "arguments": 3
+        }
+      ],
+      "allocator": {
+        "mallocName": "13406",
+        "freeName": "13409"
+      },
+      "candidates": [
+        {
+          "kind": "decoder",
+          "ds": 295435568,
+          "vtable": 7661000,
+          "format": 2,
+          "lengthStatus": 0,
+          "cursorStatus": 0,
+          "length": 29760,
+          "cursor": 29760,
+          "callbacks": [
+            {
+              "index": 803,
+              "arguments": 4
+            },
+            {
+              "index": 804,
+              "arguments": 2
+            },
+            {
+              "index": 805,
+              "arguments": 6
+            },
+            {
+              "index": 806,
+              "arguments": 2
+            },
+            {
+              "index": 807,
+              "arguments": 2
+            }
+          ]
+        },
+        {
+          "kind": "decoder",
+          "ds": 354522376,
+          "vtable": 7661000,
+          "format": 2,
+          "lengthStatus": 0,
+          "cursorStatus": 0,
+          "length": 15840,
+          "cursor": 15840,
+          "callbacks": [
+            {
+              "index": 803,
+              "arguments": 4
+            },
+            {
+              "index": 804,
+              "arguments": 2
+            },
+            {
+              "index": 805,
+              "arguments": 6
+            },
+            {
+              "index": 806,
+              "arguments": 2
+            },
+            {
+              "index": 807,
+              "arguments": 2
+            }
+          ]
+        },
+        {
+          "kind": "decoder",
+          "ds": 426157824,
+          "vtable": 7661000,
+          "format": 2,
+          "lengthStatus": 0,
+          "cursorStatus": 0,
+          "length": 15976,
+          "cursor": 8192,
+          "callbacks": [
+            {
+              "index": 803,
+              "arguments": 4
+            },
+            {
+              "index": 804,
+              "arguments": 2
+            },
+            {
+              "index": 805,
+              "arguments": 6
+            },
+            {
+              "index": 806,
+              "arguments": 2
+            },
+            {
+              "index": 807,
+              "arguments": 2
+            }
+          ]
+        }
+      ],
+      "frames": 15976,
+      "channels": 2,
+      "sampleRate": 32000,
+      "bytes": 127808,
+      "pcmSHA256": "05a3908d2c4fb4906ddeef7de36159f6199a53bec7208dc05744465c5c80b617",
+      "lastStatus": -17,
+      "readBlocks": [
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 2048,
+          "status": 0
+        },
+        {
+          "count": 1640,
+          "status": 0
+        },
+        {
+          "count": 0,
+          "status": -17
+        }
+      ],
+      "unchangedPhysicsRNG": true
+    }
+  ],
+  "errors": []
+}

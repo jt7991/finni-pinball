@@ -26,6 +26,7 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
     process=subprocess.Popen([
         'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
         '--headless=new','--enable-unsafe-swiftshader','--no-first-run',
+        *(['--use-fake-device-for-media-stream','--use-fake-ui-for-media-stream'] if '--shared-voice' in sys.argv else []),
         f'--user-data-dir={profile}',f'--remote-debugging-port={port}','about:blank',
     ],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
     try:
@@ -91,6 +92,8 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--kicker-creation' in sys.argv:runner='probe-kicker-creation.mjs'
         if '--active-ball-lifecycle' in sys.argv:runner='probe-active-ball-lifecycle.mjs'
         if '--earned-multiball-scoop' in sys.argv:runner='probe-earned-multiball-scoop.mjs'
+        if '--shared-voice' in sys.argv:runner='test-voice-browser.mjs'
+        if '--shared-guide' in sys.argv:runner='test-shared-guide-browser.mjs'
         if '--native-active-ball-frame' in sys.argv:runner='probe-native-active-ball-frame.mjs'
         if '--flipper-assembly' in sys.argv:runner='test-native-flipper-assembly-browser.mjs'
         if '--native-static-prepass' in sys.argv:runner='probe-native-static-prepass-browser.mjs'

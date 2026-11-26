@@ -4,9 +4,11 @@ import fs from 'node:fs';
 import {createHash} from 'node:crypto';
 import {createFullGame} from '../full-game.js';
 import {mainPlayerSettings} from '../player-settings.js';
+import {nativeSourceAssets} from '../../scripts/native-source-assets.mjs';
 import {creationQueries,kickerCreationStatement,verifyCreationCase} from '../../scripts/kicker-creation-scenario.mjs';
-const read=name=>JSON.parse(fs.readFileSync(new URL('../public/'+name+'.json',import.meta.url)));
-const source=fs.readFileSync(new URL('../public/rules.vbs',import.meta.url),'utf8');
+const assets=nativeSourceAssets('6160e43c1a74f6dc70fd9852433c3373fe11b3e55d4f3a3fedc435265591b5c5');
+const read=name=>assets.json(name+'.json');
+const source=assets.text('rules.vbs');
 const bytes=fs.readFileSync(new URL('fixtures/vpx-kicker-creation.json',import.meta.url)),fixture=JSON.parse(bytes);
 for(const reference of fixture.cases)test('occupied kicker retains original VPX creation and release semantics: '+reference.order,async()=>{
   assert.equal(createHash('sha256').update(bytes).digest('hex'),'39f72d26601a5968198a141d50de371a4a5d43fd8e8b1430f1a0a4feff8698b0');

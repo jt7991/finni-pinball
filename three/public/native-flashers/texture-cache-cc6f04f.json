@@ -1,0 +1,72 @@
+{
+  "engineSHA256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+  "sourceTableSHA256": "1e3d738c10398afc89691dcf585ce3c2330ab200dd038daec64ba111faba1997",
+  "aliases": {
+    "spotflash2": "ramp_start"
+  },
+  "images": {
+    "spotflash": {
+      "width": 512,
+      "height": 512,
+      "format": 35907,
+      "pixelFormat": 6408,
+      "pixelType": 5121,
+      "encoding": "webp-source",
+      "generatedMipmaps": true,
+      "levels": [
+        {
+          "file": "cache-spotflash.webp",
+          "bytes": 3412,
+          "sha256": "db597b4d61d7e49d02c913fae04f9e83c4dfc8e0806fbfb644014330e06d68cf",
+          "sourceBytes": 1048576,
+          "sourceSHA256": "52662009f02edc4736baf5244fa8432ee3dca58a0de2a69f1a68717629304f9a"
+        }
+      ]
+    },
+    "ramp_start": {
+      "width": 512,
+      "height": 512,
+      "format": 35907,
+      "pixelFormat": 6408,
+      "pixelType": 5121,
+      "encoding": "webp-source",
+      "generatedMipmaps": true,
+      "levels": [
+        {
+          "file": "cache-ramp_start.webp",
+          "bytes": 27940,
+          "sha256": "d1f8efa796eab1a2c342658815253f8125f9afadcee8a372f718153877f98105",
+          "sourceBytes": 1048576,
+          "sourceSHA256": "14cd1b9012ae521d3b9d4190741d601c42017b1d5320bfa0ecbb51db845fda5a"
+        }
+      ]
+    }
+  },
+  "provenance": {
+    "captureSHA256": "9cfbf937a67daf50cd09b3914b99f3cefd0b3fa457ba159bdb536e5c51052217",
+    "textureCacheKey": "2199056810032",
+    "members": [
+      "Spotflash"
+    ],
+    "selectedSourceImage": "spotflash",
+    "scope": "The pinned full-table texture manager caches by GetLiveHash. The independently observed key group contains 1 image object(s); the first actual upload uses embedded spotflash pixels. This file retains that source-specific resource binding, using the original embedded encoded image, without a rendered reference image, body, rules or clock override.",
+    "declaredInputs": [
+      {
+        "afterMilliseconds": 0,
+        "script": "Flasher012.Color=RGB(235,179,78):Flasher012.Opacity=375:Flasher012.Visible=True"
+      }
+    ]
+  },
+  "additionalBindings": [
+    {
+      "captureSHA256": "2aa5a591d8e6944d3a1f513a16315f90c1e132c9a3ba8255e1513da2d71c6369",
+      "textureCacheKey": "2199056810064",
+      "members": [
+        "Spotflash2",
+        "ramp_start"
+      ],
+      "selectedSourceImage": "ramp_start",
+      "scope": "The pinned full-table texture manager caches by GetLiveHash. The independently observed key group contains 2 image object(s); the first actual upload uses embedded ramp_start pixels. This file retains that source-specific resource binding, using the original embedded encoded image, without a rendered reference image, body, rules or clock override."
+    }
+  ]
+}

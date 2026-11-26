@@ -6,20 +6,24 @@ import {createHash} from 'node:crypto';
 import assert from 'node:assert/strict';
 
 const root=new URL('../three/public/',import.meta.url),sha=bytes=>createHash('sha256').update(bytes).digest('hex');
-const previous='3ae17f498f745efa19076ca33e08f96f66d766367fc984e37aacf50774a35e14';
-let archived;
+const archives={
+ '3ae17f498f745efa19076ca33e08f96f66d766367fc984e37aacf50774a35e14':{file:'source-99eff88.json.gz',sha256:'b078ae96f365417e8eaa57f5979ef058a1a2443087bcfb44db60939f58980dde'},
+ '6160e43c1a74f6dc70fd9852433c3373fe11b3e55d4f3a3fedc435265591b5c5':{file:'source-6f8116d.json.gz',sha256:'b9d30061c9570ace2a139a01573be67783b6ff9bd1fef54a0263764a2033470b'},
+};
+const cache=new Map();
 export function nativeSourceAssets(tableSHA256){
  const current=JSON.parse(fs.readFileSync(new URL('source-table.json',root))).sourceTableSHA256;
  let read;
  if(tableSHA256===current)read=name=>fs.readFileSync(new URL(name,root));
- else if(tableSHA256===previous){
-  if(!archived){
-   const bytes=fs.readFileSync(new URL('../three/tests/fixtures/source-99eff88.json.gz',import.meta.url));
-   assert.equal(sha(bytes),'b078ae96f365417e8eaa57f5979ef058a1a2443087bcfb44db60939f58980dde');
-   const packet=JSON.parse(gunzipSync(bytes));assert.equal(packet.format,'native-source-assets-v1');assert.equal(packet.tableSHA256,previous);
+ else if(archives[tableSHA256]){
+  if(!cache.has(tableSHA256)){
+   const archive=archives[tableSHA256],bytes=fs.readFileSync(new URL('../three/tests/fixtures/'+archive.file,import.meta.url));
+   assert.equal(sha(bytes),archive.sha256);
+   const packet=JSON.parse(gunzipSync(bytes));assert.equal(packet.format,'native-source-assets-v1');assert.equal(packet.tableSHA256,tableSHA256);
    for(const entry of Object.values(packet.files))assert.equal(sha(Buffer.from(entry.text)),entry.sha256);
-   archived=packet.files;
+   cache.set(tableSHA256,packet.files);
   }
+  const archived=cache.get(tableSHA256);
   read=name=>{assert.ok(archived[name],'Archived source does not contain '+name);return Buffer.from(archived[name].text);};
  }else throw Error('No authored inputs for native source '+tableSHA256);
  return{tableSHA256,metadata:JSON.parse(read('source-table.json')),bytes:read,text:name=>read(name).toString('utf8'),json:name=>JSON.parse(read(name))};

@@ -5,20 +5,24 @@ import {createHash} from 'node:crypto';
 import {partyChooserScript} from '../../browser/party-chooser.js';
 import {createFullGame} from '../full-game.js';
 import {mainPlayerSettings,mainScriptBudget} from '../player-settings.js';
+import {nativeSourceAssets} from '../../scripts/native-source-assets.mjs';
 import {earnedScoopFields,earnedScoopBooleans,observeEarnedScoop,runEarnedScoop} from '../../scripts/earned-multiball-scoop-scenario.mjs';
 
-test('three physical locks earn multiball and five physical scoop entries retain one chooser and every original ejection',async()=>{
+for(const version of [
+  {name:'6f8116d',file:'vpx-earned-multiball-scoop.json',sha256:'4bb3cec2893a7a77956f926af9bb18d69d01af881140d2c44be602aa2e5a7eae',source:'6160e43c1a74f6dc70fd9852433c3373fe11b3e55d4f3a3fedc435265591b5c5'},
+  {name:'cc6f04f',file:'vpx-earned-multiball-scoop-cc6f04f.json',sha256:'c8f54b93489153bfbd1a2cf4b78f15beab804f59cdc9491739f2952a7c2fe459',source:'1e3d738c10398afc89691dcf585ce3c2330ab200dd038daec64ba111faba1997'}
+])test(version.name+' physical locks earn multiball and five scoop entries retain one chooser and every original ejection',async()=>{
   const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
-  const bytes=fs.readFileSync(new URL('fixtures/vpx-earned-multiball-scoop.json',import.meta.url));
-  assert.equal(sha(bytes),'4bb3cec2893a7a77956f926af9bb18d69d01af881140d2c44be602aa2e5a7eae');
+  const bytes=fs.readFileSync(new URL('fixtures/'+version.file,import.meta.url));
+  assert.equal(sha(bytes),version.sha256);
   const native=JSON.parse(bytes);assert.equal(native.native,true);assert.equal(native.engineBytesVerified,true);assert.deepEqual(native.errors,[]);
-  assert.equal(native.metadata.sourceSha256,'6160e43c1a74f6dc70fd9852433c3373fe11b3e55d4f3a3fedc435265591b5c5');
+  assert.equal(native.metadata.sourceSha256,version.source);
   assert.equal(native.metadata.engineSHA256,'c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8');
   assert.equal(native.scenarioSHA256,sha(fs.readFileSync(new URL('../../scripts/earned-multiball-scoop-scenario.mjs',import.meta.url))));
   assert.equal(native.probeSHA256,sha(fs.readFileSync(new URL('../../scripts/probe-earned-multiball-scoop.mjs',import.meta.url))));
   assert.equal(native.partyChooserSHA256,sha(partyChooserScript));
-  const readJSON=name=>JSON.parse(fs.readFileSync(new URL('../public/'+name+'.json',import.meta.url)));
-  const source=fs.readFileSync(new URL('../public/rules.vbs',import.meta.url),'utf8');
+  const assets=nativeSourceAssets(version.source),readJSON=name=>assets.json(name+'.json');
+  const source=assets.text('rules.vbs');
   const game=await createFullGame(readJSON('layout'),readJSON('objects'),source,()=>{},undefined,{protectPartyChooser:true,frameAnimations:true,playerSettings:mainPlayerSettings,scriptBudget:mainScriptBudget});
   let ticks=0;
   const advance=count=>{for(let i=0;i<count;i++){game.step();if(++ticks%17===0){game.prepareFrame();game.finishFrame();}}};

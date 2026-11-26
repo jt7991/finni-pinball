@@ -4,9 +4,11 @@ import fs from 'node:fs';
 import {createHash} from 'node:crypto';
 import {createFullGame} from '../full-game.js';
 import {mainPlayerSettings} from '../player-settings.js';
+import {nativeSourceAssets} from '../../scripts/native-source-assets.mjs';
 
-const read=name=>JSON.parse(fs.readFileSync(new URL('../public/'+name+'.json',import.meta.url)));
-const source=fs.readFileSync(new URL('../public/rules.vbs',import.meta.url),'utf8');
+const assets=nativeSourceAssets('6160e43c1a74f6dc70fd9852433c3373fe11b3e55d4f3a3fedc435265591b5c5');
+const read=name=>assets.json(name+'.json');
+const source=assets.text('rules.vbs');
 const bytes=fs.readFileSync(new URL('./fixtures/vpx-kicker-destroy-ownership.json',import.meta.url));
 const reference=JSON.parse(bytes);
 const ids=game=>game.physicalRecords.map(record=>record.scriptID);
