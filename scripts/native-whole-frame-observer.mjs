@@ -60,7 +60,8 @@ export function installNativeWholeFrameObserver(options={}){
    // The history capture needs postprocess inputs/outputs, not thousands of
    // static-prepass matrix readbacks. The existing detailed capture retains
    // its complete draw/matrix observations when imagesOnly is absent.
-   if(options.imagesOnly&&!geometryFrame&&name!=='ambient_occlusion'&&!['fb_blur_horiz19x19','fb_blur_vert19x19','fb_bloom','fb_blur_horiz39x39','fb_blur_vert39x39'].includes(name)&&!name.startsWith('fb_rhtonemap')){
+   const captureReflection=options.captureReflection&&!data.images.reflection&&(uniform(gl,program,'mirrorNormal_factor')?.[3]??0)>0;
+   if(options.imagesOnly&&!geometryFrame&&!captureReflection&&name!=='ambient_occlusion'&&!['fb_blur_horiz19x19','fb_blur_vert19x19','fb_bloom','fb_blur_horiz39x39','fb_blur_vert39x39'].includes(name)&&!name.startsWith('fb_rhtonemap')){
     if(!data.images.previousHDR&&info.ball){for(let error;(error=gl.getError())!==gl.NO_ERROR;)data.priorErrors.push(error);image(gl,'previousHDR',samplerId(gl,program,'tex_ball_playfield'));}
     return;
    }

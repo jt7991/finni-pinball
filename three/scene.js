@@ -25,6 +25,7 @@ import {loadNativeStatic,createNativeStaticRender} from './native-static-render.
 import {nativeGraphicsProfile} from './graphics-profile.js';
 import {createPlayerBackdropCopy} from './player-backdrop.js';
 import {nativeTextureCacheFile} from './native-texture-cache.js';
+import {nativeRenderFiles} from './render-source.js';
 
 export async function createView(canvas,game,{quality='performance',ballPresentationClock,sourceTableSHA256}={}){
  const renderer=new THREE.WebGLRenderer({canvas,antialias:false,alpha:true,powerPreference:'high-performance'});renderer.setClearColor(0,0);renderer.outputColorSpace=THREE.SRGBColorSpace;
@@ -35,9 +36,9 @@ export async function createView(canvas,game,{quality='performance',ballPresenta
  const [lighting,flipperAssets,cameraBounds,tableAssets,animationAssets,transmissionAssets,ballAssets,flasherAssets,haloAssets,classicAssets,postprocessAssets,staticAssets]=await Promise.all([
   loadNativeLighting(base),loadFlipperVisuals(base,renderer.capabilities.getMaxAnisotropy()),
   fetch(base+'camera-bounds.json').then(response=>{if(!response.ok)throw Error('Native camera bounds unavailable');return response.json();}),
-  loadNativePrimitiveVisuals(base+'native-table/','native-table.json',{textureProfile:quality==='reduced'?'detailed':quality,baseColorOnly:true}),loadNativeMechanismAnimation(base),loadNativeTransmission(base+'native-transmission/'),
+  sourceTable.then(source=>loadNativePrimitiveVisuals(base+'native-table/',nativeRenderFiles(source).table,{textureProfile:quality==='reduced'?'detailed':quality,baseColorOnly:true})),loadNativeMechanismAnimation(base),loadNativeTransmission(base+'native-transmission/'),
   loadNativePrimitiveVisuals(base+'native-ball/','native-ball.json'),
-  sourceTable.then(source=>loadNativeFlasherVisuals(base+'native-flashers/',undefined,{textureCacheURL:base+'native-flashers/'+nativeTextureCacheFile(source)})),
+  sourceTable.then(source=>{const files=nativeRenderFiles(source);return loadNativeFlasherVisuals(base+'native-flashers/',base+files.atlas,{metadataFile:files.flashers,textureCacheURL:base+'native-flashers/'+nativeTextureCacheFile(source)});}),
   loadNativeHalos(base+'native-halos/'),
   loadNativeClassic(base+'native-classic/'),
   loadNativePostprocess(base+'native-postprocess/'),

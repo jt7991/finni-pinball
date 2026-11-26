@@ -253,7 +253,6 @@ async function boot(){
     });
     [display,view]=await Promise.all([createDisplay($('dmd'),game.rules.objects,base),createView($('table'),game,{quality:renderQuality}),audio.prepareSources(),audio.whenInitialized(),audio.prepare(['fx_gion','fx_gioff'])]);view.applyPlayerCamera(cameraMode());
     sampleStart=performance.now();
-    if(import.meta.env.DEV)window.finniThree={game,view,release};
     if(checkingGraphics){
       previewLive=true;pause(false);
       $('load-status').textContent='Checking graphics for this device…';requestAnimationFrame(frame);
@@ -264,6 +263,7 @@ async function boot(){
     const seconds=((performance.now()-startTime)/1000).toFixed(1);
     $('load-status').textContent=`Ready in ${seconds}s. Hold Launch, then release to shoot.`;
     $('play').disabled=false;$('play').textContent='Start game';$('progress').hidden=true;message('Ready to play');
+    if(import.meta.env.DEV)window.finniThree={game,view,release};
   }catch(error){
     console.error(error);music.select('');$('load-status').textContent=`Unable to load: ${error.message}`;
     $('play').disabled=false;$('play').textContent='Retry';$('play').onclick=()=>location.reload();message('Game unavailable');

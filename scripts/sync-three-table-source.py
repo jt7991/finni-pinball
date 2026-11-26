@@ -48,6 +48,12 @@ with olefile.OleFileIO(args.old_vpx) as old,olefile.OleFileIO(args.vpx) as new:
     old_items=read_items(old);new_items=read_items(new)
     assert old_items.keys()==new_items.keys(),'New authored objects need an explicit asset exporter update'
     old_data=tags(old.openstream(['GameStg','GameData']).read());new_data=tags(new.openstream(['GameStg','GameData']).read())
+    data_changes=sorted(key for key in old_data.keys()|new_data.keys() if old_data.get(key)!=new_data.get(key))
+    # PinTable SIMG is the embedded image count, not a physical table setting.
+    # The source-image audit verifies this count when importing the art bundle.
+    unsupported=set(data_changes)-{b'CODE',b'ENES',b'BLST',b'SIMG'}
+    assert not unsupported,f'Unmapped changed table fields require an explicit importer update: {sorted(unsupported)}'
+    image_counts={'old':scalar(old_data[b'SIMG'],'i'),'new':scalar(new_data[b'SIMG'],'i')}
     current_rules=(public/'rules.vbs').read_text(encoding='utf-8-sig').replace('\r\n','\n').strip()
     old_rules=adapt_rules(script(old_data[b'CODE'])).strip();new_rules=adapt_rules(script(new_data[b'CODE'])).strip()
     assert current_rules in (old_rules,new_rules),'Recognized source rules'
@@ -106,5 +112,5 @@ objects=json.loads((public/'objects.json').read_text())
 for obj in objects['objects']:obj.update(changes.get(obj['name'],{}))
 objects['sound_names']=[sound['name'].lower() for sound in sounds]
 ((out if args.audit_only else public)/'objects.json').write_text(json.dumps(objects,separators=(',',':')))
-(out/'table-update.json').write_text(json.dumps({'sourceSha256':sha(args.vpx.read_bytes()),'previousSourceSha256':sha(args.old_vpx.read_bytes()),'auditOnly':args.audit_only,'changes':changes,'meshes':meshes,'globals':globals_},separators=(',',':')))
+(out/'table-update.json').write_text(json.dumps({'sourceSha256':sha(args.vpx.read_bytes()),'previousSourceSha256':sha(args.old_vpx.read_bytes()),'auditOnly':args.audit_only,'dataChanges':[key.decode('ascii') for key in data_changes],'imageCounts':image_counts,'changes':changes,'meshes':meshes,'globals':globals_},separators=(',',':')))
 print(json.dumps({'sourceSha256':sha(args.vpx.read_bytes()),'changedObjects':len(changes),'meshes':list(meshes),'sounds':len(sounds),'globals':globals_}))

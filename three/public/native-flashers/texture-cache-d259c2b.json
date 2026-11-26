@@ -1,0 +1,19 @@
+{
+  "engineSHA256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+  "sourceTableSHA256": "a0acae6e039580a027a704238325031d737149595a417c12ad22d11b1275c1f3",
+  "aliases": {},
+  "images": {},
+  "provenance": {
+    "captureSHA256": "195849db3d8a216783f855506af6bd69ce3dccaf4771cad8ecb23d2920ba847f",
+    "imageAuditSHA256": "8d968fecd77fba54357147eccb9c8de7104927ac1060a6381c85bac43cf03350",
+    "originalImages": [
+      "discolight",
+      "spotflash2",
+      "spotflash",
+      "lighttexts",
+      "flashlight"
+    ],
+    "sourceObjects": 1498,
+    "scope": "Read-only original GetLiveHash object fields from every embedded source image. All non-atlas flasher images have unique cache keys and retain their preceding embedded bytes, so their existing source bindings need no alias override. No rendered reference image or simulation state is supplied."
+  }
+}

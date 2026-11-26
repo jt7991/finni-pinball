@@ -1,6 +1,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import {createHash} from 'node:crypto';
 import {configureRenderer,startTable} from '../../browser/renderer.js';
 import {nativeGraphicsProfile} from '../graphics-profile.js';
+import {nativeRenderFiles} from '../render-source.js';
 import {nativeTextureProfile} from '../native-basic-render.js';
 import {nativePostprocessJitter,nativeScreenNudgeOffset,nativeFullscreenGeometry} from '../native-postprocess.js';
 import {nativeShaderArray} from '../native-shader-state.js';import {CabinetNudge} from '../cabinet-nudge.js';
@@ -35,7 +36,7 @@ test('historical profile buffer sizes, shader choices, flags and jitter agree wi
  for(const [name,program]of Object.entries(fixture.programs)){assert.deepEqual(metadata.programs[name],program);for(const descriptor of [program.vertex,program.fragment]){const bytes=fs.readFileSync(new URL('../public/native-postprocess/'+descriptor.file,import.meta.url));assert.equal(bytes.length,descriptor.bytes);assert.equal(sha(bytes),descriptor.sha256);}}
 });
 test('graphics profiles select the independently associated native image uploads and current playfield for inserts',()=>{
- const table=read('native-table/native-table.json'),classic=read('native-classic/native-classic.json');assert.equal(table.sourceTableSHA256,textures.sourceSha256);
+ const table=read('native-table/'+nativeRenderFiles(textures.sourceSha256).table),classic=read('native-classic/native-classic.json');assert.equal(table.sourceTableSHA256,textures.sourceSha256);
  assert.ok(table.parts.every(part=>!['1','2','9'].includes(String(part.textures.tex_base_color?.id))),'Current authored images also reach hidden wall bottoms');
  for(const quality of ['performance','detailed']){
   const selected=nativeTextureProfile(table,quality);

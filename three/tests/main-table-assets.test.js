@@ -5,13 +5,14 @@ import {createHash} from 'node:crypto';
 import {readReferenceFixture} from '../../scripts/reference-physics.mjs';
 import {decodeNativeGeometry} from '../native-geometry-codec.js';
 import {nativeSourceAssets} from '../../scripts/native-source-assets.mjs';
+import {nativeRenderFiles} from '../render-source.js';
 
 const read=name=>JSON.parse(fs.readFileSync(new URL('../public/'+name,import.meta.url)));
 const expected=readReferenceFixture(new URL('fixtures/source-main-99eff88-render.json.gz',import.meta.url));
-const table=read('native-table/native-table.json');
+const table=read('native-table/'+nativeRenderFiles(expected.sourceSha256).table);
 const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
 
-test('merged main keeps its authored appearance and observed native lighting',()=>{
+test('the preceding main render inputs keep their authored appearance and observed native lighting',()=>{
   const objects=read('objects.json').objects;
   for(const [name,properties]of Object.entries(expected.changes)){
     const object=objects.find(object=>object.name===name);

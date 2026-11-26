@@ -32,7 +32,7 @@ for(const part of table.parts){
     assert.equal(matches.length,1,'Unique current native bulb mesh at authored center '+name);const current=matches[0],next=deduplicate(current);vertex=next.vertex;index=next.index;part.sourceVertexSHA256=current.vertexSHA256;part.sourceIndexSHA256=current.indexSHA256;part.sourceVertices=Buffer.from(current.vertices,'base64').length/32;meshChanges.push({name,role:part.role,vertices:vertex.length/32,indices:index.length/4});
   }
   const candidates=draws.get(key(part.sourceVertexSHA256,part.sourceIndexSHA256))??[],position=part.spec.position;
-  const filtered=position?candidates.filter(d=>['x','y','z'].every((axis,i)=>Math.abs(d.matrices[12+i]-position[axis])<.01)):candidates;
+  const filtered=position&&part.transform!=='identity'?candidates.filter(d=>['x','y','z'].every((axis,i)=>Math.abs(d.matrices[12+i]-position[axis])<.01)):candidates;
   const draw=filtered.length===1?filtered[0]:candidates.length===1?candidates[0]:undefined;
   if(draw){matched++;for(const k of Object.keys(part.uniforms))if(k in draw.uniforms&&!['matProj[0]','w_h_height','balls[0]'].includes(k))part.uniforms[k]=draw.uniforms[k];if(part.textures.tex_base_color&&draw.textures.tex_base_color)part.textures.tex_base_color={...part.textures.tex_base_color,id:texture(draw.textures.tex_base_color.id)};}
   if(change)assert.ok(draw,'Changed mesh has an independent current native draw: '+name);

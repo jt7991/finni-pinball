@@ -2145,7 +2145,7 @@ Sub DMDScore()
                 tmp2 = "bkborder"
         End Select
     End If
-    DMD tmp, tmp1, tmp2, eNone, eNone, eNone, 25, True, ""
+    DMD tmp, tmp1, FinniScoreScene(tmp2), eNone, eNone, eNone, 25, True, ""
 End Sub
 
 Function Showlife(n)
@@ -2498,6 +2498,21 @@ Function FinniDmdAnimated(scene)
         Case "d_finni_bonus": FinniDmdAnimated = True
         Case "d_finni_ready": FinniDmdAnimated = True
         Case "d_finni_combo": FinniDmdAnimated = True
+        Case "d_score_garden": FinniDmdAnimated = True
+        Case "d_score_presents": FinniDmdAnimated = True
+        Case "d_score_invites": FinniDmdAnimated = True
+        Case "d_score_balloons": FinniDmdAnimated = True
+        Case "d_score_decorations": FinniDmdAnimated = True
+        Case "d_score_cookies": FinniDmdAnimated = True
+        Case "d_score_pinata": FinniDmdAnimated = True
+        Case "d_score_party": FinniDmdAnimated = True
+        Case "d_score_cake": FinniDmdAnimated = True
+        Case "d_score_friendship": FinniDmdAnimated = True
+        Case "d_score_disco": FinniDmdAnimated = True
+        Case "d_score_discomb": FinniDmdAnimated = True
+        Case "d_score_supplyrun": FinniDmdAnimated = True
+        Case "d_score_streamers": FinniDmdAnimated = True
+        Case "d_score_spinner": FinniDmdAnimated = True
     End Select
 End Function
 
@@ -2518,6 +2533,38 @@ Sub FinniDmdAnimationTimer_Timer()
     FinniDmdFrame = (FinniDmdFrame + 1) Mod 12
     DMDUpdate 2
 End Sub
+
+Function FinniScoreScene(background)
+    FinniScoreScene = background
+    If background <> "bkborder" Then Exit Function
+    Select Case Battle(CurrentPlayer, 0)
+        Case 1: FinniScoreScene = "d_score_presents"
+        Case 2: FinniScoreScene = "d_score_invites"
+        Case 3: FinniScoreScene = "d_score_balloons"
+        Case 4: FinniScoreScene = "d_score_decorations"
+        Case 5: FinniScoreScene = "d_score_cookies"
+        Case 6: FinniScoreScene = "d_score_pinata"
+        Case 7: FinniScoreScene = "d_score_party"
+        Case Else
+            If bLilDPMB Then
+                FinniScoreScene = "d_score_cake"
+            ElseIf bNinjaMB Then
+                FinniScoreScene = "d_score_friendship"
+            ElseIf bMechSuitMBStarted Then
+                FinniScoreScene = "d_score_supplyrun"
+            ElseIf bDiscoMBEnabled Then
+                FinniScoreScene = "d_score_discomb"
+            ElseIf bDiscoLoopsEnabled Then
+                FinniScoreScene = "d_score_disco"
+            ElseIf bKatanaramaTime Then
+                FinniScoreScene = "d_score_streamers"
+            ElseIf bBerserker Then
+                FinniScoreScene = "d_score_spinner"
+            Else
+                FinniScoreScene = "d_score_garden"
+            End If
+    End Select
+End Function
 ' FINNI MOTION END
 ' JP's new DMD using flashers
 '****************************
@@ -2839,7 +2886,6 @@ Sub ShowTableInfo
             DMD CL(0, "CREDITS " & Credits), CL(1, "INSERT COIN"), "", eNone, eBlink, eNone, 2000, False, ""
         End If
     End If
-    DMD "", "", "d_jppresents", eNone, eNone, eNone, 3000, False, ""
     DMD "", "", "d_title", eNone, eNone, eNone, 4000, False, "vo_deadpool"
     DMD "", CL(1, "TABLE VERSION " &myversion), "", eNone, eNone, eNone, 2000, False, ""
     DMD CL(0, "HIGHSCORES"), Space(dCharsPerLine(1) ), "", eScrollLeft, eScrollLeft, eNone, 20, False, ""

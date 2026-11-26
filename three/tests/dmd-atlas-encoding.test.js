@@ -1,8 +1,10 @@
 import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import path from 'node:path';import{fileURLToPath}from 'node:url';import{build}from 'vite';
 import{verifyDmdAtlas}from '../../scripts/verify-dmd-atlas.mjs';
+import{createHash}from 'node:crypto';
 const root=fileURLToPath(new URL('../../',import.meta.url)),publicRoot=path.join(root,'three/public'),work=path.join(root,'.work');
-test('the delivered DMD atlas is lossless and bound to the unchanged original atlas',()=>{
- const metadata=verifyDmdAtlas();assert.equal(metadata.file,'dmd-atlas.webp');assert.equal(metadata.width,4096);assert.equal(metadata.height,4672);assert.equal(metadata.rgbaSHA256,'16b9a1483adc65e4f731b89fa99f4f59e29b8079d9bd54942975a8ee111d7555');assert.ok(metadata.bytes<metadata.sourceBytes);
+test('the delivered DMD atlas is lossless and bound to the current main authored atlas',()=>{
+ const metadata=verifyDmdAtlas();assert.equal(metadata.file,'dmd-atlas.webp');assert.equal(metadata.width,4096);assert.equal(metadata.height,5440);assert.equal(metadata.rgbaSHA256,'3f2b8bb9f047e32b1d641f9bba8fc47db0a6fecb64ef3938da2b994e6290cbe5');assert.ok(metadata.bytes<metadata.sourceBytes);
+ const source=fs.readFileSync(path.join(root,'runtime/dmd-atlas.png'));assert.ok(source.equals(fs.readFileSync(path.join(publicRoot,'dmd-atlas.png'))));assert.equal(createHash('sha256').update(source).digest('hex'),'f097c6dcb703974c20ce59686cc7208797c071f1a8b0e09d0c3f110f953cc9d9');
 });
 test('an actual production build rejects stale or corrupted derived DMD data',async()=>{
  const directory=fs.mkdtempSync(path.join(work,'atlas-encoding-test-'));

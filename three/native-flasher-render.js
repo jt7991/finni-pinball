@@ -6,8 +6,8 @@ import {nativeFlasherVertices} from './native-flasher-mesh.js';
 import {nativeFlasherState,nativeFlasherMVP,nativeFlasherOutside} from './native-flasher-state.js';
 import {nativeTransparentOrder} from './native-render-order.js';
 import {loadDmdAtlasBlob,DMD_ATLAS_FILE} from './dmd-atlas.js';
-export async function loadNativeFlasherVisuals(base,atlasURL=new URL('../'+DMD_ATLAS_FILE,new URL(base,location.href)).href,{textureCacheURL}={}){
- const [assets,blob]=await Promise.all([loadNativePrimitiveVisuals(base,'native-flashers.json'),loadDmdAtlasBlob(atlasURL)]);assets.atlasBitmap=await createImageBitmap(blob,{imageOrientation:'none',premultiplyAlpha:'none',colorSpaceConversion:'none'});
+export async function loadNativeFlasherVisuals(base,atlasURL=new URL('../'+DMD_ATLAS_FILE,new URL(base,location.href)).href,{textureCacheURL,metadataFile='native-flashers.json'}={}){
+ const [assets,blob]=await Promise.all([loadNativePrimitiveVisuals(base,metadataFile),loadDmdAtlasBlob(atlasURL)]);assets.atlasBitmap=await createImageBitmap(blob,{imageOrientation:'none',premultiplyAlpha:'none',colorSpaceConversion:'none'});
  if(textureCacheURL){const response=await fetch(textureCacheURL);if(!response.ok)throw Error('Source texture cache unavailable');assets.textureCache=await response.json();await Promise.all(Object.entries(assets.textureCache.images).map(async([name,spec])=>{const key='source-cache-'+name,response=await fetch(new URL(spec.levels[0].file,new URL(textureCacheURL,location.href)));if(!response.ok)throw Error('Source cached image unavailable: '+name);assets.metadata.textures[key]=spec;assets.metadata.images[name]={texture:key,alphaTest:Math.fround(1/255)};assets.pixels[key]=await createImageBitmap(await response.blob(),{imageOrientation:'none',premultiplyAlpha:'none',colorSpaceConversion:'none'});}));}
  return assets;
 }

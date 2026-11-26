@@ -3,9 +3,11 @@ import argparse,hashlib,json,sys
 from pathlib import Path
 parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--pydeps',type=Path,required=True)
+parser.add_argument('--staging',type=Path)
 args=parser.parse_args();sys.path.insert(0,str(args.pydeps))
 from PIL import Image
 root=Path(__file__).resolve().parents[1];staging=root/'.work/graphics-profile-textures';target=root/'three/public/native-table'
+if args.staging:staging=args.staging.resolve()
 metadata=json.loads((target/'native-table.json').read_text())
 for entry in json.loads((staging/'textures.json').read_text()):
     raw=(staging/entry['raw']).read_bytes();assert hashlib.sha256(raw).hexdigest()==entry['sourceSHA256']

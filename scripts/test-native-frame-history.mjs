@@ -82,9 +82,12 @@ try{
      const input=fixture.playerInputs[inputIndex++];if(input.frameIndex>2)await advance(input.ms+1);
      const statements=input.script.split(':'),assignments=Object.fromEntries(statements.filter(s=>s.startsWith('Table1.')).map(s=>s.slice(7).split('=')));
      if(assignments.Inclination!==undefined){
-      const values=['Inclination','FieldOfView','Layback','Xlatey','Xlatez','ScaleX'].map(key=>Number(assignments[key])),preset=Object.entries(nativeCameraPresets).find(([,v])=>v.every((value,j)=>value===values[j]))?.[0];if(!preset)throw Error('Observed authored camera is unsupported');view.setCamera(preset);
+      const values=['Inclination','FieldOfView','Layback','Xlatey','Xlatez','ScaleX'].map(key=>Number(assignments[key]));if(values.some(value=>!Number.isFinite(value))||Number(assignments.ScaleY)!==values[5]||Number(assignments.Xlatex)!==0)throw Error('Observed authored camera is unsupported');
+      // Current main derives its portrait lift and scale from layout. These
+      // are recorded UI assignment inputs, not native projection outputs.
+      const preset=Object.entries(nativeCameraPresets).find(([,v])=>v.every((value,j)=>value===values[j]))?.[0]??values;view.setCamera(preset);
      }
-     const toggles=statements.filter(s=>s.startsWith('DisableStaticPrerendering='));if(toggles.length){for(const statement of toggles)view.setStaticPrerenderEnabled(statement.split('=')[1]==='False');}
+     const toggles=statements.filter(s=>s.startsWith('DisableStaticPrerendering='));if(toggles.length){for(const statement of toggles)view.setStaticPrerenderEnabled(statement.split('=')[1]==='False');const remaining=statements.filter(s=>!s.startsWith('DisableStaticPrerendering='));if(remaining.length)await game.rules.execute(remaining.join(':'));}
      else await game.rules.execute(input.script);
     }
     playing=frame.playing;
