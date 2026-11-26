@@ -31,19 +31,19 @@ export function preserveLightAlpha(gl){
 }
 
 // Install before native main() reads its settings, not after the table starts.
-// Retina phone screens otherwise get desktop-sized render targets and passes.
 export function configureRenderer(engine,{mobile=false,quality='auto'}={}){
-  engine.finniMobile=mobile;
-  const performance=quality==='performance'||quality==='auto'&&mobile;
-  const viewport=engine.canvas?.parentElement;
-  const width=viewport?.clientWidth,height=viewport?.clientHeight;
-  if(performance&&width>0&&height>0){
-    // Budget the final buffer too: AAFactor alone leaves post-processing and
-    // browser composition at the phone's full, often 3x, device-pixel ratio.
-    const density=Math.min(globalThis.devicePixelRatio||1,1.5,720/width);
-    const descriptor=Object.getOwnPropertyDescriptor(globalThis,'devicePixelRatio');
-    if(descriptor?.configurable!==false)engine.finniRenderDensity=density;
-  }
+  const performance=quality==='performance';
+  const reducedResolution=performance||quality==='reduced';
+  const descriptor=Object.getOwnPropertyDescriptor(globalThis,'devicePixelRatio');
+  const canCapDensity=reducedResolution&&descriptor?.configurable!==false;
+  // Budget both dimensions so tall phones and Retina laptops do not create
+  // oversized post-processing targets. Recompute using the stage at startup.
+  const [maxDensity,maxPixels]=mobile
+    ? (performance?[1,360_000]:[1.25,480_000])
+    : (performance?[1.25,750_000]:[1.5,1_050_000]);
+  engine.finniRenderBudget=canCapDensity
+    ? {maxDensity,maxPixels,scale:performance?0.75:0.85}
+    : null;
   const directory='/libsdl/VPinballX/10.8';
   engine.FS.mkdirTree(directory);
   engine.FS.writeFile(`${directory}/VPinballX.ini`,[
@@ -53,8 +53,8 @@ export function configureRenderer(engine,{mobile=false,quality='auto'}={}){
     // Use the ball's chrome environment texture directly. Table lighting and
     // full-strength playfield reflections otherwise wash it into the artwork.
     'DisableLightingForBalls=1',
+    ...(reducedResolution?[`AAFactor=${canCapDensity?1:0.5}`]:[]),
     ...(performance?[
-    `AAFactor=${engine.finniRenderDensity?1:0.5}`,
     'MaxTexDimension=2048',
     'DisableAO=1',
     'DynamicAO=0',
@@ -66,10 +66,20 @@ export function configureRenderer(engine,{mobile=false,quality='auto'}={}){
   ].join('\n'));
 }
 
-export function startTable(engine,path){
-  const density=engine.finniRenderDensity;
+export function startTable(engine,path,onRendered){
   const original=Object.getOwnPropertyDescriptor(globalThis,'devicePixelRatio');
   const canvas=engine.canvas;
+  const budget=engine.finniRenderBudget;
+  if(budget&&canvas?.parentElement){
+    const stage=canvas.parentElement;
+    const cssPixels=stage.clientWidth*stage.clientHeight;
+    if(cssPixels>0){
+      engine.finniRenderDensity=Math.min(
+        (globalThis.devicePixelRatio||1)*budget.scale,
+        budget.maxDensity,Math.sqrt(budget.maxPixels/cssPixels));
+    }
+  }
+  const density=engine.finniRenderDensity;
   const contextDescriptor=canvas&&Object.getOwnPropertyDescriptor(canvas,'getContext');
   const getContext=canvas?.getContext;
   if(getContext)canvas.getContext=function(type,...args){
@@ -78,7 +88,7 @@ export function startTable(engine,path){
       preserveLightAlpha(gl);
       // Replace empty cache pixels with the arcade sky on every graphics path.
       // Mobile also needs this copy to avoid the combined HDR/depth blit defect.
-      installFramebufferCopy(gl);
+      installFramebufferCopy(gl,onRendered);
     }
     return gl;
   };
