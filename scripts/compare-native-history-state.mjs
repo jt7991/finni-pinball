@@ -19,7 +19,7 @@ function orderedRows(rows,key,{last=true}={}){
   return current&&key(current)===wanted?current:undefined;
  }};
 }
-export async function compareNativeHistoryState(fixture,{write=()=>{},observeObjects=[],contactAudit,soundAudit,allocationInputs,afterReplay}={}){
+export async function compareNativeHistoryState(fixture,{write=()=>{},observeObjects=[],contactAudit,soundAudit,allocationInputs,afterReplay,completeFinalObservation=false}={}){
 const assets=nativeSourceAssets(fixture.reference.sourceSha256),load=name=>assets.json(name);
 const clocks=fixture.randomizeClocks?.timerRecords?nativeScriptClockInputs(fixture.randomizeClocks,{lastFrame:fixture.frames.at(-1).frameIndex,lastMilliseconds:fixture.frames.at(-1).snapshot.ms}):null;let randomizeIndex=0,timerIndex=0;
 const scriptRandomClock=clocks?()=>{assert.ok(randomizeIndex<clocks.observedRandomizeClocks.length);return clocks.observedRandomizeClocks[randomizeIndex++];}:undefined,scriptTimerSeconds=clocks?()=>{assert.ok(timerIndex<clocks.observedTimerSeconds.length);return clocks.observedTimerSeconds[timerIndex++];}:undefined;
@@ -35,6 +35,9 @@ if(contactAudit){const hit=game.rules.hit.bind(game.rules);game.rules.hit=(name,
 const timers=new Set(fixture.timers.events.filter(row=>row.interval>=0).map(row=>row.ms));
 let ticks=0,inputIndex=0,intervalsChecked=0,framesChecked=0,ruleObservationsChecked=0,ruleVariantFieldsChecked=0,scriptRandomStatesChecked=0;
 let moverStatesChecked=0,moverFieldsChecked=0;
+let ballWordsChecked=0,retiredBallStatesChecked=0;const knownBallRecords=new Map();
+let finalPlayerInputsChecked=0;
+const wordBuffer=new Float32Array(9),wordView=new Uint32Array(wordBuffer.buffer);
 const pendingAnimationBoundaries=new Map();
 const cursor=clock=>Number((BigInt(clock.current)-BigInt(clock.start))/1000n);
 // A clock import inside an ordinary UI call can observe that call's effects
@@ -53,14 +56,26 @@ const advance=due=>{assert.ok(due>=ticks,'Physical cursor moved backward');while
  else{intervalsChecked++;if(!compare(boundary,'interval'))throw Error('First differing native physical boundary at '+ticks);}
 }}};
 function compare(row,phase){
+ if(row.retiredBalls||row.balls.some(ball=>ball.float32Words))for(const record of game.renderRecords)knownBallRecords.set(record.scriptID,record);
  const actual=game.physicalRecords.map(record=>{const ball=game.nativeBall(record.body),state=ball.snapshot();return {id:record.scriptID,position:Object.values(state.p),velocity:Object.values(state.v),momentum:Object.values(state.m),orientation:[...ball.orientation.matrix],locked:!!record.held&&record.held!=='lane'};});
  const differences=[];
+ const compareWords=(expected,record,retired)=>{
+  assert.ok(record,'Observed native ball has an independently allocated port record');
+  const ball=game.nativeBall(record.body),state=ball.snapshot(),values={position:Object.values(state.p),velocity:Object.values(state.v),momentum:Object.values(state.m),orientation:[...ball.orientation.matrix]};
+  if(retired){assert.equal(record.removed,true,'Native retired Ball is also removed from port physics');if(expected.locked!==record.lastRenderLocked)differences.push({ball:expected.id,retired,key:'locked',actual:record.lastRenderLocked,expected:expected.locked});retiredBallStatesChecked++;}
+  for(const [key,words]of Object.entries(expected.float32Words??{})){
+   wordBuffer.set(values[key]);const actual=Array.from(wordView.subarray(0,words.length));ballWordsChecked+=words.length;
+   if(actual.some((word,i)=>word!==words[i]))differences.push({ball:expected.id,retired,key:'raw '+key,actual,expected:words});
+  }
+ };
  for(let i=0;i<Math.max(actual.length,row.balls.length);i++){
   if(!actual[i]||!row.balls[i]){differences.push({ball:i,actual:actual[i],expected:row.balls[i]});continue;}
   if(actual[i].id!==row.balls[i].id)differences.push({ball:i,key:'id',actual:actual[i].id,expected:row.balls[i].id});
   if(Object.hasOwn(row.balls[i],'locked')&&actual[i].locked!==row.balls[i].locked)differences.push({ball:i,key:'locked',actual:actual[i].locked,expected:row.balls[i].locked});
   for(const key of ['position','velocity','momentum','orientation'])for(let j=0;j<actual[i][key].length;j++)if(actual[i][key][j]!==row.balls[i][key][j])differences.push({ball:i,key,component:j,actual:actual[i][key][j],expected:row.balls[i][key][j]});
+  if(row.balls[i].float32Words)compareWords(row.balls[i],knownBallRecords.get(actual[i].id),false);
  }
+ for(const expected of row.retiredBalls??[])compareWords(expected,knownBallRecords.get(expected.id),true);
  const random=game.random.getState();if(random.some((word,i)=>word!==row.random[i]))differences.push({key:'random',actual:random,expected:row.random});
  if(row.flippers)for(const expected of row.flippers){const flipper=game.flippers.find(f=>f.side===expected.name),actual={angle:flipper.nativeAngle,momentum:-flipper.nativeMotion.momentum,speed:-flipper.nativeMotion.speed,inertia:flipper.nativeMotion.inertia};for(const [key,value]of Object.entries(actual))if(value!==expected[key])differences.push({flipper:expected.name,key,actual:value,expected:expected[key]});const renderAngle=Math.fround(Math.PI/2-flipper.angle);if(renderAngle!==expected.angle)differences.push({flipper:expected.name,key:'renderAngle',actual:renderAngle,expected:expected.angle});}
  if(row.movers)for(const expected of row.movers){const mover=[...game.gates,...game.spinners].find(m=>m.spec.name===expected.name);assert.ok(mover,'Observed authored mover exists');moverStatesChecked++;for(const key of ['angle','speed','damping','min','max',...(expected.kind==='gate'?['gravity','open','forced','hitDirection']:[])]){moverFieldsChecked++;const actual=key==='gravity'?Math.fround(mover.spec.gravity_factor):mover[key];if(actual!==expected[key])differences.push({mover:expected.name,key,actual,expected:expected[key]});}}
@@ -101,6 +116,14 @@ try{
   if(!compare({...frame.snapshot,frameIndex:frame.frameIndex},'submit'))throw Error('Native frame state differs at '+frame.frameIndex);
   framesChecked++;
  }
+ if(completeFinalObservation){
+  // A paused recorder can observe ordinary UI polls after its final draw.
+  // Replay every such statement before checking the final observed state;
+  // neither silently drop inputs nor advance an unobserved physical interval.
+  assert.ok(fixture.finalObservation);assert.deepEqual(fixture.finalObservation.physicsClock,fixture.frames.at(-1).snapshot.physicsClock);
+  while(inputIndex<fixture.playerInputs.length){const input=fixture.playerInputs[inputIndex++];assert.ok(input.frameIndex<=fixture.frames.at(-1).frameIndex);assert.ok(input.ms<=fixture.finalObservation.ms);await game.rules.execute(input.script);if(input.ruleState)compareRuleState(input);finalPlayerInputsChecked++;}
+  if(!compare(fixture.finalObservation,'final-observation'))throw Error('Native final observation differs');
+ }
  if(clocks){assert.equal(randomizeIndex,clocks.observedRandomizeClocks.length);assert.equal(timerIndex,clocks.observedTimerSeconds.length);}
  assert.equal(pendingAnimationBoundaries.size,0,'Every native physical boundary is checked');
  if(soundCalls){
@@ -119,7 +142,7 @@ try{
  // A component may continue only after the complete independent startup
  // replay and clock/body/RNG checks above. Its caller never seeds game state.
  const componentResult=afterReplay?await afterReplay(game):undefined;
- return {framesChecked,intervalsChecked,ticks,randomizeClockSamples:randomizeIndex,timerClockSamples:timerIndex,...(finishAllocations?{nativeAllocationIdentitiesConsumed:finishAllocations()}:{}),...(soundCalls?{soundCallsChecked:soundCalls.length}:{}),...(musicEvents?{musicEventsChecked:musicEvents.length}:{}),...(ruleObservationsChecked?{ruleObservationsChecked}:{}),...(ruleVariantFieldsChecked?{ruleVariantFieldsChecked}:{}),...(scriptRandomStatesChecked?{scriptRandomStatesChecked}:{}),...(moverStatesChecked?{moverStatesChecked,moverFieldsChecked}:{}),...(afterReplay?{componentResult}:{})};
+ return {framesChecked,intervalsChecked,ticks,randomizeClockSamples:randomizeIndex,timerClockSamples:timerIndex,...(ballWordsChecked?{ballWordsChecked,retiredBallStatesChecked}:{}),...(completeFinalObservation?{finalPlayerInputsChecked,finalObservationChecked:true}:{}),...(finishAllocations?{nativeAllocationIdentitiesConsumed:finishAllocations()}:{}),...(soundCalls?{soundCallsChecked:soundCalls.length}:{}),...(musicEvents?{musicEventsChecked:musicEvents.length}:{}),...(ruleObservationsChecked?{ruleObservationsChecked}:{}),...(ruleVariantFieldsChecked?{ruleVariantFieldsChecked}:{}),...(scriptRandomStatesChecked?{scriptRandomStatesChecked}:{}),...(moverStatesChecked?{moverStatesChecked,moverFieldsChecked}:{}),...(afterReplay?{componentResult}:{})};
 }finally{game.dispose();}
 }
-if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){const fixture=readNativeHistoryCapture(process.argv[2]),allocationInputs=process.argv.includes('--native-allocation-inputs')?fixture.allocationInputs??nativeBallAllocationInputs(fixture):undefined;const result=await compareNativeHistoryState(fixture,{allocationInputs,write:row=>console.log(JSON.stringify(row)),observeObjects:process.argv.filter(arg=>arg.startsWith('--observe=')).map(arg=>arg.slice(10))});console.log(JSON.stringify({result}));}
+if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){const fixture=readNativeHistoryCapture(process.argv[2]),allocationInputs=process.argv.includes('--native-allocation-inputs')?fixture.allocationInputs??nativeBallAllocationInputs(fixture):undefined;const result=await compareNativeHistoryState(fixture,{allocationInputs,completeFinalObservation:process.argv.includes('--complete-final-observation'),write:row=>console.log(JSON.stringify(row)),observeObjects:process.argv.filter(arg=>arg.startsWith('--observe=')).map(arg=>arg.slice(10))});console.log(JSON.stringify({result}));}

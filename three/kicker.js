@@ -38,9 +38,17 @@ export class Kicker extends Trigger {
       const shape=this.shapes[0];Object.assign(record.lastState,{x:shape.c.x,y:shape.c.y,z:f(shape.box.low+rSize(record)),velx:0,vely:0,velz:0,angmomx:0,angmomy:0,angmomz:0,angvelx:0,angvely:0,angvelz:0});return;
     }
     if(record.held===this.key||this.spec.fall_through){
-      body.setLinvel({x:0,y:0,z:0},true);body.setAngvel({x:0,y:0,z:0},true);
-      const shape=this.shapes[0],z=this.spec.fall_through?f(shape.box.low-rSize(record)-5):f(shape.box.low+rSize(record));
-      body.setTranslation({x:shape.c.x*.01,y:(2115-shape.c.y)*.01,z:z*.01},true);
+      const shape=this.shapes[0],z=this.spec.fall_through?f(f(shape.box.low-rSize(record))-5):f(shape.box.low+rSize(record));
+      if(body.native){
+        // DoCollide explicitly zeroes native velocity and angular momentum.
+        // A world-space angular/linear zero can acquire negative-zero bits
+        // during sign conversion. A retained, destroyed Ball is reset too.
+        const state=body.native.snapshot();
+        body.native.commit({...state,p:{x:shape.c.x,y:shape.c.y,z},v:{x:0,y:0,z:0},m:{x:0,y:0,z:0}});
+      }else{
+        body.setLinvel({x:0,y:0,z:0},true);body.setAngvel({x:0,y:0,z:0},true);
+        body.setTranslation({x:shape.c.x*.01,y:(2115-shape.c.y)*.01,z:z*.01},true);
+      }
       // Native locking suppresses integration, but contacts already collected
       // for this pass may still change velocity after capture. Rapier rejects
       // those writes on position-based kinematic bodies. The complete native

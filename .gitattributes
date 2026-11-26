@@ -53,3 +53,6 @@ scripts/capture-native-angle-domain.mjs text eol=lf
 scripts/native-trig-compiled-harness.mjs text eol=lf
 scripts/probe-native-ball-state.mjs text eol=lf
 scripts/ball-state-scenarios.mjs text eol=lf
+scripts/probe-native-capture-reset.mjs text eol=lf
+scripts/capture-reset-scenario.mjs text eol=lf
+scripts/native-startup-observer.mjs text eol=lf
