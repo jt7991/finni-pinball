@@ -1,6 +1,7 @@
 // Read-only pinned wasm32 Player/HitBall observations during original clock
 // imports. No instruction, clock result, table callback or state is replaced.
-export function installNativeStartupObserver(throughMilliseconds=1){
+export function installNativeStartupObserver(throughMilliseconds=1,{ballRadii=[25],maximumBalls=100}={}){
+ if(!Array.isArray(ballRadii)||!ballRadii.length||ballRadii.some(r=>!Number.isFinite(r)||r<=0)||!Number.isInteger(maximumBalls)||maximumBalls<1||maximumBalls>4096)throw Error('Invalid declared native ball observation bounds');
  const data=window.nativeStartup={records:[],boundaries:[],errors:[],imports:[],throughMilliseconds,done:false,clocks:0,notReady:0,memoryCount:0},memories=[];
  const remember=values=>{for(const value of values)if(value instanceof WebAssembly.Memory&&!memories.includes(value)){memories.push(value);data.memoryCount=memories.length;}};
  let previous;
@@ -9,10 +10,10 @@ export function installNativeStartupObserver(throughMilliseconds=1){
   const view=new DataView(memory.buffer),size=memory.buffer.byteLength,valid=(address,bytes)=>address>=65536&&address+bytes<=size,player=view.getUint32(9191328,true);
   if(!valid(player,333756))return null;
   const ms=view.getUint32(player+40,true),seconds=view.getFloat64(player+32,true),start=view.getUint32(player+333744,true),end=view.getUint32(player+333748,true);
-  if(start>end||(end-start)%4||end-start>400||start!==end&&!valid(start,end-start))return null;
+  if(start>end||(end-start)%4||end-start>maximumBalls*4||start!==end&&!valid(start,end-start))return null;
   const vector=address=>[0,4,8].map(offset=>view.getFloat32(address+offset,true)),balls=[];
   for(let at=start;at<end;at+=4){
-   const owner=view.getUint32(at,true),body=owner+288;if(!valid(owner,680)||view.getUint32(body+64,true)!==owner||view.getUint32(body+72,true)!==body||view.getUint32(body+124,true)!==body||view.getFloat32(body+152,true)!==25)return null;
+   const owner=view.getUint32(at,true),body=owner+288;if(!valid(owner,680)||view.getUint32(body+64,true)!==owner||view.getUint32(body+72,true)!==body||view.getUint32(body+124,true)!==body||!ballRadii.includes(view.getFloat32(body+152,true)))return null;
    const id=view.getUint32(owner+668,true),orientation=Array.from({length:9},(_,i)=>view.getFloat32(body+208+i*4,true));
    const row={id,owner,address:body,position:vector(body+128),velocity:vector(body+140),momentum:vector(body+196),orientation,locked:!!view.getUint8(body+164)};
    if(![...row.position,...row.velocity,...row.momentum,...orientation].every(Number.isFinite)||balls.some(ball=>ball.id===id))return null;

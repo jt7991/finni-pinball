@@ -86,7 +86,8 @@ export function createRules(source,specs,host={}) {
     for(const key of ['x','y','z','radius','height','rotx','roty','rotz'])state[key]=Math.fround(state[key]);
     const actions={
       createball:()=>host.createBall?.(name)??{x:state.x,y:state.y,z:25,velx:0,vely:0,velz:0},
-      createsizedballwithmass:()=>host.createBall?.(name)??{x:state.x,y:state.y,z:25,velx:0,vely:0,velz:0},
+      createsizedball:radius=>host.createBall?.(name,radius,1)??{x:state.x,y:state.y,z:radius,radius,mass:1,velx:0,vely:0,velz:0},
+      createsizedballwithmass:(radius,mass)=>host.createBall?.(name,radius,mass)??{x:state.x,y:state.y,z:radius,radius,mass,velx:0,vely:0,velz:0},
       destroyball:()=>host.destroyBall?.(name,activeBall),
       kick:(angle,speed,inclination=0)=>host.kick?.(name,activeBall,angle,speed,inclination),
       rotatetoend:()=>host.flipper?.(lower.startsWith('left')?'left':'right',true),

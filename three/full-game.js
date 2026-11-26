@@ -53,7 +53,7 @@ class FullGame extends Pinball {
       scriptProfiler:this.scriptProfiler,
       scriptRandomClock:options.scriptRandomClock,
       scriptTimerSeconds:options.scriptTimerSeconds,
-      createBall:name=>this.spawn(name),destroyBall:name=>this.destroyCapturedBall(name),
+      createBall:(name,radius,mass)=>this.spawn(name,radius,mass),destroyBall:name=>this.destroyCapturedBall(name),
       kick:(name,ball,angle,speed,inclination)=>this.kick(name,ball,angle,speed,inclination),
       flipper:(side,down)=>{this.held[side]=down;},plunger:down=>{this.held.launch=down;if(down)this.plunger.pull();else this.launch();},
       plungerPosition:()=>this.plunger.position,
@@ -200,24 +200,25 @@ class FullGame extends Pinball {
     // Gates stay sensors: per-ball direction decides whether their flap blocks.
   }
 
-  spawn(name) {
+  spawn(name,radius=25,mass=1) {
+    radius=Math.fround(Number(radius));mass=Math.fround(Number(mass));
     const key=name.toLowerCase(),spec=this.specs.objects.find(s=>s.name.toLowerCase()===key);
     const occupied=this.captures.has(key);
-    const p={...point(spec?.center??{x:293.68,y:473.63}),z:this.surface(spec??{})+RADIUS};
+    const size=radius*.01,p={...point(spec?.center??{x:293.68,y:473.63}),z:this.surface(spec??{})+size};
     // Native CreateBall always allocates, but DoCollide immediately returns
     // if this kicker already holds a ball. The new ball stays free at vx=.1.
     const body=this.world.createRigidBody(RAPIER.RigidBodyDesc.dynamic().setTranslation(p.x,p.y,p.z).setLinvel(occupied?Math.fround(.1):0,-0,0)
       .setCcdEnabled(true).setCanSleep(false));
     if(this.nativePlayfieldContacts)body.setGravityScale(0,true);
-    const collider=this.world.createCollider(RAPIER.ColliderDesc.ball(RADIUS).setMass(1).setRestitution(BALL_RESTITUTION).setRestitutionCombineRule(RAPIER.CoefficientCombineRule.Multiply).setFriction(0).setFrictionCombineRule(RAPIER.CoefficientCombineRule.Max)
+    const collider=this.world.createCollider(RAPIER.ColliderDesc.ball(size).setMass(mass).setRestitution(BALL_RESTITUTION).setRestitutionCombineRule(RAPIER.CoefficientCombineRule.Multiply).setFriction(0).setFrictionCombineRule(RAPIER.CoefficientCombineRule.Max)
       .setCollisionGroups(this.nativeBallContacts?NATIVE_BALL_GROUP:BALL_GROUP).setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS),body);
-    if(this.nativePositionUnits)this.nativeBall(body).body.setTranslation(p,true);
-    const isToy=['he','la','ra'].includes(key),rec={body,collider,isToy,held:occupied?null:key,inLane:false,previous:{...p},cooldowns:new Map(),laneTime:this.time};
+    if(this.nativePositionUnits){const native=this.nativeBall(body);native.setParameters(radius,mass);native.body.setTranslation(p,true);}
+    const isToy=['he','la','ra'].includes(key),rec={body,collider,radius:size,isToy,held:occupied?null:key,inLane:false,previous:{...p},cooldowns:new Map(),laneTime:this.time};
     const tableDecal=this.rules?.objects.get('table1').ballfrontdecal;
     rec.render={visible:true,color:0xffffff,reflectionenabled:true,forcereflection:false,bulbintensityscale:Math.fround(this.specs.ball_settings?.default_bulb_intensity_scale_on_ball??.15),playfieldreflectionscale:1,frontdecal:typeof tableDecal==='string'?tableDecal:this.specs.ball_settings?.ball_image_front??''};
     this.scriptBallSequence??=0;
     rec.scriptID=this.scriptBallSequence++;
-    rec.proxy=new Proxy({radius:25,mass:1,id:body.handle},{
+    rec.proxy=new Proxy({radius,mass,id:body.handle},{
       get:(target,key)=>{
         if(key==='getProperty'||key==='setProperty'||key==='hasMethod')return target[key];
         if(typeof key!=='string')return target[key];key=key.toLowerCase();
@@ -233,6 +234,13 @@ class FullGame extends Pinball {
       },
       set:(_target,key,v)=>{key=String(key).toLowerCase();
         if(rec.removed&&!rec.detachedNative){rec.lastState[key]=v;return true;}
+        if(key==='radius'||key==='mass'){
+          v=Math.fround(Number(v));
+          if(this.nativePositionUnits){const native=this.nativeBall(body);native.setParameters(key==='radius'?v:_target.radius,key==='mass'?v:_target.mass);}
+          _target[key]=v;if(key==='radius')rec.radius=v*.01;
+          if(!rec.removed){if(key==='radius')collider.setRadius(rec.radius);else collider.setMass(v);}
+          return true;
+        }
         if(Object.hasOwn(rec.render,key)){rec.render[key]=key==='frontdecal'?String(v):['visible','reflectionenabled','forcereflection'].includes(key)?!!v:Math.fround(Number(v));return true;}
         if(/^angmom[xyz]$/.test(key)){const axis=key.at(-1);if(this.nativePositionUnits){this.nativeBall(body).setAngularMomentum(axis,v);return true;}const w={...body.angvel()};w[axis]=v*(axis==='y'?1:-1)/(2.5*body.mass());body.setAngvel(w,true);return true;}
         if(/^angvel[xyz]$/.test(key))return true; // Deprecated read-only native properties.

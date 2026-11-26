@@ -6,6 +6,7 @@ import {NativeOrientation} from './native-orientation.js';
 export class NativeBall {
   constructor(body){
     this.rapier=body;this.position=null;this.lastWorld=null;
+    this.radius=25;
     this.orientation=new NativeOrientation();
     this.eventPosition={x:-10000,y:-10000,z:-10000};this.eventDistance=0;
     this.body={translation:()=>this.translation(),setTranslation:(p,wake)=>this.setTranslation(p,wake),handle:body.handle};
@@ -13,6 +14,7 @@ export class NativeBall {
     this.body.advanceTrigger=()=>this.advanceTrigger();
     this.body.native=this;
     for(const method of ['linvel','setLinvel','angvel','setAngvel','mass','applyImpulse','applyTorqueImpulse','collider'])this.body[method]=(...args)=>this.rapier[method](...args);
+    this.body.mass=()=>this.mass??this.rapier.mass();
     this.angularMomentum={x:0,y:0,z:0};this.lastAngular=null;
     this.body.angvel=()=>this.angularVelocity();
     this.body.applyTorqueImpulse=impulse=>this.angularImpulse(impulse);
@@ -62,10 +64,23 @@ export class NativeBall {
   }
   syncAngular(){
     const w=this.rapier.angvel(),old=this.lastAngular;
-    this.inertia=f(f(f(.4)*f(this.rapier.mass()))*f(25*25));
+    // HitBall::Inertia multiplies radius twice before mass. Reassociating
+    // these float operations changes the result for nonstandard parameters.
+    this.inertia=f(f(f(f(.4)*this.radius)*this.radius)*f(this.body.mass()));
     if(!old||w.x!==old.x||w.y!==old.y||w.z!==old.z){
       this.angularMomentum={x:f(f(-w.x/100)*this.inertia),y:f(f(w.y/100)*this.inertia),z:f(f(-w.z/100)*this.inertia)};this.lastAngular=w;
     }
+  }
+  setParameters(radius,mass){
+    const changed=this.radius!==f(radius)||this.body.mass()!==f(mass);
+    if(!changed){this.radius=f(radius);this.mass=f(mass);return;}
+    this.syncAngular();
+    this.radius=f(radius);this.mass=f(mass);
+    this.inertia=f(f(f(f(.4)*this.radius)*this.radius)*this.mass);
+    // Native setters change the inertia without changing angular momentum.
+    // Keep Rapier's backing velocity consistent so a later sync cannot
+    // reinterpret the unchanged momentum using the former inertia.
+    const m=this.angularMomentum,i=this.inertia;this.rapier.setAngvel({x:-f(m.x/i)*100,y:f(m.y/i)*100,z:-f(m.z/i)*100},true);this.lastAngular=this.rapier.angvel();
   }
   angularVelocity(){
     this.syncAngular();const m=this.angularMomentum,i=this.inertia;
@@ -96,7 +111,7 @@ export class NativeBall {
   }
   snapshot(){
     this.syncAngular();const v=this.rapier.linvel();
-    return {p:{...this.sync()},v:{x:f(v.x),y:f(-v.y),z:f(v.z)},m:{...this.angularMomentum},inertia:this.inertia,mass:f(this.rapier.mass())};
+    return {p:{...this.sync()},v:{x:f(v.x),y:f(-v.y),z:f(v.z)},m:{...this.angularMomentum},inertia:this.inertia,mass:f(this.body.mass())};
   }
   commit(ball){
     const p=this.position;if(p.x!==ball.p.x||p.y!==ball.p.y||p.z!==ball.p.z){this.position=ball.p;this.publish();}this.angularMomentum=ball.m;
