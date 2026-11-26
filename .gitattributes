@@ -51,3 +51,5 @@ scripts/probe-native-kicker-ejection.mjs text eol=lf
 scripts/kicker-ejection-scenarios.mjs text eol=lf
 scripts/capture-native-angle-domain.mjs text eol=lf
 scripts/native-trig-compiled-harness.mjs text eol=lf
+scripts/probe-native-ball-state.mjs text eol=lf
+scripts/ball-state-scenarios.mjs text eol=lf

@@ -59,6 +59,7 @@ export class NativeBall {
   }
   translation(){const p=this.sync();return {x:p.x*.01,y:(2115-p.y)*.01,z:p.z*.01};}
   setTranslation(p,wake){this.position={x:f(p.x*100),y:f(2115-p.y*100),z:f(p.z*100)};this.publish(wake);}
+  setPosition(axis,value,wake=true){this.sync();this.position={...this.position,[axis]:f(value)};this.publish(wake);}
   publish(wake=true){const p=this.position;this.rapier.setTranslation({x:p.x*.01,y:(2115-p.y)*.01,z:p.z*.01},wake);this.lastWorld=this.rapier.translation();}
   displace(start,v,duration){
     this.orientation.advance(this.angularMomentum,this.inertia,duration);
@@ -130,7 +131,7 @@ export class NativeBall {
     return {p:{...this.sync()},v:{x:f(v.x),y:f(-v.y),z:f(v.z)},m:{...this.angularMomentum},inertia:this.inertia,mass:f(this.body.mass())};
   }
   commit(ball){
-    const p=this.position;if(p.x!==ball.p.x||p.y!==ball.p.y||p.z!==ball.p.z){this.position=ball.p;this.publish();}this.angularMomentum=ball.m;
+    const p=this.position;if(!Object.is(p.x,ball.p.x)||!Object.is(p.y,ball.p.y)||!Object.is(p.z,ball.p.z)){this.position=ball.p;this.publish();}this.angularMomentum=ball.m;
     this.setVelocity({x:ball.v.x,y:-ball.v.y,z:ball.v.z},true);
     const m=ball.m,i=this.inertia;this.rapier.setAngvel({x:-f(m.x/i)*100,y:f(m.y/i)*100,z:-f(m.z/i)*100},true);this.lastAngular=this.rapier.angvel();
   }

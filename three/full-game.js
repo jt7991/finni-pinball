@@ -213,7 +213,7 @@ class FullGame extends Pinball {
     if(this.nativePlayfieldContacts)body.setGravityScale(0,true);
     const collider=this.world.createCollider(RAPIER.ColliderDesc.ball(size).setMass(mass).setRestitution(BALL_RESTITUTION).setRestitutionCombineRule(RAPIER.CoefficientCombineRule.Multiply).setFriction(0).setFrictionCombineRule(RAPIER.CoefficientCombineRule.Max)
       .setCollisionGroups(this.nativeBallContacts?NATIVE_BALL_GROUP:BALL_GROUP).setActiveEvents(RAPIER.ActiveEvents.COLLISION_EVENTS),body);
-    if(this.nativePositionUnits){const native=this.nativeBall(body);native.setParameters(radius,mass);native.body.setTranslation(p,true);}
+    if(this.nativePositionUnits){const native=this.nativeBall(body);native.setParameters(radius,mass);native.body.setTranslation(p,true);native.angularMomentum={x:0,y:0,z:0};native.lastAngular=body.angvel();}
     const isToy=['he','la','ra'].includes(key),rec={body,collider,radius:size,isToy,held:occupied?null:key,inLane:false,previous:{...p},cooldowns:new Map(),laneTime:this.time};
     const tableDecal=this.rules?.objects.get('table1').ballfrontdecal;
     rec.render={visible:true,color:0xffffff,reflectionenabled:true,forcereflection:false,bulbintensityscale:Math.fround(this.specs.ball_settings?.default_bulb_intensity_scale_on_ball??.15),playfieldreflectionscale:1,frontdecal:typeof tableDecal==='string'?tableDecal:this.specs.ball_settings?.ball_image_front??''};
@@ -230,7 +230,13 @@ class FullGame extends Pinball {
           if(this.nativePositionUnits){const native=this.nativeBall(body);native.syncAngular();return key.startsWith('angmom')?native.angularMomentum[axis]:Math.fround(native.angularMomentum[axis]/native.inertia);}
           return body.angvel()[axis]*sign*(key.startsWith('angmom')?2.5*body.mass():.01);
         }
-        const q=(this.nativePositionUnits?this.nativeBall(body).body:body).translation(),v=(this.nativePositionUnits?this.nativeBall(body).body:rec.detachedNative?.rapier??body).linvel();
+        if(this.nativePositionUnits){
+          const native=this.nativeBall(body);
+          if(key==='x'||key==='y'||key==='z')return native.sync()[key];
+          if(/^vel[xyz]$/.test(key)){const axis=key.at(-1),velocity=native.velocity();return axis==='y'?-velocity.y:velocity[axis];}
+          return target[key]??0;
+        }
+        const q=body.translation(),v=(rec.detachedNative?.rapier??body).linvel();
         return ({x:q.x*100,y:2115-q.y*100,z:q.z*100,velx:v.x,vely:-v.y,velz:v.z})[key]??target[key]??0;
       },
       set:(_target,key,v)=>{key=String(key).toLowerCase();
@@ -245,8 +251,14 @@ class FullGame extends Pinball {
         if(Object.hasOwn(rec.render,key)){rec.render[key]=key==='frontdecal'?String(v):['visible','reflectionenabled','forcereflection'].includes(key)?!!v:Math.fround(Number(v));return true;}
         if(/^angmom[xyz]$/.test(key)){const axis=key.at(-1);if(this.nativePositionUnits){this.nativeBall(body).setAngularMomentum(axis,v);return true;}const w={...body.angvel()};w[axis]=v*(axis==='y'?1:-1)/(2.5*body.mass());body.setAngvel(w,true);return true;}
         if(/^angvel[xyz]$/.test(key))return true; // Deprecated read-only native properties.
-        const positionBody=this.nativePositionUnits?this.nativeBall(body).body:body;
-        const velocityBody=this.nativePositionUnits?this.nativeBall(body).body:rec.detachedNative?.rapier??body;
+        if(this.nativePositionUnits){
+          const native=this.nativeBall(body);
+          if(key==='x'||key==='y'||key==='z')native.setPosition(key,v);
+          else if(/^vel[xyz]$/.test(key)){const axis=key.at(-1),velocity=native.velocity();velocity[axis]=axis==='y'?-Math.fround(v):Math.fround(v);native.setVelocity(velocity,true);}
+          return true;
+        }
+        const positionBody=body;
+        const velocityBody=rec.detachedNative?.rapier??body;
         const p={...positionBody.translation()},vel={...velocityBody.linvel()};
         if(key==='x')p.x=v*.01;if(key==='y')p.y=(2115-v)*.01;if(key==='z')p.z=v*.01;
         if(key==='velx')vel.x=v;if(key==='vely')vel.y=-v;if(key==='velz')vel.z=v;
