@@ -15,6 +15,11 @@ body.playing #player,body.playing .stage{background:#080b22 url('/arcade-backgro
 .touch button[data-action=left],.touch button[data-action=right]{background:var(--surface)}.touch button[data-action=launch]{background:var(--accent);color:var(--ink)}.touch button[data-action=action]{background:#111a34ed}.touch button.pressed,.nudges .pressed{background:var(--cyan);color:var(--ink)}
 .flip-zones button::after{border-radius:2px;background:var(--surface);color:var(--text);border-color:var(--cyan)}.show-touch-guide .flip-zones button,.show-touch-guide .flip-zones button:hover{background:#55d8ed19;border-color:var(--cyan)}.flip-zones button.pressed::after{background:var(--cyan);color:var(--ink)}
 .touch-guide>div{flex-wrap:wrap}.touch-guide button{min-height:44px}.touch-guide p{color:var(--muted)}.screen-message{border:1px solid var(--cyan);pointer-events:none;top:70px;bottom:auto;font-size:13px}
+@media (orientation:portrait) and (max-width:650px), (orientation:portrait) and (pointer:coarse) and (max-width:1024px){
+  body.playing #player{background-position:center top;background-size:100% auto;background-repeat:repeat-y}
+  body.playing .stage{background:transparent}
+  .screen-message{top:auto;bottom:calc(56px + max(8px,env(safe-area-inset-bottom)))}
+}
 body.playing:has(#waiting:not([hidden])) .screen-message{top:auto;bottom:16px}
 body:has(#waiting:not([hidden])) .player-footer{visibility:hidden}
 #waiting{background:var(--bg)}.start-content h2{color:var(--accent);font-size:26px;line-height:1.5}.start-content .bigday{color:var(--pink)}.start-content h2 span{display:block}.start-content>p.start-subtitle{color:var(--muted);font-size:15px;margin:8px 0 20px}

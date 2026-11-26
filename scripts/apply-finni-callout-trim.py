@@ -1,7 +1,16 @@
-"""Remove random chatter from the Finni table script."""
+"""Remove random chatter and the attract-mode credit card from the Finni table script."""
 import argparse
 from pathlib import Path
 import re
+
+ATTRACT_CREDIT = rb'^    DMD "", "", "d_jppresents", eNone, eNone, eNone, 3000, False, ""\r?\n'
+
+
+def remove_attract_credit(script):
+    script, count = re.subn(ATTRACT_CREDIT, b'', script, flags=re.M)
+    if count != 1:
+        raise ValueError('Expected one attract-mode credit card in the table script.')
+    return script
 
 
 def trim_script(source):
@@ -13,7 +22,7 @@ def trim_script(source):
         script, count = re.subn(pattern, b'', script, flags=re.M | re.S)
         if count != 1:
             raise ValueError(f'Expected one random chatter block matching {pattern!r}, found {count}.')
-    return script
+    return remove_attract_credit(script)
 
 
 if __name__ == '__main__':

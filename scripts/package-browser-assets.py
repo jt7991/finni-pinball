@@ -26,10 +26,10 @@ def package_music(extracted, output):
                         '-b:a', '128k', str(output / f'{name}.mp3')], check=True)
 
 
-def package(output, copy_table=True):
+def package(output, copy_table=True, images=None):
     from PIL import Image
     table=ROOT/'output/live-vpx/Finni-Big-Day.vpx'
-    images=ROOT/'.work/finni-live-extracted/images'
+    images=images if images is not None else ROOT/'.work/finni-live-extracted/images'
     if not images.is_dir():
         extracted=ROOT/'.work/browser-dmd-extracted'
         tool=ROOT/'.tools/vpxtool/vpxtool.exe'

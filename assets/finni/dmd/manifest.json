@@ -799,6 +799,126 @@
       64
     ]
   },
+  "d_score_garden": {
+    "file": "sprites/d_score_garden.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_presents": {
+    "file": "sprites/d_score_presents.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_invites": {
+    "file": "sprites/d_score_invites.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_balloons": {
+    "file": "sprites/d_score_balloons.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_decorations": {
+    "file": "sprites/d_score_decorations.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_cookies": {
+    "file": "sprites/d_score_cookies.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_pinata": {
+    "file": "sprites/d_score_pinata.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_party": {
+    "file": "sprites/d_score_party.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_cake": {
+    "file": "sprites/d_score_cake.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_friendship": {
+    "file": "sprites/d_score_friendship.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_disco": {
+    "file": "sprites/d_score_disco.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_discomb": {
+    "file": "sprites/d_score_discomb.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_supplyrun": {
+    "file": "sprites/d_score_supplyrun.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_streamers": {
+    "file": "sprites/d_score_streamers.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_spinner": {
+    "file": "sprites/d_score_spinner.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
   "d_a": {
     "file": "sprites/d_a.png",
     "layout": "glyph",
@@ -9737,6 +9857,1446 @@
   },
   "d_finni_combo_anim11": {
     "file": "sprites/d_finni_combo_anim11.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_garden_anim00": {
+    "file": "sprites/d_score_garden_anim00.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_garden_anim01": {
+    "file": "sprites/d_score_garden_anim01.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_garden_anim02": {
+    "file": "sprites/d_score_garden_anim02.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_garden_anim03": {
+    "file": "sprites/d_score_garden_anim03.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_garden_anim04": {
+    "file": "sprites/d_score_garden_anim04.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_garden_anim05": {
+    "file": "sprites/d_score_garden_anim05.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_garden_anim06": {
+    "file": "sprites/d_score_garden_anim06.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_garden_anim07": {
+    "file": "sprites/d_score_garden_anim07.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_garden_anim08": {
+    "file": "sprites/d_score_garden_anim08.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_garden_anim09": {
+    "file": "sprites/d_score_garden_anim09.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_garden_anim10": {
+    "file": "sprites/d_score_garden_anim10.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_garden_anim11": {
+    "file": "sprites/d_score_garden_anim11.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_presents_anim00": {
+    "file": "sprites/d_score_presents_anim00.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_presents_anim01": {
+    "file": "sprites/d_score_presents_anim01.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_presents_anim02": {
+    "file": "sprites/d_score_presents_anim02.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_presents_anim03": {
+    "file": "sprites/d_score_presents_anim03.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_presents_anim04": {
+    "file": "sprites/d_score_presents_anim04.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_presents_anim05": {
+    "file": "sprites/d_score_presents_anim05.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_presents_anim06": {
+    "file": "sprites/d_score_presents_anim06.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_presents_anim07": {
+    "file": "sprites/d_score_presents_anim07.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_presents_anim08": {
+    "file": "sprites/d_score_presents_anim08.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_presents_anim09": {
+    "file": "sprites/d_score_presents_anim09.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_presents_anim10": {
+    "file": "sprites/d_score_presents_anim10.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_presents_anim11": {
+    "file": "sprites/d_score_presents_anim11.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_invites_anim00": {
+    "file": "sprites/d_score_invites_anim00.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_invites_anim01": {
+    "file": "sprites/d_score_invites_anim01.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_invites_anim02": {
+    "file": "sprites/d_score_invites_anim02.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_invites_anim03": {
+    "file": "sprites/d_score_invites_anim03.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_invites_anim04": {
+    "file": "sprites/d_score_invites_anim04.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_invites_anim05": {
+    "file": "sprites/d_score_invites_anim05.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_invites_anim06": {
+    "file": "sprites/d_score_invites_anim06.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_invites_anim07": {
+    "file": "sprites/d_score_invites_anim07.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_invites_anim08": {
+    "file": "sprites/d_score_invites_anim08.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_invites_anim09": {
+    "file": "sprites/d_score_invites_anim09.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_invites_anim10": {
+    "file": "sprites/d_score_invites_anim10.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_invites_anim11": {
+    "file": "sprites/d_score_invites_anim11.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_balloons_anim00": {
+    "file": "sprites/d_score_balloons_anim00.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_balloons_anim01": {
+    "file": "sprites/d_score_balloons_anim01.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_balloons_anim02": {
+    "file": "sprites/d_score_balloons_anim02.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_balloons_anim03": {
+    "file": "sprites/d_score_balloons_anim03.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_balloons_anim04": {
+    "file": "sprites/d_score_balloons_anim04.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_balloons_anim05": {
+    "file": "sprites/d_score_balloons_anim05.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_balloons_anim06": {
+    "file": "sprites/d_score_balloons_anim06.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_balloons_anim07": {
+    "file": "sprites/d_score_balloons_anim07.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_balloons_anim08": {
+    "file": "sprites/d_score_balloons_anim08.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_balloons_anim09": {
+    "file": "sprites/d_score_balloons_anim09.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_balloons_anim10": {
+    "file": "sprites/d_score_balloons_anim10.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_balloons_anim11": {
+    "file": "sprites/d_score_balloons_anim11.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_decorations_anim00": {
+    "file": "sprites/d_score_decorations_anim00.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_decorations_anim01": {
+    "file": "sprites/d_score_decorations_anim01.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_decorations_anim02": {
+    "file": "sprites/d_score_decorations_anim02.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_decorations_anim03": {
+    "file": "sprites/d_score_decorations_anim03.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_decorations_anim04": {
+    "file": "sprites/d_score_decorations_anim04.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_decorations_anim05": {
+    "file": "sprites/d_score_decorations_anim05.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_decorations_anim06": {
+    "file": "sprites/d_score_decorations_anim06.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_decorations_anim07": {
+    "file": "sprites/d_score_decorations_anim07.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_decorations_anim08": {
+    "file": "sprites/d_score_decorations_anim08.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_decorations_anim09": {
+    "file": "sprites/d_score_decorations_anim09.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_decorations_anim10": {
+    "file": "sprites/d_score_decorations_anim10.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_decorations_anim11": {
+    "file": "sprites/d_score_decorations_anim11.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_cookies_anim00": {
+    "file": "sprites/d_score_cookies_anim00.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_cookies_anim01": {
+    "file": "sprites/d_score_cookies_anim01.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_cookies_anim02": {
+    "file": "sprites/d_score_cookies_anim02.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_cookies_anim03": {
+    "file": "sprites/d_score_cookies_anim03.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_cookies_anim04": {
+    "file": "sprites/d_score_cookies_anim04.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_cookies_anim05": {
+    "file": "sprites/d_score_cookies_anim05.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_cookies_anim06": {
+    "file": "sprites/d_score_cookies_anim06.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_cookies_anim07": {
+    "file": "sprites/d_score_cookies_anim07.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_cookies_anim08": {
+    "file": "sprites/d_score_cookies_anim08.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_cookies_anim09": {
+    "file": "sprites/d_score_cookies_anim09.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_cookies_anim10": {
+    "file": "sprites/d_score_cookies_anim10.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_cookies_anim11": {
+    "file": "sprites/d_score_cookies_anim11.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_pinata_anim00": {
+    "file": "sprites/d_score_pinata_anim00.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_pinata_anim01": {
+    "file": "sprites/d_score_pinata_anim01.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_pinata_anim02": {
+    "file": "sprites/d_score_pinata_anim02.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_pinata_anim03": {
+    "file": "sprites/d_score_pinata_anim03.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_pinata_anim04": {
+    "file": "sprites/d_score_pinata_anim04.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_pinata_anim05": {
+    "file": "sprites/d_score_pinata_anim05.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_pinata_anim06": {
+    "file": "sprites/d_score_pinata_anim06.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_pinata_anim07": {
+    "file": "sprites/d_score_pinata_anim07.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_pinata_anim08": {
+    "file": "sprites/d_score_pinata_anim08.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_pinata_anim09": {
+    "file": "sprites/d_score_pinata_anim09.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_pinata_anim10": {
+    "file": "sprites/d_score_pinata_anim10.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_pinata_anim11": {
+    "file": "sprites/d_score_pinata_anim11.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_party_anim00": {
+    "file": "sprites/d_score_party_anim00.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_party_anim01": {
+    "file": "sprites/d_score_party_anim01.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_party_anim02": {
+    "file": "sprites/d_score_party_anim02.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_party_anim03": {
+    "file": "sprites/d_score_party_anim03.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_party_anim04": {
+    "file": "sprites/d_score_party_anim04.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_party_anim05": {
+    "file": "sprites/d_score_party_anim05.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_party_anim06": {
+    "file": "sprites/d_score_party_anim06.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_party_anim07": {
+    "file": "sprites/d_score_party_anim07.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_party_anim08": {
+    "file": "sprites/d_score_party_anim08.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_party_anim09": {
+    "file": "sprites/d_score_party_anim09.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_party_anim10": {
+    "file": "sprites/d_score_party_anim10.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_party_anim11": {
+    "file": "sprites/d_score_party_anim11.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_cake_anim00": {
+    "file": "sprites/d_score_cake_anim00.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_cake_anim01": {
+    "file": "sprites/d_score_cake_anim01.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_cake_anim02": {
+    "file": "sprites/d_score_cake_anim02.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_cake_anim03": {
+    "file": "sprites/d_score_cake_anim03.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_cake_anim04": {
+    "file": "sprites/d_score_cake_anim04.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_cake_anim05": {
+    "file": "sprites/d_score_cake_anim05.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_cake_anim06": {
+    "file": "sprites/d_score_cake_anim06.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_cake_anim07": {
+    "file": "sprites/d_score_cake_anim07.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_cake_anim08": {
+    "file": "sprites/d_score_cake_anim08.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_cake_anim09": {
+    "file": "sprites/d_score_cake_anim09.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_cake_anim10": {
+    "file": "sprites/d_score_cake_anim10.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_cake_anim11": {
+    "file": "sprites/d_score_cake_anim11.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_friendship_anim00": {
+    "file": "sprites/d_score_friendship_anim00.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_friendship_anim01": {
+    "file": "sprites/d_score_friendship_anim01.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_friendship_anim02": {
+    "file": "sprites/d_score_friendship_anim02.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_friendship_anim03": {
+    "file": "sprites/d_score_friendship_anim03.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_friendship_anim04": {
+    "file": "sprites/d_score_friendship_anim04.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_friendship_anim05": {
+    "file": "sprites/d_score_friendship_anim05.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_friendship_anim06": {
+    "file": "sprites/d_score_friendship_anim06.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_friendship_anim07": {
+    "file": "sprites/d_score_friendship_anim07.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_friendship_anim08": {
+    "file": "sprites/d_score_friendship_anim08.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_friendship_anim09": {
+    "file": "sprites/d_score_friendship_anim09.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_friendship_anim10": {
+    "file": "sprites/d_score_friendship_anim10.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_friendship_anim11": {
+    "file": "sprites/d_score_friendship_anim11.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_disco_anim00": {
+    "file": "sprites/d_score_disco_anim00.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_disco_anim01": {
+    "file": "sprites/d_score_disco_anim01.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_disco_anim02": {
+    "file": "sprites/d_score_disco_anim02.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_disco_anim03": {
+    "file": "sprites/d_score_disco_anim03.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_disco_anim04": {
+    "file": "sprites/d_score_disco_anim04.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_disco_anim05": {
+    "file": "sprites/d_score_disco_anim05.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_disco_anim06": {
+    "file": "sprites/d_score_disco_anim06.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_disco_anim07": {
+    "file": "sprites/d_score_disco_anim07.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_disco_anim08": {
+    "file": "sprites/d_score_disco_anim08.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_disco_anim09": {
+    "file": "sprites/d_score_disco_anim09.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_disco_anim10": {
+    "file": "sprites/d_score_disco_anim10.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_disco_anim11": {
+    "file": "sprites/d_score_disco_anim11.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_discomb_anim00": {
+    "file": "sprites/d_score_discomb_anim00.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_discomb_anim01": {
+    "file": "sprites/d_score_discomb_anim01.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_discomb_anim02": {
+    "file": "sprites/d_score_discomb_anim02.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_discomb_anim03": {
+    "file": "sprites/d_score_discomb_anim03.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_discomb_anim04": {
+    "file": "sprites/d_score_discomb_anim04.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_discomb_anim05": {
+    "file": "sprites/d_score_discomb_anim05.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_discomb_anim06": {
+    "file": "sprites/d_score_discomb_anim06.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_discomb_anim07": {
+    "file": "sprites/d_score_discomb_anim07.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_discomb_anim08": {
+    "file": "sprites/d_score_discomb_anim08.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_discomb_anim09": {
+    "file": "sprites/d_score_discomb_anim09.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_discomb_anim10": {
+    "file": "sprites/d_score_discomb_anim10.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_discomb_anim11": {
+    "file": "sprites/d_score_discomb_anim11.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_supplyrun_anim00": {
+    "file": "sprites/d_score_supplyrun_anim00.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_supplyrun_anim01": {
+    "file": "sprites/d_score_supplyrun_anim01.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_supplyrun_anim02": {
+    "file": "sprites/d_score_supplyrun_anim02.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_supplyrun_anim03": {
+    "file": "sprites/d_score_supplyrun_anim03.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_supplyrun_anim04": {
+    "file": "sprites/d_score_supplyrun_anim04.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_supplyrun_anim05": {
+    "file": "sprites/d_score_supplyrun_anim05.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_supplyrun_anim06": {
+    "file": "sprites/d_score_supplyrun_anim06.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_supplyrun_anim07": {
+    "file": "sprites/d_score_supplyrun_anim07.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_supplyrun_anim08": {
+    "file": "sprites/d_score_supplyrun_anim08.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_supplyrun_anim09": {
+    "file": "sprites/d_score_supplyrun_anim09.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_supplyrun_anim10": {
+    "file": "sprites/d_score_supplyrun_anim10.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_supplyrun_anim11": {
+    "file": "sprites/d_score_supplyrun_anim11.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_streamers_anim00": {
+    "file": "sprites/d_score_streamers_anim00.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_streamers_anim01": {
+    "file": "sprites/d_score_streamers_anim01.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_streamers_anim02": {
+    "file": "sprites/d_score_streamers_anim02.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_streamers_anim03": {
+    "file": "sprites/d_score_streamers_anim03.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_streamers_anim04": {
+    "file": "sprites/d_score_streamers_anim04.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_streamers_anim05": {
+    "file": "sprites/d_score_streamers_anim05.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_streamers_anim06": {
+    "file": "sprites/d_score_streamers_anim06.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_streamers_anim07": {
+    "file": "sprites/d_score_streamers_anim07.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_streamers_anim08": {
+    "file": "sprites/d_score_streamers_anim08.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_streamers_anim09": {
+    "file": "sprites/d_score_streamers_anim09.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_streamers_anim10": {
+    "file": "sprites/d_score_streamers_anim10.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_streamers_anim11": {
+    "file": "sprites/d_score_streamers_anim11.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_spinner_anim00": {
+    "file": "sprites/d_score_spinner_anim00.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_spinner_anim01": {
+    "file": "sprites/d_score_spinner_anim01.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_spinner_anim02": {
+    "file": "sprites/d_score_spinner_anim02.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_spinner_anim03": {
+    "file": "sprites/d_score_spinner_anim03.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_spinner_anim04": {
+    "file": "sprites/d_score_spinner_anim04.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_spinner_anim05": {
+    "file": "sprites/d_score_spinner_anim05.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_spinner_anim06": {
+    "file": "sprites/d_score_spinner_anim06.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_spinner_anim07": {
+    "file": "sprites/d_score_spinner_anim07.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_spinner_anim08": {
+    "file": "sprites/d_score_spinner_anim08.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_spinner_anim09": {
+    "file": "sprites/d_score_spinner_anim09.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_spinner_anim10": {
+    "file": "sprites/d_score_spinner_anim10.png",
+    "layout": "overlay",
+    "size": [
+      256,
+      64
+    ]
+  },
+  "d_score_spinner_anim11": {
+    "file": "sprites/d_score_spinner_anim11.png",
     "layout": "overlay",
     "size": [
       256,

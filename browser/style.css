@@ -99,6 +99,12 @@ body{overscroll-behavior:none}
   #waiting{padding:16px}
   .start-content .start-keys{margin-top:18px}
 }
+/* Anchor the portrait display and playfield to the top safe edge. */
+@media (orientation:portrait) and (max-width:650px), (orientation:portrait) and (pointer:coarse) and (max-width:1024px){
+  body.playing .toolbar{top:env(safe-area-inset-top,0px)}
+  body.playing .dmd-strip{padding-top:env(safe-area-inset-top,0px);align-content:start}
+  body.playing .screen canvas{top:0;transform:translateX(-50%)}
+}
 /* Turned phones keep touch controls; the DMD uses the spare side space. */
 @media(pointer:coarse) and (max-width:1024px) and (max-height:500px) and (orientation:landscape){
   #player{grid-template-columns:minmax(0,3fr) minmax(200px,2fr);grid-template-rows:56px minmax(0,1fr) 64px;padding:max(0px,env(safe-area-inset-top)) max(0px,env(safe-area-inset-right)) max(0px,env(safe-area-inset-bottom)) max(0px,env(safe-area-inset-left))}

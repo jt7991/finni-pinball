@@ -107,14 +107,64 @@ for(const [id,name] of actions){
   (id.startsWith('nudge')?$('nudges'):$('touch')).append(button);
 }
 const phoneLayout=matchMedia('(max-width:650px), (pointer:coarse) and (max-width:1024px)');
+const phoneFullscreen=matchMedia('(pointer:coarse) and (max-width:1024px)');
 let graphics='auto';
 try{const saved=localStorage.getItem('finni-graphics-v1');if(['auto','performance','detailed'].includes(saved))graphics=saved;}catch{}
+const automaticGraphicsKey='finni-automatic-graphics-v1';
+let renderQuality=graphics,tablePrepared=false,renderedFrame=false;
+if(graphics==='auto'){
+  try{
+    const saved=JSON.parse(sessionStorage.getItem(automaticGraphicsKey));
+    if(['reduced','performance'].includes(saved?.quality)){
+      renderQuality=saved.quality;
+      if(['1','2','3','4'].includes(saved.players))$('player-count').value=saved.players;
+    }
+  }catch{}
+}
 $('graphics').value=graphics;
 $('apply-graphics').onclick=()=>{
   release();
   try{localStorage.setItem('finni-graphics-v1',$('graphics').value);}catch{message('Browser storage is unavailable. Graphics could not be saved.');return;}
+  try{sessionStorage.removeItem(automaticGraphicsKey);}catch{}
   location.reload();
 };
+function measureTableFps(){
+  return new Promise(resolve=>{
+    let started,frames=0;
+    function reset(){started=undefined;frames=0;renderedFrame=false;}
+    function finish(fps){
+      document.removeEventListener('visibilitychange',reset);
+      resolve(fps);
+    }
+    function sample(now){
+      if(enginePhase!=='Checking graphics'||document.body.classList.contains('engine-error')){finish(null);return;}
+      if(document.hidden)reset();
+      else{
+        started??=now;
+        const elapsed=now-started;
+        // Let the camera and static prerender settle before counting frames.
+        if(elapsed>=600&&renderedFrame)frames++;
+        if(elapsed>=2600){finish(frames*1000/(elapsed-600));return;}
+      }
+      renderedFrame=false;
+      requestAnimationFrame(sample);
+    }
+    document.addEventListener('visibilitychange',reset);
+    requestAnimationFrame(sample);
+  });
+}
+function retryWithLowerGraphics(){
+  try{
+    sessionStorage.setItem(automaticGraphicsKey,JSON.stringify({
+      quality:renderQuality==='reduced'?'performance':'reduced',
+      players:$('player-count').value,
+    }));
+  }catch{return false;}
+  enginePhase='Preparing a smoother graphics setting';
+  $('loading').textContent=enginePhase+'…';
+  location.reload();
+  return true;
+}
 function placeFlippers(){
   release();
   const buttons=['left','right'].map(id=>document.querySelector(`[data-action=${id}]`));
@@ -220,7 +270,7 @@ function send(){
 for(const type of ['keydown','keyup'])window.addEventListener(type,e=>e.stopImmediatePropagation());
 const logs=[];
 const leaderboard=createLeaderboard(evaluate,release);
-const views=createViews(evaluate,()=>connected,release);
+const views=createViews(evaluate,()=>tablePrepared,release);
 const dmd=createDmd();
 const music=createMusic(error=>log(`Soundtrack: ${error}`));
 let tableSupportsBrowserMusic=false;
@@ -251,9 +301,9 @@ function paintBeforeStarting(){
   });
 }
 async function replay(){
-  if($('play').disabled)return;
+  if($('play').disabled||$('initials-dialog').open)return;
   showStartingGame();
-  await setFullscreen(true);
+  if(phoneFullscreen.matches)await setFullscreen(true);
   await paintBeforeStarting();
   if(!connected)return;
   release();
@@ -323,14 +373,16 @@ function fail(error){
     }));}catch{}
     if(typeof error.stack==='string')log(error.stack);
   }
-  connected=false;held.clear();physical.clear();pointers.clear();swipes.clear();applied.clear();paint();
+  connected=false;tablePrepared=false;held.clear();physical.clear();pointers.clear();swipes.clear();applied.clear();paint();
   $('waiting').hidden=false;$('progress').hidden=true;
   $('loading').textContent=`${enginePhase}: ${detail}`;$('status').textContent='Game unavailable';
   $('play').removeAttribute('aria-busy');
   $('play').disabled=false;$('play').textContent='Reload and retry';$('play').onclick=()=>location.reload();
 }
 $('canvas').addEventListener('webglcontextlost',e=>{
-  e.preventDefault();fail(new Error('Graphics context lost. Reload to restart the game.'));
+  e.preventDefault();
+  if(enginePhase==='Checking graphics'&&retryWithLowerGraphics())return;
+  fail(new Error('Graphics context lost. Reload to restart the game.'));
 });
 async function downloadTable(signal){
   const response=await fetch('/table.vpx?v=soundtrack-resume',{signal});
@@ -359,6 +411,16 @@ async function downloadTable(signal){
   $('loading').textContent='Preparing the VPX engine…';
   return table;
 }
+function prepareTable(onRendered){
+  const result=startTable(engine,'/tables/finni.vpx',onRendered);
+  if(result!==1)throw Error(`VPX could not start this table (code ${result}). See the engine log.`);
+  // Keep the chrome ball sharp and remove browser tilt penalties before play.
+  evaluate('Table1.BallTrail=0:Table1.BallFrontDecal="":Tilt=0:TiltSensitivity=0');
+  evaluate(partyChooserScript);
+  engine.FS.unlink('/tables/finni.vpx');
+  evaluate('Dim FinniDmdDigit, FinniDmdState : bFreePlay=True : For Each FinniDmdDigit In Digits : FinniDmdDigit.Visible=False : Next : digitgrid.Visible=False : DMDFlush : ShowTableInfo');
+  tablePrepared=true;
+}
 async function boot(){
   const download=new AbortController();
   try{
@@ -368,7 +430,7 @@ async function boot(){
     let [readyEngine,table]=await Promise.all([
       import('/engine/vpinball.js').then(factory=>factory.default({
         canvas:$('canvas'),
-        preRun:[module=>configureRenderer(module,{mobile:phoneLayout.matches,quality:graphics})],
+        preRun:[module=>configureRenderer(module,{mobile:phoneLayout.matches,quality:renderQuality})],
         locateFile:path=>`/engine/${path}`,
         print:log,
         printErr:log,
@@ -381,33 +443,32 @@ async function boot(){
     // MEMFS can own the download buffer; avoid a second ~166 MB copy on phones.
     engine.FS.mkdirTree('/tables');engine.FS.writeFile('/tables/finni.vpx',new Uint8Array(table),{canOwn:true});table=null;
     music.preload();
-    $('progress').value=100;$('progress').hidden=true;$('loading').textContent='Table loaded.';$('play').disabled=false;$('play').textContent='Start game';$('status').textContent='Ready to play';
+    // Exposes real table scripting for compatibility diagnostics and smoke checks.
+    window.finni={evaluate,engine};
+    if(graphics==='auto'&&renderQuality!=='performance'){
+      enginePhase='Checking graphics';
+      $('loading').textContent='Checking graphics for this device…';
+      await paintBeforeStarting();
+      if(document.body.classList.contains('engine-error'))return;
+      prepareTable(()=>{renderedFrame=true;});
+      views.apply();
+      const fps=await measureTableFps();
+      if(fps===null)return;
+      if(fps<50&&retryWithLowerGraphics())return;
+    }
+    $('progress').value=100;$('progress').hidden=true;$('loading').textContent='Table ready.';$('play').disabled=false;$('play').textContent='Start game';$('status').textContent='Ready to play';
     $('play').onclick=async()=>{
       if($('play').disabled)return;
       const browserMusic=music.unlock();
+      // Automatic may have initialized SDL before a browser audio gesture.
+      void engine.SDL3?.audioContext?.resume().catch(()=>{});
       enginePhase='Starting table';showStartingGame();
       try{
-        await paintBeforeStarting();
+        if(!tablePrepared)await paintBeforeStarting();
         if(document.body.classList.contains('engine-error'))return;
-        // Queue fullscreen and SDL startup together so SDL cannot exit an
-        // already settled fullscreen session while creating the native window.
-        void setFullscreen(true);
-        const result=startTable(engine,'/tables/finni.vpx');
-        if(result!==1)throw Error(`VPX could not start this table (code ${result}). See the engine log.`);
+        if(phoneFullscreen.matches)void setFullscreen(true);
+        if(!tablePrepared)prepareTable();
         if(browserMusic&&tableSupportsBrowserMusic)evaluate('FinniUseBrowserMusic');
-        // Legacy tables can import their own trail preference over the global
-        // setting. Keep one sharp ball even when the packed table requests it.
-        evaluate('Table1.BallTrail=0');
-        // New game balls retain their chrome texture without the source
-        // table's dense scratch overlay, which sparkles into a ghostly rim.
-        evaluate('Table1.BallFrontDecal=""');
-        // Zero sensitivity disables penalties from both nudges and mechanical tilt.
-        evaluate('Tilt=0:TiltSensitivity=0');
-        evaluate(partyChooserScript);
-        // The native table now owns its decoded art/audio. Replay uses the
-        // running player, so retaining the packed upload only wastes memory.
-        engine.FS.unlink('/tables/finni.vpx');
-        evaluate('Dim FinniDmdDigit, FinniDmdState : bFreePlay=True : For Each FinniDmdDigit In Digits : FinniDmdDigit.Visible=False : Next : digitgrid.Visible=False : DMDFlush : ShowTableInfo');
         $('play').removeAttribute('aria-busy');
         connected=true;document.body.classList.add('playing');$('waiting').hidden=true;$('progress').hidden=true;$('status').textContent='Playing';document.title='Finni’s Big Day';paint();$('canvas').focus();
         views.apply();
@@ -415,8 +476,6 @@ async function boot(){
         enginePhase='Playing';
       }catch(error){fail(error);}
     };
-    // Exposes real table scripting for compatibility diagnostics and smoke checks.
-    window.finni={evaluate,engine};
   }catch(error){download.abort();fail(error);}
 }
 render();paint();placeFlippers();boot();
