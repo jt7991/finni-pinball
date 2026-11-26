@@ -90,6 +90,7 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--bloom-coordinates' in sys.argv:runner='probe-bloom-coordinates.mjs'
         if '--bloom-producer-history' in sys.argv:runner='probe-bloom-producer-history.mjs'
         if '--bloom-pipeline-state' in sys.argv:runner='probe-bloom-pipeline-state.mjs'
+        if '--isolated-bloom-repeat' in sys.argv:runner='probe-isolated-bloom-repeat.mjs'
         if '--native-fixed-bloom-history' in sys.argv:runner='probe-native-fixed-bloom-history.mjs'
         if '--native-control-release' in sys.argv:runner='probe-native-control-release.mjs'
         if '--player-control-transitions' in sys.argv:runner='probe-player-control-transitions.mjs'
