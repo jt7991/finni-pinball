@@ -2,6 +2,7 @@
 // instead of decimal text. XOR with the prior body of the same ID compresses
 // slow changes without quantization, omitted observations or replay inputs.
 import assert from 'node:assert/strict';import{createHash}from 'node:crypto';
+import fs from 'node:fs';import path from 'node:path';import{fileURLToPath}from 'node:url';import{gzipSync}from 'node:zlib';
 const columns=[['position',3],['velocity',3],['momentum',3],['orientation',9]],keys=['id','owner','address',...columns.map(([name])=>name),'locked'];
 const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
 export function packNativeHistoryState(bytes){
@@ -36,4 +37,9 @@ export function unpackNativeHistoryState(packaged){
   return Object.fromEntries(Object.entries(value).map(([key,item])=>[key,walk(item)]));
  };
  const result=walk(packaged.source),bytes=Buffer.from(JSON.stringify(result));assert.equal(consumed*4,data.length);assert.equal(bytes.length,packaged.sourceBytes);assert.equal(sha(bytes),packaged.sourceSHA256,'Every original capture byte is reconstructed');return result;
+}
+if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){
+ const [input,output]=process.argv.slice(2);assert.ok(input&&output,'Usage: node scripts/native-history-state-package.mjs <capture.json> <new.json.gz>');
+ const packet=packNativeHistoryState(fs.readFileSync(input)),bytes=gzipSync(JSON.stringify(packet),{level:9});fs.writeFileSync(output,bytes,{flag:'wx'});
+ console.log(JSON.stringify({file:output,bytes:bytes.length,sha256:sha(bytes),sourceSHA256:packet.sourceSHA256,sourceBytes:packet.sourceBytes}));
 }

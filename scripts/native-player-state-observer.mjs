@@ -1,5 +1,5 @@
 // Read-only authored state for continuous multiplayer reference recordings.
-export const playerStateFields={player:'CurrentPlayer',players:'PlayersPlayingGame',ball:'Balls',playing:'Abs(CLng(bGameInPlay))',choosing:'Abs(CLng(bChooseBattle))',inLane:'Abs(CLng(bBallInPlungerLane))',onPlayfield:'BallsOnPlayfield',queued:'mBalls2Eject',scriptRandom:'CLng(Rnd(0)*16777216)'};
+export const playerStateFields={player:'CurrentPlayer',players:'PlayersPlayingGame',ball:'Balls',playing:'Abs(CLng(bGameInPlay))',choosing:'Abs(CLng(bChooseBattle))',inLane:'Abs(CLng(bBallInPlungerLane))',onPlayfield:'BallsOnPlayfield',queued:'mBalls2Eject',scriptRandom:'CLng(Rnd(0)*16777216)',plungerVisible:'Plunger.Visible'};
 for(let i=1;i<=4;i++)for(const[key,array]of Object.entries({score:'Score',remaining:'BallsRemaining',extra:'ExtraBallsAwards',bonus:'BonusPoints',multiplier:'BonusMultiplier',active:'Battle',wins:'BattlesWon'}))playerStateFields[`player${i}_${key}`]=`${array}(${i}${array==='Battle'?',0':''})`;
 
 export function installPlayerStateObserver(fields){
