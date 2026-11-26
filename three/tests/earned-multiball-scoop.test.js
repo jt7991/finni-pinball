@@ -10,7 +10,8 @@ import {earnedScoopFields,earnedScoopBooleans,observeEarnedScoop,runEarnedScoop}
 
 for(const version of [
   {name:'6f8116d',file:'vpx-earned-multiball-scoop.json',sha256:'4bb3cec2893a7a77956f926af9bb18d69d01af881140d2c44be602aa2e5a7eae',source:'6160e43c1a74f6dc70fd9852433c3373fe11b3e55d4f3a3fedc435265591b5c5'},
-  {name:'cc6f04f',file:'vpx-earned-multiball-scoop-cc6f04f.json',sha256:'c8f54b93489153bfbd1a2cf4b78f15beab804f59cdc9491739f2952a7c2fe459',source:'1e3d738c10398afc89691dcf585ce3c2330ab200dd038daec64ba111faba1997'}
+  {name:'cc6f04f',file:'vpx-earned-multiball-scoop-cc6f04f.json',sha256:'c8f54b93489153bfbd1a2cf4b78f15beab804f59cdc9491739f2952a7c2fe459',source:'1e3d738c10398afc89691dcf585ce3c2330ab200dd038daec64ba111faba1997'},
+  {name:'d259c2b',file:'vpx-earned-multiball-scoop-d259c2b.json',sha256:'547e3f6cefac6ad35c26d0f0e4238f0afb64c75db4a6f40d7bec76632dd8a858',source:'a0acae6e039580a027a704238325031d737149595a417c12ad22d11b1275c1f3'}
 ])test(version.name+' physical locks earn multiball and five scoop entries retain one chooser and every original ejection',async()=>{
   const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
   const bytes=fs.readFileSync(new URL('fixtures/'+version.file,import.meta.url));
