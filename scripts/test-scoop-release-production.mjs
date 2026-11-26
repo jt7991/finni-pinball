@@ -44,4 +44,11 @@ try{
   const report={scope:'Explicit active-mode and stale-ready qualification with two additional balls created by authored CreateNewBall. One declared physical approach selects live ball ID3. Original KickBallOut body gains only a counter inside its existing positive-hole condition. No clocks, RNG, timer deadlines, collision outputs or ball rescue are supplied. This verifies the rejected-chooser branch during multiball, not natural reachability of the initial stale-ready qualification. Optional pause observation dispatches browser blur/focus events through the player lifecycle.',base,native,installFix,pauseObservation,qualified,captured,released,samples,errors};
   fs.writeFileSync(output+'/scoop-release-production.json',JSON.stringify(report,null,2),{flag:'wx'});console.log(JSON.stringify({native,installFix,qualified,captured,released,errors}));
   assert.deepEqual(errors,[]);if(!native)assert.deepEqual(await evaluate('scoopQA.fatal'),[]);assert.ok(released,'captured multiball must receive its normal eject callback');assert.equal(released.choosing,false);assert.equal(released.mode,1);
+}catch(error){
+  // Retain the rejected build's actual state too. A failure before the normal
+  // report must remain inspectable when comparing an old shared address.
+  const state=await read().catch(cause=>({error:String(cause)}));
+  const resources=await evaluate('performance.getEntriesByType("resource").map(entry=>entry.name).filter(name=>/\\/assets\\/.*\\.js(?:\\?|$)/.test(name))').catch(cause=>({error:String(cause)}));
+  fs.writeFileSync(output+'/scoop-release-production-failure.json',JSON.stringify({base,native,installFix,pauseScoop,error:String(error),state,resources,errors},null,2),{flag:'wx'});
+  throw error;
 }finally{socket.close();}
