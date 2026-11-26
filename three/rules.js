@@ -16,7 +16,7 @@ const empty=()=>{};
 const frameEvents=new Set(['animate','dropped','raised']);
 // Native COM return types for properties read by the authored rules. A
 // numerically integral float is still VT_R4; aliases must retain that type.
-const singleProperties={Flipper:new Set(['x','y','currentangle','startangle','endangle','strength','elasticity','eostorque','eostorqueangle']),Bumper:new Set(['x','y','threshold']),Kicker:new Set(['x','y']),Primitive:new Set(['x','y','z','rotx','roty','rotz']),Flasher:new Set(['rotz']),Light:new Set(['x','y','state']),Trigger:new Set(['x','y']),Plunger:new Set(['x','y']),Gate:new Set(['x','y']),Spinner:new Set(['x','y']),Table:new Set(['width','height','slopemin','slopemax'])};
+const singleProperties={Flipper:new Set(['x','y','currentangle','startangle','endangle','strength','elasticity','eostorque','eostorqueangle']),Bumper:new Set(['x','y','threshold']),Kicker:new Set(['x','y','scatter']),Primitive:new Set(['x','y','z','rotx','roty','rotz']),Flasher:new Set(['rotz']),Light:new Set(['x','y','state']),Trigger:new Set(['x','y']),Plunger:new Set(['x','y']),Gate:new Set(['x','y']),Spinner:new Set(['x','y']),Table:new Set(['width','height','slopemin','slopemax'])};
 const longProperties={Light:new Set(['blinkinterval']),LightSequencer:new Set(['updateinterval']),Timer:new Set(['interval'])};
 const booleanProperties={HitTarget:new Set(['isdropped']),Flasher:new Set(['visible']),Gate:new Set(['open']),Timer:new Set(['enabled'])};
 const liveProperties={Gate:new Set(['currentangle','collidable','open','hitthreshold']),HitTarget:new Set(['isdropped','currentanimoffset','hitthreshold']),Trigger:new Set(['currentanimoffset']),Bumper:new Set(['threshold','force','scatter','hashitevent','collidable','currentringoffset','rotx','roty','enableskirtanimation','ringspeed','ringdropoffset']),Wall:new Set(['disabled','slingshotthreshold','hitthreshold']),Primitive:new Set(['hitthreshold'])};
@@ -83,13 +83,15 @@ export function createRules(source,specs,host={}) {
     if(spec.kind==='Flasher'){const filter=spec.filter??'none';Object.assign(state,{color:nativeColor(spec.color??0xffffff),rotx:spec.rot_x??0,roty:spec.rot_y??0,imagea:spec.image_a??'',imageb:spec.image_b??'',opacity:spec.alpha??100,modulatevsadd:spec.modulate_vs_add??.9,addblend:spec.add_blend==='add',filter:filter[0].toUpperCase()+filter.slice(1),amount:spec.filter_amount??100});}
     // Native COM coordinates and rotations are float fields, including the
     // kicker centers subtracted by the authored toy-arm animation timer.
-    for(const key of ['x','y','z','radius','height','rotx','roty','rotz'])state[key]=Math.fround(state[key]);
+    for(const key of ['x','y','z','radius','height','rotx','roty','rotz','scatter'])state[key]=Math.fround(state[key]);
     const actions={
       createball:()=>host.createBall?.(name)??{x:state.x,y:state.y,z:25,velx:0,vely:0,velz:0},
       createsizedball:radius=>host.createBall?.(name,radius,1)??{x:state.x,y:state.y,z:radius,radius,mass:1,velx:0,vely:0,velz:0},
       createsizedballwithmass:(radius,mass)=>host.createBall?.(name,radius,mass)??{x:state.x,y:state.y,z:radius,radius,mass,velx:0,vely:0,velz:0},
       destroyball:()=>host.destroyBall?.(name,activeBall),
       kick:(angle,speed,inclination=0)=>host.kick?.(name,activeBall,angle,speed,inclination),
+      kickz:(angle,speed,inclination,height)=>host.kick?.(name,activeBall,angle,speed,inclination,0,0,height),
+      kickxyz:(angle,speed,inclination,x,y,z)=>host.kick?.(name,activeBall,angle,speed,inclination,x,y,z),
       rotatetoend:()=>host.flipper?.(lower.startsWith('left')?'left':'right',true),
       rotatetostart:()=>host.flipper?.(lower.startsWith('left')?'left':'right',false),
       pullback:()=>host.plunger?.(true),fire:()=>host.plunger?.(false),

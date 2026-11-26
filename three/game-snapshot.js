@@ -15,7 +15,7 @@ export function snapshotSubmissionBall(game,record){
     const state=record.detachedNative?record.proxy:record.lastState;
     return{id:record.body.handle,scriptId:record.scriptID,position:{x:f(state.x),y:f(state.y),z:f(state.z)},velocity:{x:f(state.velx),y:f(state.vely),z:f(state.velz)},radius:f(record.proxy.radius),locked:record.lastRenderLocked};
   }
-  const native=game.nativeBall(record.body),velocity=record.body.linvel();
+  const native=game.nativeBall(record.body),velocity=native.body.linvel();
   return{id:record.body.handle,scriptId:record.scriptID,position:{...native.sync()},velocity:{x:f(velocity.x),y:f(-velocity.y),z:f(velocity.z)},radius:f(record.proxy.radius),locked:!!record.held&&record.held!=='lane'};
 }
 function objectState(object,keys=fields){

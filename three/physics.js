@@ -369,20 +369,20 @@ export class Pinball {
     this.plunger?.updateVelocity();
     const nudge=preparedNudge??this.cabinetNudge?.step(this.nativePositionUnits?this.nativeIncline:this.incline)??{x:0,y:0,z:0};
     if(!this.nativeFlipperContacts){
-      if(this.cabinetNudge)for(const r of records)if(!r.held){const v=r.body.linvel();r.body.setLinvel({x:v.x+nudge.x*STEP,y:v.y+nudge.y*STEP,z:v.z+nudge.z*STEP},true);}
+      if(this.cabinetNudge)for(const r of records)if(!r.held){const v=body(r).linvel();body(r).setLinvel({x:v.x+nudge.x*STEP,y:v.y+nudge.y*STEP,z:v.z+nudge.z*STEP},true);}
       this.world.step(this.events);this.plunger?.displace(STEP);return;
     }
     if(this.nativePlayfieldContacts)for(const r of records){
       if(r.held)continue;
       r.body.setGravityScale(0,true);
-      const v=r.body.linvel(),g=this.world.gravity;
+      const v=body(r).linvel(),g=this.world.gravity;
       if(this.nativePositionUnits){const f=Math.fround,dt=f(.1),force=(old,acceleration,delta)=>f(f(old+f(acceleration*dt))+delta),delta=nudge.nativeDelta??{x:0,y:0,z:0};
-        r.body.setLinvel({x:force(v.x,this.nativeGravity.x,delta.x),y:-force(-v.y,this.nativeGravity.y,delta.y),z:force(v.z,this.nativeGravity.z,delta.z)},true);
-      }else r.body.setLinvel({x:v.x+(g.x+nudge.x)*STEP,y:v.y+(g.y+nudge.y)*STEP,z:v.z+(g.z+nudge.z)*STEP},true);
+        body(r).setLinvel({x:force(v.x,this.nativeGravity.x,delta.x),y:-force(-v.y,this.nativeGravity.y,delta.y),z:force(v.z,this.nativeGravity.z,delta.z)},true);
+      }else body(r).setLinvel({x:v.x+(g.x+nudge.x)*STEP,y:v.y+(g.y+nudge.y)*STEP,z:v.z+(g.z+nudge.z)*STEP},true);
     }
     const pose=f=>{if(f.nativeAngle!==undefined){f.angle=Math.PI/2-f.nativeAngle;return;}const q=f.body.rotation();f.angle=f.rest+2*Math.atan2(q.z,q.w);};
     const nativeTime=value=>Math.fround(value*100)*.01,staticTime=this.nativePositionUnits?nativeTime(.0002):.0002;
-    const makeFrameQuery=r=>nativeMeshQuery(body(r).translation(),r.body.linvel(),radius(r),STEP);
+    const makeFrameQuery=r=>nativeMeshQuery(body(r).translation(),body(r).linvel(),radius(r),STEP);
     if(this.nativeTreeEnabled)for(const r of records)r.nativeFrameQuery=makeFrameQuery(r);
     const frameQuery=r=>r.nativeFrameQuery??=makeFrameQuery(r);
     if(this.nativeBallContacts)this.dynamicBallTree.update(records,frameQuery);
@@ -390,7 +390,7 @@ export class Pinball {
     while(remaining>(this.nativePositionUnits?0:1e-9)&&count++<32){
       let event=null,time=remaining;const contacts=[];
       const ballEvents=this.nativeTreeEnabled&&this.nativePositionUnits?new Map():null;
-      for(const r of records)if(!r.held){r.queryPosition=body(r).translation();r.queryVelocity=r.body.linvel();r.nativeQuery=this.nativePositionUnits?nativeMeshQuery(r.queryPosition,r.queryVelocity,radius(r),remaining):false;
+      for(const r of records)if(!r.held){r.queryPosition=body(r).translation();r.queryVelocity=body(r).linvel();r.nativeQuery=this.nativePositionUnits?nativeMeshQuery(r.queryPosition,r.queryVelocity,radius(r),remaining):false;
         if(this.nativeTreeEnabled){const frame=frameQuery(r);r.nativeQuery.box=frame.box;r.nativeQuery.extent=frame.extent;r.nativeQuery.radiusSquared=frame.radiusSquared;}
       }
       if(this.nativeBallContacts)this.dynamicBallTree.sync(records,frameQuery);
@@ -410,7 +410,7 @@ export class Pinball {
             r.nativeQuery.dt=Math.fround(time*100);const hit=nativeMeshHit(shape,p,v,radius(r),time,r.nativeQuery);if(hit)hit.id=shape.id;accept(hit,{mesh});
           }
           const dynamic=()=>this.dynamicBallTree.query(r.nativeQuery,r,other=>{
-            const native=state(other),p=native.sync(),v=other.body.linvel();
+            const native=state(other),p=native.sync(),v=body(other).linvel();
             accept(nativeBallHit(r.nativeQuery,{p,v:{x:v.x,y:-v.y,z:v.z}},radius(other),time),{other});
           });
           const staticQuery=()=>this.nativeTree.query(r.nativeQuery,entry=>{
@@ -505,12 +505,12 @@ export class Pinball {
       // change a bobble ball's velocity before that ball's displacement.
       for(const mover of this.nativeDisplacers??[...(this.plunger?[this.plunger]:[]),...this.spinners,...this.gates])mover.displace(time);
       if(time>0){
-        const motions=this.nativePositionUnits?records.filter(r=>!r.held).map(r=>{const s=state(r);s.syncAngular();return {r,s,p:{...s.sync()},v:r.body.linvel()};}):[];
+        const motions=this.nativePositionUnits?records.filter(r=>!r.held).map(r=>{const s=state(r);s.syncAngular();return {r,s,p:{...s.sync()},v:body(r).linvel()};}):[];
         const angles=this.flippers.filter(f=>f.nativeAngle!==undefined).map(f=>({f,angle:f.nativeAngle,speed:-f.nativeMotion.speed}));
         this.world.timestep=time;if(!this.nativeDisplacements)this.world.step(this.events);remaining=this.nativePositionUnits?Math.fround(Math.fround(remaining*100)-Math.fround(time*100))*.01:remaining-time;
         for(const {f,angle,speed}of angles){f.nativeAngle=Math.fround(angle+Math.fround(speed*Math.fround(time*100)));f.body.setRotation(quaternion(Math.PI/2-f.nativeAngle-f.rest),true);}
         for(const {r,s,p,v}of motions){
-          const after=r.body.linvel();
+          const after=body(r).linvel();
           let ballContact=false;
           if(!this.nativeBallContacts&&records.length>1)this.world.contactPairsWith(r.collider,other=>{if(other.collisionGroups()===BALL_GROUP)ballContact=true;});
           // Keep Rapier's resolved displacement when another physical ball has
@@ -636,7 +636,7 @@ export class Pinball {
       if(this.nativeBallContacts)this.ballCollisionSwap=!this.ballCollisionSwap;
       if(!event)break;
     }
-    if(remaining>1e-9){this.physicsStats.substepBudgetExceeded++;this.world.timestep=remaining;if(this.nativeDisplacements){for(const r of records)if(!r.held){const native=state(r);native.syncAngular();native.displace({...native.sync()},r.body.linvel(),remaining);}}else this.world.step(this.events);this.plunger?.displace(remaining);}
+    if(remaining>1e-9){this.physicsStats.substepBudgetExceeded++;this.world.timestep=remaining;if(this.nativeDisplacements){for(const r of records)if(!r.held){const native=state(r);native.syncAngular();native.displace({...native.sync()},body(r).linvel(),remaining);}}else this.world.step(this.events);this.plunger?.displace(remaining);}
     this.physicsStats.maxSubsteps=Math.max(this.physicsStats.maxSubsteps,count);this.world.timestep=STEP;
     for(const r of records)this.ballSpin.record(body(r),Math.round(this.time*1000));
   }

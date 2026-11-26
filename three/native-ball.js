@@ -14,6 +14,8 @@ export class NativeBall {
     this.body.advanceTrigger=()=>this.advanceTrigger();
     this.body.native=this;
     for(const method of ['linvel','setLinvel','angvel','setAngvel','mass','applyImpulse','applyTorqueImpulse','collider'])this.body[method]=(...args)=>this.rapier[method](...args);
+    this.body.linvel=()=>this.velocity();
+    this.body.setLinvel=(v,wake)=>this.setVelocity(v,wake);
     this.body.mass=()=>this.mass??this.rapier.mass();
     this.angularMomentum={x:0,y:0,z:0};this.lastAngular=null;
     this.body.angvel=()=>this.angularVelocity();
@@ -27,7 +29,7 @@ export class NativeBall {
     // Release Rapier without leaving those references pointing into freed WASM.
     this.sync();this.syncAngular();
     const copy=v=>({x:f(v.x),y:f(v.y),z:f(v.z)});
-    let position=copy(this.rapier.translation()),velocity=copy(this.rapier.linvel()),angular=copy(this.rapier.angvel());
+    let position=copy(this.rapier.translation()),velocity=copy(this.velocity()),angular=copy(this.rapier.angvel());
     const mass=this.rapier.mass();
     this.rapier={
       translation:()=>({...position}),setTranslation:p=>{position=copy(p);},
@@ -40,6 +42,20 @@ export class NativeBall {
     const p=this.rapier.translation(),old=this.lastWorld;
     if(!old||p.x!==old.x||p.y!==old.y||p.z!==old.z){this.position={x:f(p.x*100),y:f(2115-p.y*100),z:f(p.z*100)};this.lastWorld=p;}
     return this.position;
+  }
+  velocity(){
+    const actual=this.rapier.linvel(),raw=this.lastVelocity;
+    if(!raw||!Object.is(actual.x,raw.x)||!Object.is(actual.y,raw.y)||!Object.is(actual.z,raw.z)){
+      this.lastVelocity={...actual};this.linearVelocity={...actual};
+    }
+    // Rapier skips numerically equal writes, so +0/-0 cannot be its native
+    // velocity authority. Preserve our Float32 input while backing values
+    // remain unchanged; adopt genuine backend integration/impulse changes.
+    Object.assign(actual,this.linearVelocity);return actual;
+  }
+  setVelocity(v,wake=true){
+    const value={x:f(v.x),y:f(v.y),z:f(v.z)};
+    this.rapier.setLinvel(value,wake);this.linearVelocity=value;this.lastVelocity=this.rapier.linvel();
   }
   translation(){const p=this.sync();return {x:p.x*.01,y:(2115-p.y)*.01,z:p.z*.01};}
   setTranslation(p,wake){this.position={x:f(p.x*100),y:f(2115-p.y*100),z:f(p.z*100)};this.publish(wake);}
@@ -59,7 +75,7 @@ export class NativeBall {
   advanceTrigger(){
     // Trigger::Collide advances the center directly, without adding physical
     // travel to the material Hit event suppression history.
-    const p=this.sync(),v=this.rapier.linvel(),dt=f(.02);
+    const p=this.sync(),v=this.velocity(),dt=f(.02);
     this.position={x:f(p.x+f(v.x*dt)),y:f(p.y+f(-v.y*dt)),z:f(p.z+f(v.z*dt))};this.publish();
   }
   syncAngular(){
@@ -110,12 +126,12 @@ export class NativeBall {
     const p=this.angularMomentum,i=this.inertia;this.rapier.setAngvel({x:-f(p.x/i)*100,y:f(p.y/i)*100,z:-f(p.z/i)*100},true);this.lastAngular=this.rapier.angvel();
   }
   snapshot(){
-    this.syncAngular();const v=this.rapier.linvel();
+    this.syncAngular();const v=this.velocity();
     return {p:{...this.sync()},v:{x:f(v.x),y:f(-v.y),z:f(v.z)},m:{...this.angularMomentum},inertia:this.inertia,mass:f(this.body.mass())};
   }
   commit(ball){
     const p=this.position;if(p.x!==ball.p.x||p.y!==ball.p.y||p.z!==ball.p.z){this.position=ball.p;this.publish();}this.angularMomentum=ball.m;
-    this.rapier.setLinvel({x:ball.v.x,y:-ball.v.y,z:ball.v.z},true);
+    this.setVelocity({x:ball.v.x,y:-ball.v.y,z:ball.v.z},true);
     const m=ball.m,i=this.inertia;this.rapier.setAngvel({x:-f(m.x/i)*100,y:f(m.y/i)*100,z:-f(m.z/i)*100},true);this.lastAngular=this.rapier.angvel();
   }
 }

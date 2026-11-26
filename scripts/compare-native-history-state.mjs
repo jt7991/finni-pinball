@@ -19,7 +19,7 @@ function orderedRows(rows,key,{last=true}={}){
   return current&&key(current)===wanted?current:undefined;
  }};
 }
-export async function compareNativeHistoryState(fixture,{write=()=>{},observeObjects=[],contactAudit,soundAudit,allocationInputs}={}){
+export async function compareNativeHistoryState(fixture,{write=()=>{},observeObjects=[],contactAudit,soundAudit,allocationInputs,afterReplay}={}){
 const assets=nativeSourceAssets(fixture.reference.sourceSha256),load=name=>assets.json(name);
 const clocks=fixture.randomizeClocks?.timerRecords?nativeScriptClockInputs(fixture.randomizeClocks,{lastFrame:fixture.frames.at(-1).frameIndex,lastMilliseconds:fixture.frames.at(-1).snapshot.ms}):null;let randomizeIndex=0,timerIndex=0;
 const scriptRandomClock=clocks?()=>{assert.ok(randomizeIndex<clocks.observedRandomizeClocks.length);return clocks.observedRandomizeClocks[randomizeIndex++];}:undefined,scriptTimerSeconds=clocks?()=>{assert.ok(timerIndex<clocks.observedTimerSeconds.length);return clocks.observedTimerSeconds[timerIndex++];}:undefined;
@@ -116,7 +116,10 @@ try{
   if(soundAudit)soundAudit.push(...soundCalls);
  }
  if(musicEvents)assert.deepEqual(musicEvents,fixture.musicTimeline.events.map(({ms,type,track,volumeText})=>({ms,type,...(type==='cue'?{track,volumeText}:{})})),'Every original browser-music handshake/cue and its native player time');
- return {framesChecked,intervalsChecked,ticks,randomizeClockSamples:randomizeIndex,timerClockSamples:timerIndex,...(finishAllocations?{nativeAllocationIdentitiesConsumed:finishAllocations()}:{}),...(soundCalls?{soundCallsChecked:soundCalls.length}:{}),...(musicEvents?{musicEventsChecked:musicEvents.length}:{}),...(ruleObservationsChecked?{ruleObservationsChecked}:{}),...(ruleVariantFieldsChecked?{ruleVariantFieldsChecked}:{}),...(scriptRandomStatesChecked?{scriptRandomStatesChecked}:{}),...(moverStatesChecked?{moverStatesChecked,moverFieldsChecked}:{})};
+ // A component may continue only after the complete independent startup
+ // replay and clock/body/RNG checks above. Its caller never seeds game state.
+ const componentResult=afterReplay?await afterReplay(game):undefined;
+ return {framesChecked,intervalsChecked,ticks,randomizeClockSamples:randomizeIndex,timerClockSamples:timerIndex,...(finishAllocations?{nativeAllocationIdentitiesConsumed:finishAllocations()}:{}),...(soundCalls?{soundCallsChecked:soundCalls.length}:{}),...(musicEvents?{musicEventsChecked:musicEvents.length}:{}),...(ruleObservationsChecked?{ruleObservationsChecked}:{}),...(ruleVariantFieldsChecked?{ruleVariantFieldsChecked}:{}),...(scriptRandomStatesChecked?{scriptRandomStatesChecked}:{}),...(moverStatesChecked?{moverStatesChecked,moverFieldsChecked}:{}),...(afterReplay?{componentResult}:{})};
 }finally{game.dispose();}
 }
 if(process.argv[1]&&path.resolve(process.argv[1])===fileURLToPath(import.meta.url)){const fixture=readNativeHistoryCapture(process.argv[2]),allocationInputs=process.argv.includes('--native-allocation-inputs')?fixture.allocationInputs??nativeBallAllocationInputs(fixture):undefined;const result=await compareNativeHistoryState(fixture,{allocationInputs,write:row=>console.log(JSON.stringify(row)),observeObjects:process.argv.filter(arg=>arg.startsWith('--observe=')).map(arg=>arg.slice(10))});console.log(JSON.stringify({result}));}

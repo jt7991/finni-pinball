@@ -58,7 +58,7 @@ export function referenceRandom(){
 export function placeReferenceBall(game,record,scenario){
   const body=game.nativePositionUnits?game.nativeBall(record.body).body:record.body;
   body.setTranslation({x:scenario.x*.01,y:(2115-scenario.y)*.01,z:(scenario.z??25)*.01},true);
-  record.body.setLinvel({x:scenario.vx??0,y:-(scenario.vy??0),z:scenario.vz??0},true);
+  body.setLinvel({x:scenario.vx??0,y:-(scenario.vy??0),z:scenario.vz??0},true);
   record.body.setAngvel({x:0,y:0,z:0},true);
 }
 

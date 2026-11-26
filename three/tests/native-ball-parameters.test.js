@@ -22,7 +22,11 @@ test('native ball creation, setters, inertia and both collision directions retai
     const args=b.method==='CreateBall'?'':'('+[b.createRadius??b.radius,...b.method==='CreateSizedBallWithMass'?[b.createMass??b.mass]:[]].join(',')+')';
     game.rules.execute('Set '+names[i]+'=HellHouse.'+b.method+args+':HellHouse.Kick 0,0');
     const created=row.creation[i];assert.equal(read(names[i]+'.Radius'),created.radius,'creation radius case '+index);assert.equal(read(names[i]+'.Mass'),created.mass,'creation mass case '+index);
-    for(const [j,axis]of ['X','Y','Z'].entries()){assert.equal(read(names[i]+'.'+axis),created.p[j]);assert.equal(read(names[i]+'.Vel'+axis),created.v[j]);}
+    for(const [j,axis]of ['X','Y','Z'].entries())assert.equal(read(names[i]+'.'+axis),created.p[j]);
+    // This older capture serialized numeric arrays as JSON, which loses the
+    // sign of zero. Compare its exact encoding; native-kicker-ejection uses
+    // raw Float32 words and separately gates all ejection signed zeros.
+    assert.equal(JSON.stringify(['X','Y','Z'].map(axis=>read(names[i]+'.Vel'+axis))),JSON.stringify(created.v));
    }
    const records=game.physicalRecords.filter(r=>!previous.has(r));assert.equal(records.length,2);
    game.rules.execute(scenario.balls.flatMap((b,i)=>['Radius='+b.radius,'Mass='+b.mass,...['X','Y','Z'].map((axis,j)=>axis+'='+b.p[j]),...['VelX','VelY','VelZ'].map((axis,j)=>axis+'='+b.v[j]),...['AngMomX','AngMomY','AngMomZ'].map((axis,j)=>axis+'='+b.momentum[j])].map(s=>names[i]+'.'+s)).join(':'));

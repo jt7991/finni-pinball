@@ -14,6 +14,7 @@ import {TargetMotion} from './target-motion.js';
 import {Trigger} from './trigger.js';
 import {nativeTargetMesh} from './native-target.js';
 import {Kicker} from './kicker.js';
+import {ejectNativeBall} from './native-kicker-ejection.js';
 import {nativeSurfaceHeight} from './native-ramp.js';
 import {nativePitchFactor} from './native-sound.js';
 import {nativeTargetEvent} from './native-target-event.js';
@@ -54,7 +55,7 @@ class FullGame extends Pinball {
       scriptRandomClock:options.scriptRandomClock,
       scriptTimerSeconds:options.scriptTimerSeconds,
       createBall:(name,radius,mass)=>this.spawn(name,radius,mass),destroyBall:name=>this.destroyCapturedBall(name),
-      kick:(name,ball,angle,speed,inclination)=>this.kick(name,ball,angle,speed,inclination),
+      kick:(...args)=>this.kick(...args),
       flipper:(side,down)=>{this.held[side]=down;},plunger:down=>{this.held.launch=down;if(down)this.plunger.pull();else this.launch();},
       plungerPosition:()=>this.plunger.position,
       nudge:(angle,strength)=>this.cabinetNudge.nudge(angle,strength),
@@ -229,7 +230,7 @@ class FullGame extends Pinball {
           if(this.nativePositionUnits){const native=this.nativeBall(body);native.syncAngular();return key.startsWith('angmom')?native.angularMomentum[axis]:Math.fround(native.angularMomentum[axis]/native.inertia);}
           return body.angvel()[axis]*sign*(key.startsWith('angmom')?2.5*body.mass():.01);
         }
-        const q=(this.nativePositionUnits?this.nativeBall(body).body:body).translation(),v=(rec.detachedNative?.rapier??body).linvel();
+        const q=(this.nativePositionUnits?this.nativeBall(body).body:body).translation(),v=(this.nativePositionUnits?this.nativeBall(body).body:rec.detachedNative?.rapier??body).linvel();
         return ({x:q.x*100,y:2115-q.y*100,z:q.z*100,velx:v.x,vely:-v.y,velz:v.z})[key]??target[key]??0;
       },
       set:(_target,key,v)=>{key=String(key).toLowerCase();
@@ -245,7 +246,7 @@ class FullGame extends Pinball {
         if(/^angmom[xyz]$/.test(key)){const axis=key.at(-1);if(this.nativePositionUnits){this.nativeBall(body).setAngularMomentum(axis,v);return true;}const w={...body.angvel()};w[axis]=v*(axis==='y'?1:-1)/(2.5*body.mass());body.setAngvel(w,true);return true;}
         if(/^angvel[xyz]$/.test(key))return true; // Deprecated read-only native properties.
         const positionBody=this.nativePositionUnits?this.nativeBall(body).body:body;
-        const velocityBody=rec.detachedNative?.rapier??body;
+        const velocityBody=this.nativePositionUnits?this.nativeBall(body).body:rec.detachedNative?.rapier??body;
         const p={...positionBody.translation()},vel={...velocityBody.linvel()};
         if(key==='x')p.x=v*.01;if(key==='y')p.y=(2115-v)*.01;if(key==='z')p.z=v*.01;
         if(key==='velx')vel.x=v;if(key==='vely')vel.y=-v;if(key==='velz')vel.z=v;
@@ -296,19 +297,16 @@ class FullGame extends Pinball {
   // the table part only after the current draw commands have used it.
   finishFrame(){this.renderRecords=this.renderRecords.filter(record=>!record.removed);}
 
-  kick(name,_ball,angle,speed,inclination=0) {
+  kick(name,_ball,angle,speed,inclination=0,x=0,y=0,z=0) {
     const key=name.toLowerCase(),rec=this.captures.get(key);if(this.pendingCreate===rec)this.pendingCreate=null;
     if(!rec)return;
     for(const kicker of this.kickers)kicker.release(rec);
-    // VPX Kick releases at the captured center. Only KickXYZ/KickZ translate
-    // it; inventing a lateral offset changes both scoop shots and lane feeds.
-    const f=Math.fround,a=f(f(angle)*f(Math.PI/180));let elevation=f(inclination),horizontal=f(speed);
-    if(Math.abs(elevation)>f(Math.PI/2))elevation=f(elevation*f(Math.PI/180));
-    const vertical=f(f(Math.sin(elevation))*horizontal);if(vertical>0)horizontal=f(horizontal*f(Math.cos(elevation)));
+    const material=this.playfieldMaterial,scatter=this.rules?.objects.get(key).scatter??this.nativeParts.get(key).scatter;
     rec.held=null;rec.body.setBodyType(RAPIER.RigidBodyType.Dynamic,true);
-    if(this.nativePositionUnits){const native=this.nativeBall(rec.body);native.collisionGap=0;this.ballSpin.impact(native.body,0);}
-    rec.body.setAngvel({x:0,y:0,z:0},true);
-    rec.body.setLinvel({x:f(f(Math.sin(a))*horizontal),y:f(f(Math.cos(a))*horizontal),z:vertical},true);
+    const native=this.nativeBall(rec.body),state=native.snapshot();
+    const ejected=ejectNativeBall(state,{angle,speed,inclination,x,y,z,scatter,difficulty:material.difficulty},this.random);
+    if(this.nativePositionUnits){native.commit(ejected);native.collisionGap=0;this.ballSpin.impact(native.body,0);}
+    else {rec.body.setTranslation({x:ejected.p.x*.01,y:(2115-ejected.p.y)*.01,z:ejected.p.z*.01},true);rec.body.setAngvel({x:0,y:0,z:0},true);rec.body.setLinvel({x:ejected.v.x,y:-ejected.v.y,z:ejected.v.z},true);}
     this.captures.delete(key);
   }
 

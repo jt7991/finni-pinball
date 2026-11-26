@@ -93,7 +93,8 @@ export function createSimulationHost(send,{allowDebug=false,now=()=>performance.
     if(command.action==='place'){
       const record=game.records.find(rec=>rec.body.handle===command.ballHandle);if(!record)throw Error('Ball no longer exists');
       for(const vector of [command.position,command.velocity])if(!vector||!['x','y','z'].every(axis=>Number.isFinite(vector[axis])))throw Error('Invalid ball state');
-      game.nativeBall(record.body).body.setTranslation(command.position,true);record.body.setLinvel(command.velocity,true);record.body.setAngvel({x:0,y:0,z:0},true);return;
+      const body=game.nativePositionUnits?game.nativeBall(record.body).body:record.body;
+      body.setTranslation(command.position,true);body.setLinvel(command.velocity,true);body.setAngvel({x:0,y:0,z:0},true);return;
     }
     if(command.action==='inspect')return {
       time:game.time,random:game.random.getState?.(),scriptRandom:game.rules.scriptRandom.getState(),...randomizeClockIndex?{randomizeClockSamples:randomizeClockIndex,timerClockSamples:timerClockIndex}:{},
