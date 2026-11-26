@@ -3,6 +3,7 @@ import {createLightFrame} from './bulb-render.js';
 import {loadNativeLighting} from './classic-render.js';
 import {createFlipperVisuals,loadFlipperVisuals} from './flipper-render.js';
 import {applyNativeCamera,setNativeCamera} from './camera-render.js';
+import {playerCameraLayout} from './player-camera.js';
 import {stageNativeCamera,nativeCameraAfterProbe} from './native-camera-stage.js';
 import {nativePrimitiveWorld} from './primitive-transform.js';
 import {nativeProbeArea} from './native-reflection.js';
@@ -34,7 +35,7 @@ export async function createView(canvas,game,{quality='performance',ballPresenta
  const [lighting,flipperAssets,cameraBounds,tableAssets,animationAssets,transmissionAssets,ballAssets,flasherAssets,haloAssets,classicAssets,postprocessAssets,staticAssets]=await Promise.all([
   loadNativeLighting(base),loadFlipperVisuals(base,renderer.capabilities.getMaxAnisotropy()),
   fetch(base+'camera-bounds.json').then(response=>{if(!response.ok)throw Error('Native camera bounds unavailable');return response.json();}),
-  loadNativePrimitiveVisuals(base+'native-table/','native-table.json',{textureProfile:quality,baseColorOnly:true}),loadNativeMechanismAnimation(base),loadNativeTransmission(base+'native-transmission/'),
+  loadNativePrimitiveVisuals(base+'native-table/','native-table.json',{textureProfile:quality==='reduced'?'detailed':quality,baseColorOnly:true}),loadNativeMechanismAnimation(base),loadNativeTransmission(base+'native-transmission/'),
   loadNativePrimitiveVisuals(base+'native-ball/','native-ball.json'),
   sourceTable.then(source=>loadNativeFlasherVisuals(base+'native-flashers/',undefined,{textureCacheURL:base+'native-flashers/'+nativeTextureCacheFile(source)})),
   loadNativeHalos(base+'native-halos/'),
@@ -62,9 +63,23 @@ export async function createView(canvas,game,{quality='performance',ballPresenta
  const nativeFlashers=createNativeFlasherVisuals(renderer,scene,flasherAssets,{stateFor:name=>game.rules.objects.get(name.toLowerCase()),textureAliases:flasherAssets.textureCache.aliases});
  const nativeBulbEmission=createNativeBulbEmission(scene,nativeTable,transmissionAssets.programs.bulb,name=>game.rules.objects.get(name.toLowerCase()));
  const ballStates=()=>((game.renderBalls??[]).map(ball=>{const c=ball.color>>>0,f=Math.fround;return{...ball,color:[f((c&255)*f(1/255)),f((c&65280)*f(1/65280)),f((c&16711680)*f(1/16711680)),1],reflectionEnabled:ball.reflectionenabled,forceReflection:ball.forcereflection,bulbScale:ball.bulbintensityscale,reflectionStrength:ball.playfieldreflectionscale};}));
- let cameraMode='balanced',cacheEnabled=true,staticEnabled=true,staticMainDirty=true,staticReflectionDirty=true,staticCamera,shakeUntil=0,shakeStrength=0,graphicsProfile;
+ let cameraMode='balanced',cacheEnabled=true,staticEnabled=true,staticMainDirty=true,staticReflectionDirty=true,staticCamera,shakeUntil=0,shakeStrength=0,graphicsProfile,playerLayoutEnabled=false,plungerVisible;
+ const phone=matchMedia('(max-width:650px), (pointer:coarse) and (max-width:1024px)'),portrait=matchMedia('(orientation:portrait)'),tallPortrait=matchMedia('(max-aspect-ratio:2/3)');
  function resizeTargets(){const size=renderer.getDrawingBufferSize(new THREE.Vector2());nativeTransmission.resize(size.x,size.y);lightFrame.resize();reflectionPass.resize(graphicsProfile?.reflections?size.x:1,graphicsProfile?.reflections?size.y:1);nativeCache.invalidate();staticMainDirty=staticReflectionDirty=true;}
- function resize(){const rect=canvas.getBoundingClientRect(),width=Math.floor(rect.width),height=Math.floor(rect.height);graphicsProfile=nativeGraphicsProfile(quality,width,devicePixelRatio);nativeTable.setReflectionsEnabled(graphicsProfile.reflections);nativeStatic.setReflectionsEnabled(graphicsProfile.reflections);lightFrame.postprocess.setProfile(graphicsProfile);if(!width||!height){if(!camera.userData.nativeCamera)applyNativeCamera(camera,cameraBounds,Math.max(1,canvas.width)/Math.max(1,canvas.height),cameraMode);resizeTargets();return;}renderer.setPixelRatio(graphicsProfile.density);renderer.setSize(width,height,false);resizeTargets();const size=renderer.getDrawingBufferSize(new THREE.Vector2());applyNativeCamera(camera,cameraBounds,size.x/size.y,cameraMode);}
+ function resize(){
+  const rect=canvas.getBoundingClientRect(),width=Math.floor(rect.width),height=Math.floor(rect.height);
+  graphicsProfile=nativeGraphicsProfile(quality,width,devicePixelRatio,{height,mobile:phone.matches});
+  nativeTable.setReflectionsEnabled(graphicsProfile.reflections);nativeStatic.setReflectionsEnabled(graphicsProfile.reflections);lightFrame.postprocess.setProfile(graphicsProfile);
+  if(!width||!height){if(!camera.userData.nativeCamera)applyNativeCamera(camera,cameraBounds,Math.max(1,canvas.width)/Math.max(1,canvas.height),cameraMode);resizeTargets();return;}
+  let preset=cameraMode;
+  if(playerLayoutEnabled){
+   const stage=canvas.parentElement,layout=playerCameraLayout(cameraMode,{width:stage.clientWidth,height:stage.clientHeight,phone:phone.matches,portrait:portrait.matches,tallPortrait:tallPortrait.matches});
+   preset=layout.preset;
+   if(plungerVisible!==layout.plungerVisible){plungerVisible=layout.plungerVisible;game.rules.execute('Plunger.Visible='+String(plungerVisible));}
+  }
+  renderer.setPixelRatio(graphicsProfile.density);renderer.setSize(width,height,false);resizeTargets();const size=renderer.getDrawingBufferSize(new THREE.Vector2());applyNativeCamera(camera,cameraBounds,size.x/size.y,preset);
+ }
+ for(const query of [phone,portrait,tallPortrait])query.addEventListener('change',resize);
  const observer=new ResizeObserver(resize);observer.observe(canvas);resize();nativeMechanisms.update();nativeTable.update(camera);nativeTransmission.update(camera);flipperVisuals.update(camera);nativeBalls.update(camera,ballStates());nativeFlashers.update(camera);nativeBulbEmission.update(camera);bulbHalos.update(camera,ballStates());classicLights.update(camera);await nativeTable.prepare(camera);await nativeTransmission.prepare();await nativeFlashers.prepare(camera);await bulbHalos.prepare(renderer,camera);await classicLights.prepare(camera);await lightFrame.prepare();const initialSize=renderer.getDrawingBufferSize(new THREE.Vector2());await nativeStatic.prepare(cameraBounds,initialSize.x,initialSize.y,cameraMode);await renderer.compileAsync(scene,camera);
  let completedCamera,playerCameraFrames=0;
  function render(alpha,previous){
@@ -82,7 +97,7 @@ export async function createView(canvas,game,{quality='performance',ballPresenta
   }finally{nativeBalls.endSubmission();completedCamera=requestedCamera;if(frameCamera!==requestedCamera)setNativeCamera(camera,requestedCamera);if(playerCameraFrames>0&&--playerCameraFrames===0){staticEnabled=true;staticMainDirty=staticReflectionDirty=true;}}
  }
  function applyPlayerCamera(value){
-  cameraMode=value;resize();
+  playerLayoutEnabled=true;cameraMode=value;resize();
   // Main's browser/views.js invalidates the camera with two dynamic frames
   // before restoring the static prepass. Count submitted view frames here,
   // since the worker prepares them asynchronously between RAF callbacks.

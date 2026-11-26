@@ -136,12 +136,12 @@ for(const panel of document.querySelectorAll('.panel'))panel.addEventListener('t
 $('initials-dialog').addEventListener('close',focusGame);
 const fullscreen=createPlayerFullscreen({release,focusGame});
 $('play').onclick=async()=>{
-  if($('play').disabled||startingGame)return;
+  if($('play').disabled||startingGame||$('initials-dialog').open)return;
   release();const browserMusic=music.unlock();startingGame=true;
   // Resume the native context in the gesture without draining initialization.
   const activated=audio?.unlock();$('play').disabled=true;$('play').textContent='Starting game…';
   try{
-    void fullscreen.set(true);
+    if(matchMedia('(pointer:coarse) and (max-width:1024px)').matches)void fullscreen.set(true);
     const handoff=browserMusic&&tableSupportsBrowserMusic&&!browserMusicActivated;
     await game.prepareStart(selectedPlayers(),{browserMusic:handoff});if(handoff)browserMusicActivated=true;
     await activated;await audio?.start();startingGame=false;pause(false);

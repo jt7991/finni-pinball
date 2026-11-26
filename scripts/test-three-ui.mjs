@@ -66,9 +66,16 @@ try{
     for(const type of ['mousePressed','mouseReleased'])await call('Input.dispatchMouseEvent',{type,...playPosition,button:'left',clickCount:1});
     await wait('document.body.classList.contains("ball-in-plunger")');
     assert.equal(await evaluate('testWorker.starts.at(-1)'),name==='phone'?4:1,'main player selector reaches the simulation worker');
+    const automaticFullscreen=await evaluate('matchMedia("(pointer:coarse) and (max-width:1024px)").matches');
+    if(!automaticFullscreen){
+      assert.equal(await evaluate('testFullscreen.requests.length'),0,'desktop Start preserves the chosen window layout like main');
+      const position=await center('#fullscreen');
+      for(const type of ['mousePressed','mouseReleased'])await call('Input.dispatchMouseEvent',{type,...position,button:'left',clickCount:1});
+    }
     await wait('!!document.fullscreenElement||testFullscreen.failures.length>0||!document.getElementById("screen-message").hidden');
     measurement.fullscreen=await evaluate('({...testFullscreen,active:!!document.fullscreenElement,note:document.getElementById("screen-message").textContent,noteHidden:document.getElementById("screen-message").hidden})');
-    assert.ok(!measurement.fullscreen.available||measurement.fullscreen.requests.length>0,'Start attempts the available fullscreen API like main');
+    assert.ok(!measurement.fullscreen.available||measurement.fullscreen.requests.length>0,'phone Start or the explicit desktop button attempts the available fullscreen API');
+    measurement.fullscreen.automatic=automaticFullscreen;
     if(measurement.fullscreen.active){
       assert.equal(await evaluate('document.getElementById("fullscreen").getAttribute("aria-pressed")'),'true');
       for(const fullscreen of [false,true]){

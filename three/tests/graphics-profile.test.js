@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import {createHash} from 'node:crypto';
-import {configureRenderer} from '../../browser/renderer.js';
+import {configureRenderer,startTable} from '../../browser/renderer.js';
 import {nativeGraphicsProfile} from '../graphics-profile.js';
 import {nativeTextureProfile} from '../native-basic-render.js';
 import {nativePostprocessJitter,nativeScreenNudgeOffset,nativeFullscreenGeometry} from '../native-postprocess.js';
@@ -11,16 +11,17 @@ const read=name=>JSON.parse(fs.readFileSync(new URL('../public/'+name,import.met
 const sha=bytes=>createHash('sha256').update(bytes).digest('hex');
 test('Three.js explicit graphics flags and pixel density agree with main renderer configuration',()=>{
  const original=Object.getOwnPropertyDescriptor(globalThis,'devicePixelRatio');
- try{for(const width of [390,960,1800])for(const dpr of [1,2,3])for(const quality of ['performance','detailed']){
+ try{for(const width of [390,960,1800])for(const height of [390,766,1400])for(const dpr of [1,2,3])for(const quality of ['performance','reduced','detailed']){
   Object.defineProperty(globalThis,'devicePixelRatio',{value:dpr,configurable:true});let ini;
-  const engine={canvas:{parentElement:{clientWidth:width,clientHeight:766}},FS:{mkdirTree(){},writeFile(path,value){ini=value;}}};
-  configureRenderer(engine,{mobile:width<1024,quality});const actual=nativeGraphicsProfile(quality,width,dpr);
-  assert.equal(actual.density,engine.finniRenderDensity??dpr);
+  let sourceDensity;const mobile=width<1024;
+  const engine={canvas:{parentElement:{clientWidth:width,clientHeight:height}},FS:{mkdirTree(){},writeFile(path,value){ini=value;}},ccall(){sourceDensity=globalThis.devicePixelRatio;return 1;}};
+  configureRenderer(engine,{mobile,quality});startTable(engine,'/fixture.vpx');const actual=nativeGraphicsProfile(quality,width,dpr,{height,mobile});
+  assert.equal(actual.density,sourceDensity);
   assert.equal(actual.ambientOcclusion,!ini.includes('DisableAO=1'));assert.equal(actual.bloom,!ini.includes('ForceBloomOff=1'));assert.equal(actual.reflections,!ini.includes('PFReflection=0'));
   assert.equal(actual.maxTextureDimension,Number(ini.match(/MaxTexDimension=(\d+)/)?.[1]??0));
  }}finally{if(original)Object.defineProperty(globalThis,'devicePixelRatio',original);else delete globalThis.devicePixelRatio;}
 });
-test('current profile buffer sizes, shader choices, flags and jitter agree with native GPU observations',()=>{
+test('historical profile buffer sizes, shader choices, flags and jitter agree with their native GPU observations',()=>{
  assert.equal(fixture.engineSHA256,metadata.engineSHA256);assert.equal(fixture.sourceSha256,metadata.sourceSha256);
  for(const capture of fixture.captures){
   const profile=nativeGraphicsProfile(capture.quality,390,2),tone=capture.stages.at(-1);

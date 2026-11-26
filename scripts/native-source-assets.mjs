@@ -9,6 +9,7 @@ const root=new URL('../three/public/',import.meta.url),sha=bytes=>createHash('sh
 const archives={
  '3ae17f498f745efa19076ca33e08f96f66d766367fc984e37aacf50774a35e14':{file:'source-99eff88.json.gz',sha256:'b078ae96f365417e8eaa57f5979ef058a1a2443087bcfb44db60939f58980dde'},
  '6160e43c1a74f6dc70fd9852433c3373fe11b3e55d4f3a3fedc435265591b5c5':{file:'source-6f8116d.json.gz',sha256:'b9d30061c9570ace2a139a01573be67783b6ff9bd1fef54a0263764a2033470b'},
+ '1e3d738c10398afc89691dcf585ce3c2330ab200dd038daec64ba111faba1997':{file:'source-cc6f04f.json.gz',sha256:'12c5a00acc93c8c9336104657b53eb17506ec9f890fe5a0faba30692ce8d48a9'},
 };
 const cache=new Map();
 export function nativeSourceAssets(tableSHA256){
