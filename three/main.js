@@ -8,6 +8,7 @@ import {createPlayerFullscreen} from './player-fullscreen.js';
 
 const $=prepareUI({release,focusGame});
 let game,view,audio,display,leaderboard,paused=true,frames=0,sampleStart=0;
+let checkingGraphics=false,graphicsFailed=false,renderedFrame=false,previewLive=false;
 let tableSupportsBrowserMusic=false,browserMusicActivated=false,startingGame=false,musicTrack='',musicVolume=0;
 const music=createMusic(error=>message(`Soundtrack: ${error}`),{base:import.meta.env.BASE_URL+'music/'});
 function syncMusic(){music.select(musicTrack,audio?.muted?0:musicVolume);}
@@ -122,7 +123,7 @@ window.addEventListener('keydown',e=>{
   if(keys[e.code]){e.preventDefault();if(physical.has(e.code))return;physical.add(e.code);input(keys[e.code],true,`key:${e.code}`);}
 });
 window.addEventListener('keyup',e=>{if(!physical.delete(e.code))return;if(keys[e.code]){e.preventDefault();input(keys[e.code],false,`key:${e.code}`);}});
-function pause(value){value=!!value||!game||game.state==='ready';paused=value;if(view)game?.setPaused(value);}
+function pause(value){value=!!value||!game||game.state==='ready'&&!previewLive;paused=value;if(view)game?.setPaused(value);}
 window.addEventListener('blur',()=>{release();pause(true);});
 window.addEventListener('focus',()=>pause(document.hidden));
 document.addEventListener('visibilitychange',()=>{if(document.hidden)release();pause(document.hidden);});
@@ -148,11 +149,45 @@ $('play').onclick=async()=>{
   }catch(error){startingGame=false;music.select('');$('load-status').textContent=`Unable to start: ${error.message}`;$('play').disabled=false;$('play').textContent='Reload game';$('play').onclick=()=>location.reload();}
 };
 $('camera').value=read('camera','balanced');$('quality').value=read('quality','auto');
+const automaticGraphicsKey='finni-three-automatic-graphics-v1';
+let renderQuality=$('quality').value==='auto'?'detailed':$('quality').value;
+if($('quality').value==='auto'){
+  try{
+    const saved=JSON.parse(sessionStorage.getItem(automaticGraphicsKey));
+    if(['reduced','performance'].includes(saved?.quality)){
+      renderQuality=saved.quality;
+      if(['1','2','3','4'].includes(saved.players))$('player-count').value=saved.players;
+    }
+  }catch{}
+}
 if($('camera').value==='')$('camera').value='balanced';
 const cameraMode=()=>$('camera').value;
 $('camera').onchange=()=>{release();view?.applyPlayerCamera(cameraMode());save('camera',cameraMode());focusGame();};
 $('quality').onchange=()=>save('quality',$('quality').value);
-$('apply-graphics').onclick=async()=>{release();save('quality',$('quality').value);try{await game?.flush();}catch{}location.reload();};
+$('apply-graphics').onclick=async()=>{release();save('quality',$('quality').value);try{sessionStorage.removeItem(automaticGraphicsKey);}catch{}try{await game?.flush();}catch{}location.reload();};
+
+function retryWithLowerGraphics(){
+  try{sessionStorage.setItem(automaticGraphicsKey,JSON.stringify({quality:renderQuality==='reduced'?'performance':'reduced',players:$('player-count').value}));}catch{return false;}
+  $('load-status').textContent='Preparing a smoother graphics setting…';location.reload();return true;
+}
+function measureTableFps(){
+  return new Promise(resolve=>{
+    let started,frames=0;
+    const reset=()=>{started=undefined;frames=0;renderedFrame=false;};
+    const finish=fps=>{document.removeEventListener('visibilitychange',reset);resolve(fps);};
+    function sample(now){
+      if(!checkingGraphics||graphicsFailed){finish(null);return;}
+      if(document.hidden)reset();
+      else{
+        started??=now;const elapsed=now-started;
+        if(elapsed>=600&&renderedFrame)frames++;
+        if(elapsed>=2600){finish(frames*1000/(elapsed-600));return;}
+      }
+      renderedFrame=false;requestAnimationFrame(sample);
+    }
+    document.addEventListener('visibilitychange',reset);requestAnimationFrame(sample);
+  });
+}
 $('sound').onclick=async()=>{
   if(!audio)return;
   try{
@@ -163,6 +198,7 @@ $('sound').onclick=async()=>{
 
 async function frame(now){
   try{await drawFrame(now);}catch(error){
+    graphicsFailed=true;
     console.error(error);music.select('');try{release();pause(true);}catch{}paused=true;
     $('overlay').hidden=false;$('load-status').textContent='The game stopped. Reload to restart.';
     $('play').disabled=false;$('play').textContent='Reload game';$('play').onclick=()=>location.reload();message('Game stopped');
@@ -176,7 +212,7 @@ async function drawFrame(now){
   await game.prepareSubmissionFrame();
   // Hold prepared visual state while submitting later physical ball data.
   // Physics keeps running; queued snapshots become visible after the draw.
-  try{view.render(1);display?.draw();}finally{game.finishSubmissionFrame();}
+  try{view.render(1);renderedFrame=true;display?.draw();}finally{game.finishSubmissionFrame();}
   if(game.gameState)leaderboard?.state(game.gameState);
   $('score').textContent=game.score.toLocaleString();$('ball-number').textContent=game.ballNumber||'—';
   const power=Math.round(game.charge/1.2*100);
@@ -208,15 +244,26 @@ async function boot(){
     music.preload();
     leaderboard=createLeaderboard(statement=>game.rules.execute(statement),release);
     $('load-status').textContent='Loading artwork and table model…';
-    const quality=$('quality').value==='auto'?(matchMedia('(max-width:650px), (pointer:coarse) and (max-width:1024px)').matches?'performance':'detailed'):$('quality').value;
-    [display,view]=await Promise.all([createDisplay($('dmd'),game.rules.objects,base),createView($('table'),game,{quality}),audio.prepareSources(),audio.whenInitialized(),audio.prepare(['fx_gion','fx_gioff'])]);view.applyPlayerCamera(cameraMode());
+    checkingGraphics=$('quality').value==='auto'&&renderQuality!=='performance';
+    if(checkingGraphics)$('load-status').textContent='Checking graphics for this device…';
+    $('table').addEventListener('webglcontextlost',e=>{
+      e.preventDefault();graphicsFailed=true;
+      if(checkingGraphics&&retryWithLowerGraphics())return;
+      pause(true);release();$('load-status').textContent='Graphics were interrupted. Reload to restart.';$('overlay').hidden=false;$('play').textContent='Reload game';$('play').onclick=()=>location.reload();
+    });
+    [display,view]=await Promise.all([createDisplay($('dmd'),game.rules.objects,base),createView($('table'),game,{quality:renderQuality}),audio.prepareSources(),audio.whenInitialized(),audio.prepare(['fx_gion','fx_gioff'])]);view.applyPlayerCamera(cameraMode());
+    sampleStart=performance.now();
+    if(import.meta.env.DEV)window.finniThree={game,view,release};
+    if(checkingGraphics){
+      previewLive=true;pause(false);
+      $('load-status').textContent='Checking graphics for this device…';requestAnimationFrame(frame);
+      const fps=await measureTableFps();checkingGraphics=false;
+      if(fps===null)return;
+      if(fps<50&&retryWithLowerGraphics())return;
+    }else requestAnimationFrame(frame);
     const seconds=((performance.now()-startTime)/1000).toFixed(1);
     $('load-status').textContent=`Ready in ${seconds}s. Hold Launch, then release to shoot.`;
     $('play').disabled=false;$('play').textContent='Start game';$('progress').hidden=true;message('Ready to play');
-    sampleStart=performance.now();
-    if(import.meta.env.DEV)window.finniThree={game,view,release};
-    $('table').addEventListener('webglcontextlost',e=>{e.preventDefault();pause(true);release();$('load-status').textContent='Graphics were interrupted. Reload to restart.';$('overlay').hidden=false;$('play').textContent='Reload game';$('play').onclick=()=>location.reload();});
-    requestAnimationFrame(frame);
   }catch(error){
     console.error(error);music.select('');$('load-status').textContent=`Unable to load: ${error.message}`;
     $('play').disabled=false;$('play').textContent='Retry';$('play').onclick=()=>location.reload();message('Game unavailable');

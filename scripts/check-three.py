@@ -98,6 +98,7 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--active-ball-lifecycle' in sys.argv:runner='probe-active-ball-lifecycle.mjs'
         if '--earned-multiball-scoop' in sys.argv:runner='probe-earned-multiball-scoop.mjs'
         if '--scoop-display' in sys.argv:runner='test-scoop-display-production.mjs'
+        if '--automatic-graphics' in sys.argv:runner='test-automatic-graphics-production.mjs'
         if '--shared-voice' in sys.argv:runner='test-voice-browser.mjs'
         if '--shared-guide' in sys.argv:runner='test-shared-guide-browser.mjs'
         if '--native-active-ball-frame' in sys.argv:runner='probe-native-active-ball-frame.mjs'

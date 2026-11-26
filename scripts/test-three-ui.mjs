@@ -56,7 +56,10 @@ try{
     measurement.startScreenReadyMs=Date.now()-started;measurement.startScreenTransferredBytes=pageTransferred+workerTransferred;
     await writeFile(`${output}/main-ui-start-${name}.png`,Buffer.from((await call('Page.captureScreenshot',{format:'png'})).data,'base64'));console.log('START_SCREEN',JSON.stringify({viewport:name,readyMs:measurement.startScreenReadyMs,transferredBytes:measurement.startScreenTransferredBytes}));
     await new Promise(resolve=>setTimeout(resolve,100));
-    assert.deepEqual(await evaluate('({paused:testWorker.latest.paused,time:testWorker.latest.time,ticks:testWorker.latest.ticks})'),{paused:true,time:0,ticks:0},'the start preview does not consume native startup physics or RNG');
+    const preview=await evaluate('({paused:testWorker.latest.paused,time:testWorker.latest.time,ticks:testWorker.latest.ticks,automatic:document.getElementById("graphics").value==="auto",cached:JSON.parse(sessionStorage.getItem("finni-three-automatic-graphics-v1"))?.quality})');
+    if(preview.automatic&&preview.cached!=='performance'){
+      assert.equal(preview.paused,false);assert.ok(preview.time>0&&preview.ticks>0,'Automatic runs the prepared attract preview like current main');
+    }else assert.deepEqual({paused:preview.paused,time:preview.time,ticks:preview.ticks},{paused:true,time:0,ticks:0},'explicit profiles and the final automatic Performance retry retain the unstarted native preview');
     assert.equal(await evaluate('testWorker.nativeDmd.length'),42,'main DMD display settings reach the production worker');
     assert.equal(await evaluate('testWorker.nativeDmd.every(row=>row.visible===false)'),true,'native table digits remain hidden beneath the shared DMD');
     assert.equal(await evaluate('testWorker.latest.scriptStats.videoSyncMode'),2,'production uses the native synchronization policy');
