@@ -8,9 +8,11 @@ The seven task selections use large character art beside their real remaining-wo
 
 `approved-concepts.png` is the first built-in ImageGen sheet approved in chat on November 18, 2026. `main-scenes-reference.png` adds invitations, balloons, decorations, baking, the pinata and party guests in the same approved pixel style. Its exact generation prompt is in [main-scenes-prompt.txt](main-scenes-prompt.txt). Input reference: the approved four-scene sheet, itself based on `assets/finni/originals/fox-leaning.png`. Generation used the built-in image tool, not the CLI/API fallback. The reference sheets are preserved composition inputs; their generated lettering is not used in the game. Exact text and glyphs are composed deterministically at native resolution.
 
-The feature mapping is recorded in `design/finni-dmd-theme.json`: confetti replaces ninja stars, snacks replace chimichangas, supplies replace weapons, ribbons replace diamonds, Supply Run replaces Mech Suit Multiball, Streamer Rush replaces Katanarama, Spinner Rush replaces Berserker Rage and Confetti Burst replaces Ninja Apocalypse. These are presentation changes with the same source rewards and rules. The two ribbon instruction recordings are updated to match. JP Salas's table credit is preserved in the attract loop and table metadata.
+The feature mapping is recorded in `design/finni-dmd-theme.json`: confetti replaces ninja stars, snacks replace chimichangas, supplies replace weapons, ribbons replace diamonds, Supply Run replaces Mech Suit Multiball, Streamer Rush replaces Katanarama, Spinner Rush replaces Berserker Rage and Confetti Burst replaces Ninja Apocalypse. These are presentation changes with the same source rewards and rules. The two ribbon instruction recordings are updated to match. JP Salas is credited in the table metadata and project README.
 
 ## Rebuild
+
+The live score screen has a green frame in regular play and switches to the active task or mode’s title and accent color. The edge lights animate around both native text rows. Reduced motion shows the static frames.
 
 The normal `scripts/build-live-vpx.py` pipeline installs all assets through `scripts/build-finni-dmd.py` and `scripts/finni-dmd-assets.py`. `scripts/apply-finni-dmd.py` applies checked DMD-only payload substitutions. The browser packager reads `images.json` rather than globbing leftover extracted files, so unregistered source/dedup images cannot leak into the atlas. Browser rendering uses nearest-neighbor scaling.
 

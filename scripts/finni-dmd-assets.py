@@ -13,6 +13,24 @@ PURPLE = '#8272f5'
 ORANGE = '#ed762f'
 GREEN = '#4db237'
 
+SCORE_THEMES = {
+    'garden': ('', '#87bd63'),
+    'presents': ('WRAP THE PRESENTS', '#f3a558'),
+    'invites': ('SEND THE INVITATIONS', '#9fbef0'),
+    'balloons': ('BLOW UP THE BALLOONS', '#f2d56b'),
+    'decorations': ('PUT UP DECORATIONS', '#90d283'),
+    'cookies': ('BAKE THE COOKIES', '#e7a161'),
+    'pinata': ('HANG THE PINATA', '#65d7bb'),
+    'party': ('PARTY TIME', '#e99ce8'),
+    'cake': ('CAKE TIME MULTIBALL', '#f69bb7'),
+    'friendship': ('FRIENDSHIP MULTIBALL', '#6fdbbf'),
+    'disco': ('DISCO LOOPS', '#aa9cfb'),
+    'discomb': ('DISCO MULTIBALL', '#c7a0fc'),
+    'supplyrun': ('SUPPLY RUN MULTIBALL', '#f2bd72'),
+    'streamers': ('STREAMER RUSH', '#fbab81'),
+    'spinner': ('SPINNER RUSH', '#8ccde7'),
+}
+
 
 def illustrations():
     sheet = Image.open(ART/'main-scenes-reference.png').convert('RGB')
@@ -159,6 +177,25 @@ def build(label, font):
         im=Image.new('RGB',(256,64),BG)
         if name!='bkempty':ImageDraw.Draw(im).rectangle((0,0,255,63),outline=PURPLE)
         sprites[name]=im;layout[name]='overlay'
+
+    for key, (title, color) in SCORE_THEMES.items():
+        name = 'd_score_' + key
+        im = Image.new('RGB', (256,64), BG)
+        d = ImageDraw.Draw(im)
+        d.line((1,1,254,1),fill='#45384f')
+        d.line((1,62,254,62),fill='#45384f')
+        if title:
+            width = len(title)*6-1
+            left = (256-width)//2
+            d.line((12,31,left-8,31),fill=color)
+            d.line((left+width+7,31,243,31),fill=color)
+            label(im,title,left,27,1)
+        else:
+            d.line((12,31,243,31),fill=color)
+        for x in (3,252):
+            d.polygon([(x,28),(x+2,31),(x,34),(x-2,31)],fill=color)
+        sprites[name]=im;layout[name]='overlay'
+        motion[name]={'art':'party','bounds':[0,0,256,64],'effect':'score_lights','color':color}
 
     # Native glyphs use the SAME bitmap typography as the illustrations.
     chars={**{f'd_{c.lower()}':c for c in font if c.isalnum()},

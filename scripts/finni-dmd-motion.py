@@ -10,6 +10,39 @@ COLORS=['#ed762f','#8272f5','#fff0c8','#4db237']
 FRAME_COUNT=12
 
 
+@lru_cache(maxsize=None)
+def toss_poses():
+    """Use the original upright Finni art, including his feet."""
+    poses = []
+    for pose in pose_art('poses_wave', 110, 64):
+        character = pose.crop((22, 0, 91, 64)).convert('RGBA')
+        pixels = character.load()
+        for y in range(character.height):
+            for x in range(character.width):
+                r, g, b, _ = pixels[x, y]
+                if (r, g, b) == (16, 5, 29) or g > r + 14 and g > b + 14:
+                    pixels[x, y] = (0, 0, 0, 0)
+        poses.append(character.resize((48,45),Image.Resampling.NEAREST))
+    return poses
+
+
+def ball_toss(w, h, frame):
+    """A quick toss and catch fits the original Ball Saved cue."""
+    layer = Image.new('RGB', (w, h), BG)
+    step = min(frame, 6)
+    character = toss_poses()[(1, 2, 3, 3, 3, 2, 1)[step]]
+    layer.paste(character,(23,14),character)
+
+    draw = ImageDraw.Draw(layer)
+    x, y = [(57,42),(62,31),(68,18),(73,10),(76,16),(73,28),(57,42)][step]
+    if 1 <= step <= 5:
+        direction = 1 if step <= 3 else -1
+        draw.line((x-2,y+direction*6,x-4,y+direction*10),fill='#8272f5')
+    draw.ellipse((x-4,y-4,x+4,y+4),fill='#b5becd')
+    draw.ellipse((x-2,y-3,x,y-1),fill=COLORS[2])
+    return layer
+
+
 def friendship_art(source, count, w, h, frame=None, cheer=False):
     """Animate the approved fox, rabbit and bear, preserving the real lock count."""
     from collections import deque
@@ -69,7 +102,8 @@ def effect_for(name, art):
     if name.endswith('_done'):return 'confetti'
     if name.endswith('_select') or name=='d_finni_choose':return 'selection'
     if 'mystery' in name or name=='d_boom':return 'mystery'
-    if name in ('d_ballsaved','d_extraball'):return 'ball_return'
+    if name=='d_ballsaved':return 'ball_toss'
+    if name=='d_extraball':return 'ball_return'
     if name=='d_finni_timer' or name=='d_dazzler':return 'timer'
     if name=='d_finni_checklist' or name=='d_wolverine':return 'page_turn'
     if 'supplyrun' in name or name=='d_mechsuit':return 'parcels'
@@ -188,6 +222,8 @@ def build_frames(sprites, layouts, scenes):
         bounds=spec['bounds']; w,h=bounds[2:]
         art=spec['art']
         effect=spec.get('effect') or effect_for(name,art)
+        if effect == 'ball_toss':
+            base.paste(ball_toss(w,h,6),bounds[:2])
         celebration=effect=='confetti'
         frames=[]
         for frame in range(FRAME_COUNT):
@@ -205,9 +241,20 @@ def build_frames(sprites, layouts, scenes):
                 layer=Image.new('RGB',(w,h),BG)
                 layer.paste(base.crop(bounds),(shift,0))
             d=ImageDraw.Draw(layer)
-            if effect in POSE_ROWS:
+            if effect == 'ball_toss':
+                layer=ball_toss(w,h,frame)
+            elif effect in POSE_ROWS:
                 # Fully replace the old illustration, including its props.
                 layer=pose_art(effect,w,h)[frame//2].copy()
+            elif effect == 'score_lights':
+                for i in range(8):
+                    x = 10 + i*29
+                    for y, offset in ((3, 0), (59, 4)):
+                        phase = (frame-i+offset) % FRAME_COUNT
+                        color = spec['color'] if phase < 4 else '#45384f'
+                        d.rectangle((x,y,x+4,y+1),fill=color)
+                        if phase == 0:
+                            d.point((x+2,y-1),fill=COLORS[2])
             elif effect.startswith('edge_'):
                 # Confine reward motion to the top/bottom margins and side
                 # gutters. Both complete 240x22 native text rows stay clear.

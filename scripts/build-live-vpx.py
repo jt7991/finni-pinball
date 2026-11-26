@@ -109,7 +109,8 @@ replace_image('backwall',ART/'back-panel.png')
 for name in ('plastics','plastics2'):
     file=next((WORK/'images').glob(name+'.*'));im=Image.open(file).convert('RGBA')
     flat=Image.new('RGBA',im.size,(56,117,31,255));flat.putalpha(im.getchannel('A'));flat.save(file)
-for name in ('hellhouse','spinner','spinnerw','target-snikt','target','droptarget','chibitarget','Cabinet_Sides','Cabinet_Sides black','flipperltop','flipperrtop','flipperx'):
+runpy.run_path(str(ROOT/'scripts/build-finni-logo-textures.py'))['install'](WORK)
+for name in ('target-snikt','target','droptarget','chibitarget','Cabinet_Sides','Cabinet_Sides black','flipperltop','flipperrtop','flipperx'):
     matches=list((WORK/'images').glob(name+'.*'))
     if matches:
         im=Image.open(matches[0]).convert('RGBA')
