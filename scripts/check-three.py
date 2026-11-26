@@ -161,6 +161,14 @@ with tempfile.TemporaryDirectory(prefix='three-check-',dir=ROOT/'.work',ignore_c
         if '--native-audio-mix' in sys.argv:runner='probe-native-audio-mix.mjs'
         if '--audio-mix' in sys.argv:runner='test-native-audio-mix-browser.mjs'
         timeout=150
+        if '--native-fixed-bloom-history' in sys.argv:
+            fixed_frames=next((int(arg.split('=',1)[1]) for arg in sys.argv if arg.startswith('--fixed-frames=')),1200)
+            if not 128 <= fixed_frames <= 2048:
+                raise ValueError('Fixed bloom frame count must be between 128 and 2048')
+            # Paired context/program controls export several fenced images and
+            # complete GL state per sample. Bound the observation/export time
+            # independently of its unchanged pixel and state assertions.
+            timeout=max(timeout,60+fixed_frames*.25)
         if '--native-gameplay-history' in sys.argv:timeout=240
         if '--native-gameplay-history' in sys.argv and '--paged-history' in sys.argv:
             through_ms=next((int(arg.split('=',1)[1]) for arg in sys.argv if arg.startswith('--through-ms=')),30000)
