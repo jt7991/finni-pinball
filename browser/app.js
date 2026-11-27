@@ -45,17 +45,18 @@ function render(){
 }
 function release(){held.clear();physical.clear();pointers.clear();swipes.clear();paint();send();}
 function setAction(id,down,source){
+  if(down&&($('initials-dialog').open||document.querySelector('.panel:popover-open')))return;
   // Start confirms the selected roster; it never adds a player during a game.
   if(id==='start'){
     if(down&&!$('waiting').hidden&&!$('play').disabled)$('play').click();
     return;
   }
   if(!connected)return;
-  if(down&&(!$('waiting').hidden||$('initials-dialog').open||document.querySelector('.panel:popover-open')))return;
+  if(down&&!$('waiting').hidden)return;
   const sources=held.get(id)||new Set();
   if(settings.latch && ['left','right'].includes(id)){
     if(!down)return;
-    if(sources.size)sources.clear();else sources.add('toggle');
+    if(sources.size)sources.clear();else sources.add(source);
   }else{if(down)sources.add(source);else sources.delete(source);}
   if(sources.size)held.set(id,sources);else held.delete(id);
   paint();send();
@@ -186,8 +187,62 @@ window.addEventListener('keydown',e=>{
   e.preventDefault();if(physical.has(e.code))return;physical.add(e.code);setAction(action[0],true,`key:${e.code}`);
 });
 window.addEventListener('keyup',e=>{if(!physical.delete(e.code))return;const action=actions.find(([id])=>settings.keys[id]===e.code);if(action){e.preventDefault();setAction(action[0],false,`key:${e.code}`);}});
-window.addEventListener('blur',release);document.addEventListener('visibilitychange',()=>{if(document.hidden)release();});
-window.addEventListener('pagehide',release);
+// Button positions follow the browser's Standard Gamepad mapping.
+const gamepadBindings=[
+  ['left',[4,6]],['right',[5,7]],['launch',[0]],['action',[2]],
+  ['nudgeLeft',[14]],['nudgeCenter',[12]],['nudgeRight',[15]],['start',[9]],
+];
+const gamepadPressed=new Map();
+let gamepadFocusLost=false;
+function releaseGamepad(index){
+  if(!gamepadPressed.delete(index))return;
+  let changed=false;
+  for(const [id,sources] of held){
+    if(!sources.delete(`gamepad:${index}`))continue;
+    if(!sources.size)held.delete(id);
+    changed=true;
+  }
+  if(changed){paint();send();}
+}
+function pollGamepads(){
+  if(!document.hidden&&document.hasFocus()){
+    let pads;
+    try{pads=window.navigator.getGamepads();}
+    catch{
+      // A permissions policy can disable gamepad access in embedded players.
+      for(const index of gamepadPressed.keys())releaseGamepad(index);
+      return;
+    }
+    for(const index of gamepadPressed.keys()){
+      if(!pads[index]?.connected||pads[index].mapping!=='standard')releaseGamepad(index);
+    }
+    for(const pad of pads){
+      if(!pad?.connected||pad.mapping!=='standard')continue;
+      const pressed=gamepadPressed.get(pad.index)||new Set();
+      gamepadPressed.set(pad.index,pressed);
+      for(const [id,buttons] of gamepadBindings){
+        const down=buttons.some(index=>pad.buttons[index]?.pressed);
+        if(down===pressed.has(id))continue;
+        if(down)pressed.add(id);else pressed.delete(id);
+        // The first sample after focus returns only records buttons already held.
+        if(!down||!gamepadFocusLost)setAction(id,down,`gamepad:${pad.index}`);
+      }
+    }
+    gamepadFocusLost=false;
+  }
+  requestAnimationFrame(pollGamepads);
+}
+function releaseOnFocusLoss(){
+  gamepadFocusLost=true;
+  release();
+}
+if(typeof window.navigator?.getGamepads==='function'){
+  window.addEventListener('gamepaddisconnected',e=>releaseGamepad(e.gamepad.index));
+  requestAnimationFrame(pollGamepads);
+}
+window.addEventListener('blur',releaseOnFocusLoss);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)releaseOnFocusLoss();});
+window.addEventListener('pagehide',releaseOnFocusLoss);
 $('latch').onchange=e=>{release();settings.latch=e.target.checked;save();};
 $('showTouch').onchange=e=>{release();settings.showTouch=e.target.checked;save();render();$('flip-zones').hidden=!settings.showTouch;};
 $('reset').onclick=()=>{release();listening=null;settings={keys:{...defaults},latch:false,showTouch:true};save();render();message('Default controls restored.');};
@@ -302,7 +357,7 @@ function paintBeforeStarting(){
 async function replay(){
   if($('play').disabled||$('initials-dialog').open)return;
   showStartingGame();
-  if(phoneFullscreen.matches)await setFullscreen(true);
+  if(phoneFullscreen.matches&&window.navigator?.userActivation?.isActive!==false)await setFullscreen(true);
   await paintBeforeStarting();
   if(!connected)return;
   release();
@@ -464,7 +519,7 @@ async function boot(){
       try{
         if(!tablePrepared)await paintBeforeStarting();
         if(document.body.classList.contains('engine-error'))return;
-        if(phoneFullscreen.matches)void setFullscreen(true);
+        if(phoneFullscreen.matches&&window.navigator?.userActivation?.isActive!==false)void setFullscreen(true);
         if(!tablePrepared)prepareTable();
         if(browserMusic&&tableSupportsBrowserMusic)evaluate('FinniUseBrowserMusic');
         $('play').removeAttribute('aria-busy');

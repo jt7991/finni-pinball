@@ -68,6 +68,8 @@ export function configureRenderer(engine,{mobile=false,quality='auto'}={}){
 
 export function startTable(engine,path,onRendered){
   const original=Object.getOwnPropertyDescriptor(globalThis,'devicePixelRatio');
+  const browserNavigator=globalThis.navigator;
+  const gamepads=browserNavigator&&Object.getOwnPropertyDescriptor(browserNavigator,'getGamepads');
   const canvas=engine.canvas;
   const budget=engine.finniRenderBudget;
   if(budget&&canvas?.parentElement){
@@ -92,8 +94,14 @@ export function startTable(engine,path,onRendered){
     }
     return gl;
   };
-  let capped=false;
+  let capped=false,gamepadsSuppressed=false;
   try{
+    // SDL initializes its joystick driver during this synchronous call.
+    // The player owns gamepad input, so SDL must leave its joystick driver inactive.
+    if(browserNavigator?.getGamepads&&gamepads?.configurable!==false){
+      Object.defineProperty(browserNavigator,'getGamepads',{configurable:true,value:undefined});
+      gamepadsSuppressed=true;
+    }
     if(density&&density<globalThis.devicePixelRatio&&original?.configurable!==false){
       // SDL's browser backend takes its physical window size from the device
       // ratio, ignoring the native window-size preferences. Only its synchronous
@@ -103,6 +111,10 @@ export function startTable(engine,path,onRendered){
     }
     return engine.ccall('vpinball_wasm_start','number',['string'],[path]);
   }finally{
+    if(gamepadsSuppressed){
+      if(gamepads)Object.defineProperty(browserNavigator,'getGamepads',gamepads);
+      else delete browserNavigator.getGamepads;
+    }
     if(getContext){
       if(contextDescriptor)Object.defineProperty(canvas,'getContext',contextDescriptor);
       else delete canvas.getContext;
