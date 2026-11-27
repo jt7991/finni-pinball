@@ -2,7 +2,7 @@
 
 ## Independent Three.js player
 
-The user explicitly requested a full independent Three.js port to address mobile loading and performance, published alongside VPX on master at `/three/`. For that route, this supersedes the VPX-only runtime constraints below: use Three.js rendering and independent physics while retaining the complete authored rules, scoring, tasks, multiball, accepted artwork and open wire ramp appearance, DMD, audio, controls and backend integration. Keep the VPX player at `/` and `/vpx`. Do not reduce the port to a simplified physics demo. See `three/README.md` for implementation and validation status.
+Three.js is the default player. The deployed site serves Three.js directly at `/` and VPX at `/vpx`. The Three.js player uses independent physics and retains the complete authored rules, scoring, tasks, multiball, accepted artwork and open wire ramp appearance, DMD, audio, controls and backend integration. The VPX-specific runtime constraints below apply to `/vpx`. See `three/README.md` for implementation and validation status.
 
 <!-- impeccable:product-schema 1 -->
 

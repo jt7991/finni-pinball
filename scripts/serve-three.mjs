@@ -38,10 +38,10 @@ const server=http.createServer(async(req,res)=>{
       });
       res.writeHead(response.status,{'Content-Type':response.headers.get('content-type')||'application/json',...response.headers.has('cache-control')?{'Cache-Control':response.headers.get('cache-control')}:{},...response.headers.has('content-disposition')?{'Content-Disposition':response.headers.get('content-disposition')}:{}});res.end(Buffer.from(await response.arrayBuffer()));return;
     }
-    if(url.pathname==='/'){res.writeHead(302,{Location:'/three/'});res.end();return;}
-    if(url.pathname==='/vpx'){res.writeHead(302,{Location:`http://${req.headers.host.split(':')[0]}:8765/`});res.end();return;}
-    if(!['GET','HEAD'].includes(req.method)||!voice.has(url.pathname)&&!url.pathname.startsWith('/three/')){res.writeHead(404);res.end();return;}
-    const relative=decodeURIComponent(url.pathname.slice('/three/'.length));
+    if(url.pathname==='/vpx'){res.writeHead(302,{Location:`http://${req.headers.host.split(':')[0]}:8765/vpx${url.search}`});res.end();return;}
+    const playerPath=url.pathname==='/'?'/three/':url.pathname;
+    if(!['GET','HEAD'].includes(req.method)||!voice.has(url.pathname)&&!playerPath.startsWith('/three/')){res.writeHead(404);res.end();return;}
+    const relative=decodeURIComponent(playerPath.slice('/three/'.length));
     const file=voice.get(url.pathname)??path.resolve(directory,relative||'index.html');
     if(!voice.has(url.pathname)&&!file.startsWith(directory+path.sep)){res.writeHead(404);res.end();return;}
     let info=await stat(file,{bigint:true});if(!info.isFile()){res.writeHead(404);res.end();return;}

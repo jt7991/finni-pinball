@@ -27,7 +27,7 @@ async function verifyPages(base){
   const gamepad=/<details><summary>Gamepad controls<\/summary>[\s\S]*?<\/details>/;
   assert.equal(port.match(gamepad)?.[0],native.match(gamepad)?.[0],'controller instructions remain shared');
   const manifest=JSON.parse(fs.readFileSync(path.join(root,'three/public/manifest.json')));
-  assert.equal(manifest.id,'/three/');assert.equal(manifest.start_url,'/three/');assert.equal(manifest.scope,'/three/');
+  assert.equal(manifest.id,'/three/');assert.equal(manifest.start_url,'/');assert.equal(manifest.scope,'/');
 }
 
 test('development serves main guide and voice modules locally without a native player proxy',async()=>{
@@ -42,6 +42,9 @@ test('production serves main pages and proxies only the exact new voice login en
   const ready=Promise.withResolvers();let stdout='',stderr='';child.stdout.on('data',bytes=>{stdout+=bytes;const match=/Finni Three\.js: (http:\/\/127\.0\.0\.1:\d+)\/three\//.exec(stdout);if(match)ready.resolve(match[1]);});child.stderr.on('data',bytes=>stderr+=bytes);child.once('error',ready.reject);child.once('exit',()=>ready.reject(Error('Shared server exited: '+stderr)));const timeout=setTimeout(()=>ready.reject(Error('Shared server startup timed out: '+stderr)),15000);
   try{
     const base=await ready.promise;clearTimeout(timeout);await verifyPages(base);
+    const home=await fetch(base+'/?source=home',{redirect:'manual'});
+    assert.equal(home.status,200);assert.equal(home.headers.has('location'),false);
+    assert.equal(await home.text(),await(await fetch(base+'/three/')).text());
     const body=JSON.stringify({name:'Local route test',password:'fixture-only-password'}),response=await fetch(base+'/api/voice-login',{method:'POST',headers:{'Content-Type':'application/json',Origin:base},body});assert.equal(response.status,200);assert.equal(response.headers.get('cache-control'),'no-store');assert.deepEqual(await response.json(),{ok:true});assert.deepEqual(requests,[{method:'POST',url:'/api/voice-login',body}]);
     assert.equal((await fetch(base+'/api/voice-login-extra',{method:'POST',body})).status,404);assert.equal(requests.length,1,'an adjacent path does not reach the backend');
   }finally{

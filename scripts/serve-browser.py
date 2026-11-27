@@ -141,6 +141,7 @@ class Handler(SimpleHTTPRequestHandler):
     def translate_path(self, path):
         path = path.split('?', 1)[0]
         routes = {'/': ROOT / 'browser/index.html',
+                  '/vpx': ROOT / 'browser/index.html',
                   '/app.js': ROOT / 'browser/app.js', '/leaderboard.js': ROOT / 'browser/leaderboard.js', '/views.js': ROOT / 'browser/views.js', '/style.css': ROOT / 'browser/style.css',
                   '/renderer.js': ROOT / 'browser/renderer.js',
                   '/music.js': ROOT / 'browser/music.js',
