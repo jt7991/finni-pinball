@@ -5,6 +5,7 @@ import {createLeaderboard} from '../browser/leaderboard.js';
 import {createMusic} from '../browser/music.js';
 import {prepareUI} from './ui.js';
 import {createPlayerFullscreen} from './player-fullscreen.js';
+import {createGamepadControls} from './gamepad.js';
 
 const $=prepareUI({release,focusGame});
 let game,view,audio,display,leaderboard,paused=true,frames=0,sampleStart=0;
@@ -58,6 +59,7 @@ function event(e){
   }
 }
 function input(action,down,source){
+  if(down&&($('initials-dialog').open||document.querySelector('.panel:popover-open')))return;
   if(action==='start'){
     if(down&&!$('overlay').hidden&&!$('play').disabled&&!$('initials-dialog').open)$('play').click();
     return;
@@ -65,7 +67,7 @@ function input(action,down,source){
   if(!game||paused)return;
   if(down&&(!$('overlay').hidden||$('initials-dialog').open||document.querySelector('.panel:popover-open')))return;
   if($('latch').checked&&(action==='left'||action==='right')){
-    if(down){const key=`latched:${action}`,held=sources.has(key);if(held)sources.delete(key);else sources.set(key,action);game.input(action,!held);paint();}
+    if(down){const held=[...sources.values()].includes(action);if(held){for(const [key,value]of sources)if(value===action)sources.delete(key);}else sources.set(`latched:${source}:${action}`,action);game.input(action,!held);paint();}
     return;
   }
   const before=[...sources.values()].includes(action);
@@ -76,13 +78,21 @@ function input(action,down,source){
 }
 function paint(){for(const b of buttons){const held=[...sources.values()].includes(b.dataset.input);b.classList.toggle('pressed',held);b.classList.toggle('held',held);b.setAttribute('aria-pressed',String(held));}}
 function release(){sources.clear();swipes.clear();pointers.clear();physical.clear();game?.release();paint();}
+function releaseSource(source){
+  const affected=new Set();
+  for(const [key,action]of sources)if(key===source||key.startsWith(`latched:${source}:`)){sources.delete(key);affected.add(action);}
+  for(const action of affected)if(![...sources.values()].includes(action))game?.input(action,false);
+  paint();
+}
+createGamepadControls({input:(action,down,source)=>{if(down)audio?.unlock();input(action,down,source);},releaseSource,releaseAll:release});
 function focusGame(){if(game&&view&&game.state!=='ready'&&!$('initials-dialog').open&&!document.querySelector('.panel:popover-open'))$('table').focus({preventScroll:true});}
 function finishPointer(event,cancelled=false){
   swipes.delete(event.pointerId);
   const action=pointers.get(event.pointerId);if(!action)return;
   pointers.delete(event.pointerId);
   if(cancelled&&$('latch').checked&&['left','right'].includes(action)){
-    if(sources.delete(`latched:${action}`))game?.input(action,false);paint();
+    const key=`latched:pointer:${event.pointerId}:${action}`;
+    if(sources.delete(key)&&![...sources.values()].includes(action))game?.input(action,false);paint();
   }else input(action,false,`pointer:${event.pointerId}`);
 }
 window.addEventListener('pointerup',event=>finishPointer(event));

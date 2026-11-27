@@ -1,11 +1,10 @@
 FROM node:22-alpine AS three
 WORKDIR /build
 COPY package.json package-lock.json vite.config.js ./
-COPY scripts/patch-vbs-engine.mjs scripts/verify-dmd-atlas.mjs scripts/
+COPY scripts/ scripts/
 RUN npm ci
 COPY three/ three/
-COPY browser/leaderboard.js browser/leaderboard.js
-COPY browser/party-chooser.js browser/party-chooser.js
+COPY browser/ browser/
 RUN npm run build
 
 FROM python:3.13-alpine AS engine

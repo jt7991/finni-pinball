@@ -6,6 +6,7 @@ import {readFile} from 'node:fs/promises';
 export function sharedBrowserFiles(root){
   const names=['arcade.css','arcade-background.svg','how-to-play.html','how-to-play.css','high-scores.html','high-scores.css','high-scores.js','voice.html','voice.css','voice.js','voice-audio.js','voice-lines.json','voice-session.js','voice-login.html','voice-login.js','recordings.js','voice-difficulty.json','voice-pitch-worker.js','vendor/voice-pitch.js','vendor/voice-pitch-LICENSES.txt','favicon.ico','favicon.png','fonts/PressStart2P-Regular.ttf','fonts/DMSans.ttf'];
   const files=new Map(names.map(name=>['/'+name,path.join(root,'browser',name)]));
+  for(const name of ['manifest.json','icons/icon-192.png','icons/icon-512.png','icons/icon-maskable-512.png','icons/apple-touch-icon.png'])files.set('/'+name,path.join(root,'browser',name));
   for(const [route,name]of Object.entries({'/how-to-play':'how-to-play.html','/high-scores':'high-scores.html','/voice':'voice.html','/recordings':'voice.html','/voice-login':'voice-login.html'}))files.set(route,path.join(root,'browser',name));
   files.set('/chewy.ttf',path.join(root,'assets/fonts/chewy/Chewy-Regular.ttf'));
   return files;

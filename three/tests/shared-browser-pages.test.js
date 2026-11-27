@@ -12,6 +12,10 @@ const listen=async server=>{server.listen(0,'127.0.0.1');await once(server,'list
 const close=server=>new Promise((resolve,reject)=>server.close(error=>error?reject(error):resolve()));
 
 async function verifyPages(base){
+  for(const name of ['manifest.json','icons/icon-192.png','icons/icon-512.png','icons/icon-maskable-512.png','icons/apple-touch-icon.png']){
+    const response=await fetch(base+'/'+name);assert.equal(response.status,200,name);
+    assert.deepEqual(Buffer.from(await response.arrayBuffer()),fs.readFileSync(path.join(root,'browser',name)));
+  }
   for(const [route,file]of [['/how-to-play','how-to-play.html'],['/arcade.css','arcade.css'],['/arcade-background.svg','arcade-background.svg'],['/voice','voice.html'],['/voice-login','voice-login.html'],['/voice-session.js','voice-session.js'],['/recordings.js','recordings.js'],['/voice-difficulty.json','voice-difficulty.json']]){
     const response=await fetch(base+route);assert.equal(response.status,200,route);
     assert.deepEqual(Buffer.from(await response.arrayBuffer()),fs.readFileSync(path.join(root,'browser',file)),route+' serves the exact main resource');
@@ -20,6 +24,10 @@ async function verifyPages(base){
   assert.equal((await fetch(base+'/voice-cast.json')).status,404,'removed catalog does not retain an obsolete route');
   const native=fs.readFileSync(path.join(root,'browser/index.html'),'utf8'),port=fs.readFileSync(path.join(root,'three/index.html'),'utf8');
   for(const pattern of [/<div class="start-links">[\s\S]*?<\/div>/,/<p><a href="\/how-to-play" target="_blank"[\s\S]*?<\/p>/])assert.equal(port.match(pattern)?.[0],native.match(pattern)?.[0],'main guide/studio links remain shared');
+  const gamepad=/<details><summary>Gamepad controls<\/summary>[\s\S]*?<\/details>/;
+  assert.equal(port.match(gamepad)?.[0],native.match(gamepad)?.[0],'controller instructions remain shared');
+  const manifest=JSON.parse(fs.readFileSync(path.join(root,'three/public/manifest.json')));
+  assert.equal(manifest.id,'/three/');assert.equal(manifest.start_url,'/three/');assert.equal(manifest.scope,'/three/');
 }
 
 test('development serves main guide and voice modules locally without a native player proxy',async()=>{

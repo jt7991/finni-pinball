@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import {writeFile} from 'node:fs/promises';
 const [debug,base,output]=process.argv.slice(2);
 const cacheDisabled=!process.argv.includes('--allow-http-cache');
+const gamepadChecks=process.argv.includes('--gamepads');
 const tabs=await(await fetch(`${debug}/json/list`)).json();
 const socket=new WebSocket(tabs.find(t=>t.type==='page').webSocketDebuggerUrl);
 await new Promise(r=>socket.addEventListener('open',r,{once:true}));
@@ -23,6 +24,38 @@ const evaluate=async expression=>{const r=await call('Runtime.evaluate',{express
 const wait=async expression=>{for(let i=0;i<400;i++){if(await evaluate(expression))return;await new Promise(r=>setTimeout(r,50));}const state=await evaluate('({play:document.getElementById("play")?.textContent,loading:document.getElementById("loading")?.textContent,log:document.getElementById("log")?.textContent?.slice(-1500)})');console.log(JSON.stringify({timeout:expression,state,errors}));throw Error(`Timed out: ${expression}`);};
 const center=selector=>evaluate(`(()=>{const r=document.querySelector(${JSON.stringify(selector)}).getBoundingClientRect();return {x:r.x+r.width/2,y:r.y+r.height/2}})()`);
 const touch=points=>call('Input.dispatchTouchEvent',{type:points.length?'touchStart':'touchEnd',touchPoints:points.map((p,i)=>({...p,id:i+1,radiusX:4,radiusY:4,force:1}))});
+async function verifyGamepads(){
+  const set=statement=>evaluate(statement);
+  const key=async(code,type)=>{await evaluate('document.getElementById("canvas").focus()');await call('Input.dispatchKeyEvent',{type,code,key:'Shift'});};
+  await set('testPad.buttons[4].pressed=true;testPad.buttons[6].pressed=true;testPad.buttons[5].pressed=true');
+  await wait('testWorker.latest.held.left&&testWorker.latest.held.right');
+  await set('testPad.buttons[4].pressed=false');await new Promise(r=>setTimeout(r,70));
+  assert.equal(await evaluate('testWorker.latest.held.left'),true,'alternate trigger keeps the left flipper held');
+  await key('ShiftLeft','keyDown');
+  await set('testPad.connected=false');await wait('!testWorker.latest.held.right');
+  assert.equal(await evaluate('testWorker.latest.held.left'),true,'disconnect retains the keyboard owner');
+  await key('ShiftLeft','keyUp');await wait('!testWorker.latest.held.left');
+  await set('testPad.buttons.forEach(b=>b.pressed=false);testPad.connected=true;document.getElementById("latch").checked=true;document.getElementById("latch").dispatchEvent(new Event("change"))');
+  await new Promise(r=>setTimeout(r,60));await set('testPad.buttons[6].pressed=true');await wait('testWorker.latest.held.left');
+  await set('testPad.buttons[6].pressed=false');await new Promise(r=>setTimeout(r,60));
+  assert.equal(await evaluate('testWorker.latest.held.left'),true,'toggle remains held after controller button release');
+  await set('testPad.connected=false');await wait('!testWorker.latest.held.left');
+  await set('document.getElementById("latch").checked=false;document.getElementById("latch").dispatchEvent(new Event("change"));testPad.connected=true');
+  await new Promise(r=>setTimeout(r,60));await set('testPad.buttons[5].pressed=true');await wait('testWorker.latest.held.right');
+  await set('testPadFocus=false;window.dispatchEvent(new Event("blur"))');await wait('testWorker.latest.paused&&!testWorker.latest.held.right');
+  await set('testPad.buttons[0].pressed=true;testPadFocus=true;window.dispatchEvent(new Event("focus"))');await wait('!testWorker.latest.paused');
+  await new Promise(r=>setTimeout(r,80));assert.equal(await evaluate('testWorker.latest.held.launch'),false,'refocus does not begin a held launch');
+  await set('testPad.buttons.forEach(b=>b.pressed=false)');await new Promise(r=>setTimeout(r,60));
+  await set('document.getElementById("settings").click()');await wait('document.getElementById("controls-panel").matches(":popover-open")');
+  const count=await evaluate('testWorker.inputs.length');await set('testPad.buttons[2].pressed=true;testPad.buttons[9].pressed=true;testPad.buttons[4].pressed=true');
+  await new Promise(r=>setTimeout(r,80));assert.equal(await evaluate(`testWorker.inputs.slice(${count}).some(row=>row.down)`),false,'open Controls blocks controller actions');
+  await set('testPad.buttons.forEach(b=>b.pressed=false);document.getElementById("controls-panel").hidePopover()');await new Promise(r=>setTimeout(r,80));
+  const sent=await evaluate('testWorker.inputs.length');await set('testPad.buttons[2].pressed=true;testPad.buttons[12].pressed=true');
+  await wait(`testWorker.inputs.slice(${sent}).some(row=>row.action==='action'&&row.down)&&testWorker.inputs.slice(${sent}).some(row=>row.action==='nudgeForward'&&row.down)`);
+  await set('testPad.buttons.forEach(b=>b.pressed=false)');await new Promise(r=>setTimeout(r,70));
+  await writeFile(`${output}/gamepad-production.json`,JSON.stringify(await evaluate('({scope:"Declared Standard Gamepad API inputs exercise the production player and worker; this is not physical-controller certification",starts:testWorker.starts,inputs:testWorker.inputs,held:testWorker.latest.held,fatal:testWorker.fatal})'),null,2));
+  console.log('PASS gamepad Start, combined triggers, mixed keyboard ownership, toggle disconnect, focus return, panels, Action and nudge');
+}
 function observeFullscreenAPI(){
   const stats=window.testFullscreen={requests:[],failures:[],available:false};
   for(const name of ['requestFullscreen','webkitRequestFullscreen']){
@@ -39,6 +72,7 @@ function observeFullscreenAPI(){
 try{
   await call('Page.enable');await call('Runtime.enable');await call('Network.enable');await call('Emulation.setFocusEmulationEnabled',{enabled:true});
   await call('Page.addScriptToEvaluateOnNewDocument',{source:'('+observeFullscreenAPI.toString()+')()'});
+  if(gamepadChecks)await call('Page.addScriptToEvaluateOnNewDocument',{source:'window.testPad={index:0,connected:true,mapping:"standard",buttons:Array.from({length:17},()=>({pressed:false}))};Object.defineProperty(navigator,"getGamepads",{value:()=>[testPad]});window.testPadFocus=true;const nativeHasFocus=document.hasFocus.bind(document);document.hasFocus=()=>testPadFocus&&nativeHasFocus();'});
   await call('Page.addScriptToEvaluateOnNewDocument',{source:`(()=>{const NativeWorker=window.Worker,s=window.testWorker={starts:[],inputs:[],latest:null,fatal:[],nativeDmd:[]};window.Worker=class extends NativeWorker{constructor(...args){super(...args);this.addEventListener('message',({data})=>{if(data.type==='fatal')s.fatal.push(data.message);if(data.type==='ready')s.nativeDmd=data.description.objects.filter(([name])=>/^digit(?:\\d{3}|grid)$/.test(name)).map(([name,state])=>({name,visible:state.visible}));if(data.type==='snapshot')s.latest={time:data.snapshot.time,tilted:data.snapshot.tilted,held:data.snapshot.held,paused:data.paused,ticks:data.stats.ticks,scriptStats:data.snapshot.scriptStats};});}postMessage(message,...args){if(message.type==='start')s.starts.push(message.players);if(message.type==='input')s.inputs.push({action:message.action,down:message.down});return super.postMessage(message,...args);}};})()`});
   await call('Target.setAutoAttach',{autoAttach:true,waitForDebuggerOnStart:true,flatten:true});
   await call('Network.setCacheDisabled',{cacheDisabled});
@@ -57,6 +91,7 @@ try{
     await writeFile(`${output}/main-ui-start-${name}.png`,Buffer.from((await call('Page.captureScreenshot',{format:'png'})).data,'base64'));console.log('START_SCREEN',JSON.stringify({viewport:name,readyMs:measurement.startScreenReadyMs,transferredBytes:measurement.startScreenTransferredBytes}));
     await new Promise(resolve=>setTimeout(resolve,100));
     const preview=await evaluate('({paused:testWorker.latest.paused,time:testWorker.latest.time,ticks:testWorker.latest.ticks,automatic:document.getElementById("graphics").value==="auto",cached:JSON.parse(sessionStorage.getItem("finni-three-automatic-graphics-v1"))?.quality})');
+    await writeFile(`${output}/preview-${name}.json`,JSON.stringify({preview,document:await evaluate('({visible:document.visibilityState,focus:document.hasFocus(),graphics:document.getElementById("graphics").value,log:document.getElementById("log").textContent})')},null,2));
     if(preview.automatic&&preview.cached!=='performance'){
       assert.equal(preview.paused,false);assert.ok(preview.time>0&&preview.ticks>0,'Automatic runs the prepared attract preview like current main');
     }else assert.deepEqual({paused:preview.paused,time:preview.time,ticks:preview.ticks},{paused:true,time:0,ticks:0},'explicit profiles and the final automatic Performance retry retain the unstarted native preview');
@@ -66,8 +101,10 @@ try{
     assert.equal(await evaluate('testWorker.latest.scriptStats.budgetMicroseconds'),5000,'automatic script budget reaches the production worker');
     await evaluate(`document.getElementById('player-count').value='${name==='phone'?4:1}'`);
     const playPosition=await center('#play');
-    for(const type of ['mousePressed','mouseReleased'])await call('Input.dispatchMouseEvent',{type,...playPosition,button:'left',clickCount:1});
+    if(gamepadChecks&&name==='desktop')await evaluate('testPad.buttons[9].pressed=true');
+    else for(const type of ['mousePressed','mouseReleased'])await call('Input.dispatchMouseEvent',{type,...playPosition,button:'left',clickCount:1});
     await wait('document.body.classList.contains("ball-in-plunger")');
+    if(gamepadChecks&&name==='desktop'){await evaluate('testPad.buttons[9].pressed=false');await verifyGamepads();}
     assert.equal(await evaluate('testWorker.starts.at(-1)'),name==='phone'?4:1,'main player selector reaches the simulation worker');
     const automaticFullscreen=await evaluate('matchMedia("(pointer:coarse) and (max-width:1024px)").matches');
     if(!automaticFullscreen){

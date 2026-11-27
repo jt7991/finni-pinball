@@ -3,6 +3,7 @@
 .work
 node_modules
 browser/three
+three/tests
 output
 source-tables
 references

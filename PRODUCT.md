@@ -1,8 +1,8 @@
 # Finni’s Big Day
 
-## Three.js experiment branch
+## Independent Three.js player
 
-The user explicitly requested a full independent Three.js port to address mobile loading and performance. On `experiment/threejs-pinball`, this supersedes the VPX-only runtime constraints below: use Three.js rendering and independent physics while retaining the complete authored rules, scoring, tasks, multiball, accepted artwork and open wire ramp appearance, DMD, audio, controls and backend integration. Keep the VPX player as a comparison fallback. Do not reduce this branch to a simplified physics demo. See `three/README.md` for implementation and validation status.
+The user explicitly requested a full independent Three.js port to address mobile loading and performance, published alongside VPX on master at `/three/`. For that route, this supersedes the VPX-only runtime constraints below: use Three.js rendering and independent physics while retaining the complete authored rules, scoring, tasks, multiball, accepted artwork and open wire ramp appearance, DMD, audio, controls and backend integration. Keep the VPX player at `/` and `/vpx`. Do not reduce the port to a simplified physics demo. See `three/README.md` for implementation and validation status.
 
 <!-- impeccable:product-schema 1 -->
 
