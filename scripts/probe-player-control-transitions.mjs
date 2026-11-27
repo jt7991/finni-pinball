@@ -8,15 +8,44 @@ import {gunzipSync} from 'node:zlib';
 import {installNativeStartupObserver} from './native-startup-observer.mjs';
 const [debug,base,output]=process.argv.slice(2),native=process.argv.includes('--native-player'),sha=b=>createHash('sha256').update(b).digest('hex');
 const cameraFocus=process.argv.includes('--camera-focus');
-const nativeBytes=fs.readFileSync(new URL('../three/tests/fixtures/'+(cameraFocus?'vpx-native-player-camera-focus.json.gz':'vpx-native-player-control-transitions-v2.json.gz'),import.meta.url)),nativeFixtureSHA256=sha(nativeBytes);
-assert.equal(nativeFixtureSHA256,cameraFocus?'7abe644197913cbd0bb3ef0e90a2693077c61df1a7a9e8f9a965b4dbc7685452':'2729299f8be4ba380d6ee15228996edfacd0f956abcfe4cae415bdee307f1be4');
-const nativeBaseline=JSON.parse(gunzipSync(nativeBytes)).observation;
-assert.equal(nativeBaseline.native,true);assert.deepEqual(nativeBaseline.errors,[]);assert.ok(nativeBaseline.observations.every(row=>row.pass));
+const currentMaster=process.argv.includes('--current-master');
+const baselinePath=process.argv.find(arg=>arg.startsWith('--current-master-baseline='))?.split('=').slice(1).join('=');
+assert.ok(!baselinePath||currentMaster,'a current-master baseline requires its explicit source mode');
+const sourceMetadata=JSON.parse(fs.readFileSync(new URL('../three/public/source-table.json',import.meta.url),'utf8'));
+let nativeFixtureSHA256,nativeBaseline;
+if(currentMaster){
+  if(native)assert.ok(process.argv.includes('--observe-only')&&!baselinePath,'capture the current original player independently');
+  else{
+    assert.ok(baselinePath,'current-master comparison requires an independently captured original-player baseline');
+    const bytes=fs.readFileSync(baselinePath);nativeFixtureSHA256=sha(bytes);nativeBaseline=JSON.parse(bytes);
+    assert.equal(nativeBaseline.currentMaster,true);assert.equal(nativeBaseline.cameraFocus,cameraFocus);
+    assert.equal(nativeBaseline.trustedStart,process.argv.includes('--trusted-start'));
+    assert.equal(nativeBaseline.touchEmulation,process.argv.includes('--touch-emulation'));
+    assert.equal(nativeBaseline.reference.sourceSha256,sourceMetadata.sourceTableSHA256);
+    assert.equal(nativeBaseline.reference.controlledSha256,sourceMetadata.sourceTableSHA256);
+    assert.deepEqual(nativeBaseline.reference.controlledOverrides,{});
+    assert.equal(nativeBaseline.reference.sourceCommit,sourceMetadata.sourceCommit);
+    assert.equal(nativeBaseline.reference.browserSourceCommit,sourceMetadata.sourceCommit);
+    assert.equal(nativeBaseline.engineSHA256,sourceMetadata.engineSHA256);
+    assert.equal(nativeBaseline.playerSHA256,nativeBaseline.reference.browserAppSHA256);
+    assert.deepEqual(nativeBaseline.sourceMetadata,sourceMetadata);
+    assert.deepEqual(nativeBaseline.traffic.fatal,[]);
+  }
+}else{
+  const bytes=fs.readFileSync(new URL('../three/tests/fixtures/'+(cameraFocus?'vpx-native-player-camera-focus.json.gz':'vpx-native-player-control-transitions-v2.json.gz'),import.meta.url));nativeFixtureSHA256=sha(bytes);
+  assert.equal(nativeFixtureSHA256,cameraFocus?'7abe644197913cbd0bb3ef0e90a2693077c61df1a7a9e8f9a965b4dbc7685452':'2729299f8be4ba380d6ee15228996edfacd0f956abcfe4cae415bdee307f1be4');
+  nativeBaseline=JSON.parse(gunzipSync(bytes)).observation;
+}
+if(nativeBaseline){assert.equal(nativeBaseline.native,true);assert.deepEqual(nativeBaseline.errors,[]);assert.ok(nativeBaseline.observations.every(row=>row.pass));}
 let reference,engineSHA256,playerSHA256;
 if(native){
   reference=await(await fetch(new URL('/reference-metadata.json',base))).json();engineSHA256=sha(Buffer.from(await(await fetch(new URL('/engine/vpinball.wasm',base))).arrayBuffer()));playerSHA256=sha(Buffer.from(await(await fetch(new URL('/app.js',base))).arrayBuffer()));
-  assert.equal(engineSHA256,'c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8');assert.equal(reference.sourceSha256,'6160e43c1a74f6dc70fd9852433c3373fe11b3e55d4f3a3fedc435265591b5c5');assert.equal(reference.controlledSha256,reference.sourceSha256);assert.deepEqual(reference.controlledOverrides,{});
-  assert.equal(playerSHA256,nativeBaseline.playerSHA256);assert.equal(playerSHA256,reference.browserAppSHA256);
+  assert.equal(engineSHA256,'c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8');assert.equal(reference.sourceSha256,currentMaster?sourceMetadata.sourceTableSHA256:'6160e43c1a74f6dc70fd9852433c3373fe11b3e55d4f3a3fedc435265591b5c5');assert.equal(reference.controlledSha256,reference.sourceSha256);assert.deepEqual(reference.controlledOverrides,{});
+  if(currentMaster){assert.equal(reference.sourceCommit,sourceMetadata.sourceCommit);assert.equal(reference.browserSourceCommit,sourceMetadata.sourceCommit);}
+  else assert.equal(playerSHA256,nativeBaseline.playerSHA256);
+  assert.equal(playerSHA256,reference.browserAppSHA256);
+}else if(currentMaster){
+  assert.deepEqual(await(await fetch(new URL('source-table.json',base))).json(),sourceMetadata);
 }
 const tabs=await(await fetch(debug+'/json/list')).json(),socket=new WebSocket(tabs.find(t=>t.type==='page').webSocketDebuggerUrl);await new Promise(r=>socket.addEventListener('open',r,{once:true}));let serial=0;const pending=new Map(),errors=[];
 socket.addEventListener('message',event=>{const d=JSON.parse(event.data);if(d.id){const p=pending.get(d.id);pending.delete(d.id);d.error?p.reject(Error(d.error.message)):p.resolve(d.result);}if(d.method==='Runtime.exceptionThrown')errors.push(d.params);});
@@ -33,6 +62,8 @@ try{
     window.Worker=class extends NativeWorker{constructor(...args){super(...args);this.addEventListener('message',({data})=>{if(data.type==='snapshot')s.latest={time:data.snapshot.time,paused:data.paused};if(data.type==='fatal')s.fatal.push(data.message);});}postMessage(message,...args){if(message.type==='input'){s.inputs.push({action:message.action,down:message.down});s.held[message.action]=message.down;}if(message.type==='release')for(const action of Object.keys(s.held))s.held[action]=false;return super.postMessage(message,...args);}};
   })();`});
   await call('Page.navigate',{url:base});await wait('!!document.getElementById("play")&&!document.getElementById("play").disabled');
+  const automaticFullscreenExpected=await evaluate('matchMedia("(pointer:coarse) and (max-width:1024px)").matches');
+  if(currentMaster&&!native)assert.equal(automaticFullscreenExpected,nativeBaseline.automaticFullscreenExpected,'same main-player fullscreen conditions');
   if(process.argv.includes('--trusted-start')){
     const position=await evaluate('(()=>{const r=document.getElementById("play").getBoundingClientRect();return{x:r.x+r.width/2,y:r.y+r.height/2};})()');
     for(const type of ['mousePressed','mouseReleased'])await call('Input.dispatchMouseEvent',{type,...position,button:'left',clickCount:1});
@@ -73,7 +104,8 @@ try{
   observations.push({name:'sliding a toggle-off press does not nudge a released flipper',pass:await evaluate(`!controlTransitions.inputs.slice(${nudgeStart}).some(row=>row.action==='nudgeRight'&&row.down)`)});
   let focusClocks;
   if(cameraFocus){
-    observations.push({name:'Start requests fullscreen',pass:await evaluate('controlTransitions.fullscreenRequests.length>0')});
+    const requested=await evaluate('controlTransitions.fullscreenRequests.length>0');
+    observations.push(currentMaster?{name:'Start follows current main automatic-fullscreen policy',pass:requested===automaticFullscreenExpected}:{name:'Start requests fullscreen',pass:requested});
     await focus();await key('ShiftLeft',true);await delay(50);assert.equal((await held()).left,true);
     await evaluate('(()=>{const select=document.getElementById("camera-view");select.focus();select.value="topdown";select.dispatchEvent(new Event("change"));})()');await delay(50);
     observations.push({name:'camera change releases held flipper',pass:!(await held()).left});
@@ -85,7 +117,7 @@ try{
     focusClocks={blur:{beforeMilliseconds:blurred,afterMilliseconds:afterBlur,elapsedMilliseconds:afterBlur-blurred,paused:afterBlur===blurred},focus:{beforeMilliseconds:focused,afterMilliseconds:afterFocus,elapsedMilliseconds:afterFocus-focused,advances:afterFocus>focused}};
   }
   const traffic=await evaluate('({inputs:controlTransitions.inputs,fatal:controlTransitions.fatal})');
-  const report={scope:'Identical ordinary UI-event sequence. Physical CDP Shift keys, explicit pointer events, normal Help/popover/camera controls and pagehide/blur/focus dispatch are inputs. Original native authored key calls or Three worker packets and fullscreen API attempts are observed without changing their arguments/results. Clock/body/RNG/native instructions are never replaced. This is finite player-transition coverage, not a full gameplay trajectory.',native,base,cameraFocus,trustedStart:process.argv.includes('--trusted-start'),touchEmulation:process.argv.includes('--touch-emulation'),nativeFixtureSHA256,reference,engineSHA256,playerSHA256,observations,focusClocks,fullscreenAtStart,fullscreenRequests:await evaluate('controlTransitions.fullscreenRequests'),traffic,errors};
+  const report={scope:'Identical ordinary UI-event sequence. Physical CDP Shift keys, explicit pointer events, normal Help/popover/camera controls and pagehide/blur/focus dispatch are inputs. Original native authored key calls or Three worker packets and fullscreen API attempts are observed without changing their arguments/results. Clock/body/RNG/native instructions are never replaced. This is finite player-transition coverage, not a full gameplay trajectory.',native,base,cameraFocus,currentMaster,sourceMetadata:currentMaster?sourceMetadata:undefined,automaticFullscreenExpected,trustedStart:process.argv.includes('--trusted-start'),touchEmulation:process.argv.includes('--touch-emulation'),nativeFixtureSHA256,reference,engineSHA256,playerSHA256,observations,focusClocks,fullscreenAtStart,fullscreenRequests:await evaluate('controlTransitions.fullscreenRequests'),traffic,errors};
   fs.writeFileSync(path.join(output,'player-control-transitions.json'),JSON.stringify(report,null,2),{flag:'wx'});console.log(JSON.stringify({native,observations,focusClocks,errors}));
   assert.deepEqual(errors,[]);assert.deepEqual(traffic.fatal,[]);
   if(!process.argv.includes('--observe-only')){

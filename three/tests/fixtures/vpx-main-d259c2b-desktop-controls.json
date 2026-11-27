@@ -1,0 +1,152 @@
+{
+  "scope": "Identical ordinary UI-event sequence. Physical CDP Shift keys, explicit pointer events, normal Help/popover/camera controls and pagehide/blur/focus dispatch are inputs. Original native authored key calls or Three worker packets and fullscreen API attempts are observed without changing their arguments/results. Clock/body/RNG/native instructions are never replaced. This is finite player-transition coverage, not a full gameplay trajectory.",
+  "native": true,
+  "base": "http://127.0.0.1:50837/",
+  "cameraFocus": true,
+  "currentMaster": true,
+  "sourceMetadata": {
+    "sourceCommit": "d259c2b2ae69f0281f141a3eda1f6b07793341db",
+    "sourceTableSHA256": "a0acae6e039580a027a704238325031d737149595a417c12ad22d11b1275c1f3",
+    "engineSHA256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+    "geometrySHA256": "eed7407731dfbbe8bb2f4e6e7352d4998744dbe48665fc283eb5b2e5634471bf"
+  },
+  "automaticFullscreenExpected": false,
+  "trustedStart": true,
+  "touchEmulation": false,
+  "reference": {
+    "engine": "@valknar/vpinball-wasm 0.3.4",
+    "engineSHA256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+    "upstreamCommit": "195f214dd4849b8ef6113fd377258b78d0dec3bf",
+    "sourceCommit": "d259c2b2ae69f0281f141a3eda1f6b07793341db",
+    "sourceSha256": "a0acae6e039580a027a704238325031d737149595a417c12ad22d11b1275c1f3",
+    "controlledSha256": "a0acae6e039580a027a704238325031d737149595a417c12ad22d11b1275c1f3",
+    "controlledOverrides": {},
+    "browserSourceCommit": "d259c2b2ae69f0281f141a3eda1f6b07793341db",
+    "browserAppSHA256": "322c04ad726c5c245095caf1c8ca2445084d80291e850ba01f8caed0c7e1042c",
+    "scope": "Exact committed d259c2b master browser and runtime snapshot extracted with Git archive. No table, browser or engine edits. Individual comparison probes declare their own observations and control inputs."
+  },
+  "engineSHA256": "c9f81fc78eff4ae994ac06272870e4572aa4fce00adf7194a78ef65c1b04e4d8",
+  "playerSHA256": "322c04ad726c5c245095caf1c8ca2445084d80291e850ba01f8caed0c7e1042c",
+  "observations": [
+    {
+      "name": "help releases held flipper",
+      "pass": true
+    },
+    {
+      "name": "closing help returns keyboard focus to playfield",
+      "pass": true
+    },
+    {
+      "name": "pagehide releases held flipper",
+      "pass": true
+    },
+    {
+      "name": "high scores block new flipper input",
+      "pass": true
+    },
+    {
+      "name": "closing high scores returns keyboard focus to playfield",
+      "pass": true
+    },
+    {
+      "name": "physical time during controls popover",
+      "elapsedMilliseconds": 262,
+      "pass": true
+    },
+    {
+      "name": "pressed flipper publishes its accessible pressed state",
+      "pass": true
+    },
+    {
+      "name": "released flipper clears its accessible pressed state",
+      "pass": true
+    },
+    {
+      "name": "sliding a toggle-off press does not nudge a released flipper",
+      "pass": true
+    },
+    {
+      "name": "Start follows current main automatic-fullscreen policy",
+      "pass": true
+    },
+    {
+      "name": "camera change releases held flipper",
+      "pass": true
+    },
+    {
+      "name": "camera change returns keyboard focus to playfield",
+      "pass": true
+    },
+    {
+      "name": "portrait rotation returns keyboard focus to playfield",
+      "pass": true
+    }
+  ],
+  "focusClocks": {
+    "blur": {
+      "beforeMilliseconds": 6163,
+      "afterMilliseconds": 6163,
+      "elapsedMilliseconds": 0,
+      "paused": true
+    },
+    "focus": {
+      "beforeMilliseconds": 6163,
+      "afterMilliseconds": 6391,
+      "elapsedMilliseconds": 228,
+      "advances": true
+    }
+  },
+  "fullscreenAtStart": {
+    "active": false,
+    "enabled": true,
+    "note": "",
+    "noteHidden": true
+  },
+  "fullscreenRequests": [],
+  "traffic": {
+    "inputs": [
+      {
+        "action": "left",
+        "down": true
+      },
+      {
+        "action": "left",
+        "down": false
+      },
+      {
+        "action": "left",
+        "down": true
+      },
+      {
+        "action": "left",
+        "down": false
+      },
+      {
+        "action": "left",
+        "down": true
+      },
+      {
+        "action": "left",
+        "down": false
+      },
+      {
+        "action": "left",
+        "down": true
+      },
+      {
+        "action": "left",
+        "down": false
+      },
+      {
+        "action": "left",
+        "down": true
+      },
+      {
+        "action": "left",
+        "down": false
+      }
+    ],
+    "fatal": []
+  },
+  "errors": []
+}

@@ -12,6 +12,7 @@ three/tests/fixtures/vpx-main-6f8116d-harder-round-render-digests-native.json.gz
 three/tests/fixtures/vpx-main-6f8116d-thirteen-wins-render-digests-native.json.gz filter=lfs diff=lfs merge=lfs -text
 three/tests/fixtures/vpx-native-startup-bumper-poses.json -text
 three/tests/fixtures/vpx-native-bumper-animation-events.json -text
+three/tests/fixtures/vpx-main-d259c2b-desktop-controls.json -text
 three/public/*.bin binary
 three/public/arcade-background.svg -text
 three/public/fonts/** -text
