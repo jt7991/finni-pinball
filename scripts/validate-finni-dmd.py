@@ -70,7 +70,8 @@ before = (source/'script.vbs').read_bytes().replace(b'HellHouse.kick 164, 30, 1'
 before = story(before)
 before = tasks(before)
 events_before = re.findall(rb'\bDMD ([^\r\n]*)',before)
-events_after = re.findall(rb'\bDMD ([^\r\n]*)',script)
+restored = runpy.run_path(str(ROOT/'scripts/apply-finni-dmd.py'))['mode_callouts'](script, restore=True)
+events_after = re.findall(rb'\bDMD ([^\r\n]*)', restored)
 assert len(events_before) == len(events_after)
 changes = 0
 for a,b in zip(events_before,events_after):

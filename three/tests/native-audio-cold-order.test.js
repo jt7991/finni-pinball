@@ -1,7 +1,8 @@
+import {nativeSourceAssets} from '../../scripts/native-source-assets.mjs';
 import fs from'node:fs';import{gunzipSync}from'node:zlib';import test from'node:test';import assert from'node:assert/strict';
 import{createHash}from'node:crypto';
 import{createNativeAudioPlayer}from'../native-audio-player.js';import{decodePCM16Wave}from'../audio-pcm.js';import{createNativeSoundEngine}from'../native-sound-engine.js';
-const load=name=>JSON.parse(gunzipSync(fs.readFileSync(new URL('fixtures/'+name,import.meta.url)))),mixes=load('vpx-main-pcm-mixes-native.json.gz'),voices=load('vpx-main-pcm-voices-native.json.gz'),manifest=JSON.parse(fs.readFileSync(new URL('../public/audio.json',import.meta.url)));
+const load=name=>JSON.parse(gunzipSync(fs.readFileSync(new URL('fixtures/'+name,import.meta.url)))),mixes=load('vpx-main-pcm-mixes-native.json.gz'),voices=load('vpx-main-pcm-voices-native.json.gz'),manifest=nativeSourceAssets('a0acae6e039580a027a704238325031d737149595a417c12ad22d11b1275c1f3').json('audio.json');
 const interleavedBytes=fs.readFileSync(new URL('fixtures/vpx-main-audio-interleaved-native.json.gz',import.meta.url));assert.equal(createHash('sha256').update(interleavedBytes).digest('hex'),'9df0b695f197f5e1d6adef4fe1336986c2eea92fa6235d50a4edf6bb373738f6');const interleaved=JSON.parse(gunzipSync(interleavedBytes));
 async function withPlayer(names,cold,run){
  let output;const errors=[],gates=new Map(cold.map(n=>[n,Promise.withResolvers()])),context={sampleRate:48000,currentTime:0,destination:{},createBuffer(numberOfChannels,length,sampleRate){const channels=Array.from({length:numberOfChannels},()=>new Float32Array(length));return{numberOfChannels,length,sampleRate,getChannelData:c=>channels[c]};},createScriptProcessor(){return output={connect(){},disconnect(){}};}};

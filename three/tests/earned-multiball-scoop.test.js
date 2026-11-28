@@ -36,7 +36,7 @@ for(const version of [
     game.input('launch',true);advance(650);game.input('launch',false);
     for(let i=0;i<10000&&game.inLane;i++)advance(1);assert.equal(game.inLane,false);
     const result=await runEarnedScoop({read,execute:statement=>game.rules.execute(statement),input:(action,down)=>game.input(action,down),advance,assert});
-    assert.equal(native.instrumentation,observeEarnedScoop(source));
+    assert.equal(native.instrumentation.replaceAll('\r\n','\n'),observeEarnedScoop(source).replaceAll('\r\n','\n'));
     // Compare every observed rule field and public ball identity. The two
     // independent players keep their own clocks and trajectories between shots;
     // timestamps are recorded, not fitted or restored into the other engine.

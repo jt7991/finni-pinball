@@ -45,7 +45,7 @@ The center ricochet target feeding toward the Friendship ramp is the **Doorbell*
 
 The approved party-supply replacements are installed: Kitchen Timer (Dazzler: extra time), Party Lights (Colossus: double battle points), The Checklist (Wolverine: double battle progress/damage), and Party Favors (Domino: extra points on supported events). Each has its own spoken announcement, DMD name/effect and small supply icon. Existing qualification counters, effects and resets remain source behavior; friends belong to Friendship Multiball.
 
-The table below records the earlier line direction. The current implemented transcript, including mode names, shot instructions, full random-remark and toy-reaction banks, and the ball-save announcement, is `finni-callouts.json`. The user selected a warm female voice; the current trial uses Jenny Neural at -5% rate.
+The table below records the earlier line direction. The current implemented transcript, including mode names, shot instructions, full random-remark and toy-reaction banks, and the ball-save announcement, is `finni-callouts.json`. The temporary ElevenLabs cast uses a warm host voice, with separate voices for scoring, player announcements and Mini Finni.
 
 | Event | Sample |
 | --- | --- |

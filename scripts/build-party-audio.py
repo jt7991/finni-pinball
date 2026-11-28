@@ -1,8 +1,4 @@
-"""Synthesize Finni party effects, preserve source music and install them by existing VPX sound ID.
-
-Uses numpy bundled with Blender. Includes a recorded doorbell and retains the existing generated contacts.
-Generated effects stay local; this script and design/party-audio.json are the sources.
-"""
+"""Build recorded switch effects and musical progress cues for the VPX sound bank."""
 import argparse
 import hashlib
 import json
@@ -69,55 +65,31 @@ def master(mix, target_rms, peak_limit):
     return mix
 
 
-def mechanical_contact(kind, rng, variant=0):
-    """Damped, non-musical contacts; no rising pitch or sustained bell partials."""
-    seconds = {"switch": .065, "spinner": .045, "tap": .085,
-               "knock": .11, "rattle": .13}[kind]
-    t = np.arange(round(seconds * RATE)) / RATE
-    # Filtered noise supplies the transient and body instead of a pitched beep.
-    noise = rng.uniform(-1, 1, len(t))
-    width = {"switch": 17, "spinner": 11, "tap": 25, "knock": 35, "rattle": 21}[kind]
-    body = np.convolve(noise, np.hanning(width) / np.hanning(width).sum(), mode="same")
-    edge = np.convolve(noise, np.ones(7) / 7, mode="same")
-    decay = {"switch": 100, "spinner": 145, "tap": 80, "knock": 65, "rattle": 70}[kind]
-    sound = body * np.exp(-t * decay) + .18 * edge * np.exp(-t * 320)
-    if kind in ("switch", "spinner", "rattle"):
-        delay = round((.012 if kind == "rattle" else .007) * RATE)
-        sound[delay:] += .32 * sound[:-delay].copy()
-    sound *= np.minimum(t / .0008, 1) * np.minimum((seconds - t) / .008, 1)
-    mix = np.zeros((len(t), 2))
-    add(mix, sound, 0)
-    level = {"switch": .035, "spinner": .03, "tap": .05, "knock": .06, "rattle": .045}[kind]
-    # VPX spatializes table-speaker samples itself and requires mono input.
-    if kind in ("switch", "spinner"):
-        mix = mix[:, :1]
-    return master(mix, level * (1 + (variant % 3 - 1) * .04), .42)
+CONTACT_LEVELS = {
+    "switch": (.035, .42), "spinner": (.03, .42), "tap": (.05, .42),
+    "knock": (.06, .42), "rattle": (.045, .42), "bumper": (.07, .50),
+    "doorbell": (.085, .60),
+}
+
+
+def recorded_effect(kind, variant):
+    directory = ROOT / "assets/finni/audio"
+    path = directory / "doorbell.wav"
+    if kind != "doorbell":
+        # Rotate the takes shared by the backglass scoring accents.
+        take = 1 + variant % 2 if kind in ("tap", "knock", "rattle", "bumper") else 1
+        path = directory / "switches" / f"{kind}-{take}.wav"
+    channels = 1 if kind in ("switch", "spinner") else 2
+    with wave.open(str(path), "rb") as wav:
+        assert (wav.getframerate(), wav.getnchannels(), wav.getsampwidth()) == (RATE, channels, 2), path
+        mix = np.frombuffer(wav.readframes(wav.getnframes()), dtype="<i2").reshape(-1, channels) / 32768
+    return master(mix, *CONTACT_LEVELS[kind])
 
 
 def effect(kind, variant=0):
+    if kind in CONTACT_LEVELS:
+        return recorded_effect(kind, variant)
     rng = np.random.default_rng(300 + variant)
-    if kind in ("switch", "spinner", "tap", "knock", "rattle"):
-        return mechanical_contact(kind, rng, variant)
-    if kind == "doorbell":
-        with wave.open(str(ROOT / 'assets/finni/audio/doorbell.wav'), 'rb') as wav:
-            assert (wav.getframerate(), wav.getnchannels(), wav.getsampwidth()) == (RATE, 2, 2)
-            mix = np.frombuffer(wav.readframes(wav.getnframes()), dtype='<i2').reshape(-1, 2) / 32768
-        return master(mix, .085, .60)
-    if kind == "balloon":
-        # A struck, inflated balloon: short rubber resonance and a soft contact
-        # transient, with no pitched reward chime or long shuffle tail.
-        seconds = .16
-        t = np.arange(round(seconds * RATE)) / RATE
-        pitch = 1 + (variant % 3 - 1) * .045
-        phase = TAU * pitch * (115 * t + 2.8 * (1 - np.exp(-t * 48)))
-        rubber = (np.sin(phase) + .18 * np.sin(phase * 2.07)) * np.exp(-t * 32)
-        noise = rng.uniform(-1, 1, len(t))
-        contact = np.convolve(noise, np.ones(7) / 7, mode="same") * np.exp(-t * 160)
-        sound = (.75 * rubber + .3 * contact) * np.minimum(t / .0015, 1)
-        sound *= np.minimum((seconds - t) / .012, 1)
-        mix = np.zeros((len(t), 2))
-        add(mix, sound, 0)
-        return master(mix, .095, .65)
     notes = {"pop": [72 + variant % 5], "sparkle": [55, 62, 67],
              "success": [55, 59, 62, 67], "power": [48, 55, 60, 64],
              "shuffle": [67, 72]}[kind]
@@ -149,7 +121,7 @@ def build(destination):
         report["effects"][name] = write_wav(destination / (name + ".wav"), effect(config["effects"][name], i))
     # Audition the effect families; the table retains its original soundtrack.
     parts = []
-    for name in ("switch", "spinner", "tap", "knock", "rattle", "balloon", "doorbell", "sparkle", "power", "success"):
+    for name in ("switch", "spinner", "tap", "knock", "rattle", "bumper", "doorbell", "sparkle", "power", "success"):
         sound = effect(name)
         if sound.shape[1] == 1:
             sound = np.repeat(sound, 2, axis=1)

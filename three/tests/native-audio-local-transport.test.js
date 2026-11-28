@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import {nativeSourceAssets} from '../../scripts/native-source-assets.mjs';
 import {gunzipSync} from 'node:zlib';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -7,7 +8,7 @@ import {decodePCM16Wave} from '../audio-pcm.js';
 
 test('queued device callbacks consume every native mixed block without asynchronous handoff silence',async()=>{
  const fixture=JSON.parse(gunzipSync(fs.readFileSync(new URL('fixtures/vpx-main-pcm-mixes-native.json.gz',import.meta.url))));
- const manifest=JSON.parse(fs.readFileSync(new URL('../public/audio.json',import.meta.url)));
+ const manifest=nativeSourceAssets('a0acae6e039580a027a704238325031d737149595a417c12ad22d11b1275c1f3').json('audio.json');
  for(const capture of fixture.observations){
   let output;const errors=[],context={sampleRate:48000,currentTime:0,destination:{},createBuffer(numberOfChannels,length,sampleRate){const channels=Array.from({length:numberOfChannels},()=>new Float32Array(length));return{numberOfChannels,length,sampleRate,getChannelData:c=>channels[c]};},createScriptProcessor(){return output={connect(){},disconnect(){}};}};
   const loadBuffer=async name=>{const bytes=fs.readFileSync(new URL('../public/audio/'+manifest[name].fallbackFile,import.meta.url));return decodePCM16Wave(context,bytes.buffer.slice(bytes.byteOffset,bytes.byteOffset+bytes.byteLength));};

@@ -6,6 +6,25 @@ import re
 ROOT=Path(__file__).resolve().parents[1]
 
 
+MODE_CALLOUTS = (
+    (b'DMD "", CL(1, "STARTING"), "d_finni_spinner", eNone, eNone, eNone, 1500, True, ',
+     b'""', b'"vo_spinnerrush"'),
+    (b'DMD "", CL(1, "MULTIBALL"), "d_finni_supplyrun", eNone, eNone, eNone, 1500, True, ',
+     b'"vo_multiball"', b'"vo_supplyrun"'),
+    (b'DMD "", CL(1, "BONUS"), "d_finni_confetti", eNone, eNone, eNone, 1500, True, ',
+     b'"vo_supercombo"', b'"vo_confettiburst"'),
+)
+
+
+def mode_callouts(source, restore=False):
+    for event, old, new in MODE_CALLOUTS:
+        before, after = (new, old) if restore else (old, new)
+        if source.count(event + before) != 1:
+            raise ValueError(f'Expected one mode announcement: {event!r}')
+        source = source.replace(event + before, event + after, 1)
+    return source
+
+
 def first_pass_script(source):
     replacements = [
         (b'DMD CL(0, "WRAP THE PRESENTS"), tmp, "bkborder"',
@@ -111,4 +130,4 @@ def dmd_script(source):
         new=f'DMD "", CL(1, "{word} FRIEND'+('S' if word!='ONE' else '')+' READY"), "d_finni_friendship"'
         assert source.count(old.encode())==1,old
         source=source.replace(old.encode(),new.encode())
-    return source
+    return mode_callouts(source)

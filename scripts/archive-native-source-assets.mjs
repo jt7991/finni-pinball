@@ -13,7 +13,7 @@ const files=Object.fromEntries(['source-table.json','layout.json','objects.json'
   return[name,{text,sha256:sha(bytes)}];
 }));
 const metadata=JSON.parse(files['source-table.json'].text);
-const packet={format:'native-source-assets-v1',tableSHA256:metadata.sourceTableSHA256,files};
+const packet={format:'native-source-assets-v1',tableSHA256:metadata.playbackTableSHA256??metadata.sourceTableSHA256,files};
 const bytes=gzipSync(JSON.stringify(packet),{level:9});
 fs.writeFileSync(output,bytes,{flag:'wx'});
 console.log(JSON.stringify({output,tableSHA256:packet.tableSHA256,sha256:sha(bytes),bytes:bytes.length,files:Object.keys(files)}));

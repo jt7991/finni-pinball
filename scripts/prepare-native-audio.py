@@ -52,14 +52,18 @@ def wave(data):
     return {'channels':fmt[1], 'sampleRate':fmt[2], 'frames':len(pcm)//fmt[4], 'pcm16SHA256':sha(pcm)}, pcm
 
 # Check every named entry against both the current manifest and serialized VPX.
-sources, unique, updated = {}, {}, {}
-for name, entry in manifest.items():
+if set(manifest) - set(settings) or (not args.refresh_sources and set(settings) != set(manifest)):
+    raise RuntimeError('Sound catalogue differs from the current table')
+unique, updated = {}, {}
+for name in dict.fromkeys([*manifest, *settings]):
+    entry = manifest.get(name, {'music': False})
     file = args.source_dir/'sounds'/(name+('.ogg' if entry['music'] else '.wav'))
     data = file.read_bytes()
-    if sha(data) != settings[name]['sourceSHA256'] or (not args.refresh_sources and sha(data) != entry['sourceSHA256']):
+    if sha(data) != settings[name]['sourceSHA256'] or (
+            (entry['music'] or not args.refresh_sources) and sha(data) != entry['sourceSHA256']
+    ):
         raise RuntimeError('Source differs from current table: '+name)
     updated[name] = {**entry, **settings[name]}
-    sources[name] = data
     if not entry['music']: unique.setdefault(sha(data), (file, data))
 
 def encode(item):
@@ -75,9 +79,10 @@ def encode(item):
                              'encodedSHA256':sha(encoded), 'fallbackFile':store(data, '.wav')}
     with tempfile.TemporaryDirectory(prefix='native-audio-', dir=args.output_dir) as temporary:
         target = Path(temporary)/'effect.flac'
+        # Use one residual partition so short final frames fit the browser decoder.
         subprocess.run([str(args.ffmpeg), '-hide_banner', '-loglevel', 'error', '-i', str(source),
                         '-map_metadata', '-1', '-c:a', 'flac', '-compression_level', '12',
-                        '-sample_fmt', 's32', '-bits_per_raw_sample', '24',
+                        '-sample_fmt', 's32', '-bits_per_raw_sample', '24', '-max_partition_order', '0',
                         '-metadata_header_padding', '0', str(target)], check=True)
         encoded = target.read_bytes()
         decoded = subprocess.run([str(args.ffmpeg), '-hide_banner', '-loglevel', 'error', '-i', str(target),

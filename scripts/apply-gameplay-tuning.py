@@ -75,6 +75,7 @@ def install(extracted):
     # Accept the previously built scoop-only revision as an upgrade input.
     previous = source.replace(ORIGINAL,b'HellHouse.kick 164, 12, 0',1)
     previous_story = expected.replace(b'case 5:PlaySong "mu_hellhouse5"', b'case 5:PlaySong "mu_multiball"',1)
+    previous_callouts = runpy.run_path(str(ROOT/'scripts/apply-finni-dmd.py'))['mode_callouts'](expected, restore=True)
     previous_without_save_voice = expected.replace(BALL_SAVED_VOICE, BALL_SAVED, 1)
     old_tasks = runpy.run_path(str(ROOT/'scripts/apply-party-tasks.py'))['task_script'](
         runpy.run_path(str(ROOT/'scripts/apply-multiball-story.py'))['story_script'](
@@ -87,7 +88,7 @@ def install(extracted):
     prior_cake_task = expected.replace(b'COOKIES BAKED',b'CAKE BAKED').replace(b'COOKIE SUPER JACKPOT',b'BAKING SUPER JACKPOT').replace(b'COOKIE JACKPOT',b'BAKING JACKPOT')
     prior_ramp = runpy.run_path(str(ROOT/'scripts/apply-lock-ramp-tuning.py'))['restore_script'](expected)
     current_without_ramp = runpy.run_path(str(ROOT/'scripts/apply-lock-ramp-tuning.py'))['restore_script'](current)
-    if current_without_ramp != prior_ramp and current not in (source,previous,previous_story,previous_without_save_voice,old_tasks,previous_dmd,first_pass,previous_lighting,prior_selection,expected,without_motion,prior_cake_task,prior_ramp) and prior_motion not in (restore_tilt(tuned_script(source,motion=False,music=False,trim_callouts=False)),prior_friendship):
+    if current_without_ramp != prior_ramp and current not in (source,previous,previous_story,previous_callouts,previous_without_save_voice,old_tasks,previous_dmd,first_pass,previous_lighting,prior_selection,expected,without_motion,prior_cake_task,prior_ramp) and prior_motion not in (restore_tilt(tuned_script(source,motion=False,music=False,trim_callouts=False)),prior_friendship):
         raise ValueError('Working script has unrelated edits; refusing to overwrite them.')
     path.write_bytes(result)
     return result

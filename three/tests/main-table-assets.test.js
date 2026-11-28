@@ -21,7 +21,7 @@ test('the preceding main render inputs keep their authored appearance and observ
   }
   assert.equal(table.sourceTableSHA256,expected.sourceSha256);
   assert.equal(nativeSourceAssets(expected.sourceSha256).metadata.sourceTableSHA256,expected.sourceSha256);
-  assert.deepEqual(read('objects.json'),nativeSourceAssets(expected.sourceSha256).json('objects.json'),'Current source imports exactly the same authored appearance');
+  assert.deepEqual(objects,nativeSourceAssets(expected.sourceSha256).json('objects.json').objects,'Current source imports exactly the same authored appearance');
   const lighting=read('native-lighting.json');
   assert.deepEqual(lighting.globals.envScaleWidth,expected.globals.fenvEmissionScale_TexWidth);
   assert.deepEqual(lighting.globals.ambientRange,expected.globals.cAmbient_LightRange);

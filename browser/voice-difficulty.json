@@ -56,6 +56,8 @@
       "vo_combo",
       "vo_2xcombo",
       "vo_supercombo",
+      "vo_confettiburst",
+      "vo_spinnerrush",
       "vo_dazzlerteamup",
       "vo_colossusteamup",
       "vo_wolverineteamup",
@@ -92,7 +94,9 @@
       "vo_mysteryislit": "When you’ve cleared both target banks and Mystery lights at the scoop.",
       "vo_combo": "On the second shot in a combo chain.",
       "vo_2xcombo": "On shot 3 in a combo chain.",
-      "vo_supercombo": "On the seventh combo shot, or when the left loop feeds directly into the right ramp for the confetti bonus.",
+      "vo_supercombo": "On the seventh combo shot.",
+      "vo_confettiburst": "When the left loop feeds directly into the right ramp for the confetti bonus.",
+      "vo_spinnerrush": "When the player reaches 25 spins across either spinner outside Spinner Rush.",
       "vo_dazzlerteamup": "When four upward left-loop shots earn the Kitchen Timer outside a party task.",
       "vo_colossusteamup": "When four shots through the Party Lights loop earn the upgrade outside a party task.",
       "vo_wolverineteamup": "When four center-loop shots earn the Checklist outside a party task.",
@@ -146,7 +150,7 @@
       "vo_superjackpot",
       "vo_lildp_xtraball",
       "vo_regenerateislit",
-      "vo_multiball",
+      "vo_supplyrun",
       "vo_superdupercombo",
       "vo_enterinitials"
     ],
@@ -175,7 +179,7 @@
       "vo_superjackpot": "When you score a super jackpot, including the Cookie Super Jackpot.",
       "vo_lildp_xtraball": "Every 50 confetti collected, when an extra ball lights at the scoop.",
       "vo_regenerateislit": "After you clear both the left and right target banks at least three times each.",
-      "vo_multiball": "When you start Supply Run Multiball at the scoop after collecting 75 supplies.",
+      "vo_supplyrun": "When you start Supply Run Multiball at the scoop after collecting 75 supplies.",
       "vo_superdupercombo": "On the eighth and each later shot in a combo chain.",
       "vo_enterinitials": "When a qualifying score opens the table’s initials entry."
     }

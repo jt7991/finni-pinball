@@ -16,7 +16,8 @@ audio = ROOT / "output/party-audio"
 report = json.loads((audio / "audio-report.json").read_text())
 voice_dir = ROOT / "output/finni-voice"
 voice = json.loads((voice_dir / "voice-report.json").read_text())
-expected_lines = runpy.run_path(str(ROOT/'scripts/build-finni-callouts.py'))['lines']()[1]
+callouts = runpy.run_path(str(ROOT/'scripts/build-finni-callouts.py'))
+expected_lines = callouts['lines']()[1]
 assert {name: spec['text'] for name, spec in voice['callouts'].items()} == expected_lines, 'Stale speech transcript'
 music = json.loads((audio / "music-trial-report.json").read_text())
 # BASS cannot load OGG files containing a video stream (including cover art).
@@ -30,8 +31,9 @@ replaced = {**report["effects"], **voice["callouts"], **dict.fromkeys(music["ids
 before = json.loads((source / "sounds.json").read_text())
 after = json.loads((table / "sounds.json").read_text())
 assert [s["name"] for s in before] == [s["name"] for s in after[:len(before)]]
-added_story = {'vo_friendshipmb', 'vo_caketimetoppings', 'vo_caketimefinish', 'vo_caketimefrosting'}
-assert {s["name"] for s in after[len(before):]} == {"vo_enterinitials", "vo_nocredits", "vo_ballsaved"} | added_story
+assert {s["name"] for s in after[len(before):]} == (
+    {"vo_enterinitials", "vo_nocredits"} | callouts['ADDED_STORY_IDS'] | callouts['ADDED_EVENT_IDS']
+)
 assert all(expected_lines.values()), 'Speech parity requires no silent slots'
 tuning=runpy.run_path(str(ROOT/'scripts/apply-gameplay-tuning.py'))
 assert tuning['tuned_script']((source/'script.vbs').read_bytes()) == (table/'script.vbs').read_bytes()

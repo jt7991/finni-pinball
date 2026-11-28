@@ -13,17 +13,17 @@ const assets=fixture('vpx-main-d259c2b-assets.json.gz','9d35f760d774d4afcaa8bc10
 const cache=fixture('vpx-main-d259c2b-texture-cache.json.gz','9eb468ce3e23807f7c105995ca6c4c917cf478d882badc82c5ecd9d1a5c6fc5f');
 
 test('current master retains every preceding physical input and sound while importing its new source rules and DMD images',()=>{
-  const current=read('source-table.json'),previous=nativeSourceAssets(assets.previousSourceSHA256);
+  const archived=nativeSourceAssets(assets.sourceTableSHA256),current=archived.metadata,previous=nativeSourceAssets(assets.previousSourceSHA256);
   assert.equal(current.sourceCommit,'d259c2b2ae69f0281f141a3eda1f6b07793341db');
   assert.equal(current.sourceTableSHA256,'a0acae6e039580a027a704238325031d737149595a417c12ad22d11b1275c1f3');
   assert.equal(current.sourceTableSHA256,assets.sourceTableSHA256);assert.equal(current.engineSHA256,assets.engineSHA256);
   assert.deepEqual(assets.dataChanges,['CODE','SIMG']);assert.deepEqual(assets.changedObjects,{});assert.deepEqual(assets.changedMeshes,{});
-  for(const name of ['layout.json','objects.json','audio.json','native-audio/effects.json'])assert.ok(previous.bytes(name).equals(fs.readFileSync(new URL('../public/'+name,import.meta.url))),name+' unchanged authored input');
+  for(const name of ['layout.json','objects.json','audio.json','native-audio/effects.json'])assert.ok(previous.bytes(name).equals(archived.bytes(name)),name+' unchanged authored input');
   assert.deepEqual(assets.sounds,{total:376,reused:376});assert.deepEqual(assets.imageCounts,{old:1303,new:1498});
   assert.deepEqual(assets.sourceImages.removed,[]);assert.equal(assets.sourceImages.added.length,195);
   const atlas=read('dmd-atlas.json'),flashers=read('native-flashers/native-flashers.json');
   for(const name of assets.sourceImages.added){assert.ok(atlas[name],name+' in delivered atlas');assert.deepEqual(flashers.images[name].atlas,atlas[name],name+' native sprite rectangle');}
-  const source=fs.readFileSync(new URL('../public/rules.vbs',import.meta.url),'utf8');
+  const source=archived.text('rules.vbs');
   assert.notEqual(source,previous.text('rules.vbs'));assert.match(source,/Function FinniScoreScene\(background\)/);assert.match(source,/DMD tmp, tmp1, FinniScoreScene\(tmp2\)/);
 });
 

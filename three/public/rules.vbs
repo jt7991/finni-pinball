@@ -5544,7 +5544,7 @@ Sub CheckCombo(n)
     If n = OldCombo Then StopCombo:Exit Sub                   'repeated shot so stop the combos
 
     If n = "Trigger013" AND LastSwitchHit = "Trigger010" Then 'NinjaApocalypse
-        DMD "", CL(1, "BONUS"), "d_finni_confetti", eNone, eNone, eNone, 1500, True, "vo_supercombo"
+        DMD "", CL(1, "BONUS"), "d_finni_confetti", eNone, eNone, eNone, 1500, True, "vo_confettiburst"
         For x = 1 to 10
             CheckNinjaStars
         Next
@@ -5659,7 +5659,7 @@ End Sub
 
 Sub StartMechSuitMB
     Dim i
-    DMD "", CL(1, "MULTIBALL"), "d_finni_supplyrun", eNone, eNone, eNone, 1500, True, "vo_multiball"
+    DMD "", CL(1, "MULTIBALL"), "d_finni_supplyrun", eNone, eNone, eNone, 1500, True, "vo_supplyrun"
     vpmtimer.addtimer 4000, "AddMultiball 3 '"
     bMechSuitMBLight(CurrentPlayer) = False:li047.State = 2
     bMechSuitMBStarted = true
@@ -5830,7 +5830,7 @@ End Sub
 Sub CheckBerserker
     BerserkerCount(CurrentPlayer) = BerserkerCount(CurrentPlayer) + 1
     If BerserkerCount(CurrentPLayer) = 25 Then 'Start Berserker Rage
-        DMD "", CL(1, "STARTING"), "d_finni_spinner", eNone, eNone, eNone, 1500, True, ""
+        DMD "", CL(1, "STARTING"), "d_finni_spinner", eNone, eNone, eNone, 1500, True, "vo_spinnerrush"
         DMD "", CL(1, "SHOOT THE SPINNERS"), "d_finni_spinner", eNone, eNone, eNone, 1500, True, ""
         StartBerserker
     End If

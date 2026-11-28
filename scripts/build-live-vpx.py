@@ -127,7 +127,7 @@ dmd_assets=runpy.run_path(str(ROOT/'scripts/build-finni-dmd.py'))['install'](WOR
 gamedata=json.loads((WORK/'gamedata.json').read_text())
 gamedata['bg_view_mode_desktop']='legacy';gamedata['bg_rotation_desktop']=0.
 (WORK/'gamedata.json').write_text(json.dumps(gamedata,indent=2))
-# Retain existing sound IDs; add approved story and ball-save cues.
+# Retain existing sound IDs and install the added story, mode and ball-save cues.
 party_audio=runpy.run_path(str(ROOT/'scripts/build-party-audio.py'))
 audio_dir=ROOT/'output/party-audio'
 party_audio['build'](audio_dir)
@@ -157,6 +157,6 @@ for filename in ('Wall.Leftslingshot.json', 'Wall.Rightslingshot.json'):
     assert json.loads((SOURCE/'gameitems'/filename).read_text()) == json.loads((WORK/'gameitems'/filename).read_text()), filename
 for path in (SOURCE/'gameitems').glob('Rubber.*Sling*.json'):
     assert json.loads(path.read_text()) == json.loads((WORK/'gameitems'/path.name).read_text()), path.name
-(OUT/'build-report.json').write_text(json.dumps({'meshes':parts,'finni_dmd':dmd_assets,'party_audio_replacements':audio_count,'finni_voice_slots':voice_count,'music_trial_slots':music_count,'source_script_changes':['approved HellHouse scoop kick: 164, 12, 0','Friendship ramp approach guide and climb assist','fixed Friendship, Cake Time, task music priority and playback recovery','Cake Time / Friendship display and voice cues','Ball saved voice on the existing save display','seven approved party-task DMD titles, instructions and completion cues','complete Finni DMD scenes, icons and secondary-feature presentation','removed random chatter'],'all_other_script_bytes_unchanged':True,'lock_collisions_unchanged':True,'slingshot_collisions_and_animation_unchanged':True,'sling_covers':'plain rounded triangles over original mounting posts','fox_animation':'original Target012_Hit / LilDPShake / lilShakeTimer'},indent=2))
+(OUT/'build-report.json').write_text(json.dumps({'meshes':parts,'finni_dmd':dmd_assets,'party_audio_replacements':audio_count,'finni_voice_slots':voice_count,'music_trial_slots':music_count,'source_script_changes':['approved HellHouse scoop kick: 164, 12, 0','Friendship ramp approach guide and climb assist','fixed Friendship, Cake Time, task music priority and playback recovery','Cake Time / Friendship display and voice cues','Ball saved voice on the existing save display','Spinner Rush, Supply Run and Confetti Burst voice cues','seven approved party-task DMD titles, instructions and completion cues','complete Finni DMD scenes, icons and secondary-feature presentation','removed random chatter'],'all_other_script_bytes_unchanged':True,'lock_collisions_unchanged':True,'slingshot_collisions_and_animation_unchanged':True,'sling_covers':'plain rounded triangles over original mounting posts','fox_animation':'original Target012_Hit / LilDPShake / lilShakeTimer'},indent=2))
 print('LIVE_ASSETS_READY',json.dumps(parts),flush=True)
 print('FINNI_LIGHTING',len(lighting),'lamps and flashers; runtime palette and shows themed',flush=True)

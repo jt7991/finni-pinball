@@ -7,9 +7,9 @@ const fixture=JSON.parse(fs.readFileSync(new URL('fixtures/vpx-main-native-audio
 
 test('the current table retains every authored sound output and signed-percent setting',()=>{
  const manifest=JSON.parse(fs.readFileSync(new URL('../public/audio.json',import.meta.url)));
- const values=Object.values(manifest);assert.equal(values.length,376);
+ const values=Object.values(manifest);assert.equal(values.length,379);
  assert.equal(values.filter(value=>value.outputTarget==='playfield').length,62);
- assert.equal(values.filter(value=>value.outputTarget==='backglass').length,314);
+ assert.equal(values.filter(value=>value.outputTarget==='backglass').length,317);
  for(const sound of values)for(const name of ['volumePercent','panPercent','frontRearFadePercent'])assert.equal(sound[name],0,name);
  assert.equal(manifest.fx_ballrolling3.outputTarget,'playfield');assert.equal(manifest.fx_enter.outputTarget,'backglass');
 });

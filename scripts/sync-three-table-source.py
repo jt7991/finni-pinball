@@ -49,9 +49,9 @@ with olefile.OleFileIO(args.old_vpx) as old,olefile.OleFileIO(args.vpx) as new:
     assert old_items.keys()==new_items.keys(),'New authored objects need an explicit asset exporter update'
     old_data=tags(old.openstream(['GameStg','GameData']).read());new_data=tags(new.openstream(['GameStg','GameData']).read())
     data_changes=sorted(key for key in old_data.keys()|new_data.keys() if old_data.get(key)!=new_data.get(key))
-    # PinTable SIMG is the embedded image count, not a physical table setting.
+    # SIMG and SSND are the embedded image and sound counts.
     # The source-image audit verifies this count when importing the art bundle.
-    unsupported=set(data_changes)-{b'CODE',b'ENES',b'BLST',b'SIMG'}
+    unsupported=set(data_changes)-{b'CODE',b'ENES',b'BLST',b'SIMG',b'SSND'}
     assert not unsupported,f'Unmapped changed table fields require an explicit importer update: {sorted(unsupported)}'
     image_counts={'old':scalar(old_data[b'SIMG'],'i'),'new':scalar(new_data[b'SIMG'],'i')}
     current_rules=(public/'rules.vbs').read_text(encoding='utf-8-sig').replace('\r\n','\n').strip()

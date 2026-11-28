@@ -1,25 +1,20 @@
-"""Generate cached neural female Finni callouts, replacing assets without rule edits.
-
-Install local dependency: Blender Python -m pip install --target .tools/voice-pydeps edge-tts==7.3.1
-Only new/changed text is sent to the speech service. Cached PCM rebuilds offline.
-"""
+"""Build the ElevenLabs placeholder cast. Cached PCM rebuilds offline."""
 import argparse
-import asyncio
+from concurrent.futures import ThreadPoolExecutor
 import hashlib
 import json
 import shutil
 import subprocess
-import sys
+import runpy
 import wave
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / ".work/deadpool-extracted"
-TOY_AUDIO = ROOT / "assets/finni/audio/mini-finni"
 ADDED_STORY_IDS = {'vo_friendshipmb', 'vo_caketimetoppings', 'vo_caketimefinish', 'vo_caketimefrosting'}
-ADDED_EVENT_IDS = {'vo_ballsaved'}
-FF = ROOT / ".tools/pydeps/imageio_ffmpeg/binaries/ffmpeg-win-x86_64-v9.0.2.exe"
-sys.path.insert(0, str(ROOT / ".tools/voice-pydeps"))
+ADDED_EVENT_IDS = {'vo_ballsaved', 'vo_spinnerrush', 'vo_supplyrun', 'vo_confettiburst'}
+BUNDLED_FF = ROOT / ".tools/pydeps/imageio_ffmpeg/binaries/ffmpeg-win-x86_64-v9.0.2.exe"
+FF = BUNDLED_FF if BUNDLED_FF.is_file() else "ffmpeg"
 
 
 def lines(validate_source=True):
@@ -77,64 +72,73 @@ def write_pcm(path, frames):
         wav.writeframes(frames)
 
 
-async def synthesize(config, texts, cache):
-    semaphore = asyncio.Semaphore(2)
-    done = 0
-
-    async def one(text):
-        nonlocal done
-        signature = json.dumps([config["voice"], config["rate"], config["pitch"], text, "pcm-v1"])
-        key = hashlib.sha256(signature.encode()).hexdigest()
-        output = cache / (key + ".wav")
-        if not output.exists():
-            async with semaphore:
-                if not text:
-                    write_pcm(output, bytes(32000 * 4 // 10))
-                else:
-                    import edge_tts
-                    mp3 = cache / (key + ".mp3")
-                    for attempt in range(3):
-                        try:
-                            await edge_tts.Communicate(text, config["voice"], rate=config["rate"],
-                                                      pitch=config["pitch"]).save(str(mp3))
-                            break
-                        except Exception:
-                            if attempt == 2:
-                                raise
-                            await asyncio.sleep(2)
-                    temp = cache / (key + ".tmp.wav")
-                    subprocess.run([str(FF), "-hide_banner", "-loglevel", "error", "-y", "-i", str(mp3),
-                                    "-af", "highpass=f=85,lowpass=f=10500,loudnorm=I=-18:TP=-2:LRA=7",
-                                    "-ar", "32000", "-ac", "2", "-c:a", "pcm_s16le", str(temp)], check=True)
-                    pcm(temp)
-                    temp.replace(output)
-        pcm(output)
-        done += 1
-        if done % 10 == 0 or done == len(texts):
-            print(f"VOICE_PROGRESS {done}/{len(texts)} unique lines", flush=True)
-        return text, output
-
-    return dict(await asyncio.gather(*(one(text) for text in texts)))
+def voice_role(config, name):
+    for role, voice in config["voices"].items():
+        if name in voice.get("slots", ()) or ("prefix" in voice and name.startswith(voice["prefix"])):
+            return role
+    return "finni"
 
 
-def build(destination):
-    config, mapping = lines()
-    destination.mkdir(parents=True, exist_ok=True)
+def synthesize(config, reads, cache):
+    model = config["model"]
+    paths = {}
+    for role, text in sorted(set(reads)):
+        voice = config["voices"][role]["id"]
+        signature = json.dumps([model, voice, text, "pcm-v1"])
+        paths[role, text] = cache / (hashlib.sha256(signature.encode()).hexdigest() + ".wav")
+
+    missing = [(read, path) for read, path in paths.items() if not path.exists()]
+    if missing:
+        api = runpy.run_path(str(ROOT / "scripts/voice-ai.py"))
+        key = api["retrieve_key"]()
+
+        def generate(item):
+            (role, text), path = item
+            voice = config["voices"][role]["id"]
+            mp3 = path.with_suffix(".mp3")
+            # Keep a successful response if a later local conversion fails.
+            if not mp3.exists():
+                body = json.dumps({"text": text, "model_id": model}).encode("utf-8")
+                audio, headers = api["api_request"](
+                    f"/v1/text-to-speech/{voice}?output_format=mp3_44100_128",
+                    key, body, "application/json",
+                )
+                if not audio or not headers.get("Content-Type", "").startswith("audio/"):
+                    raise ValueError(f"Expected ElevenLabs audio for role {role}")
+                mp3.write_bytes(audio)
+            temp = path.with_suffix(".tmp.wav")
+            subprocess.run([str(FF), "-hide_banner", "-loglevel", "error", "-y", "-i", str(mp3),
+                            "-af", "highpass=f=85,lowpass=f=10500,loudnorm=I=-18:TP=-2:LRA=7",
+                            "-ar", "32000", "-ac", "2", "-c:a", "pcm_s16le", str(temp)], check=True)
+            pcm(temp)
+            temp.replace(path)
+
+        # Work in small batches so a provider failure stops further requests.
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            for offset in range(0, len(missing), 2):
+                list(executor.map(generate, missing[offset:offset + 2]))
+                done = min(offset + 2, len(missing))
+                if done % 10 == 0 or done == len(missing):
+                    print(f"VOICE_PROGRESS {done}/{len(missing)} new reads", flush=True)
+
+    for path in paths.values():
+        pcm(path)
+    return paths
+
+
+def build(destination, validate_source=True):
+    config, mapping = lines(validate_source=validate_source)
     cache = destination / "cache"
-    cache.mkdir(exist_ok=True)
-    toy_recordings = {f"vo_lildp{slot}": TOY_AUDIO / f"vo_lildp{slot}.wav"
-                      for slot in config["toy_reactions"]}
-    toy_slots = {**toy_recordings,
-                 **{slot: toy_recordings[target] for slot, target in config["recording_aliases"].items()}}
-    texts = sorted({text for name, text in mapping.items() if name not in toy_slots})
-    generated = asyncio.run(synthesize(config, texts, cache))
-    report = {"voice": config["voice"], "rate": config["rate"], "pitch": config["pitch"], "callouts": {}}
+    cache.mkdir(parents=True, exist_ok=True)
+    roles = {name: voice_role(config, name) for name in mapping}
+    reads = [(roles[name], text) for name, text in mapping.items()]
+    generated = synthesize(config, reads, cache)
+    report = {"model": config["model"], "voices": config["voices"], "callouts": {}}
     for name, text in mapping.items():
         path = destination / (name + ".wav")
-        source = toy_slots[name] if name in toy_slots else generated[text]
-        shutil.copyfile(source, path)
+        shutil.copyfile(generated[roles[name], text], path)
         frames = pcm(path)
-        report["callouts"][name] = {"text": text, "silent": not text,
+        report["callouts"][name] = {"text": text, "role": roles[name], "silent": False,
                                     "seconds": len(frames) / (32000 * 4),
                                     "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
     preview = []
@@ -142,7 +146,8 @@ def build(destination):
                  "vo_trex", "vo_megalodon", "vo_sauron", "vo_mrsinister",
                  "vo_lockislit", "vo_ball1locked", "vo_friendshipmb", "vo_lildp_multiball2",
                  "vo_caketimetoppings", "vo_caketimefinish", "vo_jackpot", "vo_ballsaved",
-                 "quote1", "quote2", "quote3", *toy_recordings, "vo_discoloops"):
+                 "vo_spinnerrush", "vo_katanaramaisready", "vo_supplyrun", "vo_confettiburst",
+                 "quote1", "quote2", "quote3", *(f"vo_lildp{slot}" for slot in config["toy_reactions"]), "vo_discoloops"):
         preview.extend((pcm(destination / (name + ".wav")), bytes(32000)))
     write_pcm(destination / "finni-callouts-sampler.wav", b"".join(preview))
     (destination / "voice-report.json").write_text(json.dumps(report, indent=2) + "\n")

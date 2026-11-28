@@ -10,7 +10,7 @@ parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--vpx', type=Path, default=root/'runtime/Finni-Big-Day.vpx')
 args = parser.parse_args()
 source = json.loads((root/'three/public/source-table.json').read_text())
-assert hashlib.sha256(args.vpx.read_bytes()).hexdigest() == source['sourceTableSHA256']
+assert hashlib.sha256(args.vpx.read_bytes()).hexdigest() == source.get('playbackTableSHA256', source['sourceTableSHA256'])
 settings = table_sound_settings(args.vpx)
 path = root/'three/public/audio.json'
 manifest = json.loads(path.read_text())

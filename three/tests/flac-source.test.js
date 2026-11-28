@@ -2,10 +2,11 @@ import fs from'node:fs';import{gunzipSync}from'node:zlib';import{createHash}from
 import{indexAuthoredFLAC,decodeAuthoredFLAC,createAuthoredFLACSource,createFLACFrameCache}from'../flac-source.js';import{decodePCM16Wave}from'../audio-pcm.js';import{createNativePCMVoice}from'../native-pcm-voice.js';import{createNativeSoundEngine}from'../native-sound-engine.js';
 import{nativeSourceAssets}from'../../scripts/native-source-assets.mjs';
 const root=new URL('../public/',import.meta.url),manifest=JSON.parse(fs.readFileSync(new URL('audio.json',root))),sha=bytes=>createHash('sha256').update(bytes).digest('hex'),read=file=>fs.readFileSync(new URL(file,root)),indices=new Map();
+const archived=nativeSourceAssets('a0acae6e039580a027a704238325031d737149595a417c12ad22d11b1275c1f3').json('audio.json');
 const context={createBuffer(numberOfChannels,length,sampleRate){const data=Array.from({length:numberOfChannels},()=>new Float32Array(length));return{numberOfChannels,length,sampleRate,getChannelData:c=>data[c]};}};
 function indexed(name,cache,catalogue=manifest){const entry=catalogue[name],bytes=read('audio/'+entry.file);if(!indices.has(entry.file))indices.set(entry.file,indexAuthoredFLAC(bytes,entry));return createAuthoredFLACSource(bytes,entry,indices.get(entry.file),cache);}
 
-for(const version of [{name:'99eff88',catalogue:nativeSourceAssets('3ae17f498f745efa19076ca33e08f96f66d766367fc984e37aacf50774a35e14').json('audio.json'),samples:37184512,unique:322},{name:'6f8116d',catalogue:nativeSourceAssets('6160e43c1a74f6dc70fd9852433c3373fe11b3e55d4f3a3fedc435265591b5c5').json('audio.json'),samples:37144576,unique:322},{name:'cc6f04f',catalogue:manifest,samples:30437136,unique:281}])test('every '+version.name+' lossless source decodes and seeks to exact native-scaled PCM within a shared frame budget',()=>{
+for(const version of [{name:'99eff88',catalogue:nativeSourceAssets('3ae17f498f745efa19076ca33e08f96f66d766367fc984e37aacf50774a35e14').json('audio.json'),samples:37184512,unique:322},{name:'6f8116d',catalogue:nativeSourceAssets('6160e43c1a74f6dc70fd9852433c3373fe11b3e55d4f3a3fedc435265591b5c5').json('audio.json'),samples:37144576,unique:322},{name:'cc6f04f',catalogue:archived,samples:30437136,unique:281},{name:'current',catalogue:manifest,samples:20050864,unique:248}])test('every '+version.name+' lossless source decodes and seeks to exact native-scaled PCM within a shared frame budget',()=>{
  const unique=new Map(),cache=createFLACFrameCache(262144);for(const[name,entry]of Object.entries(version.catalogue))if(!entry.music&&!unique.has(entry.file))unique.set(entry.file,{name,entry});let samples=0;
  for(const{name,entry}of unique.values()){
   const encoded=read('audio/'+entry.file),raw=read('audio/'+entry.fallbackFile);assert.equal(sha(encoded),entry.encodedSHA256);assert.equal(sha(raw),entry.sourceSHA256);
@@ -20,8 +21,8 @@ for(const version of [{name:'99eff88',catalogue:nativeSourceAssets('3ae17f498f74
 test('indexed lossless pulls retain every original device sample for native mixed and overlapping voices',()=>{
  const packed=name=>JSON.parse(gunzipSync(fs.readFileSync(new URL('fixtures/'+name,import.meta.url)))),mixes=packed('vpx-main-pcm-mixes-native.json.gz').observations,overlap=packed('vpx-main-audio-interleaved-native.json.gz');
  for(const capture of [...mixes,overlap]){
-  const cache=createFLACFrameCache(262144),sources=new Map(),engine=createNativeSoundEngine({sampleRate:48000,createVoice:(name,sound,settings,state)=>{if(!sources.has(name))sources.set(name,indexed(name,cache));return createNativePCMVoice(sources.get(name),sound,48000,settings,state);}});
-  for(const layer of capture.layers)engine.play(layer.name,manifest[layer.name],{...layer,loop:layer.loopCount});
+  const cache=createFLACFrameCache(262144),sources=new Map(),engine=createNativeSoundEngine({sampleRate:48000,createVoice:(name,sound,settings,state)=>{if(!sources.has(name))sources.set(name,indexed(name,cache,archived));return createNativePCMVoice(sources.get(name),sound,48000,settings,state);}});
+  for(const layer of capture.layers)engine.play(layer.name,archived[layer.name],{...layer,loop:layer.loopCount});
   for(let n=1;n<capture.frames.length;n++){const actual=engine.render().pcm,expected=capture.frames[n].pcm;for(let c=0;c<2;c++)for(let i=0;i<2048;i++)assert.equal(actual[i*2+c],expected[c][i],capture.mixCase+' native block '+n+' channel '+c+' sample '+i);}
   assert.equal(engine.stats.players,capture.layers.length);assert.ok(cache.stats.retainedBytes<=cache.stats.limit);
  }
